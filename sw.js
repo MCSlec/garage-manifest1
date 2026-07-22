@@ -4,7 +4,7 @@
    cache suffit à rendre toute l'app disponible hors-ligne. Les données (photos,
    collection) vivent dans IndexedDB côté page, pas ici. */
 
-const VERSION = "garage-v2.5.0";
+const VERSION = "garage-v3.0.0";
 const SHELL = [
   "./",
   "./index.html",
