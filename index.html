@@ -19,7 +19,7 @@
 <style>
   :root{
     --bg:#0b0b0d; --panel:#161618; --panel2:#111113; --line:#27272a; --line2:#3f3f46;
-    --txt:#f4f4f5; --muted:#a1a1aa; --muted2:#71717a; --dim:#52525b;
+    --txt:#f4f4f5; --fg:#f4f4f5; --muted:#a1a1aa; --muted2:#71717a; --dim:#52525b;
     --red:#ef4444; --red2:#dc2626; --red-dk:#b91c1c;
     --commun:#a1a1aa; --peucommun:#2dd4bf; --rare:#818cf8; --epique:#e879f9; --legendaire:#fbbf24;
     --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
@@ -376,6 +376,22 @@
   .rc-conf{ margin-top:6px; font:500 12px/1 var(--mono); color:var(--rare); }
   .rc-actions{ display:flex; flex-direction:column; gap:8px; margin-top:18px; }
   .rc-actions .btn{ width:100%; text-align:center; }
+
+  /* ---- Confirmation & saisie in-app (remplacent confirm()/prompt()) ---- */
+  #confirmWrap{ position:fixed; inset:0; z-index:260; display:flex; align-items:center; justify-content:center; background:rgba(5,5,7,.88); backdrop-filter:blur(6px); animation:rvFade .2s ease; padding:24px; }
+  .cf-card{ width:min(88vw,360px); border-radius:16px; padding:20px; background:var(--panel); border:1px solid var(--line); animation:rvPop .35s cubic-bezier(.2,1.6,.35,1); }
+  .cf-msg{ margin:0 0 16px; font:400 14px/1.5 var(--sans); color:var(--fg); }
+  .cf-card input{ width:100%; background:var(--bg); border:1px solid var(--line); border-radius:9px; color:var(--fg); padding:10px 12px; font:400 14px var(--sans); margin-bottom:16px; }
+  .cf-actions{ display:flex; gap:8px; }
+  .cf-actions .btn{ flex:1; text-align:center; }
+
+  /* ---- Bandeau de mise à jour du service worker ---- */
+  #swUpdate{ position:fixed; left:12px; right:12px; bottom:calc(var(--tabh) + 12px + var(--sb)); z-index:250; display:flex; justify-content:center; animation:rvFade .25s ease; }
+  .swu-card{ width:100%; max-width:520px; background:var(--panel); border:1px solid var(--line2); border-radius:14px; padding:14px 16px; box-shadow:0 12px 40px rgba(0,0,0,.5); }
+  .swu-card b{ display:block; font:600 13px/1.3 var(--sans); }
+  .swu-card span{ display:block; margin-top:4px; font:400 12px/1.4 var(--sans); color:var(--muted); }
+  .swu-actions{ display:flex; gap:8px; margin-top:12px; }
+  .swu-actions .btn{ flex:1; text-align:center; }
 
   /* ---- Non classé : formulaire manuel & bloc collection ---- */
   .custom-form{ margin-top:12px; padding:13px 14px; border:1px dashed var(--line2); border-radius:12px; background:var(--panel); }
@@ -2261,6 +2277,9 @@ const VARIANTS = {
     brandsOpen: false, countriesOpen: false,
     flash: null,
   };
+  // Bump à chaque MAJ notable, en même temps que VERSION dans sw.js — sert de repère
+  // pour toi et tes potes quand ils te remontent un bug ("ça plante en v3.1.0").
+  const APP_VERSION = "3.2.0";
   let installPrompt = null;
 
   /* ---- Voitures « Non classé » : captures hors catalogue officiel ---- */
@@ -2282,6 +2301,7 @@ const VARIANTS = {
     try { await Store.put(CUSTOM_REG); } catch {}
   }
   function unclassedHTML() {
+    if (state.q.trim()) return ""; // en recherche, elles apparaissent dans la grille (DT-19)
     const list = customCars().filter(c => state.spots.has(c.id));
     if (!list.length) return "";
     const cards = list.map(c => {
@@ -2301,6 +2321,15 @@ const VARIANTS = {
       </div>`;
   }
 
+  /* ---- Relais de reconnaissance IA ----
+     Valeur embarquée : l'app reconnaît les voitures dès l'installation, sans configuration
+     manuelle — indispensable pour la faire tester par des tiers.
+     META.ai n'est PAS la valeur courante : c'est une SURCHARGE locale. Vide => on prend le défaut.
+     Conséquence voulue : changer cette seule ligne migre tout le monde au prochain déploiement,
+     alors qu'une valeur pré-écrite en base épinglerait chaque utilisateur sur l'ancienne URL. */
+  const AI_ENDPOINT_DEFAULT = "https://silent-firefly-2620.cyril-lapopin.workers.dev";
+  const resolveAiEndpoint = () => ((META.ai || "").trim() || AI_ENDPOINT_DEFAULT);
+
   /* ---- Métadonnées persistées (missions, équipage, réglages avancés) ---- */
   let META = { carId:"__meta__", bonus:0, missions:{}, friends:[], feed:[], name:"", ai:"" };
   async function saveMeta(){ try { await Store.put(META); } catch {} }
@@ -2319,6 +2348,9 @@ const VARIANTS = {
     return { i, name:cur.name, next, pct: next ? Math.min(100, Math.round((score-cur.min)/(next.min-cur.min)*100)) : 100 };
   }
 
+  // Rang de rareté tolérant : une entrée importée avec un `r` hors référentiel ne doit plus
+  // faire planter un tri (DT-03). Le nettoyage à l'import reste la première ligne de défense.
+  const rRank = (r) => (RARITY[r] ? RARITY[r].rank : 0);
   const has = (id) => state.spots.has(id);
   const cover = (rec) => rec && rec.photos && rec.photos.length ? rec.photos[Math.min(rec.cover||0, rec.photos.length-1)] : null;
 
@@ -2384,7 +2416,11 @@ const VARIANTS = {
 
   function visibleCars() {
     const q = state.q.trim().toLowerCase();
-    return CARS.filter(c => {
+    // Les « Non classé » ne rejoignent la grille QUE sur recherche explicite (DT-19).
+    // Hors recherche, elles fausseraient les compteurs de complétude, qui portent par
+    // définition sur les 927 entrées du catalogue officiel.
+    const pool = q ? [...CARS, ...customCars().filter(c => state.spots.has(c.id))] : CARS;
+    return pool.filter(c => {
       if (state.brand!=="all" && c.brand!==state.brand) return false;
       if (state.country!=="all" && c.c!==state.country) return false;
       if (state.rarity!=="all" && c.r!==state.rarity) return false;
@@ -2397,7 +2433,7 @@ const VARIANTS = {
     }).sort((a,b) => {
       if (state.sort==="brand") return a.brand.localeCompare(b.brand) || a.model.localeCompare(b.model);
       if (state.sort==="az") return a.model.localeCompare(b.model);
-      return RARITY[b.r].rank-RARITY[a.r].rank || a.brand.localeCompare(b.brand) || a.model.localeCompare(b.model); // rareté
+      return rRank(b.r)-rRank(a.r) || a.brand.localeCompare(b.brand) || a.model.localeCompare(b.model); // rareté
     });
   }
 
@@ -2641,6 +2677,7 @@ const VARIANTS = {
         <div class="h2" style="margin-bottom:6px">Application</div>
         <div class="rows">
           ${installRow}
+          <div class="srow"><div class="l"><b>Envoyer un retour</b><span>Bug, idée, ressenti — inclut la version pour que je m'y retrouve</span></div><button class="btn" data-act="feedback">${icon("upload","icon")}</button></div>
           <div class="srow"><div class="l"><b>Stockage utilisé</b><span id="storeInfo">Calcul…</span></div></div>
           <div class="srow"><div class="l"><b>Mode hors-ligne</b><span id="swInfo">Vérification…</span></div></div>
         </div>
@@ -2655,6 +2692,7 @@ const VARIANTS = {
       </div>
 
       <p class="dim" style="text-align:center;font:400 11px/1.5 var(--mono);margin-top:18px">
+        Garage Manifest v${APP_VERSION}<br>
         ${TOTAL} voitures · ${brands.length-1} marques · ${countries.length-1} pays<br>
         Reconnaissance photo auto → point de branchement <b style="color:var(--muted2)">identifyCar()</b>
       </p>
@@ -2697,16 +2735,22 @@ const VARIANTS = {
   // Contrat relais : POST {image: dataURL} → [{brand, model, confidence}] (texte libre).
   // Le rapprochement avec les IDs du catalogue se fait ici, côté client, via matchCatalog —
   // le relais reste générique et n'a jamais besoin de connaître le catalogue.
+  // Renseigne un motif d'échec lisible : sans ça, timeout / relais HS / réponse malformée
+  // et « voiture non reconnue » produisaient tous le même silence, rendant tout diagnostic
+  // terrain impossible (DT-07).
+  let lastAiError = null;
   async function identifyCar(thumbDataUrl) {
-    const url = (META.ai||"").trim();
-    if (!url || !/^https:\/\//.test(url)) return [];
+    lastAiError = null;
+    const url = resolveAiEndpoint();
+    if (!/^https:\/\//.test(url)) { lastAiError = "Aucun relais IA valide — saisie manuelle"; return []; }
     try {
       const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 15000);
-      const res = await fetch(url, { method:"POST", headers:{ "Content-Type":"application/json" }, body:JSON.stringify({ image: thumbDataUrl }), signal:ctl.signal });
-      clearTimeout(t);
-      if (!res.ok) return [];
+      let res;
+      try { res = await fetch(url, { method:"POST", headers:{ "Content-Type":"application/json" }, body:JSON.stringify({ image: thumbDataUrl }), signal:ctl.signal }); }
+      finally { clearTimeout(t); }
+      if (!res.ok) { lastAiError = `Relais IA indisponible (HTTP ${res.status})`; return []; }
       const guesses = await res.json();
-      if (!Array.isArray(guesses)) return [];
+      if (!Array.isArray(guesses)) { lastAiError = "Réponse du relais IA inattendue"; return []; }
       const matched = new Map();
       for (const g of guesses) {
         if (!g || (!g.brand && !g.model)) continue;
@@ -2714,7 +2758,12 @@ const VARIANTS = {
         if (m && (!matched.has(m.id) || matched.get(m.id) < m.confidence)) matched.set(m.id, m.confidence);
       }
       return [...matched.entries()].map(([id,confidence]) => ({ id, confidence })).sort((a,b) => b.confidence-a.confidence).slice(0,3);
-    } catch { return []; }
+    } catch (e) {
+      lastAiError = (e && e.name === "AbortError")
+        ? "Relais IA : délai dépassé (15 s)"
+        : "Relais IA injoignable — hors ligne ?";
+      return [];
+    }
   }
 
   /* ====================================================== OVERLAYS */
@@ -2815,7 +2864,7 @@ const VARIANTS = {
     const list = [...CARS, ...customCars()].filter(c => !needle || `${c.brand} ${c.model}`.toLowerCase().includes(needle))
       .sort((a,b) => {
         const ca = draft.candidates.includes(a.id)?0:1, cb = draft.candidates.includes(b.id)?0:1;
-        return ca-cb || RARITY[b.r].rank-RARITY[a.r].rank || a.brand.localeCompare(b.brand);
+        return ca-cb || rRank(b.r)-rRank(a.r) || a.brand.localeCompare(b.brand);
       }).slice(0, 80);
     return list.map(c => {
       const cand = draft.candidates.includes(c.id), h = has(c.id), sel = draft.carId===c.id;
@@ -2823,7 +2872,7 @@ const VARIANTS = {
         <span class="dot" style="background:${c.custom?"var(--dim)":rColor(c.r)}"></span>
         <span class="tx"><b>${c.c} ${escapeHtml(c.brand)} ${escapeHtml(c.model)}</b><span>${c.custom?"Non classé":RARITY[c.r].label+" · "+escapeHtml(c.cat)}</span></span>
         ${cand?`<span class="tag">IA</span>`:""}
-        ${h?icon("check","icon"):""}${sel?icon("check","icon"):""}
+        ${(h||sel)?icon("check","icon"):""}
       </button>`;
     }).join("");
   }
@@ -2897,6 +2946,7 @@ const VARIANTS = {
       const cands = await identifyCar(draft.photo);
       const valid = cands.filter(c => CARS_BY_ID[c.id] && !CARS_BY_ID[c.id].custom);
       if (valid.length) showRecogPopup(valid[0]);
+      else if (lastAiError) toast(lastAiError); // silence volontaire si le relais a répondu sans trouver
     } catch {}
   }
 
@@ -2971,7 +3021,7 @@ const VARIANTS = {
     render();
     if (isNew) showReveal(id); else toast("Fiche mise à jour");
     checkMissions();
-    setTimeout(() => { state.flash = null; }, 1500);
+    setTimeout(() => { if (state.flash === id) { state.flash = null; render(); } }, 1500); // sinon la classe .flash restait collée (DT-18)
   }
 
   /* ---------- Détail ---------- */
@@ -3097,8 +3147,46 @@ const VARIANTS = {
   }
 
   /* ====================================================== EXPORT / IMPORT */
+  // Un dataURL importé est injecté tel quel dans 7 attributs src : sans ce filtre, une
+  // sauvegarde forgée obtient une exécution de script, persistée en base (DT-02).
+  const PHOTO_RE = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2}$/;
+  const sanitizePhotos = (arr) => (Array.isArray(arr) ? arr : [])
+    .filter(p => typeof p === "string" && p.length <= 12e6 && PHOTO_RE.test(p));
+
+  // Une entrée custom dont `r` ou `cat` sort du référentiel fait planter le tri du sélecteur,
+  // et l'erreur survit au redémarrage puisqu'elle est persistée avant tout rendu (DT-03).
+  function sanitizeCustomCar(raw) {
+    if (!raw || typeof raw !== "object") return null;
+    const id = String(raw.id || "");
+    if (!id.startsWith("custom:") || id.length > 120) return null;
+    const brand = String(raw.brand || "").trim().slice(0,40);
+    const model = String(raw.model || "").trim().slice(0,50);
+    if (!brand || !model) return null;
+    return { id, brand, model, yr:String(raw.yr || "").trim().slice(0,20),
+             c:"🏳️", cat:"Non classé",
+             r: RARITY_ORDER.includes(raw.r) ? raw.r : "commun", custom:true };
+  }
+  function sanitizeSpot(rec) {
+    if (!rec || typeof rec !== "object" || !CARS_BY_ID[rec.carId]) return null;
+    const at = (rec.at && !isNaN(new Date(rec.at).getTime())) ? rec.at : new Date().toISOString();
+    const co = rec.coords;
+    const coords = (co && typeof co.lat === "number" && typeof co.lng === "number"
+                    && Math.abs(co.lat) <= 90 && Math.abs(co.lng) <= 180) ? { lat:co.lat, lng:co.lng } : null;
+    const photos = sanitizePhotos(rec.photos);
+    return {
+      carId: rec.carId, at, coords, photos,
+      loc:  String(rec.loc  || "").slice(0,120),
+      note: String(rec.note || "").slice(0,2000),
+      cover: Math.max(0, Math.min(Number(rec.cover) || 0, Math.max(0, photos.length - 1))),
+      variants: (Array.isArray(rec.variants) ? rec.variants : []).filter(v => typeof v === "string").slice(0,20),
+      favorite: !!rec.favorite,
+    };
+  }
+
   async function exportJSON() {
-    const data = { app:"garage-manifest", version:1, exportedAt:new Date().toISOString(), spots:[...state.spots.values()], meta:{ ...META }, custom:{ ...CUSTOM_REG } };
+    // `ai` est exclu : c'est l'URL du relais, donc en pratique son seul contrôle d'accès.
+    // Une sauvegarde s'échange par WhatsApp — elle ne doit pas la transporter (DT-14).
+    const data = { app:"garage-manifest", version:1, exportedAt:new Date().toISOString(), spots:[...state.spots.values()], meta:{ ...META, ai:"" }, custom:{ ...CUSTOM_REG } };
     const blob = new Blob([JSON.stringify(data)], { type:"application/json" });
     const url = URL.createObjectURL(blob), a = document.createElement("a");
     a.href = url; a.download = `garage-manifest-${new Date().toISOString().slice(0,10)}.json`;
@@ -3112,38 +3200,66 @@ const VARIANTS = {
       try {
         const data = JSON.parse(await file.text());
         if (data.custom && Array.isArray(data.custom.list)) { // les « Non classé » d'abord, sinon leurs prises seraient rejetées
-          for (const c of data.custom.list) {
-            if (!c || !c.id || !String(c.id).startsWith("custom:")) continue;
+          for (const raw of data.custom.list) {
+            const c = sanitizeCustomCar(raw); if (!c) continue;
             if (!CUSTOM_REG.list.some(x => x.id === c.id)) CUSTOM_REG.list.push(c);
             CARS_BY_ID[c.id] = c;
           }
           await Store.put(CUSTOM_REG);
         }
         const spots = Array.isArray(data.spots) ? data.spots : [];
-        let n = 0;
+        let n = 0, rejected = 0;
         for (const rec of spots) {
-          if (!rec || !CARS_BY_ID[rec.carId]) continue;
-          const clean = { carId:rec.carId, at:rec.at||new Date().toISOString(), loc:rec.loc||"", coords:rec.coords||null, note:rec.note||"", photos:Array.isArray(rec.photos)?rec.photos:[], cover:rec.cover||0, variants:Array.isArray(rec.variants)?rec.variants:[], favorite:!!rec.favorite };
+          const clean = sanitizeSpot(rec);
+          if (!clean) { rejected++; continue; }
           await Store.put(clean); state.spots.set(clean.carId, clean); n++;
         }
-        toast(`${n} voiture${n>1?"s":""} importée${n>1?"s":""}`);
-        if (data.meta && typeof data.meta === "object") { META = { ...META, ...data.meta, carId:"__meta__" }; await saveMeta(); }
+        toast(`${n} voiture${n>1?"s":""} importée${n>1?"s":""}${rejected?` · ${rejected} entrée${rejected>1?"s":""} rejetée${rejected>1?"s":""}`:""}`);
+        if (data.meta && typeof data.meta === "object") {
+          // `ai` volontairement ignoré : un fichier importé ne doit pas pouvoir rerouter
+          // silencieusement les photos vers un serveur tiers.
+          const m = data.meta;
+          META = { ...META,
+            bonus:    Number(m.bonus) || META.bonus || 0,
+            missions: (m.missions && typeof m.missions === "object") ? m.missions : META.missions,
+            friends:  Array.isArray(m.friends) ? m.friends : META.friends,
+            feed:     Array.isArray(m.feed) ? m.feed.slice(0,50) : META.feed,
+            name:     String(m.name || META.name || "").slice(0,24),
+            carId:"__meta__" };
+          await saveMeta();
+        }
         render();
       } catch { toast("Fichier invalide"); }
     };
     inp.click();
   }
   async function resetAll() {
-    if (!confirm("Effacer TOUTES tes prises et photos ? Cette action est irréversible.")) return;
-    await Store.clear(); state.spots.clear(); toast("Garage réinitialisé"); render();
+    if (!await askConfirm("Effacer TOUTES tes prises et photos ? Cette action est irréversible.", "Tout effacer", true)) return;
+    await Store.clear();
+    state.spots.clear();
+    // La base était vidée mais pas la mémoire (DT-06) : le bonus de missions survivait au reset
+    // et les « Non classé » réapparaissaient dans le sélecteur, leurs prises ayant disparu.
+    for (const c of CUSTOM_REG.list) delete CARS_BY_ID[c.id];
+    CUSTOM_REG = { carId:"__customcars__", list:[] };
+    META = { carId:"__meta__", bonus:0, missions:{}, friends:[], feed:[], name:"", ai:"" };
+    state.flash = null;
+    // Les caches du service worker ne sont PAS purgés : ils contiennent la coquille applicative.
+    // Les effacer hors ligne rendrait l'app inaccessible. Le reset porte sur les données, pas sur l'app.
+    toast("Garage réinitialisé");
+    render();
   }
 
   /* ====================================================== MISSIONS HEBDO */
+  // Le numéro de semaine était calculé en UTC alors que la fenêtre de comptage (weekBounds)
+  // est locale : les deux divergeaient les nuits dimanche/lundi selon le fuseau, ce qui
+  // réinitialisait ou recréditait un défi hebdo au mauvais moment (DT-08).
+  // On dérive désormais la clé du MÊME lundi local que la fenêtre.
   function weekKey(d = new Date()) {
-    const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-    t.setUTCDate(t.getUTCDate() + 4 - (t.getUTCDay()||7));
-    const y = t.getUTCFullYear();
-    const w = Math.ceil(((t - Date.UTC(y,0,1)) / 864e5 + 1) / 7);
+    const [start] = weekBounds(d);                                                   // lundi local 00:00
+    const th = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 3); // jeudi ISO
+    const y = th.getFullYear();
+    // Écart calculé sur des dates UTC normalisées : immunise contre les changements d'heure.
+    const w = Math.floor((Date.UTC(y, th.getMonth(), th.getDate()) - Date.UTC(y, 0, 1)) / 864e5 / 7) + 1;
     return `${y}-S${String(w).padStart(2,"0")}`;
   }
   function weekBounds(d = new Date()) {
@@ -3190,7 +3306,7 @@ const VARIANTS = {
     D("d-digit", n=>`Repère ${n} modèle${n>1?"s":""} avec un chiffre dans le nom`, c=>/\d/.test(c.model), [1,2], 4),
     D("d-badge", n=>`Repère ${n} modèle${n>1?"s":""} GT, RS ou Turbo`, c=>/\b(GT|RS|Turbo)\b/i.test(c.model), [1,1], 7),
     D("d-old", n=>`Capture ${n} voiture née avant 1990`, c=>yStart(c)<1990, [1,1], 8),
-    D("d-new", n=>`Repère ${n} voiture des années 2020`, c=>c.yr.includes("202"), [1,2], 4),
+    D("d-new", n=>`Repère ${n} voiture des années 2020`, c=>yStart(c)>=2020, [1,2], 4),
     D("d-gps", n=>`Enregistre ${n} prise${n>1?"s":""} avec position GPS`, (c,rec)=>!!(rec&&rec.coords), [1,1], 5),
     D("d-note", n=>`Enregistre ${n} prise${n>1?"s":""} avec une note`, (c,rec)=>!!(rec&&rec.note), [1,1], 4),
     D("d-any", n=>`Ajoute ${n} voiture${n>1?"s":""} au garage`, ()=>true, [1,2], 4),
@@ -3220,7 +3336,7 @@ const VARIANTS = {
     D("w-jdm", n=>`Repère ${n} JDM`, c=>G.jdm.includes(c.brand), [2,3], 8),
     D("w-old", n=>`Capture ${n} voiture${n>1?"s":""} née${n>1?"s":""} avant 1980`, c=>yStart(c)<1980, [1,1], 18),
     D("w-8090", n=>`Capture ${n} voitures des années 80-90`, c=>yStart(c)>=1980&&yStart(c)<2000, [2,2], 10),
-    D("w-new", n=>`Repère ${n} voitures des années 2020`, c=>c.yr.includes("202"), [3,4], 4),
+    D("w-new", n=>`Repère ${n} voitures des années 2020`, c=>yStart(c)>=2020, [3,4], 4),
     D("w-any", n=>`Ajoute ${n} voitures au garage`, ()=>true, [6,10], 3),
     D("w-pts", n=>`Cumule ${n} points de rareté cette semaine`, ()=>true, [40,90], 0.35, "pts"),
     D("w-brands", n=>`Repère ${n} marques différentes`, ()=>true, [4,7], 4, "brands"),
@@ -3383,8 +3499,17 @@ const VARIANTS = {
     return { app:"garage-manifest", type:"profile", v:1, name:(META.name||"Pilote anonyme").slice(0,24),
       ts:new Date().toISOString(), score:st.score, count:st.count, rank:st.rank.name, legends };
   }
+  async function sendFeedback() {
+    const st = computeStats();
+    const text = `Feedback Garage Manifest v${APP_VERSION}\nPilote : ${META.name || "?"}\nCollection : ${st.count}/${TOTAL} · ${st.score} pts\n\n[Décris ici le bug ou ton idée]`;
+    if (navigator.share) {
+      try { await navigator.share({ title: "Feedback Garage Manifest", text }); return; } catch {}
+    }
+    try { await navigator.clipboard.writeText(text); toast("Modèle copié — colle-le où tu veux (groupe, mail…)"); }
+    catch { toast("Copie impossible sur cet appareil"); }
+  }
   async function shareProfile() {
-    if (!META.name) { const n = prompt("Ton nom de pilote (visible par ton équipage) :", ""); if (n===null) return; META.name = (n.trim().slice(0,24)) || "Pilote anonyme"; await saveMeta(); }
+    if (!META.name) { const n = await askText("Ton nom de pilote (visible par ton équipage) :", "Ex. Cyril"); if (n===null) return; META.name = (n.trim().slice(0,24)) || "Pilote anonyme"; await saveMeta(); }
     const p = myProfile(computeStats());
     const blob = new Blob([JSON.stringify(p)], { type:"application/json" });
     const file = new File([blob], `garage-profil-${p.name.replace(/\s+/g,"_")}.json`, { type:"application/json" });
@@ -3501,17 +3626,55 @@ const VARIANTS = {
         <div class="rows">
           <div class="srow"><div class="l" style="flex:1"><b>Nom de pilote</b><span>Affiché dans l'équipage et sur tes cartes</span>
             <input id="crewName" placeholder="Ex. Cyril" value="${escapeHtml(META.name||"")}" style="margin-top:8px;width:100%;background:var(--bg);border:1px solid var(--line);border-radius:9px;color:var(--fg);padding:10px 12px;font:400 14px var(--sans)" /></div></div>
-          <div class="srow"><div class="l" style="flex:1"><b>Endpoint de reconnaissance IA</b><span>URL d'une API renvoyant [{id, confidence}] — laisse vide pour la saisie manuelle</span>
-            <input id="aiEndpoint" placeholder="https://…/identify" value="${escapeHtml(META.ai||"")}" style="margin-top:8px;width:100%;background:var(--bg);border:1px solid var(--line);border-radius:9px;color:var(--fg);padding:10px 12px;font:400 13px var(--mono)" /></div></div>
+          <div class="srow"><div class="l" style="flex:1"><b>Endpoint de reconnaissance IA</b><span>Un relais est déjà configuré : laisse vide. Ne remplis ce champ que pour forcer une autre URL (l'API doit renvoyer [{brand, model, confidence}]).</span>
+            <input id="aiEndpoint" placeholder="${escapeHtml(AI_ENDPOINT_DEFAULT)}" value="${escapeHtml(META.ai||"")}" style="margin-top:8px;width:100%;background:var(--bg);border:1px solid var(--line);border-radius:9px;color:var(--fg);padding:10px 12px;font:400 13px var(--mono)" />
+            <span style="display:block;margin-top:6px;font:400 11px/1.4 var(--mono);color:var(--muted2)">Relais actif : ${escapeHtml(resolveAiEndpoint())} · ${(META.ai||"").trim() ? "surcharge locale" : "valeur par défaut"}</span></div></div>
         </div>
       </div>`;
   }
 
   /* ====================================================== PWA */
+  // Un service worker « waiting » ne prend la main QUE lorsque tous les onglets sont fermés —
+  // ce qui n'arrive quasiment jamais sur une PWA installée. Sans ce bloc, un correctif poussé
+  // sur GitHub Pages peut rester invisible des jours chez les testeurs (DT-10).
+  // PRÉREQUIS CÔTÉ sw.js : répondre au message { type:"SKIP_WAITING" } par self.skipWaiting().
+  let swReloading = false;
+  function promptSWUpdate(reg) {
+    const w = reg.waiting; if (!w || document.getElementById("swUpdate")) return;
+    const el = document.createElement("div");
+    el.id = "swUpdate";
+    el.innerHTML = `<div class="swu-card">
+        <b>Nouvelle version disponible</b>
+        <span>Recharge pour l'installer. Tes prises et tes photos ne sont pas touchées.</span>
+        <div class="swu-actions">
+          <button class="btn" data-swu="later">Plus tard</button>
+          <button class="btn red" data-swu="now">Mettre à jour</button>
+        </div></div>`;
+    el.addEventListener("click", (e) => {
+      const b = e.target.closest("[data-swu]"); if (!b) return;
+      if (b.dataset.swu === "now") { swReloading = true; w.postMessage({ type:"SKIP_WAITING" }); }
+      el.remove();
+    });
+    document.body.appendChild(el);
+    markSW("Mise à jour en attente");
+  }
   function registerSW() {
     if (!("serviceWorker" in navigator)) { markSW("Non supporté"); return; }
     if (!/^https?:$/.test(location.protocol)) { markSW("Actif une fois hébergé"); return; }
-    navigator.serviceWorker.register("sw.js").then(() => markSW("Prêt hors-ligne ✓")).catch(() => markSW("Indisponible"));
+    // Garde anti-boucle : on ne recharge que si l'utilisateur a explicitement demandé la MAJ.
+    navigator.serviceWorker.addEventListener("controllerchange", () => { if (swReloading) location.reload(); });
+    navigator.serviceWorker.register("sw.js").then((reg) => {
+      markSW("Prêt hors-ligne ✓");
+      if (reg.waiting && navigator.serviceWorker.controller) promptSWUpdate(reg);
+      reg.addEventListener("updatefound", () => {
+        const sw = reg.installing; if (!sw) return;
+        sw.addEventListener("statechange", () => {
+          // "installed" + contrôleur déjà en place => mise à jour, et non première installation.
+          if (sw.state === "installed" && navigator.serviceWorker.controller) promptSWUpdate(reg);
+        });
+      });
+      setInterval(() => { reg.update().catch(() => {}); }, 36e5); // sonde horaire
+    }).catch(() => markSW("Indisponible"));
   }
   function markSW(txt) { const e = $("#swInfo"); if (e) e.textContent = txt; }
   function markSWCurrent() {
@@ -3530,6 +3693,61 @@ const VARIANTS = {
         if (meter && quota) meter.style.width = Math.min(100, usage/quota*100) + "%";
       } catch { info.textContent = Store.isMemory() ? "Mémoire volatile (aperçu)" : "—"; }
     } else info.textContent = Store.isMemory() ? "Mémoire volatile (aperçu)" : "—";
+  }
+
+  /* ====================================================== DIALOGUES IN-APP */
+  // Remplacent confirm()/prompt() : rendu incohérent en PWA plein écran, et supprimés
+  // silencieusement par certains navigateurs en mode standalone (DT-20).
+  // Overlay dédié (#confirmWrap) et NON #overlay : `release` est déclenchée depuis une fiche
+  // déjà ouverte dans #overlay — le réutiliser détruirait la fiche sous la confirmation.
+  function askDialog(html, onMount) {
+    return new Promise((resolve) => {
+      const w = document.createElement("div");
+      w.id = "confirmWrap";
+      w.innerHTML = `<div class="cf-card">${html}</div>`;
+      let done = false;
+      const close = (v) => {
+        if (done) return; done = true;
+        document.removeEventListener("keydown", esc, true);
+        w.remove(); resolve(v);
+      };
+      const esc = (e) => { if (e.key === "Escape") { e.stopPropagation(); close(null); } };
+      w.addEventListener("click", (e) => {
+        const b = e.target.closest("[data-cf]");
+        if (b) return close(b.dataset.cf);
+        if (e.target === w) close(null);
+      });
+      document.addEventListener("keydown", esc, true);
+      document.body.appendChild(w);
+      if (onMount) onMount(w, close);
+    });
+  }
+  async function askConfirm(message, okLabel = "Confirmer", danger = false) {
+    const v = await askDialog(`
+      <p class="cf-msg">${escapeHtml(message)}</p>
+      <div class="cf-actions">
+        <button class="btn" data-cf="0">Annuler</button>
+        <button class="btn${danger ? " red" : ""}" data-cf="1">${escapeHtml(okLabel)}</button>
+      </div>`);
+    return v === "1";
+  }
+  async function askText(message, placeholder = "", value = "") {
+    let input = null;
+    const v = await askDialog(`
+      <p class="cf-msg">${escapeHtml(message)}</p>
+      <input id="cfInput" placeholder="${escapeHtml(placeholder)}" value="${escapeHtml(value)}" maxlength="60" />
+      <div class="cf-actions">
+        <button class="btn" data-cf="0">Annuler</button>
+        <button class="btn red" data-cf="1">Valider</button>
+      </div>`, (w, close) => {
+        input = w.querySelector("#cfInput");
+        if (input) {
+          input.focus();
+          input.addEventListener("keydown", (e) => { if (e.key === "Enter") close("1"); });
+        }
+      });
+    if (v !== "1") return null;
+    return input ? input.value : "";
   }
 
   /* ====================================================== TOAST */
@@ -3570,7 +3788,7 @@ const VARIANTS = {
     if (t.hasAttribute("data-setcover")) { if (activeDetail) setCover(activeDetail, +t.dataset.setcover); return; }
     if (t.dataset.addphoto) { if (activeDetail) { closeOverlay(); openCapture(activeDetail); } return; }
     if (t.hasAttribute("data-dot")) { const pager=$("#pager"); if(pager) pager.scrollTo({ left:+t.dataset.dot*pager.clientWidth, behavior:"smooth" }); return; }
-    if (t.dataset.release) { if (confirm("Retirer cette voiture du garage ?")) release(t.dataset.release); return; }
+    if (t.dataset.release) { const rid = t.dataset.release; (async () => { if (await askConfirm("Retirer cette voiture du garage ?", "Retirer", true)) release(rid); })(); return; }
     if (t.dataset.favtoggle) { toggleFavorite(t.dataset.favtoggle); return; }
 
     const act = t.dataset.act;
@@ -3581,6 +3799,7 @@ const VARIANTS = {
     if (act==="reset") return resetAll();
     if (act==="install") return doInstall();
     if (act==="shareprofile") return shareProfile();
+    if (act==="feedback") return sendFeedback();
     if (act==="importprofile") return importProfile();
     if (act==="sharecard") { if (activeDetail) makeShareCard(activeDetail); return; }
     if (act==="notif") { if ("Notification" in window) Notification.requestPermission().then(() => render()); return; }
