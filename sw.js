@@ -1,14 +1,29 @@
 /* Garage Manifest — service worker
-   Stratégie: app-shell en cache-first (l'app tourne hors-ligne), réseau en repli.
+   Stratégie : app-shell en cache-first (l'app tourne hors-ligne), réseau en repli.
    L'app (HTML+CSS+JS) est auto-contenue dans index.html : mettre index.html en
    cache suffit à rendre toute l'app disponible hors-ligne. Les données (photos,
-   collection) vivent dans IndexedDB côté page, pas ici. */
+   collection) vivent dans IndexedDB côté page, pas ici.
 
-const VERSION = "garage-v3.0.0";
+   v13.0.0 — ajout de gm-specs.js (fiches techniques enrichies).
+*/
+
+const VERSION = "garage-v13.0.0";
+
+/* ESSENTIEL : sans ces fichiers, l'app ne démarre pas hors-ligne.
+   Mis en cache de façon atomique — si l'un manque, l'installation doit échouer
+   bruyamment plutôt que produire une app à moitié hors-ligne. */
 const SHELL = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
+];
+
+/* OPTIONNEL : confort (icônes) et modules complémentaires.
+   Mis en cache un par un, et une absence n'empêche pas l'installation.
+   C'est ce qui te permet d'ajouter ici un module AVANT de l'avoir déployé,
+   sans casser le service worker entre-temps. */
+const EXTRAS = [
+  "./gm-specs.js",
   "./icon-192.png",
   "./icon-512.png",
   "./icon-maskable-512.png",
@@ -16,9 +31,25 @@ const SHELL = [
   "./favicon-32.png",
 ];
 
+/* Chemins jamais mis en cache : bancs d'essai et fichiers de travail, qu'on
+   veut toujours frais sans avoir à incrémenter VERSION à chaque retouche. */
+const HORS_CACHE = [/\/banc[-.]/i, /\/test[-.]/i];
+
+const estHorsCache = (url) => HORS_CACHE.some((re) => re.test(url.pathname));
+
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(VERSION).then((cache) => cache.addAll(SHELL)).then(() => self.skipWaiting())
+    caches.open(VERSION).then(async (cache) => {
+      // Le shell d'abord : toute erreur ici doit faire échouer l'installation.
+      await cache.addAll(SHELL);
+      // Les extras ensuite, individuellement et sans conséquence en cas d'échec.
+      await Promise.all(
+        EXTRAS.map((url) => cache.add(url).catch(() => {
+          console.warn("[SW] extra non mis en cache :", url);
+        }))
+      );
+      await self.skipWaiting();
+    })
   );
 });
 
@@ -34,8 +65,10 @@ self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
 
-  const url = new URL(req.url);
-  // Navigations (ouverture de l'app) → renvoyer l'app-shell même hors-ligne.
+  let url;
+  try { url = new URL(req.url); } catch { return; }
+
+  // Navigations (ouverture de l'app) → réseau d'abord, app-shell en repli hors-ligne.
   if (req.mode === "navigate") {
     event.respondWith(
       fetch(req).catch(() => caches.match("./index.html", { ignoreSearch: true }))
@@ -43,14 +76,21 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  // Fichiers de travail : toujours le réseau, jamais le cache.
+  if (url.origin === self.location.origin && estHorsCache(url)) return;
+
   // Même origine → cache d'abord, réseau ensuite (et on met en cache au passage).
   if (url.origin === self.location.origin) {
     event.respondWith(
       caches.match(req, { ignoreSearch: true }).then((cached) => {
         if (cached) return cached;
         return fetch(req).then((res) => {
-          const copy = res.clone();
-          caches.open(VERSION).then((cache) => cache.put(req, copy)).catch(() => {});
+          // On ne met en cache QUE les réponses valides. Sans ce garde-fou, une
+          // 404 passagère est mémorisée et resservie jusqu'au prochain VERSION.
+          if (res && res.ok && res.type === "basic") {
+            const copie = res.clone();
+            caches.open(VERSION).then((cache) => cache.put(req, copie)).catch(() => {});
+          }
           return res;
         }).catch(() => cached);
       })
