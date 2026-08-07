@@ -378,128 +378,188 @@
   }
 
   /* ======================================================================
-     4. RENDU
+     4. CORRESPONDANCE AVEC LE CATALOGUE
+     ----------------------------------------------------------------------
+     Table explicite : id du catalogue Garage Manifest -> clé de fiche.
+     J'ai abandonné le rapprochement flou par coefficient de Dice une fois
+     les vrais identifiants connus. Une table se relit, se corrige et ne
+     produit JAMAIS de faux positif — un rapprochement flou finit toujours
+     par coller la fiche d'une 911 GT3 sur une 911 Carrera un jour ou l'autre.
+
+     Règle d'inscription : uniquement quand l'entrée du catalogue désigne UNE
+     version précise. Les entrées génériques qui couvrent plusieurs
+     générations (bmw-m5, vw-golf-gti, porsche-911) sont volontairement
+     absentes : y afficher les chiffres d'une seule génération serait faux.
      ====================================================================== */
 
-  const CSS = `
-  .gsp{--a:var(--accent,#e8b13a);--b:var(--border,#2a2f3a);--c:var(--card,#15171c);
-    display:flex;flex-direction:column;gap:12px;font-variant-numeric:tabular-nums}
-  .gsp-tete{display:flex;flex-direction:column;gap:3px}
-  .gsp-tete h3{margin:0;font-size:1.05rem;line-height:1.2}
-  .gsp-sur{font-size:.78rem;color:var(--a);letter-spacing:.05em;text-transform:uppercase}
-  .gsp-sig{font-size:.78rem;opacity:.6;line-height:1.4}
-  .gsp-vedettes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-  .gsp-v{background:var(--c);border:1px solid var(--b);border-radius:10px;padding:10px 8px;text-align:center}
-  .gsp-v b{display:block;font-size:1.22rem;line-height:1.1;color:var(--a)}
-  .gsp-v small{display:block;font-size:.62rem;opacity:.55;margin-top:3px;line-height:1.25}
-  .gsp-jauge{height:3px;border-radius:2px;background:var(--b);margin-top:7px;overflow:hidden}
-  .gsp-jauge i{display:block;height:100%;background:var(--a);border-radius:2px}
-  .gsp-grille{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--b);
-    border:1px solid var(--b);border-radius:10px;overflow:hidden}
-  .gsp-l{background:var(--c);padding:8px 10px;display:flex;justify-content:space-between;
-    align-items:baseline;gap:8px;font-size:.8rem}
-  .gsp-l span{opacity:.55;font-size:.72rem}
-  .gsp-l b{font-weight:600}
-  .gsp-rar{display:inline-flex;align-items:center;gap:6px;font-size:.75rem;
-    padding:3px 9px;border-radius:99px;border:1px solid var(--b);width:fit-content}
-  .gsp-rar[data-r="legendaire"]{color:#7fe3d0;border-color:#7fe3d055}
-  .gsp-rar[data-r="epique"]{color:#c58aff;border-color:#c58aff55}
-  .gsp-rar[data-r="rare"]{color:#e8b13a;border-color:#e8b13a55}
-  .gsp-rar[data-r="peucommun"]{color:#8fb8e8;border-color:#8fb8e855}
-  .gsp-rar[data-r="commun"]{opacity:.6}
-  .gsp-note{font-size:.78rem;line-height:1.5;opacity:.75;border-left:2px solid var(--a);padding-left:10px}
-  .gsp-flou{font-size:.68rem;opacity:.42;line-height:1.4}
-  `;
+  const MAP = {
+    // Groupe B et rallye
+    'audi-s1-e2'              : 'audi-sport-quattro-s1',
+    'audi-quattro'            : 'audi-quattro-ur',
+    'peugeot-205-t16'         : 'peugeot-205-t16-e2',
+    'lancia-delta-s4'         : 'lancia-delta-s4',
+    'lancia-037'              : 'lancia-037',
+    'ford-rs200'              : 'ford-rs200',
+    'mg-metro-6r4'            : 'mg-metro-6r4',
+    'renault-5-turbo'         : 'renault-5-turbo-2',
+    'lancia-stratos'          : 'lancia-stratos-hf',
+    'lancia-delta'            : 'lancia-delta-integrale-evo2',
+    'ford-escort-cosworth'    : 'ford-escort-rs-cosworth',
+    'subaru-22b'              : 'subaru-impreza-22b',
+    'mitsubishi-evo'          : 'mitsubishi-evo-vi-tme',
 
-  function injecterCSS() {
-    if (document.getElementById('gsp-css')) return;
-    const st = document.createElement('style');
-    st.id = 'gsp-css'; st.textContent = CSS;
-    document.head.appendChild(st);
-  }
+    // Porsche
+    'porsche-959'             : 'porsche-959',
+    'porsche-911-gt1'         : 'porsche-911-gt1-strassen',
+    'porsche-carrera-gt'      : 'porsche-carrera-gt',
+    'porsche-911-gt3rs'       : 'porsche-911-gt3-rs-992',
+    'porsche-cayman-gt4'      : 'porsche-718-cayman-gt4-rs',
+    'ruf-ctr'                 : 'ruf-ctr-yellowbird',
 
-  const esc = s => String(s ?? '').replace(/[&<>"]/g, m =>
-    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
+    // V12, V10, hypersportives
+    'ferrari-250-gto'         : 'ferrari-250-gto',
+    'ferrari-f40'             : 'ferrari-f40',
+    'ferrari-f50'             : 'ferrari-f50',
+    'ferrari-enzo'            : 'ferrari-enzo',
+    'lambo-miura'             : 'lamborghini-miura-sv',
+    'lambo-countach'          : 'lamborghini-countach-lp400',
+    'mclaren-f1'              : 'mclaren-f1',
+    'jaguar-xj220'            : 'jaguar-xj220',
+    'bugatti-eb110'           : 'bugatti-eb110-ss',
+    'bugatti-chiron'          : 'bugatti-chiron',
+    'lexus-lfa'               : 'lexus-lfa',
+    'pagani-zonda'            : 'pagani-zonda-c12s',
+    'gordonmurray-t50'        : 'gma-t50',
+    'gma-t50'                 : 'gma-t50',
 
+    // Japonaises
+    'honda-nsx-na1'           : 'honda-nsx-na1',
+    'honda-s2000'             : 'honda-s2000-ap1',
+    'nissan-skyline-r34'      : 'nissan-skyline-gtr-r34',
+    'toyota-supra-mk4'        : 'toyota-supra-rz-a80',
+    'mazda-rx7'               : 'mazda-rx7-fd',
+    'nissan-gtr'              : 'nissan-gtr-r35',
+    'toyota-gr-yaris'         : 'toyota-gr-yaris',
+
+    // Allemandes
+    'bmw-e30-m3'              : 'bmw-m3-e30-evo3',
+    'mercedes-190e'           : 'mercedes-190e-evo2',
+    'audi-rs2'                : 'audi-rs2-avant',
+
+    // Françaises
+    'alpine-a110-og'          : 'alpine-a110-1600s',
+    'alpine-a110'             : 'alpine-a110-2017',
+    'renault-clio-williams'   : 'renault-clio-williams',
+    'renault-clio-v6'         : 'renault-clio-v6-ph2',
+    'peugeot-205-gti'         : 'peugeot-205-gti-19',
+    'citroen-sm'              : 'citroen-sm',
+    'venturi-400gt'           : 'venturi-400-gt',
+
+    // Italiennes, britanniques, orphelines
+    'alfa-giulia-gtam'        : 'alfa-romeo-giulia-gta',
+    'lotus-elise'             : 'lotus-elise-s1',
+    'caterham-seven'          : 'caterham-seven-620r',
+    'tvr-sagaris'             : 'tvr-sagaris',
+    'detomaso-pantera'        : 'de-tomaso-pantera-gt5',
+    'saab-900turbo'           : 'saab-900-turbo-16s',
+    'volvo-850r'              : 'volvo-850-t5r'
+  };
+
+  /* ======================================================================
+     5. RENDU
+     ----------------------------------------------------------------------
+     Le bloc s'insère DANS ta fiche existante (infoPageHTML), sous la carte
+     « Le saviez-vous ». Il réutilise tes classes .specs / .spec / .fact et
+     tes variables CSS : le module hérite de ton thème au lieu d'en imposer
+     un second. Seules cinq classes nouvelles (préfixe .gsp-) sont ajoutées,
+     pour les indicateurs dérivés que ta feuille de style ne couvrait pas.
+     ====================================================================== */
+
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, m =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+
+  const RAR_VAR = { legendaire:'--legendaire', epique:'--epique', rare:'--rare',
+                    peucommun:'--peucommun', commun:'--commun' };
+
+  /** Une des trois vedettes : gros chiffre + unité + jauge de percentile. */
   function vedette(f, champ) {
-    const val = fmt(f, champ);
-    if (!val) return '';
-    const def = CHAMPS[champ] || DERIVES[champ];
-    const p = percentile(champ, f[champ] ?? deriver(f)[champ]);
-    return `<div class="gsp-v"><b>${esc(val.replace(/ [a-zA-Z/]+$/, ''))}</b>
-      <small>${esc(def.lib)}<br>${esc(def.u)}</small>
-      ${p != null ? `<div class="gsp-jauge"><i style="width:${Math.round(p * 100)}%"></i></div>` : ''}
+    const def = DERIVES[champ];
+    const v = deriver(f)[champ];
+    if (v == null) return '';
+    const p = percentile(champ, v);
+    return `<div class="gsp-v">
+      <b>${esc(fmtNombre(v, def.dec))}</b>
+      <small>${esc(def.u)}<br>${esc(def.lib)}</small>
+      ${p != null ? `<div class="gsp-jauge"><i style="width:${Math.round(p*100)}%"></i></div>` : ''}
     </div>`;
   }
 
-  function ligne(f, champ) {
+  function specRow(f, champ) {
     const val = fmt(f, champ);
     if (!val) return '';
-    return `<div class="gsp-l"><span>${esc((CHAMPS[champ] || DERIVES[champ]).lib)}</span><b>${esc(val)}</b></div>`;
+    return `<div class="spec"><dt>${esc((CHAMPS[champ]||DERIVES[champ]).lib)}</dt><dd>${esc(val)}</dd></div>`;
   }
 
-  function ficheHTML(cle) {
-    const f = SPECS[cle];
-    if (!f) return `<p>Fiche technique non renseignée.</p>`;
-    const r = rarete(f.prod);
-    const periode = f.an ? `${f.an[0]}${f.an[1] ? '–' + f.an[1] : '–'}` : '';
+  /**
+   * Bloc « fiche technique avancée » pour un id du CATALOGUE.
+   * Renvoie une chaîne vide si aucune fiche n'est renseignée : ta fiche
+   * existante reste alors exactement telle qu'elle est aujourd'hui.
+   */
+  function blocHTML(idCatalogue) {
+    const cle = MAP[idCatalogue];
+    const f = cle && SPECS[cle];
+    if (!f) return '';
 
+    const r = rarete(f.prod);
     const flous = (f.flou || []).map(c => (CHAMPS[c] || DERIVES[c] || {}).lib).filter(Boolean);
 
+    const vedettes = [vedette(f,'kgch'), vedette(f,'chT'), vedette(f,'chL')].filter(Boolean).join('');
+    const rows = ['kg','nm','cyl','rupteur','nmL','kgnm']
+      .map(c => specRow(f, c)).filter(Boolean).join('');
+
     return `<div class="gsp">
-      <div class="gsp-tete">
-        ${f.surnom ? `<div class="gsp-sur">« ${esc(f.surnom)} »</div>` : ''}
-        <h3>${esc(f.nom)}</h3>
-        <div class="gsp-sig">${esc([periode, f.pays].filter(Boolean).join(' · '))}</div>
-        ${signature(f) ? `<div class="gsp-sig">${esc(signature(f))}</div>` : ''}
+      <div class="gsp-h">
+        <span>Fiche technique</span>
+        ${f.surnom ? `<em>« ${esc(f.surnom)} »</em>` : ''}
       </div>
 
-      ${r ? `<div class="gsp-rar" data-r="${r.cle}">${esc(r.lib)} · ${fmtNombre(f.prod)} exemplaires</div>` : ''}
+      ${signature(f) ? `<p class="gsp-sig">${esc(signature(f))}</p>` : ''}
+      ${vedettes ? `<div class="gsp-vedettes">${vedettes}</div>` : ''}
+      ${rows ? `<div class="specs specs-info">${rows}</div>` : ''}
 
-      <div class="gsp-vedettes">
-        ${vedette(f, 'kgch')}${vedette(f, 'chT')}${vedette(f, 'chL')}
-      </div>
+      ${r ? `<div class="gsp-rar" style="color:var(${RAR_VAR[r.cle]});border-color:color-mix(in srgb,var(${RAR_VAR[r.cle]}) 40%,transparent)"
+              title="Palier dérivé du volume de production : ${esc(r.lib)}">
+              ${fmtNombre(f.prod)} exemplaire${f.prod > 1 ? 's' : ''} produit${f.prod > 1 ? 's' : ''}</div>` : ''}
 
-      <div class="gsp-grille">
-        ${ligne(f, 'ch')}${ligne(f, 'nm')}${ligne(f, 'kg')}${ligne(f, 'cyl')}
-        ${ligne(f, 'rupteur')}${ligne(f, 'nmL')}${ligne(f, 'kgnm')}
-        ${ligne(f, 'acc')}${ligne(f, 'v')}
-        ${f.bv ? `<div class="gsp-l"><span>Boîte</span><b>${esc(f.bv)}</b></div>` : ''}
-      </div>
+      ${f.son ? `<div class="fact" style="border-left-color:var(--peucommun)">
+                   <div class="fact-k" style="color:var(--peucommun)">Signature sonore</div>
+                   <p>${esc(f.son)}</p></div>` : ''}
 
-      ${f.son ? `<div class="gsp-sig">🔊 ${esc(f.son)}</div>` : ''}
-      ${f.note ? `<div class="gsp-note">${esc(f.note)}</div>` : ''}
-      ${flous.length ? `<div class="gsp-flou">Valeurs approximatives : ${esc(flous.join(', '))}.</div>` : ''}
+      ${f.note ? `<div class="fact"><div class="fact-k">À savoir</div><p>${esc(f.note)}</p></div>` : ''}
+
+      ${flous.length ? `<p class="gsp-flou">Valeurs approximatives (≈) : ${esc(flous.join(', ').toLowerCase())}.</p>` : ''}
     </div>`;
   }
 
   /* ======================================================================
-     5. API
+     6. API
      ====================================================================== */
 
   const API = {
-    CHAMPS, DERIVES, SPECS,
+    CHAMPS, DERIVES, SPECS, MAP,
 
-    /** Fiche brute. */
+    /** Le bloc HTML à injecter dans infoPageHTML. Chaîne vide si non renseignée. */
+    blocHTML,
+
+    /** Fiche brute par clé de spec. */
     get: cle => SPECS[cle] || null,
 
-    /** Fiche enrichie : données + dérivés + rareté + signature. */
-    complet(cle) {
+    /** Fiche complète (données + dérivés + rareté + signature) par id de catalogue. */
+    pourCatalogue(idCatalogue) {
+      const cle = MAP[idCatalogue];
+      if (!cle || !SPECS[cle]) return null;
       const f = SPECS[cle];
-      if (!f) return null;
-      return { cle, ...f, ...deriver(f), rarete: rarete(f.prod), signature: signature(f) };
-    },
-
-    /** Rattache une entrée de ton catalogue à une fiche, par similarité de nom. */
-    rattacher(entree, nomComplet) {
-      const cible = norm(nomComplet ?? [entree.marque, entree.modele].filter(Boolean).join(' '));
-      if (!cible) return null;
-      let best = null, score = 0;
-      for (const cle in SPECS) {
-        const s = dice(cible, norm(SPECS[cle].nom));
-        if (s > score) { score = s; best = cle; }
-      }
-      return score >= 0.62 ? { cle: best, score } : null;
+      return { cle, idCatalogue, ...f, ...deriver(f), rarete: rarete(f.prod), signature: signature(f) };
     },
 
     /** Classement du lot sur un champ ou un dérivé. */
@@ -509,43 +569,28 @@
       const sens = def.sens || 1;
       return Object.keys(SPECS)
         .map(cle => ({ cle, nom: SPECS[cle].nom, v: SPECS[cle][champ] ?? deriver(SPECS[cle])[champ] }))
-        .filter(x => typeof x.v === 'number' && isFinite(x.v))
+        .filter(o => typeof o.v === 'number' && isFinite(o.v))
         .sort((a, b) => (b.v - a.v) * sens)
         .slice(0, n);
     },
 
-    rarete, deriver, percentile, signature, ficheHTML,
+    rarete, deriver, percentile, signature,
 
-    render(cible, cle) {
-      injecterCSS();
-      const el = typeof cible === 'string' ? document.querySelector(cible) : cible;
-      if (el) el.innerHTML = ficheHTML(cle);
-    },
-
+    /** Diagnostic : couverture des fiches et de la table de correspondance. */
     stats() {
       const cles = Object.keys(SPECS);
-      const rempli = champ => cles.filter(c => SPECS[c][champ] != null).length;
       const couverture = {};
-      for (const c in CHAMPS) couverture[c] = Math.round(rempli(c) / cles.length * 100);
-      return { fiches: cles.length, couverture };
+      for (const c in CHAMPS)
+        couverture[c] = Math.round(cles.filter(k => SPECS[k][c] != null).length / cles.length * 100);
+      const mappees = new Set(Object.values(MAP));
+      return {
+        fiches: cles.length,
+        rattachees: Object.keys(MAP).length,
+        orphelines: cles.filter(k => !mappees.has(k)),
+        couverture
+      };
     }
   };
-
-  /* Coefficient de Dice sur bigrammes — même méthode que ton matchCatalog,
-     pour que le rattachement se comporte comme le reste de l'app. */
-  function bigrammes(s) {
-    const out = new Set();
-    for (let i = 0; i < s.length - 1; i++) out.add(s.slice(i, i + 2));
-    return out;
-  }
-  function dice(a, b) {
-    if (!a || !b) return 0;
-    if (a === b) return 1;
-    const A = bigrammes(a), B = bigrammes(b);
-    let inter = 0;
-    for (const g of A) if (B.has(g)) inter++;
-    return (2 * inter) / (A.size + B.size);
-  }
 
   global.GMSpecs = API;
 })(window);
