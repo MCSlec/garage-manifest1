@@ -4,10 +4,12 @@
    cache suffit à rendre toute l'app disponible hors-ligne. Les données (photos,
    collection) vivent dans IndexedDB côté page, pas ici.
 
-   v13.0.0 — ajout de gm-specs.js (fiches techniques enrichies).
+   v13.6.0 — gm-specs.js : vague 5 (France — Peugeot, Citroën, Renault, Alpine, Matra, Bugatti).
+             Le numéro DOIT être incrémenté à chaque modification d'un fichier
+             mis en cache, sinon l'ancienne copie est resservie indéfiniment.
 */
 
-const VERSION = "garage-v13.0.0";
+const VERSION = "garage-v14.0.0";
 
 /* ESSENTIEL : sans ces fichiers, l'app ne démarre pas hors-ligne.
    Mis en cache de façon atomique — si l'un manque, l'installation doit échouer
@@ -33,7 +35,7 @@ const EXTRAS = [
 
 /* Chemins jamais mis en cache : bancs d'essai et fichiers de travail, qu'on
    veut toujours frais sans avoir à incrémenter VERSION à chaque retouche. */
-const HORS_CACHE = [/\/banc[-.]/i, /\/test[-.]/i];
+const HORS_CACHE = [/\/banc[-.]/i, /\/test[-.]/i, /\/apercu[-.]/i];
 
 const estHorsCache = (url) => HORS_CACHE.some((re) => re.test(url.pathname));
 
@@ -100,5 +102,5 @@ self.addEventListener("fetch", (event) => {
 
 // Permet à la page de forcer l'activation d'une nouvelle version.
 self.addEventListener("message", (event) => {
-  if (event.data === "skipWaiting") self.skipWaiting();
+  if (event.data === "skipWaiting" || event.data?.type === "SKIP_WAITING") self.skipWaiting();
 });
