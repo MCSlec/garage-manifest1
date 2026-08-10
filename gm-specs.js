@@ -3815,9 +3815,160 @@
 
   /** Ce qui est réellement injecté dans la fiche : les deux blocs à la suite. */
   function blocHTML(idCatalogue) {
-    return ficheHTML(idCatalogue) + gensHTML(idCatalogue);
+    return ficheHTML(idCatalogue) + gensHTML(idCatalogue) + moteursHTML(idCatalogue);
   }
 
+
+  /* ======================================================================
+     INDEX INVERSÉ DES BLOCS MOTEURS
+     ----------------------------------------------------------------------
+     Les 1 065 motorisations décrivent chacune un bloc en texte. Lues à
+     l'envers, elles révèlent ce qu'aucun catalogue ne montre : le même
+     moteur qui traverse plusieurs marques et plusieurs décennies. Le V6 PRV
+     relie la 504 Coupé, la SM, la DeLorean et l'Alpine GTA. Le 4G63 va de
+     la Galant VR-4 à l'Evo IX. C'est exactement le lien qu'un passionné a
+     en tête sans jamais pouvoir le visualiser.
+
+     PRINCIPE DE FIABILITÉ — le même que partout ailleurs ici :
+     reconnaissance par MOTIF EXPLICITE, jamais par inférence. On n'associe
+     pas deux voitures parce qu'elles ont « un V6 3.0 turbo » : cette
+     description couvre vingt blocs sans rapport. On les associe parce que
+     le code du bloc est écrit noir sur blanc dans la fiche. Une famille qui
+     n'apparaît qu'une fois n'est pas affichée : sans lien, pas d'intérêt.
+     ====================================================================== */
+
+  const MOTEURS = [
+    { c:'2jz',    n:'Toyota 2JZ',        re:/\b2JZ/i,             d:'Six en ligne fonte, réputé encaisser le double de sa puissance sans ouverture.' },
+    { c:'1jz',    n:'Toyota 1JZ',        re:/\b1JZ/i,             d:'Le petit frère 2,5 L du 2JZ, roi de la berline japonaise à propulsion.' },
+    { c:'4age',   n:'Toyota 4A-GE',      re:/\b4A-G/i,            d:'Le seize soupapes de la AE86, produit pendant quinze ans.' },
+    { c:'3sgte',  n:'Toyota 3S-GTE',     re:/\b3S-G/i,            d:'Le turbo des Celica GT-Four et MR2, forgé par le rallye mondial.' },
+    { c:'2zz',    n:'Toyota 2ZZ-GE',     re:/\b2ZZ/i,             d:'Culasse co-développée avec Yamaha. Le bloc des Lotus Elise et Exige.' },
+    { c:'2gr',    n:'Toyota 2GR',        re:/\b2GR|Toyota 3\.5 V6/i, d:'V6 3,5 L, compressé chez Lotus.' },
+    { c:'rb26',   n:'Nissan RB26DETT',   re:/\bRB2[68]|RBX/i,     d:'Le bloc des Skyline GT-R R32, R33 et R34.' },
+    { c:'sr20',   n:'Nissan SR20DET',    re:/\bSR20/i,            d:'Le moteur de la scène drift : Silvia, 180SX, Pulsar GTI-R.' },
+    { c:'vq',     n:'Nissan VQ',         re:/\bVQ3[57]/i,         d:'Élu parmi les dix meilleurs moteurs du monde quatorze années de suite.' },
+    { c:'vr38',   n:'Nissan VR38DETT',   re:/\bVR38/i,            d:'Assemblé à la main par un seul takumi, dont le nom figure sur une plaque.' },
+    { c:'vg30',   n:'Nissan VG30',       re:/\bVG30/i,            d:'Le V6 de la 300ZX, premier japonais biturbo de grande diffusion.' },
+    { c:'4g63',   n:'Mitsubishi 4G63',   re:/\b4G63/i,            d:'Vingt-trois ans de Lancer Evo, de la Galant VR-4 à l\'Evo IX.' },
+    { c:'ej',     n:'Subaru EJ',         re:/\bEJ2[025]|EJ207|EJ257/i, d:'Le flat-four à collecteur inégal : le battement Subaru.' },
+    { c:'13b',    n:'Mazda 13B rotatif', re:/\b13B/i,             d:'Birotor Wankel. Aucun autre moteur ne produit ce son.' },
+    { c:'kseries',n:'Honda K-Series',    re:/\bK20|\bK24/i,       d:'Le VTEC des Civic Type R et Integra DC5.' },
+    { c:'bseries',n:'Honda B-Series',    re:/\bB1[68][A-Z]/i,     d:'Le VTEC originel : B16B, B18C. Plus de 115 ch par litre en atmosphérique.' },
+    { c:'f20c',   n:'Honda F20C / F22C', re:/\bF2[02]C/i,         d:'9 000 tr/min et 120 ch/L : record de puissance spécifique atmosphérique.' },
+    { c:'h22',    n:'Honda H22',         re:/\bH22/i,             d:'Le quatre cylindres des Prelude VTEC.' },
+    { c:'c30',    n:'Honda C30A / C32B', re:/\bC3[02][AB]/i,      d:'Le V6 tout aluminium de la NSX, équilibré à la main sur les Type R.' },
+    { c:'mezger', n:'Porsche Mezger',    re:/Mezger/i,            d:'Vilebrequin issu de la 962 du Mans. Le flat-six des GT3, GT2 et Turbo jusqu\'en 2012.' },
+    { c:'prv',    n:'V6 PRV',            re:/\bPRV\b/i,           d:'Peugeot-Renault-Volvo. Un même V6 chez Citroën, DeLorean, Alpine, Venturi et Lancia.' },
+    { c:'busso',  n:'V6 Busso (Alfa)',   re:/Busso/i,             d:'Souvent cité comme le V6 le plus mélodieux jamais produit. Vingt-huit ans de carrière.' },
+    { c:'vr6',    n:'Volkswagen VR6',    re:/\bVR6/i, m:['Volkswagen','Audi','SEAT','Škoda'], d:'Six cylindres à 15°, dans l\'encombrement d\'un quatre cylindres.' },
+    { c:'ea113',  n:'VAG 1.8 T 20v',     re:/1\.8 turbo 20v|1\.8T\b/i, m:['Volkswagen','Audi','SEAT','Cupra','Škoda'], d:'De la Golf IV GTI à l\'Audi TT et la Leon Cupra R : le bloc de toute une génération de préparation.' },
+    { c:'ea888',  n:'VAG 2.0 TFSI / TSI',re:/2\.0 T[FS]I/i, m:['Volkswagen','Audi','SEAT','Cupra','Škoda'], d:'Le quatre cylindres du groupe VW, de 200 à 310 ch selon les versions.' },
+    { c:'audi5',  n:'Audi 5 cylindres 2.5', re:/5 en ligne 2\.5 turbo/i, m:['Audi','Cupra','SEAT'], d:'Ordre d\'allumage 1-2-4-5-3 : la signature sonore héritée du Groupe B.' },
+    { c:'s54',    n:'BMW S54',           re:/\bS54\b/i,           d:'Six papillons indépendants, 8 000 tr/min. Le bloc de la M3 E46 et de la Z3 M.' },
+    { c:'s65',    n:'BMW S65',           re:/\bS65\b/i,           d:'V8 dérivé du V10 de la M5 E60. Rupteur à 8 400 tr/min.' },
+    { c:'s55',    n:'BMW S55',           re:/\bS55\b/i,           d:'Le six en ligne biturbo des M3 F80, M4 F82 et M2 Competition.' },
+    { c:'s58',    n:'BMW S58',           re:/\bS58\b/i,           d:'Bloc à carter fermé, dérivé du B58. De la M2 G87 à la M4 CSL.' },
+    { c:'s63',    n:'BMW S63',           re:/\bS63\b/i,           d:'V8 biturbo « hot-inside-V » des M5 et X5 M.' },
+    { c:'b58',    n:'BMW B58',           re:/\bB58\b/i,           d:'Le six en ligne turbo BMW, aussi sous le capot de la Toyota GR Supra.' },
+    { c:'m156',   n:'Mercedes M156 / M159', re:/\bM15[69]\b/i,    d:'Le dernier grand V8 6,2 L atmosphérique conçu par AMG.' },
+    { c:'m177',   n:'Mercedes M177 / M178', re:/\bM17[78]\b/i,    d:'V8 4,0 biturbo à turbos logés dans le V. De la C63 à l\'Aston Vantage.' },
+    { c:'m139',   n:'Mercedes M133 / M139', re:/\bM13[39]\b/i,    d:'421 ch pour 2,0 L : record encore inégalé pour un quatre cylindres de série.' },
+    { c:'v12amg', n:'V12 AMG (Pagani)',  re:/V12 AMG/i,           d:'Le V12 Mercedes qui anime toutes les Pagani depuis 1999.' },
+    { c:'ls',     n:'GM small-block LS / LT', re:/\bL[ST][0-9]\b/i, m:['Chevrolet','Cadillac','Pontiac','GMC','Holden','Ultima','SCG','Vector'], d:'Du LS1 de la Corvette C5 au LT6 à vilebrequin plat de la C8 Z06.' },
+    { c:'hemi',   n:'Chrysler HEMI',     re:/HEMI/i, m:['Dodge','Chrysler','Plymouth','Jeep','Ram'], d:'Chambres hémisphériques. Du 426 de 1964 au 6.2 compressé des Hellcat.' },
+    { c:'coyote', n:'Ford Coyote 5.0',   re:/Coyote/i,            d:'Le V8 des Mustang GT modernes.' },
+    { c:'yb',     n:'Ford Cosworth YB',  re:/\bYB[A-Z]\b/i,       d:'Le bloc des Sierra et Escort Cosworth. Plus de 500 ch en Groupe A.' },
+    { c:'ecoboost23', n:'Ford EcoBoost 2.3', re:/2\.3 (EcoBoost|turbo)|EcoBoost 2\.3/i, m:['Ford'], d:'Du Focus RS Mk3 à la Mustang, en passant par le Ranger Raptor.' },
+    { c:'dfv',    n:'Ford Cosworth DFV', re:/\bDFV\b/i,           d:'155 victoires en Grand Prix. Le moteur de F1 le plus victorieux de l\'histoire.' },
+    { c:'kseries_rover', n:'Rover K-Series', re:/K-Series/i,      d:'Le bloc léger des premières Lotus Elise.' },
+    { c:'w16',    n:'Bugatti W16 8.0',   re:/\bW16\b/i,           d:'Quatre turbos, seize cylindres, dix radiateurs. De la Veyron à la Chiron.' },
+    { c:'xk',     n:'Jaguar XK',         re:/6 en ligne XK/i,     d:'Double arbre à cames en tête dès 1949. Cinq victoires au Mans.' },
+  ];
+
+  /* Index construit une fois : famille -> [ { id, gen, moto, meca } ] */
+  let _idxMoteurs = null;
+  function indexMoteurs() {
+    if (_idxMoteurs) return _idxMoteurs;
+    const idx = new Map();
+    for (const id in GENS) {
+      for (const gen of GENS[id]) {
+        const detaille = gen && !Array.isArray(gen) && Array.isArray(gen.m);
+        const lignes = detaille ? gen.m.map(m => ({ nom:m[0], meca:m[1], code:gen.c }))
+                                : [{ nom:gen[0], meca:gen[2], code:gen[0] }];
+        for (const l of lignes) {
+          if (!l.meca) continue;
+          for (const f of MOTEURS) {
+            if (!f.re.test(l.meca)) continue;
+            /* Garde-fou : une même description d'architecture peut recouvrir des
+               blocs sans rapport. « 5 en ligne 2.5 turbo » désigne aussi bien le
+               2.5 TFSI Audi que le Td5 Land Rover ou le bloc Volvo. Quand le
+               texte ne suffit pas à trancher, la famille déclare ses marques
+               éligibles — et un lien douteux est écarté plutôt qu'affiché. */
+            if (f.m && !f.m.includes(marqueDe(id))) continue;
+            if (!idx.has(f.c)) idx.set(f.c, []);
+            idx.get(f.c).push({ id, gen:l.code, moto:l.nom, meca:l.meca });
+          }
+        }
+      }
+    }
+    return (_idxMoteurs = idx);
+  }
+
+  /** Marque d'une entrée du catalogue, chaîne vide si hors de portée. */
+  function marqueDe(id) {
+    try {
+      if (typeof CARS !== 'undefined' && Array.isArray(CARS)) {
+        const c = CARS.find(x => x.id === id);
+        if (c) return c.brand;
+      }
+    } catch (_) {}
+    return '';
+  }
+
+  /* Nom lisible d'une entrée du catalogue. */
+  function nomCatalogue(id) {
+    try {
+      if (typeof CARS !== 'undefined' && Array.isArray(CARS)) {
+        const c = CARS.find(x => x.id === id);
+        if (c) return `${c.brand} ${c.model}`;
+      }
+    } catch (_) {}
+    return id;
+  }
+
+  /* Familles présentes sur un modèle, avec leurs autres porteurs.
+     Une famille sans autre porteur n'est pas retournée : sans lien, pas d'intérêt. */
+  function famillesDe(idCatalogue) {
+    const idx = indexMoteurs();
+    const out = [];
+    for (const f of MOTEURS) {
+      const liste = idx.get(f.c);
+      if (!liste || !liste.some(x => x.id === idCatalogue)) continue;
+      const autres = [...new Set(liste.filter(x => x.id !== idCatalogue).map(x => x.id))];
+      if (!autres.length) continue;
+      out.push({ ...f, autres: autres.map(id => ({ id, nom: nomCatalogue(id) }))
+                                     .sort((a, b) => a.nom.localeCompare(b.nom)) });
+    }
+    return out;
+  }
+
+  /* Rendu du bloc « le même moteur ailleurs ».
+     Utilise <details> natif : aucun écouteur à câbler, donc rien à nettoyer
+     quand la fiche est détruite — pas de fuite d'écouteurs possible. */
+  function moteursHTML(idCatalogue) {
+    const fam = famillesDe(idCatalogue);
+    if (!fam.length) return '';
+    const blocs = fam.map(f => `
+      <details class="gmm">
+        <summary><b>${esc(f.n)}</b><span>${f.autres.length} autre${f.autres.length > 1 ? 's' : ''}</span></summary>
+        <p class="gmm-d">${esc(f.d)}</p>
+        <div class="gmm-l">${f.autres.map(a => `<span>${esc(a.nom)}</span>`).join('')}</div>
+      </details>`).join('');
+    return `<div class="gsp gsp-mot">
+      <div class="gsp-h"><span>Le même bloc ailleurs</span><em>${fam.length}</em></div>
+      ${blocs}
+    </div>`;
+  }
 
   /* ======================================================================
      CONTRÔLE QUALITÉ ET PILOTAGE DE LA COUVERTURE
@@ -3985,6 +4136,20 @@
   .gm-t span{ flex:none; font:700 11.5px/1 var(--mono); color:var(--peucommun); }
   .gm p{ margin:3px 0 0; font:400 11.5px/1.4 var(--mono); color:var(--muted2); }
   .gm small{ display:block; margin-top:4px; font:400 11.5px/1.5 var(--sans); color:var(--dim); }
+  .gsp-mot .gsp-h em{ color:var(--dim); }
+  .gmm{ border-top:1px solid var(--line); }
+  .gmm:first-of-type{ border-top:none; }
+  .gmm summary{ display:flex; align-items:baseline; justify-content:space-between; gap:10px;
+    padding:11px 0; cursor:pointer; list-style:none; }
+  .gmm summary::-webkit-details-marker{ display:none; }
+  .gmm summary b{ font:600 12.5px/1.3 var(--sans); }
+  .gmm summary span{ flex:none; font:600 10px/1 var(--mono); letter-spacing:.06em;
+    text-transform:uppercase; color:var(--red); }
+  .gmm[open] summary b{ color:var(--red); }
+  .gmm-d{ margin:0 0 9px; font:400 11.5px/1.5 var(--sans); color:var(--muted2); }
+  .gmm-l{ display:flex; flex-wrap:wrap; gap:5px; padding-bottom:12px; }
+  .gmm-l span{ padding:5px 9px; border:1px solid var(--line); border-radius:999px;
+    background:var(--panel2); font:500 11px/1 var(--sans); color:var(--muted); }
   `;
 
   function injecterCSS() {
@@ -4072,6 +4237,18 @@
 
     rarete, deriver, percentile, signature,
     valider, audit,
+    MOTEURS, famillesDe,
+
+    /** Toutes les familles de blocs partagées, triées par nombre de porteurs. */
+    moteurs() {
+      const idx = indexMoteurs();
+      return MOTEURS.map(f => {
+        const l = idx.get(f.c) || [];
+        const ids = [...new Set(l.map(x => x.id))];
+        return { cle:f.c, nom:f.n, description:f.d, modeles:ids.length,
+                 versions:l.length, porteurs:ids.map(nomCatalogue).sort() };
+      }).filter(f => f.modeles > 1).sort((a, b) => b.modeles - a.modeles);
+    },
 
     /** Diagnostic : couverture des fiches et de la table de correspondance. */
     stats() {
