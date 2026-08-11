@@ -4727,7 +4727,9 @@
     const appliquer = () => {
       try {
         if (!img.naturalWidth) return;
-        let pct = _cropCache.get(src);
+        /* Le choix de l'utilisateur prime toujours sur la mesure. */
+        const manuel = _cadrages.get(empreintePhoto(src));
+        let pct = manuel !== undefined ? manuel : _cropCache.get(src);
         if (pct === undefined) { pct = centreSujet(img); _cropCache.set(src, pct); }
         img.dataset.gcrop = pct;
         img.style.objectPosition = `center ${pct}%`;
@@ -4741,6 +4743,164 @@
   function recadrerTout() {
     document.querySelectorAll('#overlay img, #view img, .rv-card img')
       .forEach(recadrer);
+  }
+
+  /* ======================================================================
+     RECADRAGE MANUEL
+     ----------------------------------------------------------------------
+     La détection automatique se trompera parfois — un sujet très contrasté
+     dans le ciel, une photo de nuit, un plan serré. L'utilisateur doit
+     pouvoir trancher, et son choix doit primer sur la mesure.
+
+     Persistance : base dédiée `gm-cadrage`, indexée par EMPREINTE DE LA
+     PHOTO et non par identifiant de voiture. Conséquence utile : le réglage
+     suit la photo partout où elle apparaît — fiche, vignette, carte du
+     garage, prises récentes — sans qu'on ait à les synchroniser.
+
+     Gestion du glissement : `setPointerCapture` sur l'image elle-même.
+     Aucun écouteur n'est posé sur `window`, donc rien ne survit à la
+     fermeture de la fiche. C'est précisément la fuite d'écouteurs qu'on
+     avait dû corriger dans setupFiche() : on ne la réintroduit pas ici.
+     ====================================================================== */
+
+  const _cadrages = new Map();          // empreinte -> pourcentage choisi
+  let _dbCadrage = null;
+
+  /** Empreinte courte et stable d'une dataURL, sans en garder une copie. */
+  function empreintePhoto(src) {
+    let h = 5381;
+    for (let i = 0; i < src.length; i += 997) h = ((h << 5) + h + src.charCodeAt(i)) | 0;
+    return src.length.toString(36) + '.' + (h >>> 0).toString(36);
+  }
+
+  function ouvrirCadrage() {
+    return new Promise((res) => {
+      let fini = false;
+      const t = setTimeout(() => { if (!fini) { fini = true; res(null); } }, 2500);
+      try {
+        const rq = indexedDB.open('gm-cadrage', 1);
+        rq.onupgradeneeded = () => {
+          const db = rq.result;
+          if (!db.objectStoreNames.contains('pos')) db.createObjectStore('pos', { keyPath: 'id' });
+        };
+        rq.onsuccess = () => { if (fini) return; fini = true; clearTimeout(t); res(rq.result); };
+        rq.onerror   = () => { if (fini) return; fini = true; clearTimeout(t); res(null); };
+      } catch (_) { clearTimeout(t); res(null); }
+    });
+  }
+
+  async function chargerCadrages() {
+    _dbCadrage = await ouvrirCadrage();
+    if (!_dbCadrage) return;
+    try {
+      const st = _dbCadrage.transaction('pos', 'readonly').objectStore('pos');
+      const r = st.getAll();
+      r.onsuccess = () => (r.result || []).forEach(x => _cadrages.set(x.id, x.y));
+    } catch (_) {}
+  }
+
+  function sauverCadrage(emp, y) {
+    _cadrages.set(emp, y);
+    if (!_dbCadrage) return;
+    try { _dbCadrage.transaction('pos', 'readwrite').objectStore('pos').put({ id: emp, y }); } catch (_) {}
+  }
+
+  function oublierCadrage(emp) {
+    _cadrages.delete(emp);
+    if (!_dbCadrage) return;
+    try { _dbCadrage.transaction('pos', 'readwrite').objectStore('pos').delete(emp); } catch (_) {}
+  }
+
+  /* --- Interface d'ajustement ------------------------------------------ */
+
+  function entrerEdition(hero, img, emp) {
+    if (hero.dataset.gedit) return;
+    hero.dataset.gedit = '1';
+
+    let y = parseFloat(img.dataset.gcrop) || 50;
+    const barre = document.createElement('div');
+    barre.className = 'gcz-barre';
+    barre.innerHTML = `<span class="gcz-aide">Glisse la photo vers le haut ou le bas</span>
+      <span class="gcz-val">${Math.round(y)} %</span>
+      <button class="gcz-b" data-cz="auto">Auto</button>
+      <button class="gcz-b ok" data-cz="ok">Terminé</button>`;
+    hero.appendChild(barre);
+    img.classList.add('gcz-actif');
+
+    const maj = (v, garder) => {
+      y = Math.max(0, Math.min(100, v));
+      img.style.objectPosition = `center ${y}%`;
+      img.dataset.gcrop = Math.round(y);
+      barre.querySelector('.gcz-val').textContent = `${Math.round(y)} %`;
+      if (garder) sauverCadrage(emp, Math.round(y));
+    };
+
+    let depart = null, depuis = y;
+    const onDown = (e) => {
+      depart = e.clientY; depuis = y;
+      try { img.setPointerCapture(e.pointerId); } catch (_) {}
+      e.preventDefault();
+    };
+    const onMove = (e) => {
+      if (depart === null) return;
+      /* Sensibilité rapportée à la hauteur affichée : le geste reste cohérent
+         quelle que soit la taille de l'écran. */
+      const h = hero.clientHeight || 300;
+      maj(depuis - (e.clientY - depart) / h * 100);
+      e.preventDefault();
+    };
+    const onUp = (e) => {
+      if (depart === null) return;
+      depart = null;
+      try { img.releasePointerCapture(e.pointerId); } catch (_) {}
+      maj(y, true);
+    };
+
+    img.addEventListener('pointerdown', onDown);
+    img.addEventListener('pointermove', onMove);
+    img.addEventListener('pointerup', onUp);
+    img.addEventListener('pointercancel', onUp);
+
+    barre.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-cz]'); if (!b) return;
+      e.stopPropagation();
+      if (b.dataset.cz === 'auto') {
+        oublierCadrage(emp);
+        delete img.dataset.gcrop;
+        _cropCache.delete(img.currentSrc || img.src);
+        recadrer(img);
+        maj(parseFloat(img.dataset.gcrop) || 50, false);
+        return;
+      }
+      // Terminé : on retire tout, écouteurs compris.
+      img.removeEventListener('pointerdown', onDown);
+      img.removeEventListener('pointermove', onMove);
+      img.removeEventListener('pointerup', onUp);
+      img.removeEventListener('pointercancel', onUp);
+      img.classList.remove('gcz-actif');
+      barre.remove();
+      delete hero.dataset.gedit;
+    });
+  }
+
+  /** Ajoute le bouton d'ajustement sur la photo principale de la fiche. */
+  function grefferCadrage() {
+    const hero = document.querySelector('#overlay .detail-hero');
+    if (!hero || hero.querySelector('.gcz-ouvrir')) return;
+    const img = hero.querySelector('img');
+    if (!img) return;
+    const src = img.currentSrc || img.src;
+    if (!src || src.indexOf('data:image') !== 0) return;
+
+    const b = document.createElement('button');
+    b.className = 'gcz-ouvrir';
+    b.type = 'button';
+    b.innerHTML = '<svg viewBox="0 0 24 24"><path d="M7 3v14a2 2 0 0 0 2 2h12M3 7h14a2 2 0 0 1 2 2v12"/></svg><span>Cadrer</span>';
+    b.addEventListener('click', (e) => {
+      e.stopPropagation();
+      entrerEdition(hero, img, empreintePhoto(src));
+    });
+    hero.appendChild(b);
   }
 
   /* ======================================================================
@@ -5128,6 +5288,25 @@
   .gdi.or{ color:var(--legendaire); border-color:rgba(251,191,36,.45);
     background:rgba(251,191,36,.08); }
 
+  .gcz-ouvrir{ position:absolute; right:9px; bottom:9px; z-index:4; display:flex; align-items:center;
+    gap:6px; padding:7px 11px; border-radius:999px; border:1px solid rgba(255,255,255,.18);
+    background:rgba(11,11,13,.72); backdrop-filter:blur(6px); color:#fff;
+    font:600 11px/1 var(--sans); cursor:pointer; }
+  .gcz-ouvrir svg{ width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:2;
+    stroke-linecap:round; stroke-linejoin:round; }
+  .gcz-ouvrir:active{ transform:scale(.95); }
+  .gcz-actif{ cursor:grab; touch-action:none; }
+  .gcz-actif:active{ cursor:grabbing; }
+  .gcz-barre{ position:absolute; left:0; right:0; bottom:0; z-index:5; display:flex; align-items:center;
+    gap:8px; padding:10px 11px; background:linear-gradient(transparent,rgba(11,11,13,.92) 40%); }
+  .gcz-aide{ flex:1; min-width:0; font:500 11px/1.3 var(--sans); color:rgba(255,255,255,.7); }
+  .gcz-val{ flex:none; font:700 11px/1 var(--mono); color:#fff; font-variant-numeric:tabular-nums; }
+  .gcz-b{ flex:none; padding:7px 11px; border-radius:8px; border:1px solid rgba(255,255,255,.2);
+    background:rgba(255,255,255,.08); color:#fff; font:600 11px/1 var(--sans); cursor:pointer; }
+  .gcz-b.ok{ background:var(--red2); border-color:var(--red2); }
+  .gcz-barre::before{ content:""; position:absolute; left:50%; top:-26px; transform:translateX(-50%);
+    width:34px; height:4px; border-radius:3px; background:rgba(255,255,255,.35); }
+
   #gmr-rat{ position:fixed; left:12px; right:12px; bottom:calc(var(--tabh,64px) + 12px + var(--sb,0px));
     z-index:255; display:flex; justify-content:center; }
   .gmr-rc{ width:100%; max-width:520px; background:var(--panel); border:1px solid var(--line2);
@@ -5188,8 +5367,10 @@
     new MutationObserver(() => {
       try { greffer(); } catch (_) {}
       try { recadrerTout(); } catch (_) {}
+      try { grefferCadrage(); } catch (_) {}
     }).observe(cible, { childList: true, subtree: true });
-    try { greffer(); recadrerTout(); } catch (_) {}
+    try { greffer(); recadrerTout(); grefferCadrage(); } catch (_) {}
+    chargerCadrages().then(() => { try { recadrerTout(); } catch (_) {} });
     /* Différé : on laisse l'app finir son propre démarrage avant d'ouvrir la base. */
     setTimeout(() => { try { proposerRattachements(); } catch (_) {} }, 2500);
   }
@@ -5235,7 +5416,7 @@
     rarete, deriver, percentile, signature,
     valider, audit,
     MOTEURS, famillesDe, COLLECS,
-    recadrer, recadrerTout, centreSujet,
+    recadrer, recadrerTout, centreSujet, grefferCadrage,
     chercherRattachements, appliquerRattachements, proposerRattachements,
 
     /** Les collections mécaniques et leurs membres. */
