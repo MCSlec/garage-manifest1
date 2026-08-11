@@ -222,6 +222,11 @@
     'mercedes-190e-evo2': { nom:'Mercedes-Benz 190E 2.5-16 Evolution II', an:[1990,1990], pays:'Allemagne',
       ch:235, nm:245, kg:1340, cyl:2.5, arch:'4 en ligne', adm:'atmosphérique', pos:'avant', tx:'propulsion', bv:'M5',
       prod:502, note:'Culasse Cosworth. Aérodynamique dessinée en soufflerie pour le championnat DTM.' },
+    'audi-r8-v12-tdi': { nom:'Audi R8 V12 TDI (concept)', an:[2008,2008], pays:'Allemagne',
+      ch:500, nm:1000, cyl:6.0, arch:'V12', adm:'biturbodiesel', pos:'central', tx:'quattro', bv:'M6',
+      prod:2, acc:4.2, v:300, flou:['prod','acc','v'],
+      son:'V12 diesel — un couple de camion dans une carrosserie de supercar',
+      note:"Le seul V12 diesel jamais monté dans une voiture de sport. 1 000 Nm dès 1 750 tr/min, soit davantage qu'une Bugatti Veyron de l'époque. Restée à l'état de prototype : deux exemplaires, dont un exposé au musée Audi d'Ingolstadt." },
     'audi-rs2-avant': { nom:'Audi RS2 Avant', an:[1994,1996], pays:'Allemagne',
       ch:315, nm:410, kg:1595, cyl:2.2, arch:'5 en ligne', adm:'turbo', pos:'avant', tx:'intégrale', bv:'M6',
       prod:2891, son:'cinq-cylindres turbo',
@@ -392,6 +397,24 @@
      ====================================================================== */
 
   const GENS = {
+
+    /* ---- Concepts restés sans suite ------------------------------------
+       Jamais commercialisés, mais construits, roulants et présentés. Les
+       ignorer reviendrait à effacer une partie de l'histoire technique — le
+       seul V12 TDI jamais monté dans une sportive, par exemple. Ils sont
+       identifiés comme concepts, pas glissés parmi les modèles de série. */
+
+    'audi-r8-v12-tdi': [
+      { c:'Concept', a:'2008–2009', m:[
+        ['R8 V12 TDI','V12 6.0 TDI biturbo, dérivé du bloc de la R10 du Mans','500 ch, 1 000 Nm','quattro · manuelle 6','Présentée à Detroit en janvier 2008, puis en version Le Mans à Genève. Le seul V12 diesel jamais installé dans une sportive. Le couple imposait un carter de boîte spécifique. Projet abandonné en 2009 : deux à trois exemplaires roulants existent.'],
+      ]},
+    ],
+    'renault-clio-rs16': [
+      { c:'Concept', a:'2016', m:[
+        ['Clio R.S. 16','4 cyl. 2.0 turbo de Mégane R.S. 275 Trophy-R','275 ch','traction · manuelle 6','Construite en six semaines par Renault Sport pour les quarante ans de l\'écurie de Formule 1. Voies élargies de 60 mm. Restée sans suite malgré un accueil enthousiaste.'],
+      ]},
+    ],
+
 
     /* ================= VAGUE 10b — SUV, Japon grand public, utilitaires ===== */
 
@@ -814,8 +837,8 @@
       ]},
     ],
     'renault-espace-f1': [
-      { c:'Prototype', a:'1994', m:[
-        ['Espace F1','RS5 3.5 V10 de Formule 1','800 ch','propulsion · séquentielle 6','Un seul exemplaire. Monospace à châssis carbone et V10 de Williams-Renault : 0 à 100 km/h en 2,8 s, 312 km/h.'],
+      { c:'Prototype unique', a:'1994', m:[
+        ['Espace F1','RS5 3.5 V10 de Formule 1','800 ch','propulsion · séquentielle 6','Concept resté unique, jamais commercialisé. Monospace à châssis carbone et V10 de Williams-Renault : 0 à 100 km/h en 2,8 s, 312 km/h.'],
       ]},
     ],
 
@@ -1013,16 +1036,6 @@
 
     /* ================= VAGUE 8 — Hypercars et préparateurs ================= */
 
-    'bugatti-veyron': [
-      { c:'16.4', a:'2005–2011', m:[
-        ['Veyron 16.4','W16 8.0 quadriturbo','1 001 ch','intégrale · DSG 7','Première voiture de série à franchir 400 km/h. Dix radiateurs, et le changement de pneus se fait en Alsace.'],
-        ['Grand Sport','W16 8.0 quadriturbo','1 001 ch','intégrale · DSG 7','Toit amovible, 150 exemplaires.'],
-      ]},
-      { c:'Super Sport', a:'2010–2015', m:[
-        ['Super Sport','W16 8.0 quadriturbo','1 200 ch','intégrale · DSG 7','431,072 km/h en 2010 : record du monde pour une voiture de série. Version client bridée à 415 km/h.'],
-        ['Grand Sport Vitesse','W16 8.0 quadriturbo','1 200 ch','intégrale · DSG 7','Le cabriolet le plus rapide du monde : 408,84 km/h.'],
-      ]},
-    ],
     'bugatti-chiron': [
       { c:'Chiron', a:'2016–2022', m:[
         ['Chiron','W16 8.0 quadriturbo','1 500 ch','intégrale · DSG 7','Turbos séquentiels par paires. Le radiateur fait circuler 800 litres d\'eau par minute à pleine charge.'],
@@ -1545,22 +1558,6 @@
       ]},
     ],
 
-    'citroen-2cv': [
-      { c:'A / AZ', a:'1948–1970', m:[
-        ['375 – 425 cm³','bicylindre à plat refroidi par air','9–21 ch','traction · manuelle 4 au tableau de bord','Cahier des charges d\'origine : transporter deux paysans et 50 kg de pommes de terre à 60 km/h, à travers un champ labouré, sans casser les œufs.'],
-      ]},
-      { c:'AZU / 6 / Charleston', a:'1970–1990', m:[
-        ['602 cm³','bicylindre à plat refroidi par air','29–33 ch','traction · manuelle 4','La série Charleston de 1980, bicolore, relance les ventes en fin de carrière.'],
-      ]},
-    ],
-    'citroen-ds-classic': [
-      { c:'DS / ID', a:'1955–1967', m:[
-        ['ID 19 / DS 19','4 cyl. 1.9','62–83 ch','traction · manuelle 4 / hydraulique','Suspension hydropneumatique, direction et freins assistés : trois ruptures d\'un coup en 1955.'],
-      ]},
-      { c:'Phase 3', a:'1967–1975', m:[
-        ['DS 21 / DS 23','4 cyl. 2.1–2.3, carburateurs ou injection','109–141 ch','traction · manuelle 5 / hydraulique / auto','Phares directionnels sous carénage, une première mondiale.'],
-      ]},
-    ],
     'citroen-cx': [
       { c:'Série 1', a:'1974–1985', m:[
         ['2.0 – 2.5 essence','4 cyl.','102–138 ch','traction · manuelle 5','Direction DIRAVI à rappel asservi : le volant revient seul au point milieu.'],
@@ -1570,24 +1567,11 @@
         ['2.5 GTi Turbo 2','4 cyl. 2.5 turbo à intercooler','168 ch','traction · manuelle 5','Pare-chocs plastique et intérieur revu.'],
       ]},
     ],
-    'citroen-bx': [
-      { c:'BX', a:'1982–1994', m:[
-        ['Essence 1.1 – 1.9','4 cyl.','55–125 ch','traction hydropneumatique · manuelle 4/5','Dessinée par Marcello Gandini, l\'auteur de la Countach.'],
-        ['GTI 16 soupapes','4 cyl. 1.9 16v atmo','160 ch','traction · manuelle 5','La BX la plus rapide, 220 km/h.'],
-        ['4TC','4 cyl. 2.1 turbo','200 ch (route)','intégrale · manuelle 5','Groupe B raté : 86 exemplaires, dont beaucoup rachetés et détruits par Citroën.'],
-      ]},
-    ],
     'citroen-xantia': [
       { c:'Xantia', a:'1992–2003', m:[
         ['Essence 1.6 – 2.0','4 cyl.','88–150 ch','traction hydractive · manuelle 5','Suspension Hydractive II à gestion électronique.'],
         ['3.0 V6','V6 3.0 24v atmo','190–194 ch','traction · manuelle 5 / auto',''],
         ['Activa','4 cyl. 2.0 turbo / V6 3.0','150–190 ch','traction, anti-roulis actif SC.CAR · manuelle 5','Son record au test de l\'élan a tenu tête aux supercars pendant vingt ans. Aucune voiture de série ne l\'a battue avant 2019.'],
-      ]},
-    ],
-    'citroen-saxo-vts': [
-      { c:'Saxo sportive', a:'1996–2003', m:[
-        ['VTR','4 cyl. 1.6 8v atmo','90–100 ch','traction · manuelle 5',''],
-        ['VTS','4 cyl. TU5J4 1.6 16v atmo','118–120 ch','traction · manuelle 5','Jumelle technique de la 106 GTI. La peste des rallyes amateurs pendant vingt ans.'],
       ]},
     ],
     'citroen-ax': [
@@ -1637,18 +1621,6 @@
         ['1300','4 cyl. 1.3 double carburateur','103 ch','propulsion, moteur arrière · manuelle 5','La Coupe Gordini a formé une génération entière de pilotes français.'],
       ]},
     ],
-    'renault-twingo': [
-      { c:'I', a:'1992–2007', m:[
-        ['1.2','4 cyl. Cléon puis 16v','55–75 ch','traction · manuelle 5','Une seule finition, une seule couleur d\'intérieur : un pari commercial radical qui a fonctionné.'],
-      ]},
-      { c:'II', a:'2007–2014', m:[
-        ['1.2 TCe / 1.6','4 cyl.','58–133 ch','traction · manuelle 5',''],
-        ['R.S. / R.S. Gordini','4 cyl. 1.6 16v atmo','133 ch','traction · manuelle 5, châssis Cup en option','Signée Renault Sport : un kart de rue, essieu arrière raffermi.'],
-      ]},
-      { c:'III', a:'2014–2024', m:[
-        ['SCe / TCe','3 cyl. 1.0','65–93 ch','propulsion, moteur arrière · manuelle 5 / EDC 6','Architecture à moteur arrière, développée avec Smart. Rayon de braquage de 4,3 m.'],
-      ]},
-    ],
     'renault-megane': [
       { c:'I', a:'1995–2002', m:[
         ['1.4 – 2.0','4 cyl.','70–150 ch','traction · manuelle 5','Déclinée en berline, coupé, cabriolet, break et monospace Scénic.'],
@@ -1659,35 +1631,6 @@
       ]},
       { c:'III / IV', a:'2008–2022', m:[
         ['TCe / dCi','4 cyl. turbo essence et diesel','90–205 ch','traction · manuelle 6 / EDC',''],
-      ]},
-    ],
-    'renault-espace': [
-      { c:'I / II', a:'1984–1996', m:[
-        ['2.0 / 2.2 essence, V6','4 cyl. et V6 PRV','110–153 ch','traction · manuelle 5','Carrosserie polyester sur châssis galvanisé : le premier monospace européen.'],
-      ]},
-      { c:'III / IV', a:'1996–2015', m:[
-        ['2.0 turbo / 3.0 dCi V6','4 cyl. et V6','140–245 ch','traction · manuelle 6 / auto',''],
-      ]},
-      { c:'V / VI', a:'2015–', m:[
-        ['TCe / Blue dCi / E-Tech','4 cyl. turbo, hybride','131–200 ch','traction, roues arrière directrices 4Control · EDC','L\'Espace VI abandonne le monospace pour le format SUV.'],
-      ]},
-    ],
-    'alpine-a310': [
-      { c:'4 cylindres', a:'1971–1976', m:[
-        ['1600 VE','4 cyl. 1.6 atmo','127 ch','propulsion, moteur arrière · manuelle 5','Six phares sous une glace unique : la signature de la A310.'],
-      ]},
-      { c:'V6', a:'1976–1984', m:[
-        ['V6','V6 PRV 2.7 atmo','150 ch','propulsion, moteur arrière · manuelle 5','Coque polyester sur poutre centrale, comme la berlinette.'],
-        ['V6 GT Pack','V6 PRV 2.7 atmo','150–193 ch','propulsion · manuelle 5','Élargissements de voies et jantes spécifiques.'],
-      ]},
-    ],
-    'alpine-gta': [
-      { c:'GTA', a:'1985–1991', m:[
-        ['V6 GT','V6 PRV 2.8 atmo','160 ch','propulsion, moteur arrière · manuelle 5','Cx de 0,28, le meilleur de sa catégorie.'],
-        ['V6 Turbo','V6 PRV 2.5 turbo','200 ch','propulsion · manuelle 5','250 km/h. Version Mille Miles à 1 100 kg.'],
-      ]},
-      { c:'A610', a:'1991–1995', m:[
-        ['A610 Turbo','V6 PRV 3.0 turbo','250 ch','propulsion, moteur arrière · manuelle 5','Phares escamotables, 265 km/h. La dernière Alpine avant vingt-deux ans de silence.'],
       ]},
     ],
     'matra-murena': [
@@ -1708,35 +1651,6 @@
 
     /* ================= VAGUE 5 — France ==================================== */
 
-    'peugeot-205': [
-      { c:'Phase 1', a:'1983–1987', m:[
-        ['XE / XR / XS','4 cyl. 0.95–1.6 atmo','45–80 ch','traction · manuelle 4/5','« Sacré numéro » : elle a sauvé Peugeot du dépôt de bilan.'],
-        ['GTI 1.6','4 cyl. 1.6 injection Bosch','105–115 ch','traction · manuelle 5','850 kg. Train arrière à bras tirés, réputé pour son comportement en levé de pied.'],
-        ['GTI 1.9','4 cyl. 1.9 injection','130 ch','traction · manuelle 5, freins à disques aux 4 roues','La référence absolue du GTI des années 80.'],
-      ]},
-      { c:'Phase 2', a:'1987–1998', m:[
-        ['GTI 1.9 catalysée','4 cyl. 1.9 injection','122 ch','traction · manuelle 5','La dépollution coûte 8 ch : les phase 1 non catalysées restent les plus cotées.'],
-        ['Rallye 1.3','4 cyl. 1.3 à deux carburateurs double corps','103 ch','traction · manuelle 5','795 kg, sans insonorisant ni équipement. Aujourd\'hui plus recherchée que la GTI.'],
-        ['CTI cabriolet','4 cyl. 1.6–1.9 injection','105–130 ch','traction · manuelle 5','Décapotable dessinée et assemblée par Pininfarina.'],
-      ]},
-    ],
-    'peugeot-106': [
-      { c:'Phase 1', a:'1991–1996', m:[
-        ['XSi','4 cyl. 1.4–1.6 atmo','100–103 ch','traction · manuelle 5',''],
-        ['Rallye 1.3','4 cyl. 1.3 16v atmo','100 ch','traction · manuelle 5','Sans direction assistée, sans vitres électriques. 810 kg.'],
-      ]},
-      { c:'Phase 2', a:'1996–2003', m:[
-        ['GTI 1.6 16v','TU5J4 1.6 16v atmo','120 ch','traction · manuelle 5','Duelliste éternelle de la Saxo VTS, avec laquelle elle partage la plateforme.'],
-        ['Rallye 1.6','TU5J2 1.6 8v atmo','103 ch','traction · manuelle 5','La version dépouillée, boîte à rapports courts.'],
-      ]},
-    ],
-    'peugeot-206': [
-      { c:'206', a:'1998–2012', m:[
-        ['1.1 – 1.6','4 cyl. essence et HDi','60–110 ch','traction · manuelle 5','Près de dix millions d\'exemplaires : la Peugeot la plus vendue de l\'histoire.'],
-        ['XS / S16 2.0 16v','EW10J4 2.0 16v atmo','138 ch','traction · manuelle 5',''],
-        ['GTI 180 / RC','EW10J4S 2.0 16v atmo','177 ch','traction · manuelle 5','7 200 tr/min, culasse et arbres spécifiques. La plus pointue des 206.'],
-      ]},
-    ],
     'peugeot-306': [
       { c:'Phase 1', a:'1993–1997', m:[
         ['1.4 – 1.8','4 cyl. essence et diesel','75–110 ch','traction · manuelle 5','Le châssis, dérivé de la 405, est resté une référence de sa décennie.'],
@@ -1751,18 +1665,6 @@
       { c:'309', a:'1985–1993', m:[
         ['GTI 1.9','4 cyl. 1.9 injection','130 ch','traction · manuelle 5','Mécanique de 205 GTI dans une carrosserie plus longue : plus stable, moins vive.'],
         ['GTI 16','XU9J4 1.9 16v atmo','160 ch','traction · manuelle 5','La sportive oubliée du lion, plus efficace qu\'une 205 GTI sur circuit.'],
-      ]},
-    ],
-    'peugeot-405': [
-      { c:'Phase 1 / 2', a:'1987–1997', m:[
-        ['Mi16','XU9J4 1.9 16v atmo','160 ch','traction · manuelle 5','Voiture de l\'Année 1988. La berline sportive de référence en France.'],
-        ['T16','XU10J4TE 2.0 turbo','200 ch','intégrale, roues arrière directrices · manuelle 5','1 061 exemplaires. Sa cousine de compétition a gagné Pikes Peak avec Vatanen.'],
-      ]},
-    ],
-    'peugeot-406-coupe': [
-      { c:'Coupé', a:'1997–2004', m:[
-        ['2.0 16v','EW10 2.0 16v atmo','135–138 ch','traction · manuelle 5',''],
-        ['3.0 V6','ES9 3.0 V6 24v atmo','194–210 ch','traction · manuelle 6 / auto 4','Dessinée et assemblée chez Pininfarina. Souvent prise pour une Ferrari quatre places.'],
       ]},
     ],
     'peugeot-rcz': [
@@ -1813,15 +1715,6 @@
         ['DS 23 Injection','4 cyl. 2.3 injection électronique','141 ch','traction · manuelle 5','La plus puissante et la plus recherchée.'],
       ]},
     ],
-    'citroen-cx': [
-      { c:'Série 1', a:'1974–1985', m:[
-        ['2.0 – 2.5','4 cyl. essence et diesel','66–138 ch','traction · manuelle 4/5','Direction DIRAVI à rappel asservi : le volant revient seul au point milieu.'],
-        ['GTI Turbo','4 cyl. 2.5 turbo','168 ch','traction · manuelle 5','La berline française la plus rapide de son époque.'],
-      ]},
-      { c:'Série 2', a:'1985–1991', m:[
-        ['GTI Turbo 2','4 cyl. 2.5 turbo à échangeur','168 ch','traction · manuelle 5','Pare-chocs plastiques et intérieur revu.'],
-      ]},
-    ],
     'citroen-bx': [
       { c:'BX', a:'1982–1994', m:[
         ['1.1 – 1.9','4 cyl. essence et diesel','55–125 ch','traction, hydropneumatique · manuelle 4/5','Carrosserie dessinée par Bertone, capot et hayon en matériaux composites.'],
@@ -1833,19 +1726,6 @@
       { c:'Phase 1 / 2', a:'1996–2003', m:[
         ['VTR','TU5JP 1.6 8v atmo','90 ch','traction · manuelle 5','La version accessible, très présente en rallye amateur.'],
         ['VTS','TU5J4 1.6 16v atmo','120 ch','traction · manuelle 5','935 kg. Avec la 106 GTI, elle a formé une génération entière de pilotes.'],
-      ]},
-    ],
-    'citroen-ax': [
-      { c:'AX', a:'1986–1998', m:[
-        ['GT','TU3S 1.4 atmo à carburateur double corps','85 ch','traction · manuelle 5','Environ 720 kg : elle consomme moins qu\'elle ne pèse, disait la presse de l\'époque.'],
-        ['Sport','TU3 1.3 à deux carburateurs double corps','95 ch','traction · manuelle 5','Homologation rallye, 1987 uniquement. Rarissime.'],
-        ['GTI','TU3JP 1.4 injection','100 ch','traction · manuelle 5',''],
-      ]},
-    ],
-    'citroen-zx': [
-      { c:'ZX', a:'1991–1998', m:[
-        ['Volcane','XU9 1.9 injection','122–130 ch','traction, essieu arrière autodirectionnel · manuelle 5','Le train arrière passif à effet directionnel, hérité des études de la BX.'],
-        ['16 soupapes','XU9J4 1.9 16v / XU10J4 2.0 16v','155–167 ch','traction · manuelle 5',''],
       ]},
     ],
     'citroen-xsara': [
@@ -1861,18 +1741,6 @@
       ]},
     ],
 
-    'renault-5': [
-      { c:'R5 (1re gén.)', a:'1972–1985', m:[
-        ['L / TL / GTL','4 cyl. 0.8–1.4 atmo','36–64 ch','traction · manuelle 4/5','Premier pare-chocs en polyester d\'une voiture de série.'],
-        ['Alpine / Gordini','4 cyl. 1.4 atmo','93 ch','traction · manuelle 5','La première R5 sportive.'],
-        ['Alpine Turbo','4 cyl. 1.4 turbo','110 ch','traction · manuelle 5','L\'une des premières turbos de grande diffusion en Europe.'],
-      ]},
-      { c:'Super 5', a:'1984–1996', m:[
-        ['TL / GTL / TSE','4 cyl. 1.0–1.7 atmo','42–95 ch','traction · manuelle 4/5','Dessinée par Marcello Gandini, l\'auteur de la Countach.'],
-        ['GT Turbo phase 1','4 cyl. 1.4 turbo à carburateur','115 ch','traction · manuelle 5','850 kg. Turbo brutal, comportement exigeant : la réputation est méritée.'],
-        ['GT Turbo phase 2','4 cyl. 1.4 turbo à échangeur','120 ch','traction · manuelle 5','Refroidissement revu, fiabilité en nette hausse.'],
-      ]},
-    ],
     'renault-clio': [
       { c:'Clio I', a:'1990–1998', m:[
         ['1.1 – 1.9 D','4 cyl. essence et diesel','48–95 ch','traction · manuelle 5','Voiture de l\'Année 1991.'],
@@ -1885,18 +1753,6 @@
       ]},
       { c:'Clio III / IV / V', a:'2005–', m:[
         ['essence, dCi, E-Tech','3 et 4 cyl., hybride','65–145 ch','traction · manuelle 5/6 / EDC / multimode','La Clio III est la première Clio 5 étoiles EuroNCAP.'],
-      ]},
-    ],
-    'renault-19': [
-      { c:'Phase 1 / 2', a:'1988–2000', m:[
-        ['1.4 – 1.9 D','4 cyl. essence et diesel','54–95 ch','traction · manuelle 5','Le modèle qui a redressé la qualité perçue de Renault.'],
-        ['16S / 16V','F7P 1.8 16v atmo','137–140 ch','traction · manuelle 5','Berline, coupé et cabriolet. Base de la Formule Renault de l\'époque.'],
-      ]},
-    ],
-    'renault-21-turbo': [
-      { c:'21 Turbo', a:'1987–1993', m:[
-        ['2.0 Turbo','J7R 2.0 turbo','175 ch','traction · manuelle 5','227 km/h : la berline française la plus rapide de son temps.'],
-        ['2.0 Turbo Quadra','J7R 2.0 turbo','175 ch','intégrale permanente · manuelle 5','Transmission intégrale à visco-coupleur, rarissime.'],
       ]},
     ],
     'renault-25': [
@@ -1928,12 +1784,6 @@
         ['TCe / Blue dCi / E-Tech','4 cyl. turbo, hybride','131–200 ch','traction, roues arrière directrices · EDC','Abandon du monospace au profit d\'une silhouette de grand SUV en 2023.'],
       ]},
     ],
-    'renault-8-gordini': [
-      { c:'R8 Gordini', a:'1964–1970', m:[
-        ['1100','4 cyl. 1.1 à deux carburateurs double corps','95 ch','moteur arrière, propulsion · manuelle 4','Bleu de France et deux bandes blanches. La Coupe Gordini a formé toute une génération de pilotes.'],
-        ['1300','4 cyl. 1.3 atmo','103 ch','moteur arrière, propulsion · manuelle 5','Quatre phares longue portée, boîte 5 rapports.'],
-      ]},
-    ],
     'alpine-a310': [
       { c:'4 cylindres', a:'1971–1976', m:[
         ['1600 VE','4 cyl. 1.6 atmo','127 ch','moteur arrière, propulsion · manuelle 5','Six phares en façade sous une glace unique. Coque polyester sur poutre centrale.'],
@@ -1950,13 +1800,6 @@
       ]},
       { c:'A610', a:'1991–1995', m:[
         ['A610 Turbo','PRV 3.0 V6 turbo','250 ch','moteur arrière, propulsion · manuelle 5','Phares escamotables, châssis entièrement revu. 818 exemplaires seulement : un échec commercial devenu une rareté.'],
-      ]},
-    ],
-    'matra-murena': [
-      { c:'Murena', a:'1980–1983', m:[
-        ['1.6','4 cyl. 1.6 atmo','92 ch','moteur central · manuelle 5','Trois places de front, comme la Bagheera avant elle.'],
-        ['2.2','4 cyl. 2.2 atmo','118 ch','moteur central · manuelle 5','Première voiture de série entièrement galvanisée.'],
-        ['2.2 préparation 142','4 cyl. 2.2 à trois carburateurs double corps','142 ch','moteur central · manuelle 5','Kit usine, environ 480 exemplaires.'],
       ]},
     ],
     'bugatti-veyron': [
@@ -2734,31 +2577,6 @@
         ['SL 43 / SL 55 / SL 63','4 cyl. 2.0 turbo à assistance électrique / V8 4.0 biturbo','381–585 ch','propulsion ou 4Matic+ · MCT 9','Retour de la capote en toile et des places arrière d\'appoint. Développée par AMG.'],
       ]},
     ],
-    'mercedes-slk': [
-      { c:'R170', a:'1996–2004', m:[
-        ['200 / 230 Kompressor','4 cyl. à compresseur','163–197 ch','propulsion · manuelle 5/6 / auto','Premier toit rigide escamotable d\'une voiture de série moderne.'],
-        ['SLK 32 AMG','V6 3.2 à compresseur','354 ch','propulsion · auto 5','Assemblée à la main par AMG. 263 kg de plus que la 230 pour 157 ch de mieux.'],
-      ]},
-      { c:'R171', a:'2004–2011', m:[
-        ['200 K / 350','4 cyl. compressé et V6 3.5','163–305 ch','propulsion · manuelle 6 / auto 7',''],
-        ['SLK 55 AMG','V8 5.4 atmo','360 ch','propulsion · auto 7',''],
-      ]},
-      { c:'R172', a:'2011–2020', m:[
-        ['SLK / SLC 200 – 300','4 cyl. turbo et V6','156–245 ch','propulsion · manuelle 6 / auto 7/9',''],
-        ['SLK 55 AMG','V8 5.5 atmo','422 ch','propulsion · auto 7','Le dernier V8 atmosphérique AMG à désactivation de cylindres.'],
-      ]},
-    ],
-    'mercedes-amg-gt': [
-      { c:'C190', a:'2014–2021', m:[
-        ['GT / GT S','M178 4.0 · V8 biturbo','462–522 ch','propulsion · DCT 7 en transaxle','Turbos logés dans le V, boîte à l\'arrière pour l\'équilibre des masses.'],
-        ['GT C','M178 4.0 · V8 biturbo','557 ch','propulsion, roues arrière directrices · DCT 7',''],
-        ['GT R','M178 4.0 · V8 biturbo','585 ch','propulsion · DCT 7','« La bête du Nürburgring » — vert Hell Magno, aérodynamique active sous le plancher.'],
-        ['GT Black Series','M178 4.0 · V8 biturbo à vilebrequin plat','730 ch','propulsion · DCT 7','Vilebrequin plat, une première chez AMG. Record du Nürburgring pour une voiture de série en 2020.'],
-      ]},
-      { c:'C192', a:'2023–', m:[
-        ['GT 55 / GT 63','M177 4.0 · V8 biturbo','476–585 ch','4Matic+ · MCT 9','Passage à la transmission intégrale et à 2+2 places.'],
-      ]},
-    ],
     'mercedes-sls': [
       { c:'C197', a:'2010–2014', m:[
         ['SLS AMG','M159 6.2 · V8 atmo','571 ch','propulsion · DCT 7 en transaxle','Portes papillon en hommage à la 300 SL. Premier modèle intégralement conçu par AMG.'],
@@ -2779,35 +2597,6 @@
       ]},
       { c:'W206', a:'2023–', m:[
         ['C 63 S E Performance','4 cyl. 2.0 turbo + moteur électrique arrière','680 ch','4Matic+ · MCT 9','Turbo à assistance électrique issu de la F1. L\'abandon du V8 a provoqué une fronde des clients historiques.'],
-      ]},
-    ],
-    'mercedes-a45': [
-      { c:'W176', a:'2013–2018', m:[
-        ['A 45 AMG','M133 2.0 turbo','360 ch','4Matic · DCT 7','Le 4 cylindres de série le plus puissant du monde à sa sortie.'],
-        ['A 45 (2015+)','M133 2.0 turbo','381 ch','4Matic · DCT 7',''],
-      ]},
-      { c:'W177', a:'2019–', m:[
-        ['A 45 S','M139 2.0 turbo','421 ch','4Matic+ · DCT 8','421 ch pour 2,0 L : record encore inégalé. Bloc monté à la main, turbo à roulement à billes.'],
-      ]},
-    ],
-    'mercedes-e63': [
-      { c:'W211', a:'2006–2009', m:[
-        ['E 63 AMG','M156 6.2 · V8 atmo','514 ch','propulsion · 7G-Tronic','Berline et break.'],
-      ]},
-      { c:'W212', a:'2009–2016', m:[
-        ['E 63 (6.2)','M156 6.2 · V8 atmo','525 ch','propulsion · MCT 7','Dernier E63 atmosphérique.'],
-        ['E 63 (5.5 biturbo)','M157 5.5 · V8 biturbo','525–585 ch','propulsion puis 4Matic · MCT 7','La S 4Matic à 585 ch introduit l\'intégrale sur la lignée.'],
-      ]},
-      { c:'W213', a:'2017–2023', m:[
-        ['E 63 S','M177 4.0 · V8 biturbo','612 ch','4Matic+ débrayable · MCT 9','Mode Drift de série : la transmission bascule en propulsion pure.'],
-      ]},
-    ],
-    'mercedes-190e': [
-      { c:'W201', a:'1983–1993', m:[
-        ['2.3-16','4 cyl. 2.3 16v, culasse Cosworth','185 ch','propulsion · manuelle 5 (dogleg)','Course inaugurale de Nürburgring 1984 : Senna bat tous les champions du monde présents.'],
-        ['2.5-16','4 cyl. 2.5 16v Cosworth','195 ch','propulsion · manuelle 5 / auto',''],
-        ['2.5-16 Evolution I','4 cyl. 2.5 16v Cosworth','195 ch','propulsion · manuelle 5','502 exemplaires, homologation DTM.'],
-        ['2.5-16 Evolution II','4 cyl. 2.5 16v Cosworth','235 ch','propulsion · manuelle 5','502 exemplaires. Aileron dessiné en soufflerie, voies élargies.'],
       ]},
     ],
     'mercedes-classe-a': [
@@ -2832,13 +2621,6 @@
         ['Veloce','4 cyl. 2.0 turbo','280 ch','Q4 · auto 8','Différentiel arrière autobloquant.'],
       ]},
     ],
-    'alfa-giulia-qv': [
-      { c:'Type 952', a:'2016–', m:[
-        ['Quadrifoglio','V6 2.9 biturbo (690T)','510 ch','propulsion, différentiel actif · manuelle 6 puis auto 8','Architecture dérivée du V8 Ferrari F154, deux cylindres en moins. Arbre de transmission en carbone.'],
-        ['Quadrifoglio (2020+)','V6 2.9 biturbo','510–520 ch','propulsion · auto 8','Record des berlines au Nürburgring en 2016 (7:32).'],
-        ['GTA / GTAm','V6 2.9 biturbo','540 ch','propulsion · auto 8','Allégée de 100 kg. La GTAm est une 2 places à arceau, 500 exemplaires au total.'],
-      ]},
-    ],
     'alfa-giulietta': [
       { c:'Type 940', a:'2010–2020', m:[
         ['1.4 MultiAir','4 cyl. 1.4 turbo','120–170 ch','traction · manuelle 6 / TCT 6',''],
@@ -2860,29 +2642,10 @@
         ['GTA','V6 Busso 3.2 atmo','250 ch','traction · manuelle 6 / Selespeed','La berline au six cylindres le plus mélodieux des années 2000.'],
       ]},
     ],
-    'alfa-gtv-916': [
-      { c:'Type 916', a:'1995–2005', m:[
-        ['2.0 Twin Spark','4 cyl. 2.0 atmo','150–165 ch','traction · manuelle 5',''],
-        ['3.0 / 3.2 V6','V6 Busso 3.0–3.2 atmo','220–240 ch','traction · manuelle 6','Coin de style Pininfarina, et l\'un des plus beaux moteurs jamais produits.'],
-      ]},
-    ],
-    'alfa-75': [
-      { c:'Type 162B', a:'1985–1992', m:[
-        ['1.8 Turbo','4 cyl. 1.8 turbo','155–165 ch','propulsion, boîte-pont arrière · manuelle 5','Boîte accolée au différentiel arrière : répartition des masses proche de 50/50.'],
-        ['3.0 V6','V6 Busso 3.0 atmo','185–192 ch','propulsion · manuelle 5',''],
-        ['Turbo Evoluzione','4 cyl. 1.8 turbo','155 ch','propulsion · manuelle 5','500 exemplaires d\'homologation. Le dernier modèle conçu par Alfa avant le rachat par Fiat.'],
-      ]},
-    ],
     'alfa-gtv6': [
       { c:'Type 116', a:'1980–1987', m:[
         ['GTV6 2.5','V6 Busso 2.5 atmo','160 ch','propulsion, boîte-pont arrière · manuelle 5','Le premier V6 Busso. Bosse de capot imposée par l\'admission.'],
         ['GTV6 3.0','V6 Busso 3.0 atmo','180–200 ch','propulsion · manuelle 5','Version sud-africaine d\'homologation, 212 exemplaires. La plus recherchée.'],
-      ]},
-    ],
-    'alfa-4c': [
-      { c:'Type 960', a:'2013–2020', m:[
-        ['4C','1750 TBi 1.75 turbo, position centrale','240 ch','propulsion · TCT 6','Coque monocoque en fibre de carbone de 65 kg. Direction non assistée.'],
-        ['4C Spyder','1750 TBi 1.75 turbo','240 ch','propulsion · TCT 6','Toit amovible en toile ou en carbone.'],
       ]},
     ],
     'alfa-stelvio': [
@@ -2899,18 +2662,6 @@
     ],
 
     /* ================= LOT 3 — Lancia ================================== */
-    'lancia-delta': [
-      { c:'Delta HF (série 1)', a:'1983–1991', m:[
-        ['HF Turbo','4 cyl. 1.6 turbo','130–140 ch','traction · manuelle 5',''],
-        ['HF 4WD','4 cyl. 2.0 turbo','165 ch','intégrale, différentiel Torsen · manuelle 5','Champion du monde des rallyes 1987, la première année du Groupe A.'],
-        ['Integrale 8v','4 cyl. 2.0 turbo 8 soupapes','185 ch','intégrale · manuelle 5','Ailes élargies, voies portées à plus de 1 400 mm.'],
-        ['Integrale 16v','4 cyl. 2.0 turbo 16 soupapes','200 ch','intégrale · manuelle 5','Bosse de capot caractéristique.'],
-      ]},
-      { c:'Evoluzione', a:'1991–1994', m:[
-        ['Evoluzione I','4 cyl. 2.0 turbo 16v','210 ch','intégrale · manuelle 5','Ailes encore élargies, aileron réglable.'],
-        ['Evoluzione II','4 cyl. 2.0 turbo 16v, catalysé','215 ch','intégrale · manuelle 5','Séries spéciales Dealers Collection très cotées. Six titres constructeurs pour la lignée.'],
-      ]},
-    ],
     'lancia-fulvia': [
       { c:'Berline / Coupé', a:'1963–1976', m:[
         ['1.2 / 1.3 Coupé','V4 étroit 1.2–1.3 atmo','80–90 ch','traction · manuelle 4/5','Un V4 à angle très fermé : une signature technique Lancia unique au monde.'],
@@ -3361,6 +3112,11 @@
         ['TT RS','5 en ligne 2.5 turbo','400 ch','quattro · S tronic 7','0 à 100 en 3,7 s. Dernier TT RS avant l\'arrêt du modèle.'],
       ]},
     ],
+    'audi-r8-v12-tdi': [
+      { c:'Concept', a:'2008', m:[
+        ['R8 V12 TDI','V12 6.0 TDI biturbo à rampe commune','500 ch, 1 000 Nm','quattro · manuelle 6','Le V12 diesel du prototype R10 vainqueur du Mans, transposé dans le châssis d\'une R8 de série. Deux exemplaires roulants présentés à Detroit puis à Genève en 2008. Le projet a été arrêté : le bloc, trop long, imposait de revoir entièrement la structure arrière, et la crise de 2008 a achevé le dossier.'],
+      ]},
+    ],
     'audi-r8': [
       { c:'Type 42', a:'2006–2015', m:[
         ['4.2 FSI','V8 4.2 atmo','420–430 ch','quattro · manuelle 6 à grille / R tronic','La boîte manuelle à grille ouverte en fait la plus recherchée aujourd\'hui.'],
@@ -3458,20 +3214,6 @@
     ],
 
     /* ---- Mercedes-AMG en format détaillé ------------------------------ */
-    'mercedes-c63': [
-      { c:'W204', a:'2008–2014', m:[
-        ['C 63 AMG','M156 6.2 · V8 atmo','457 ch','propulsion · MCT 7','Le dernier grand V8 atmosphérique conçu par AMG.'],
-        ['Performance Package','M156 6.2 · V8 atmo','487 ch','propulsion · MCT 7','Vilebrequin forgé et bielles de la SLS.'],
-        ['Black Series','M156 6.2 · V8 atmo','517 ch','propulsion · MCT 7','Voies élargies, blocage de différentiel, 2 places.'],
-      ]},
-      { c:'W205', a:'2015–2021', m:[
-        ['C 63','M177 4.0 · V8 biturbo','476 ch','propulsion · MCT 7/9','Passage au biturbo logé dans le V.'],
-        ['C 63 S','M177 4.0 · V8 biturbo','510 ch','propulsion · MCT 9','Différentiel arrière piloté électroniquement.'],
-      ]},
-      { c:'W206', a:'2023–', m:[
-        ['C 63 S E Performance','4 cyl. 2.0 turbo + électrique','680 ch','intégrale 4Matic+ · MCT 9','Turbo à assistance électrique issu de la F1. L\'abandon du V8 a provoqué une fronde des clients historiques.'],
-      ]},
-    ],
     'mercedes-a45': [
       { c:'W176', a:'2013–2018', m:[
         ['A 45 AMG','M133 2.0 turbo','360 ch','intégrale 4Matic · DCT 7','Le 4 cylindres de série le plus puissant du monde à sa sortie.'],
@@ -3623,6 +3365,7 @@
     // Groupe B et rallye
     'audi-s1-e2'              : 'audi-sport-quattro-s1',
     'audi-quattro'            : 'audi-quattro-ur',
+    'audi-r8-v12-tdi'         : 'audi-r8-v12-tdi',
     'peugeot-205-t16'         : 'peugeot-205-t16-e2',
     'lancia-delta-s4'         : 'lancia-delta-s4',
     'lancia-037'              : 'lancia-037',
@@ -3885,7 +3628,14 @@
     { c:'w16',    n:'Bugatti W16 8.0',   re:/\bW16\b/i,           d:'Quatre turbos, seize cylindres, dix radiateurs. De la Veyron à la Chiron.' },
     { c:'flat12', n:'Flat-12',            re:/flat-12|12 cylindres à plat/i, d:'Douze cylindres à plat. Centre de gravité très bas, encombrement démesuré.' },
     { c:'w12',    n:'W12 Volkswagen',     re:/\bW12\b/i,           d:'Deux VR6 accolés. Bentley, Audi et Volkswagen l\'ont partagé pendant vingt-et-un ans.' },
-    { c:'v12tdi', n:'V12 TDI Audi',       re:/V12 (5\.5 )?(bi)?turbodiesel|V12 TDI/i, d:'Le seul V12 diesel de l\'histoire de l\'automobile : au Mans dans la R10, puis dans le Q7.' },
+    { c:'v12tdi', n:'V12 diesel',          /* Le point de « 6.0 » ne doit PAS interrompre la recherche : exclure « . »
+         pour éviter de traverser une phrase bloquait aussi toutes les cylindrées
+         décimales, et « V12 6.0 TDI » n'était plus reconnu. On autorise donc
+         explicitement chiffres, points et espaces entre l'architecture et le
+         type de carburant, et rien d'autre. */
+      re:/V12[\s\d.,]{0,10}(bi)?(turbo)?(diesel|TDI|HDi)|TDI jusqu'au V12/i,
+      m:['Audi','Peugeot','Volkswagen'],
+      d:'Le seul V12 diesel de l\'histoire de l\'automobile. Audi l\'a gagné au Mans avec la R10, puis l\'a mis dans un Q7 de série ; Peugeot a répondu avec le V12 HDi de la 908.' },
     { c:'v8amerique', n:'V8 américain sous capot européen', re:/V8 (Chevrolet|Chrysler|Ford)/i,
       d:'La recette anglo-italienne : châssis européen, gros V8 américain increvable et bon marché.' },
     { c:'v6maserati', n:'V6 Maserati',    re:/V6 Maserati/i,       d:'Le V6 de la Merak, aussi sous le capot de la Citroën SM et de la Ligier JS2.' },
@@ -3894,28 +3644,51 @@
 
   /* Index construit une fois : famille -> [ { id, gen, moto, meca } ] */
   let _idxMoteurs = null;
+  /* L'index parcourt le CATALOGUE, pas seulement GENS, et interroge mecaDe()
+     — c'est-à-dire exactement les mêmes sources que les collections.
+
+     BUG CORRIGÉ ICI : cet index ne lisait auparavant que le champ mécanique
+     des générations. L'Audi R10 TDI était donc trouvée (« V12 5.5
+     biturbodiesel ») mais pas le Q7 V12 TDI, décrit ailleurs. Une famille à
+     un seul porteur n'étant pas affichée, la famille « V12 TDI » disparaissait
+     entièrement. Deux niveaux de couverture différents pour deux
+     fonctionnalités qui décrivent la même chose : c'est une incohérence
+     interne, et elle produit des trous silencieux. Une seule source, partout. */
   function indexMoteurs() {
     if (_idxMoteurs) return _idxMoteurs;
     const idx = new Map();
-    for (const id in GENS) {
-      for (const gen of GENS[id]) {
-        const detaille = gen && !Array.isArray(gen) && Array.isArray(gen.m);
-        const lignes = detaille ? gen.m.map(m => ({ nom:m[0], meca:m[1], code:gen.c }))
-                                : [{ nom:gen[0], meca:gen[2], code:gen[0] }];
-        for (const l of lignes) {
-          if (!l.meca) continue;
-          for (const f of MOTEURS) {
-            if (!f.re.test(l.meca)) continue;
-            /* Garde-fou : une même description d'architecture peut recouvrir des
-               blocs sans rapport. « 5 en ligne 2.5 turbo » désigne aussi bien le
-               2.5 TFSI Audi que le Td5 Land Rover ou le bloc Volvo. Quand le
-               texte ne suffit pas à trancher, la famille déclare ses marques
-               éligibles — et un lien douteux est écarté plutôt qu'affiché. */
-            if (f.m && !f.m.includes(marqueDe(id))) continue;
-            if (!idx.has(f.c)) idx.set(f.c, []);
-            idx.get(f.c).push({ id, gen:l.code, moto:l.nom, meca:l.meca });
-          }
+
+    let ids = [];
+    try { ids = (typeof CARS !== 'undefined' && Array.isArray(CARS)) ? CARS.map(c => c.id) : []; } catch (_) {}
+    if (!ids.length) ids = Object.keys(GENS);
+    ids = [...new Set([...ids, ...Object.keys(GENS)])];
+
+    for (const id of ids) {
+      const meca = mecaDe(id);
+      if (!meca) continue;
+      for (const f of MOTEURS) {
+        if (!f.re.test(meca)) continue;
+        /* Garde-fou : une même description d'architecture peut recouvrir des
+           blocs sans rapport. « 5 en ligne 2.5 turbo » désigne aussi bien le
+           2.5 TFSI Audi que le Td5 Land Rover ou le bloc Volvo. Quand le texte
+           ne suffit pas à trancher, la famille déclare ses marques éligibles —
+           et un lien douteux est écarté plutôt qu'affiché. */
+        if (f.m && !f.m.includes(marqueDe(id))) continue;
+        if (!idx.has(f.c)) idx.set(f.c, []);
+
+        /* Quand les générations existent, on garde le détail des motorisations
+           concernées ; sinon on enregistre le modèle une fois. */
+        const detail = [];
+        const g = GENS[id];
+        if (g) for (const gen of g) {
+          const det = gen && !Array.isArray(gen) && Array.isArray(gen.m);
+          const lignes = det ? gen.m.map(m => ({ nom:m[0], meca:m[1], code:gen.c }))
+                             : [{ nom:gen[0], meca:gen[2], code:gen[0] }];
+          for (const l of lignes) if (l.meca && f.re.test(l.meca))
+            detail.push({ id, gen:l.code, moto:l.nom, meca:l.meca });
         }
+        if (detail.length) idx.get(f.c).push(...detail);
+        else idx.get(f.c).push({ id, gen:null, moto:null, meca });
       }
     }
     return (_idxMoteurs = idx);
@@ -4226,6 +3999,117 @@
     'renault-estafette':'4 cyl. atmo traction',
     'ligier-js50':'bicylindre diesel sans permis',
     'citroen-ami-2020':'moteur électrique sans permis',
+
+    /* --- Codes moteurs manquants, repérés par moteursOrphelins() ---------
+       Ces modèles étaient décrits par leur architecture mais pas par leur
+       CODE de bloc. Résultat : ils n'entraient dans aucune famille et
+       cassaient des liens pourtant réels — le S54 de la Z3 M et de la M3
+       E46, le 4G63 partagé par la Galant VR-4 et la lignée Evo entière. */
+    'bmw-z3':'6 en ligne S54 3.2 atmo propulsion',
+    'bmw-m6':'V10 S85 5.0 atmo propulsion 8 250 tr/min',
+    'bmw-m8':'V8 S63 4.4 biturbo intégrale',
+    'bmw-x5m':'V8 S63 4.4 biturbo intégrale',
+    'bmw-xm':'V8 S63 4.4 biturbo hybride rechargeable intégrale',
+    'bmw-m135i':'6 en ligne N55 puis B58 3.0 turbo propulsion',
+    'bmw-m235i':'6 en ligne N55 puis B58 3.0 turbo propulsion',
+    'bmw-m340i':'6 en ligne B58 3.0 turbo hybridation légère',
+    'bmw-335i':'6 en ligne N54 puis N55 3.0 turbo propulsion',
+    'bmw-130i':'6 en ligne N52 3.0 atmo propulsion',
+    'bmw-1m':'6 en ligne N54 3.0 biturbo propulsion',
+    'bmw-m3-csl':'6 en ligne S54 3.2 atmo propulsion toit carbone',
+    'bmw-z3m-coupe':'6 en ligne S54 3.2 atmo propulsion',
+    'bmw-635csi':'6 en ligne M30 3.5 atmo propulsion',
+    'mitsubishi-galant-vr4':'4 cyl. 2.0 turbo 4G63 intégrale quatre roues directrices',
+    'mitsubishi-eclipse':'4 cyl. 2.0 turbo 4G63 traction et intégrale',
+    'nissan-180sx':'4 cyl. 2.0 SR20DET turbo propulsion phares escamotables',
+    'nissan-silvia-s13':'4 cyl. 1.8 CA18DET puis 2.0 SR20DET turbo propulsion',
+    'nissan-silvia-s14':'4 cyl. 2.0 SR20DET turbo propulsion',
+    'nissan-pulsar-gtir':'4 cyl. 2.0 SR20DET turbo intégrale homologation',
+    'nissan-skyline-r33':'6 en ligne 2.6 RB26DETT biturbo intégrale',
+    'jaguar-xk120':'6 en ligne XK 3.4 atmo propulsion',
+    'jaguar-mk2':'6 en ligne XK 3.8 atmo propulsion',
+    'jaguar-xk':'V8 AJ 4.0 à 5.0 atmo et compressé propulsion',
+    'jaguar-ftype':'V6 3.0 compressé et V8 5.0 compressé propulsion',
+    'lotus-evora':'V6 Toyota 2GR 3.5 compressé moteur central',
+    'lotus-emira':'V6 Toyota 2GR 3.5 compressé et 4 cyl. 2.0 turbo moteur central',
+    'lotus-exige':'4 cyl. Toyota 2ZZ compressé puis V6 2GR 3.5 compressé moteur central',
+    'honda-nsx-nc1':'V6 3.5 biturbo hybride moteur central intégrale',
+    'honda-integra-dc5':'4 cyl. K20A 2.0 VTEC atmo traction',
+    'honda-city-turbo2':'4 cyl. 1.2 turbo traction',
+    'honda-prelude':'4 cyl. H22A 2.2 VTEC atmo traction quatre roues directrices',
+    'toyota-gr-supra':'6 en ligne B58 3.0 turbo BMW propulsion',
+    'toyota-celica-gt4':'4 cyl. 3S-GTE 2.0 turbo intégrale homologation',
+    'toyota-celica-gt-four':'4 cyl. 3S-GTE 2.0 turbo intégrale homologation',
+    'toyota-gr-corolla':'3 cyl. G16E 1.6 turbo intégrale',
+    'toyota-chaser':'6 en ligne 1JZ-GTE 2.5 turbo propulsion',
+    'toyota-soarer':'6 en ligne 1JZ et 2JZ turbo et V8 propulsion',
+    'lexus-is':'6 en ligne 2JZ-GE 3.0 atmo et V6 propulsion',
+    'subaru-impreza-gc8':'flat-4 EJ20 2.0 turbo intégrale',
+    'subaru-impreza-blob':'flat-4 EJ20 et EJ25 turbo intégrale',
+    'subaru-legacy':'flat-4 EJ20 et EJ25 turbo intégrale',
+    'subaru-forester':'flat-4 EJ20 et EJ25 turbo intégrale',
+    'mazda-rx7-fb':'birotor rotatif 12A propulsion phares escamotables',
+    'ford-escort-cosworth':'4 cyl. YBT 2.0 turbo Cosworth intégrale',
+    'ford-sierra-cosworth':'4 cyl. YBB 2.0 turbo Cosworth propulsion',
+    'ford-capri':'V6 Cologne 2.8 atmo propulsion',
+    'ford-taurus-sho':'V6 Yamaha 3.0 atmo traction',
+    'ford-focus-rs':'4 cyl. 2.3 EcoBoost turbo intégrale',
+    'ford-mustang-gt':'V8 Coyote 5.0 atmo propulsion',
+    'ford-shelby-gt500':'V8 5.2 compressé propulsion vilebrequin plat',
+    'chevrolet-corvette-c5':'V8 LS1 5.7 atmo transaxle',
+    'chevrolet-corvette-c6':'V8 LS2 LS3 et LS7 atmo transaxle',
+    'chevrolet-corvette-c7':'V8 LT1 6.2 atmo transaxle',
+    'chevrolet-corvette-z06':'V8 LS7 puis LT4 et LT6 propulsion',
+    'chevrolet-camaro':'V8 LS1 LS3 et LT4 atmo et compressé propulsion',
+    'pontiac-firebird':'V8 LS1 5.7 atmo propulsion',
+    'cadillac-cts-v':'V8 LSA et LT4 6.2 compressé propulsion',
+    'cadillac-ct5v-bw':'V8 LT4 6.2 compressé propulsion',
+    'holden-commodore':'V8 LS1 et LS3 atmo propulsion',
+    'holden-monaro':'V8 LS1 5.7 atmo propulsion',
+    'dodge-challenger':'V8 HEMI 5.7 6.2 et 6.4 atmo et compressé propulsion',
+    'dodge-hellcat':'V8 HEMI 6.2 compressé propulsion',
+    'dodge-charger-moderne':'V8 HEMI 5.7 et 6.4 propulsion',
+    'dodge-demon':'V8 HEMI 6.2 compressé propulsion',
+    'dodge-durango-srt':'V8 HEMI 6.2 compressé intégrale',
+    'jeep-trackhawk':'V8 HEMI 6.2 compressé intégrale',
+    'ram-trx':'V8 HEMI 6.2 compressé 4x4',
+    'ram-1500':'V8 HEMI 5.7 atmo 4x4',
+    'chrysler-300c':'V8 HEMI 5.7 et 6.1 propulsion',
+    'plymouth-superbird':'V8 HEMI 7.0 atmo propulsion aileron',
+    'plymouth-road-runner':'V8 HEMI 7.0 atmo propulsion',
+    'dodge-charger-daytona-69':'V8 HEMI 7.0 atmo propulsion aileron',
+    'plymouth-barracuda':'V8 HEMI 7.0 atmo propulsion',
+    'citroen-sm':'V6 Maserati 2.7 atmo traction hydropneumatique',
+    'audi-s3':'4 cyl. 1.8T 20v puis 2.0 TFSI quattro',
+    'audi-s4':'V6 2.7 biturbo, V8 4.2 atmo puis V6 3.0 TFSI quattro',
+    'audi-s5':'V8 4.2 FSI atmo puis V6 3.0 TFSI quattro',
+    'audi-s6':'V8 4.2 atmo, V10 5.2 atmo puis V8 4.0 TFSI quattro',
+    'audi-s8':'V8 4.2 atmo, V10 5.2 atmo puis V8 4.0 TFSI quattro',
+    'audi-rs7':'V8 4.0 TFSI biturbo quattro',
+    'audi-rs5':'V8 4.2 FSI atmo puis V6 2.9 biturbo quattro',
+    'audi-rsq3':'5 en ligne 2.5 TFSI turbo quattro',
+    'audi-rsq8':'V8 4.0 TFSI biturbo quattro',
+    'audi-a5':'4 cyl. 2.0 TFSI et V6 quattro',
+    'audi-sq5':'V6 3.0 TFSI et TDI quattro',
+    'skoda-octavia-rs':'4 cyl. 1.8T 20v puis 2.0 TFSI traction',
+    'seat-leon':'4 cyl. 1.8T 20v puis 2.0 TFSI traction',
+    'vw-golf-r32':'VR6 3.2 atmo 4Motion',
+    'vw-golf-gtd':'4 cyl. 2.0 TDI traction',
+    'vw-golf-g60':'4 cyl. 1.8 G60 à compresseur',
+    'vw-lupo-gti':'4 cyl. 1.6 16v atmo traction',
+    'vw-polo-gti':'4 cyl. 1.8T puis 2.0 TFSI traction',
+    'vw-up-gti':'3 cyl. 1.0 TSI turbo traction',
+    'porsche-911-gt3rs':'flat-6 4.0 atmo Mezger puis MDG moteur arrière',
+    'porsche-911-gt2rs':'flat-6 3.6 et 3.8 biturbo Mezger moteur arrière',
+    'porsche-911-turbo':'flat-6 3.3 à 3.8 biturbo Mezger moteur arrière',
+    'porsche-911-gt1':'flat-6 3.2 biturbo Mezger moteur central',
+    'porsche-956-962':'flat-6 2.65 biturbo moteur central',
+    'ruf-ctr':'flat-6 3.4 biturbo moteur arrière',
+    'techart-gtstreet-r':'flat-6 3.8 biturbo intégrale',
+    'gemballa-mirage-gt':'V10 5.7 atmo moteur central',
+    '9ff-gt9':'flat-6 4.0 biturbo moteur central',
+    'singer-911':'flat-6 4.0 atmo moteur arrière',
+    'rwb-911':'flat-6 atmo et turbo moteur arrière',
   };
 
   /* ======================================================================
@@ -4587,6 +4471,28 @@
       d:'Maranello a fourni des blocs à d\'autres marques. Une berline Lancia à V8 de 308, une Maserati à V12 d\'Enzo.',
       t:id => marqueDe(id) !== 'Ferrari' && aTexte(id, /V8 Ferrari|V12 6\.0 \(base Enzo\)|bloc Ferrari|V12 Ferrari|moteur assemblé à Maranello|d'inspiration Ferrari/i) },
 
+    { id:'concepts', ic:'🧪', n:'Restées à l\'état de concept',
+      d:'Construites, roulantes, présentées — et jamais commercialisées. Ce qui aurait pu exister.',
+      /* « concept » sans limites de mot capture « CONCEPTion », et
+         « un seul exemplaire » capture la Cerbera Speed 12 alors que
+         l'entrée du catalogue désigne la Cerbera de série, bel et bien
+         produite. Motifs resserrés : un mot entier, ou une formule sans
+         ambiguïté. */
+      t:id => aTexte(id, /\bconcepts?\b|prototype unique|jamais commercialis/i) },
+
+    { id:'proto', ic:'🔬', n:'Restées à l\'état de prototype',
+      d:'Présentées, roulantes, applaudies — et jamais commercialisées. Un ou deux exemplaires existent, et ils sont dans un musée.',
+      /* Premier essai fondé sur les mots « concept » et « prototype » : il
+         attrapait la M5 (« programme F1 »), la Corvette C8 et la 911, dont les
+         notes emploient ces termes à propos d'autre chose. On s'appuie donc
+         d'abord sur un FAIT — le volume de production — et seulement ensuite
+         sur des formulations sans ambiguïté possible. */
+      t:id => {
+        const f = specDe(id);
+        if (f && f.prod != null && f.prod <= 3) return true;
+        return /\(concept\)|resté[e]?s? à l'état de prototype|jamais (été )?commercialisé|n'a jamais été vendu|un seul exemplaire (roulant|route|construit)|Un seul exemplaire/i.test(texteDe(id));
+      } },
+
     { id:'transaxle', ic:'⚖️', n:'Transaxle',
       d:'Boîte accolée au pont arrière. Une complication mécanique au seul service de la répartition des masses.',
       t:id => aMotif(id, /transaxle/i) },
@@ -4598,9 +4504,13 @@
   let _collecsCache = null;
   function calculerCollecs() {
     if (_collecsCache) return _collecsCache;
+    /* Dédoublonnage défensif : si un identifiant apparaît deux fois dans CARS
+       — ce qui arrive vite quand on colle un bloc d'ajouts deux fois — chaque
+       collection l'afficherait en double sans que rien ne signale l'erreur. */
     let ids = [];
     try { ids = (typeof CARS !== 'undefined' && Array.isArray(CARS)) ? CARS.map(c => c.id) : []; } catch (_) {}
     if (!ids.length) ids = Object.keys(GENS);
+    ids = [...new Set(ids)];
     const out = [];
     for (const c of COLLECS) {
       const membres = [];
@@ -5343,6 +5253,17 @@
         return { cle:f.c, nom:f.n, description:f.d, modeles:ids.length,
                  versions:l.length, porteurs:ids.map(nomCatalogue).sort() };
       }).filter(f => f.modeles > 1).sort((a, b) => b.modeles - a.modeles);
+    },
+
+    /** Familles déclarées mais invisibles : zéro ou un seul porteur détecté.
+     *  À lancer après chaque ajout de famille — c'est ce contrôle qui aurait
+     *  révélé tout de suite que « V12 diesel » ne trouvait que la R10. */
+    moteursOrphelins() {
+      const idx = indexMoteurs();
+      return MOTEURS.map(f => {
+        const ids = [...new Set((idx.get(f.c) || []).map(x => x.id))];
+        return { nom: f.n, porteurs: ids.length, modeles: ids.map(nomCatalogue) };
+      }).filter(f => f.porteurs < 2);
     },
 
     /** Diagnostic : couverture des fiches et de la table de correspondance. */
