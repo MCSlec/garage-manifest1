@@ -3883,6 +3883,12 @@
     { c:'dfv',    n:'Ford Cosworth DFV', re:/\bDFV\b/i,           d:'155 victoires en Grand Prix. Le moteur de F1 le plus victorieux de l\'histoire.' },
     { c:'kseries_rover', n:'Rover K-Series', re:/K-Series/i,      d:'Le bloc léger des premières Lotus Elise.' },
     { c:'w16',    n:'Bugatti W16 8.0',   re:/\bW16\b/i,           d:'Quatre turbos, seize cylindres, dix radiateurs. De la Veyron à la Chiron.' },
+    { c:'flat12', n:'Flat-12',            re:/flat-12|12 cylindres à plat/i, d:'Douze cylindres à plat. Centre de gravité très bas, encombrement démesuré.' },
+    { c:'w12',    n:'W12 Volkswagen',     re:/\bW12\b/i,           d:'Deux VR6 accolés. Bentley, Audi et Volkswagen l\'ont partagé pendant vingt-et-un ans.' },
+    { c:'v12tdi', n:'V12 TDI Audi',       re:/V12 (5\.5 )?(bi)?turbodiesel|V12 TDI/i, d:'Le seul V12 diesel de l\'histoire de l\'automobile : au Mans dans la R10, puis dans le Q7.' },
+    { c:'v8amerique', n:'V8 américain sous capot européen', re:/V8 (Chevrolet|Chrysler|Ford)/i,
+      d:'La recette anglo-italienne : châssis européen, gros V8 américain increvable et bon marché.' },
+    { c:'v6maserati', n:'V6 Maserati',    re:/V6 Maserati/i,       d:'Le V6 de la Merak, aussi sous le capot de la Citroën SM et de la Ligier JS2.' },
     { c:'xk',     n:'Jaguar XK',         re:/6 en ligne XK/i,     d:'Double arbre à cames en tête dès 1949. Cinq victoires au Mans.' },
   ];
 
@@ -3973,6 +3979,256 @@
   }
 
   /* ======================================================================
+     COMPLÉMENT D'ARCHITECTURE
+     ----------------------------------------------------------------------
+     Filet de sécurité pour les entrées qu'aucune autre source ne décrit :
+     ni générations, ni fiche technique, ni champ `eng` dans INFO. Une seule
+     chaîne par modèle, contenant strictement ce qui sert à le classer :
+     architecture, suralimentation, position du bloc.
+
+     Ce n'est pas une quatrième base de données. C'est un rattrapage ciblé,
+     et il doit rester court : chaque ligne ajoutée ici signale un modèle qui
+     mériterait plutôt une vraie entrée dans GENS.
+     ====================================================================== */
+
+  const ARCHI = {
+    // --- Douze cylindres ---
+    'ferrari-daytona-sp3':'V12 6.5 atmo moteur central',
+    'ferrari-monza-sp':'V12 6.5 atmo moteur central',
+    'ferrari-f12':'V12 6.3 atmo moteur avant',
+    'ferrari-550':'V12 5.5 atmo moteur avant manuelle 6 à grille',
+    'ferrari-daytona-365':'V12 4.4 atmo moteur avant',
+    'ferrari-400':'V12 4.8 atmo moteur avant',
+    'ferrari-512bb':'flat-12 5.0 atmo moteur central',
+    'ferrari-ff':'V12 6.3 atmo intégrale',
+    'ferrari-12cilindri':'V12 6.5 atmo moteur avant',
+    'ferrari-f80':'V6 3.0 biturbo hybride moteur central monocoque carbone',
+    'ferrari-purosangue':'V12 6.5 atmo intégrale',
+    'lambo-diablo':'V12 5.7 atmo moteur central',
+    'lambo-espada':'V12 4.0 atmo moteur avant',
+    'lambo-sian':'V12 6.5 atmo hybride moteur central',
+    'lambo-revuelto':'V12 6.5 atmo hybride rechargeable moteur central',
+    'lambo-temerario':'V8 4.0 biturbo hybride moteur central',
+    'lambo-jalpa':'V8 3.5 atmo moteur central',
+    'lambo-lm002':'V12 5.2 atmo 4x4',
+    'aston-one77':'V12 7.3 atmo moteur avant monocoque carbone',
+    'aston-vanquish':'V12 5.9 atmo moteur avant transaxle',
+    'aston-db12':'V8 4.0 biturbo moteur avant',
+    'aston-dbs':'V12 5.2 biturbo moteur avant',
+    'aston-db7':'6 en ligne 3.2 compressé puis V12 6.0 atmo',
+    'aston-dbx':'V8 4.0 biturbo intégrale',
+    'bmw-850csi':'V12 5.6 atmo moteur avant manuelle 6',
+    'mercedes-600':'V8 6.3 atmo hydraulique',
+    'mercedes-clk-gtr':'V12 6.9 atmo moteur central homologation',
+    'toyota-century':'V12 5.0 atmo puis V8 hybride',
+    'pagani-utopia':'V12 6.0 AMG biturbo moteur central manuelle 7 à grille',
+    'bugatti-eb110':'V12 3.5 quadriturbo intégrale moteur central',
+    'bugatti-divo':'W16 8.0 quadriturbo intégrale',
+    'bugatti-bolide':'W16 8.0 quadriturbo monocoque carbone',
+    'bugatti-tourbillon':'V16 8.3 atmo hybride moteur central',
+    'maserati-mc12':'V12 6.0 atmo moteur central homologation',
+    'maserati-bora':'V8 4.7 atmo moteur central',
+    'maserati-merak':'V6 3.0 atmo moteur central',
+    'maserati-quattroporte':'V6 et V8 biturbo propulsion',
+    'rr-phantom':'V12 6.75 biturbo propulsion',
+    'rr-ghost':'V12 6.6 biturbo intégrale',
+    'rr-cullinan':'V12 6.75 biturbo intégrale',
+    'rr-spectre':'deux moteurs électriques intégrale',
+    'rr-silvershadow':'V8 6.75 atmo propulsion',
+    'bentley-flying-spur':'W12 6.0 biturbo et V8 4.0 biturbo intégrale',
+    'bentley-bentayga':'W12 6.0 biturbo puis V8 4.0 intégrale',
+    'bentley-mulsanne':'V8 6.75 biturbo propulsion',
+    'bentley-blower':'4 cyl. 4.4 à compresseur Roots propulsion',
+    'jaguar-xj':'6 en ligne, V8 et V12 propulsion',
+    'jaguar-dtype':'6 en ligne 3.4 atmo victoire au Mans',
+    'lambo-countach':'V12 5.2 atmo moteur central',
+    'iso-grifo':'V8 Chevrolet 5.4 atmo moteur avant',
+    'jensen-interceptor':'V8 Chrysler 6.3 atmo propulsion',
+    'bizzarrini-5300gt':'V8 Chevrolet 5.3 atmo moteur avant central',
+    'detomaso-mangusta':'V8 Ford 4.7 atmo moteur central',
+    'detomaso-p72':'V8 5.0 compressé moteur central manuelle 6 à grille',
+    'facel-vega-hk500':'V8 Chrysler 6.3 atmo propulsion',
+    'facel-vega-facel2':'V8 Chrysler 6.3 atmo propulsion',
+    'delahaye-135':'6 en ligne 3.5 atmo propulsion',
+    'duesenberg-model-j':'8 en ligne 6.9 atmo compressé propulsion',
+    'cord-810':'V8 4.7 compressé traction phares escamotables',
+    'tucker-48':'flat-6 5.5 atmo moteur arrière',
+    'ligier-js2':'V6 Maserati 3.0 atmo moteur central',
+
+    // --- Dix cylindres et V8 marquants ---
+    'lexus-lfa':'V10 4.8 atmo moteur avant 9 000 tr/min',
+    'porsche-carrera-gt':'V10 5.7 atmo moteur central manuelle 6',
+    'dodge-viper':'V10 8.4 atmo moteur avant propulsion',
+    'audi-r8':'V8 4.2 et V10 5.2 atmo moteur central',
+    'mercedes-sls':'V8 6.2 atmo transaxle portes papillon',
+    'mercedes-amg-gtbs':'V8 4.0 biturbo vilebrequin plat propulsion',
+    'mercedes-slr':'V8 5.4 compressé moteur avant central',
+    'mercedes-amg-one':'V6 1.6 turbo hybride issu de la Formule 1 moteur central',
+    'ford-gt40':'V8 7.0 atmo moteur central victoire au Mans',
+    'saleen-s7':'V8 7.0 biturbo moteur central',
+    'panoz-esperante':'V8 4.6 atmo propulsion',
+    'vector-w8':'V8 6.0 biturbo moteur central',
+    'noble-m600':'V8 4.4 biturbo moteur central manuelle 6',
+    'ultima-gtr':'V8 Chevrolet atmo moteur central',
+    'scg-004':'V8 5.0 compressé moteur central trois places de front',
+    'hennessey-venom-gt':'V8 7.0 biturbo moteur central record du monde',
+    'hennessey-venom-f5':'V8 6.6 biturbo moteur central',
+    'ssc-tuatara':'V8 5.9 biturbo moteur central',
+    'czinger-21c':'V8 2.9 biturbo hybride moteur central',
+    'gumpert-apollo':'V8 4.2 biturbo moteur central',
+    'apollo-ie':'V12 6.3 atmo moteur central 9 000 tr/min',
+    'wiesmann-gt':'V8 BMW 4.4 atmo propulsion',
+    'spyker-c8':'V8 Audi 4.2 atmo moteur central boîte à grille',
+    'gtaspano-spano':'V10 8.0 biturbo moteur central',
+    'hispano-suiza-carmen':'quatre moteurs électriques monocoque carbone',
+    'nio-ep9':'quatre moteurs électriques record du Nürburgring',
+    'aspark-owl':'quatre moteurs électriques',
+    'wmotors-lykan':'flat-6 3.7 biturbo RUF moteur central',
+    'zenvo-tsrs':'V8 5.8 biturbo moteur central aileron actif',
+    'koenigsegg-cc8s':'V8 4.7 compressé moteur central',
+    'koenigsegg-one1':'V8 5.0 biturbo moteur central monocoque carbone',
+    'koenigsegg-cc850':'V8 5.0 biturbo moteur central boîte manuelle 9',
+    'koenigsegg-gemera':'trois moteurs électriques et 3 cyl. 2.0 biturbo',
+    'pininfarina-battista':'quatre moteurs électriques intégrale',
+    'lotus-evija':'quatre moteurs électriques monocoque carbone',
+    'mclaren-w1':'V8 4.0 biturbo hybride moteur central',
+    'mclaren-speedtail':'V8 3.8 biturbo hybride trois places de front',
+    'mclaren-artura':'V6 3.0 biturbo hybride moteur central',
+    'mclaren-gt':'V8 4.0 biturbo moteur central',
+    'mclaren-12c':'V8 3.8 biturbo moteur central monocoque carbone',
+    'mclaren-765lt':'V8 4.0 biturbo moteur central',
+    'italdesign-zerouno':'V10 5.2 atmo moteur central',
+    'dallara-stradale':'4 cyl. 2.3 turbo moteur central monocoque carbone',
+    'mazzanti-evantra':'V8 biturbo moteur central',
+    'praga-bohema':'V6 3.8 biturbo moteur central monocoque carbone',
+    'donkervoort-d8':'5 en ligne 2.5 turbo Audi propulsion',
+    'donkervoort-f22':'5 en ligne 2.5 turbo Audi propulsion',
+    'ktm-xbow':'4 cyl. 2.0 TFSI moteur central monocoque carbone',
+    'bac-mono':'4 cyl. 2.5 atmo moteur central une seule place',
+    'ariel-atom':'4 cyl. Honda 2.0 atmo compressé moteur central',
+    'radical-sr3':'4 cyl. d\'origine motocycliste moteur central',
+    'morgan-3wheeler':'bicylindre en V apparent propulsion',
+    'caterham-seven':'4 cyl. atmo et compressé propulsion',
+    'tvr-sagaris':'6 en ligne 4.0 atmo maison propulsion',
+
+    // --- Modèles courants qui manquaient d'architecture ---
+    'renault-8-gordini':'4 cyl. 1.3 atmo moteur arrière propulsion',
+    'renault-4':'4 cyl. atmo traction',
+    'renault-avantime':'V6 3.0 atmo et 2.0 turbo traction',
+    'renault-fuego':'4 cyl. 2.0 et 1.6 turbo traction',
+    'renault-twizy':'moteur électrique propulsion',
+    'citroen-mehari':'bicylindre à plat refroidi par air traction',
+    'citroen-gs':'flat-4 refroidi par air traction hydropneumatique',
+    'citroen-c6':'V6 2.7 et 3.0 HDi traction hydractive',
+    'citroen-traction':'4 cyl. atmo traction avant monocoque',
+    'citroen-type-h':'4 cyl. atmo traction',
+    'peugeot-405-mi16':'4 cyl. 1.9 16v atmo traction',
+    'peugeot-309-gti16':'4 cyl. 1.9 16v atmo traction',
+    'peugeot-208-gti':'4 cyl. 1.6 THP turbo traction',
+    'peugeot-rcz':'4 cyl. 1.6 THP turbo traction',
+    'matra-bagheera':'4 cyl. atmo moteur central trois places de front',
+    'matra-530':'V4 Ford atmo moteur central phares escamotables',
+    'matra-rancho':'4 cyl. atmo traction',
+    'talbot-samba':'4 cyl. atmo traction',
+    'panhard-24':'bicylindre à plat refroidi par air traction',
+    'trabant-601':'bicylindre 2 temps traction',
+    'lada-2101':'4 cyl. atmo propulsion',
+    'uaz-452':'4 cyl. atmo 4x4',
+    'tata-nano':'bicylindre 624 cm³ moteur arrière',
+    'hindustan-ambassador':'4 cyl. atmo propulsion',
+    'vw-sp2':'flat-4 1.7 refroidi par air moteur arrière',
+    'puma-gte':'flat-4 Volkswagen moteur arrière',
+    'pegaso-z102':'V8 2.5 atmo à quatre arbres à cames propulsion',
+    'tatra-t87':'V8 3.0 refroidi par air moteur arrière',
+    'daf-33':'bicylindre atmo transmission à variation continue',
+    'bmw-isetta':'monocylindre 250 cm³ atmo propulsion',
+    'bmw-507':'V8 3.2 atmo propulsion',
+    'bmw-z1':'6 en ligne 2.5 atmo propulsion',
+    'bmw-30csl':'6 en ligne 3.0 atmo propulsion homologation Groupe 2',
+    'porsche-550':'flat-4 1.5 atmo moteur central',
+    'porsche-914':'flat-4 et flat-6 atmo moteur central',
+    'porsche-924':'4 cyl. atmo et turbo transaxle',
+    'porsche-944':'4 cyl. 2.5 et 3.0 atmo et turbo transaxle',
+    'porsche-968':'4 cyl. 3.0 atmo transaxle',
+    'porsche-928':'V8 4.5 à 5.4 atmo transaxle',
+    'porsche-911-dakar':'flat-6 3.0 biturbo moteur arrière intégrale',
+    'porsche-911-r':'flat-6 4.0 atmo moteur arrière manuelle 6',
+    'opel-gt-classic':'4 cyl. 1.9 atmo propulsion phares escamotables',
+    'opel-speedster':'4 cyl. 2.2 atmo moteur central',
+    'fiat-x19':'4 cyl. 1.5 atmo moteur central phares escamotables',
+    'fiat-barchetta':'4 cyl. 1.8 16v atmo traction',
+    'autobianchi-a112':'4 cyl. 1.0 atmo traction',
+    'lancia-fulvia':'V4 atmo traction',
+    'lancia-aurelia':'V6 2.5 atmo transaxle',
+    'lancia-flaminia':'V6 2.8 atmo propulsion',
+    'lancia-beta-montecarlo':'4 cyl. 2.0 atmo moteur central',
+    'lancia-thema-832':'V8 Ferrari 3.0 atmo traction',
+    'alfa-montreal':'V8 2.6 atmo propulsion',
+    'alfa-sz':'V6 Busso 3.0 atmo propulsion',
+    'alfa-gtv6':'V6 Busso 2.5 atmo transaxle',
+    'alfa-duetto':'4 cyl. atmo propulsion',
+    'alfa-33-stradale-og':'V8 2.0 atmo moteur central',
+    'alfa-8c':'V8 4.7 atmo transaxle',
+    'toyota-2000gt':'6 en ligne 2.0 atmo propulsion phares escamotables',
+    'toyota-sera':'4 cyl. 1.5 atmo portes papillon',
+    'toyota-soarer':'6 en ligne turbo et V8 propulsion',
+    'honda-beat':'3 cyl. 656 cm³ atmo moteur central kei',
+    'honda-s660':'3 cyl. 658 cm³ turbo moteur central kei',
+    'autozam-az1':'3 cyl. 657 cm³ turbo moteur central kei portes papillon',
+    'suzuki-alto-works':'3 cyl. 657 cm³ turbo kei',
+    'suzuki-cappuccino':'3 cyl. 657 cm³ turbo propulsion kei',
+    'daihatsu-copen':'3 cyl. 659 cm³ turbo kei',
+    'nissan-figaro':'4 cyl. 1.0 turbo traction',
+    'nissan-pao':'4 cyl. 1.0 atmo traction',
+    'nissan-hakosuka':'6 en ligne 2.0 atmo à quatre soupapes propulsion',
+    'nissan-stagea-260rs':'6 en ligne 2.6 biturbo RB26 intégrale',
+    'nissan-pulsar-gtir':'4 cyl. 2.0 turbo intégrale homologation',
+    'mazda-cosmo':'birotor rotatif propulsion',
+    'mazda-rx3':'birotor rotatif propulsion',
+    'isuzu-117':'4 cyl. atmo propulsion',
+    'isuzu-vehicross':'V6 3.5 atmo 4x4',
+    'subaru-svx':'flat-6 3.3 atmo intégrale',
+    'mitsubishi-galant-vr4':'4 cyl. 2.0 turbo intégrale quatre roues directrices',
+    'lexus-ls400':'V8 4.0 atmo propulsion',
+    'buick-gnx':'V6 3.8 turbo propulsion',
+    'gmc-syclone':'V6 4.3 turbo intégrale',
+    'pontiac-fiero':'V6 2.8 atmo moteur central',
+    'plymouth-prowler':'V6 3.5 atmo propulsion',
+    'chevrolet-corvette-c1':'V8 4.6 atmo propulsion',
+    'chevrolet-c4-zr1':'V8 5.7 atmo à quatre arbres à cames Lotus propulsion',
+    'shelby-daytona-coupe':'V8 4.7 atmo propulsion',
+    'studebaker-avanti':'V8 4.7 compressé propulsion',
+    'amc-javelin':'V8 6.4 atmo propulsion',
+    'oldsmobile-442':'V8 6.6 atmo propulsion',
+    'mercury-cougar-67':'V8 4.7 atmo propulsion phares escamotables',
+    'volvo-p1800':'4 cyl. 1.8 atmo propulsion',
+    'volvo-amazon':'4 cyl. atmo propulsion',
+    'saab-93':'4 cyl. turbo traction',
+    'polestar-1':'4 cyl. compressé et turbo hybride rechargeable monocoque carbone',
+    'morgan-plusfour':'4 cyl. BMW 2.0 turbo propulsion châssis bois',
+    'morgan-plus-8':'V8 Rover atmo propulsion châssis bois',
+    'lotus-elan':'4 cyl. 1.6 atmo propulsion phares escamotables',
+    'lotus-europa':'4 cyl. atmo moteur central',
+    'lotus-emira':'V6 3.5 compressé et 4 cyl. 2.0 turbo moteur central',
+    'jaguar-xk120':'6 en ligne 3.4 atmo propulsion',
+    'jaguar-mk2':'6 en ligne atmo propulsion',
+    'jaguar-xe-sv8':'V8 5.0 compressé propulsion record du Nürburgring',
+    'mg-mgb':'4 cyl. 1.8 atmo propulsion',
+    'mg-midget':'4 cyl. atmo propulsion',
+    'mg-cyberster':'deux moteurs électriques portes en ciseaux',
+    'triumph-spitfire':'4 cyl. atmo propulsion',
+    'austin-healey-3000':'6 en ligne 2.9 atmo propulsion',
+    'rover-75':'V6 2.5 atmo traction',
+    'smart-roadster':'3 cyl. 0.7 turbo moteur central propulsion',
+    'wiesmann-mf3':'6 en ligne BMW 3.2 atmo propulsion',
+    'venturi-400gt':'V6 PRV 3.0 biturbo moteur central',
+    'simca-aronde':'4 cyl. atmo propulsion',
+    'renault-estafette':'4 cyl. atmo traction',
+    'ligier-js50':'bicylindre diesel sans permis',
+    'citroen-ami-2020':'moteur électrique sans permis',
+  };
+
+  /* ======================================================================
      COLLECTIONS MÉCANIQUES
      ----------------------------------------------------------------------
      Ton catalogue classe les voitures par marque, pays et rareté. Ce sont
@@ -4025,26 +4281,90 @@
   /* --- Prédicats réutilisables ----------------------------------------- */
 
   /** Toutes les descriptions mécaniques d'un modèle, concaténées. */
-  const _mecaCache = new Map();
+  /* DEUX NIVEAUX DE LECTURE, ET LA DISTINCTION EST CAPITALE :
+
+     mecaDe()  — la mécanique STRICTE. Champs techniques uniquement.
+     texteDe() — tout, notes et anecdotes comprises.
+
+     Pourquoi : la note de la M3 E92 dit « V8 dérivé du V10 de la M5 E60 », et
+     celle de la XJ220 dit « annoncée en V12, produite en V6 biturbo ». Lire
+     les notes pour classer une architecture range donc la M3 chez les V10 et
+     la XJ220 chez les V12 — deux erreurs factuelles produites par du texte
+     parfaitement exact. Les collections d'architecture lisent mecaDe ; celles
+     de palmarès, qui vivent précisément dans les notes, lisent texteDe. */
+
+  const _mecaCache = new Map(), _texteCache = new Map();
+
   function mecaDe(id) {
     if (_mecaCache.has(id)) return _mecaCache.get(id);
     let txt = '';
+
+    // 1. Champs mécaniques et transmission des motorisations — jamais les notes
     const g = GENS[id];
     if (g) for (const gen of g) {
       if (gen && !Array.isArray(gen) && Array.isArray(gen.m))
-        txt += ' ' + gen.c + ' ' + gen.a + ' ' + gen.m.map(x => x.join(' ')).join(' ');
+        txt += ' ' + gen.m.map(x => `${x[1] || ''} ${x[3] || ''}`).join(' ');
+      else txt += ' ' + [gen[2], gen[0]].filter(Boolean).join(' ');
+    }
+
+    // 2. Champs techniques de la fiche détaillée — note et son exclus
+    const cle = MAP[id];
+    if (cle && SPECS[cle]) {
+      const f = SPECS[cle];
+      txt += ' ' + [f.arch, f.adm, f.pos, f.tx, f.bv].filter(Boolean).join(' ');
+    }
+
+    /* 3. L'objet INFO d'index.html.
+       Point capital pour la couverture : GENS ne couvre que 360 entrées sur
+       927. INFO, lui, renseigne le champ `eng` sur plusieurs centaines de
+       modèles supplémentaires — c'est une source déjà écrite, déjà relue, et
+       déclarée en const à la racine donc lisible d'ici. L'ignorer revenait à
+       rendre les deux tiers du catalogue invisibles aux collections. */
+    try {
+      if (typeof INFO !== 'undefined' && INFO && INFO[id] && INFO[id].eng)
+        txt += ' ' + INFO[id].eng;
+    } catch (_) {}
+
+    // 4. Complément d'architecture pour ce qu'aucune des trois sources ne couvre
+    if (ARCHI[id]) txt += ' ' + ARCHI[id];
+
+    _mecaCache.set(id, txt);
+    return txt;
+  }
+
+  /** Tout le texte disponible : mécanique + notes, anecdotes et palmarès. */
+  function texteDe(id) {
+    if (_texteCache.has(id)) return _texteCache.get(id);
+    let txt = mecaDe(id);
+
+    const g = GENS[id];
+    if (g) for (const gen of g) {
+      if (gen && !Array.isArray(gen) && Array.isArray(gen.m))
+        txt += ' ' + gen.c + ' ' + gen.a + ' ' + gen.m.map(x => `${x[0] || ''} ${x[2] || ''} ${x[4] || ''}`).join(' ');
       else txt += ' ' + gen.join(' ');
     }
     const cle = MAP[id];
     if (cle && SPECS[cle]) {
       const f = SPECS[cle];
-      txt += ' ' + [f.arch, f.adm, f.pos, f.tx, f.bv, f.son, f.note, f.rupteur].filter(Boolean).join(' ');
+      txt += ' ' + [f.son, f.note, f.rupteur, f.surnom].filter(Boolean).join(' ');
     }
-    _mecaCache.set(id, txt);
+    try {
+      if (typeof INFO !== 'undefined' && INFO && INFO[id]) {
+        const i = INFO[id];
+        txt += ' ' + [i.fact, i.hp, i.acc, i.vmax].filter(Boolean).join(' ');
+      }
+      if (typeof CARS !== 'undefined' && Array.isArray(CARS)) {
+        const c = CARS.find(x => x.id === id);
+        if (c) txt += ' ' + [c.yr, c.cat].filter(Boolean).join(' ');
+      }
+    } catch (_) {}
+
+    _texteCache.set(id, txt);
     return txt;
   }
 
-  const aMotif   = (id, re) => re.test(mecaDe(id));
+  const aMotif   = (id, re) => re.test(mecaDe(id));    // architecture : mécanique stricte
+  const aTexte   = (id, re) => re.test(texteDe(id));   // palmarès et anecdotes
 
   /** Vrai si une GÉNÉRATION débutant après `anneeMin` porte le motif.
       Sans cette granularité, « manuelle 6 » sur une E30 de 1986 et « 2021 »
@@ -4070,6 +4390,12 @@
     let max = 0;
     const f = specDe(id);
     if (f && f.ch) max = f.ch;
+    try {
+      if (typeof INFO !== 'undefined' && INFO && INFO[id] && INFO[id].hp) {
+        const nums = String(INFO[id].hp).replace(/\s/g, '').match(/\d{2,5}/g) || [];
+        for (const n of nums) max = Math.max(max, +n);
+      }
+    } catch (_) {}
     const g = GENS[id] || [];
     for (const gen of g) {
       const lignes = (gen && !Array.isArray(gen) && Array.isArray(gen.m)) ? gen.m.map(x => x[2]) : [gen[3]];
@@ -4146,11 +4472,11 @@
 
     { id:'groupeb', ic:'🔥', n:'Groupe B',
       d:'1982-1986. Quatre saisons, aucune limite technique, et une interdiction dans le sang.',
-      t:id => aMotif(id, /Groupe B/i) },
+      t:id => aTexte(id, /Groupe B/i) },
 
     { id:'homolog', ic:'📜', n:'Nées pour homologuer',
       d:'Construites uniquement pour obtenir le droit de courir. Séries courtes, équipement absent, cotes déraisonnables.',
-      t:id => aMotif(id, /homologation|d'homologation|homologuer/i) },
+      t:id => aTexte(id, /homologation|d'homologation|homologuer/i) },
 
     { id:'mille', ic:'⚡', n:'Le club des mille',
       d:'Mille chevaux ou plus. La barre que seule une poignée de constructeurs a franchie.',
@@ -4182,47 +4508,47 @@
 
     { id:'lemans', ic:'🏁', n:'Vainqueurs du Mans',
       d:'Elles ont gagné les 24 Heures. Toutes catégories, toutes époques.',
-      t:id => aMotif(id, /Victoire[s]? au (général au )?Mans|au Mans \d{4}|Victoire au Mans/i) },
+      t:id => aTexte(id, /Victoire[s]? au (général au )?Mans|au Mans \d{4}|Victoire au Mans/i) },
 
     { id:'nurburgring', ic:'⏱️', n:'Le chrono de la Nordschleife',
       d:'Elles ont détenu un record au Nürburgring, dans leur catégorie ou toutes catégories confondues.',
-      t:id => aMotif(id, /Nürburgring/i) },
+      t:id => aTexte(id, /Nürburgring/i) },
 
     { id:'grille', ic:'🎰', n:'La boîte à grille',
       d:'Levier métallique dans une grille ouverte. Le geste le plus copié et le moins remplacé de l\'automobile.',
-      t:id => aMotif(id, /à grille/i) },
+      t:id => aTexte(id, /à grille/i) },
 
     { id:'escamotables', ic:'👁️', n:'Phares escamotables',
       d:'Interdits de fait depuis les normes piétons de 2004. Une esthétique entière disparue par décret.',
-      t:id => aMotif(id, /escamotables/i) },
+      t:id => aTexte(id, /escamotables/i) },
 
     { id:'kei', ic:'🍙', n:'Kei cars',
       d:'Bridées à 64 ch et 660 cm³ par la loi japonaise. La contrainte comme moteur de créativité.',
-      t:id => aMotif(id, /kei|657 cm³|656 cm³|658 cm³|660 cm³/i) },
+      t:id => aTexte(id, /kei|657 cm³|656 cm³|658 cm³|660 cm³/i) },
 
     { id:'f1route', ic:'🏎️', n:'Un moteur de F1 sur la route',
       d:'Blocs directement dérivés de la Formule 1, homologués pour un usage routier.',
-      t:id => aMotif(id, /issu de la F1|dérivé de la F1|de Formule 1|programme Formule 1|V10 de Formule 1|moteur de Formule 1/i) },
+      t:id => aTexte(id, /issu de la F1|dérivé de la F1|de Formule 1|programme Formule 1|V10 de Formule 1|moteur de Formule 1/i) },
 
     { id:'pikespeak', ic:'⛰️', n:'Pikes Peak',
       d:'La course de côte du Colorado. Vingt kilomètres, cent cinquante-six virages, quatre mille mètres d\'altitude.',
-      t:id => aMotif(id, /Pikes Peak/i) },
+      t:id => aTexte(id, /Pikes Peak/i) },
 
     { id:'annee', ic:'🥇', n:'Voiture de l\'Année',
       d:'Élues par le jury européen. Le titre le plus convoité — et parfois le plus discuté.',
-      t:id => aMotif(id, /Voiture de l'Année/i) },
+      t:id => aTexte(id, /Voiture de l'Année/i) },
 
     { id:'aeroactive', ic:'🪁', n:'Aérodynamique active',
       d:'Ailerons, volets et conduits qui bougent en roulant. La voiture change de forme selon ce qu\'on lui demande.',
-      t:id => aMotif(id, /aéro active|aérodynamique active|volets aérodynamiques|aileron actif|aileron mobile|ALA|prises d'air latérales mobiles/i) },
+      t:id => aTexte(id, /aéro active|aérodynamique active|volets aérodynamiques|aileron actif|aileron mobile|ALA|prises d'air latérales mobiles/i) },
 
     { id:'record', ic:'🚀', n:'Record du monde de vitesse',
       d:'Elles ont détenu, à un moment, le titre de voiture de série la plus rapide du monde.',
-      t:id => aMotif(id, /record du monde|la plus rapide du monde|voiture de série la plus rapide/i) },
+      t:id => aTexte(id, /record du monde|la plus rapide du monde|voiture de série la plus rapide/i) },
 
     { id:'carbone', ic:'🕸️', n:'Monocoque carbone',
       d:'Châssis en fibre de carbone. Né en Formule 1 en 1981, descendu sur route avec la McLaren F1.',
-      t:id => aMotif(id, /monocoque carbone|châssis carbone|coque en fibre de carbone|Monocage|monocoque en fibre/i) },
+      t:id => aTexte(id, /monocoque carbone|châssis carbone|coque en fibre de carbone|Monocage|monocoque en fibre/i) },
 
     { id:'tonne', ic:'🪶', n:'Sous la tonne',
       d:'Moins de mille kilos. La légèreté comme doctrine, pas comme argument marketing.',
@@ -4240,6 +4566,26 @@
                'DeLorean','Jensen','Vector','Wiesmann','Gumpert','Spyker','Bizzarrini','Iso',
                'Datsun','Scion','Isuzu','Daihatsu','Tatra','Lada','Hindustan','Puma','Pegaso']
               .includes(marqueDe(id)) },
+
+    { id:'air', ic:'💨', n:'Refroidis par air',
+      d:'Pas de radiateur, pas de liquide. Une doctrine mécanique entière, éteinte par les normes de bruit et d\'émissions.',
+      t:id => aMotif(id, /refroidi par air|refroidie par air|refroidissement par air/i) },
+
+    { id:'papillon', ic:'🦋', n:'Portes papillon et ciseaux',
+      d:'Elles s\'ouvrent vers le haut. Argument technique parfois, argument théâtral toujours.',
+      t:id => aTexte(id, /portes? papillon|portes? en ciseaux|portes? en dièdre|papillon/i) },
+
+    { id:'troisplaces', ic:'🪑', n:'Trois places de front',
+      d:'Conducteur au centre. La McLaren F1 l\'a rendu célèbre, mais Matra l\'avait fait vingt ans plus tôt.',
+      t:id => aTexte(id, /trois places de front|3 places de front|poste de conduite central|conducteur au centre/i) },
+
+    { id:'quatredirect', ic:'↔️', n:'Quatre roues directrices',
+      d:'Les roues arrière braquent aussi. Inventé au Japon dans les années 80, redevenu courant quarante ans plus tard.',
+      t:id => aTexte(id, /quatre roues directrices|roues arrière directrices|4WS|4Control|Super HICAS/i) },
+
+    { id:'ferrarihors', ic:'🐎', n:'Un moteur Ferrari, pas une Ferrari',
+      d:'Maranello a fourni des blocs à d\'autres marques. Une berline Lancia à V8 de 308, une Maserati à V12 d\'Enzo.',
+      t:id => marqueDe(id) !== 'Ferrari' && aTexte(id, /V8 Ferrari|V12 6\.0 \(base Enzo\)|bloc Ferrari|V12 Ferrari|moteur assemblé à Maranello|d'inspiration Ferrari/i) },
 
     { id:'transaxle', ic:'⚖️', n:'Transaxle',
       d:'Boîte accolée au pont arrière. Une complication mécanique au seul service de la répartition des masses.',
