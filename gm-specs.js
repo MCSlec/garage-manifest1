@@ -3790,6 +3790,7 @@
       .map(c => specRow(f, c)).filter(Boolean).join('');
 
     return `<div class="gsp">
+      ${distinctionsHTML(idCatalogue)}
       <div class="gsp-h">
         <span>Fiche technique</span>
         ${f.surnom ? `<em>« ${esc(f.surnom)} »</em>` : ''}
@@ -3962,12 +3963,701 @@
       <details class="gmm">
         <summary><b>${esc(f.n)}</b><span>${f.autres.length} autre${f.autres.length > 1 ? 's' : ''}</span></summary>
         <p class="gmm-d">${esc(f.d)}</p>
-        <div class="gmm-l">${f.autres.map(a => `<span>${esc(a.nom)}</span>`).join('')}</div>
+        <div class="gmm-l">${f.autres.map(a =>
+          `<button data-car="${esc(a.id)}">${esc(a.nom)}</button>`).join('')}</div>
       </details>`).join('');
     return `<div class="gsp gsp-mot">
       <div class="gsp-h"><span>Le même bloc ailleurs</span><em>${fam.length}</em></div>
       ${blocs}
     </div>`;
+  }
+
+  /* ======================================================================
+     COLLECTIONS MÉCANIQUES
+     ----------------------------------------------------------------------
+     Ton catalogue classe les voitures par marque, pays et rareté. Ce sont
+     des critères administratifs. Un passionné, lui, range autrement : par
+     architecture moteur, par régime, par position du bloc, par doctrine.
+     « Les rotatifs », « le mur des 9 000 tr/min », « le club Mezger » — ce
+     sont les vraies familles, celles qu'on a en tête.
+
+     Ces collections ne stockent AUCUNE donnée nouvelle : ce sont des
+     requêtes sur les 1 065 motorisations déjà écrites. Ajouter une
+     collection coûte trois lignes et zéro octet de données.
+
+     LECTURE DU GARAGE — point d'architecture important :
+     `state.spots` est privé dans la fonction anonyme d'index.html, donc
+     inaccessible. Mais la base IndexedDB, elle, est ouvrable par n'importe
+     quel script de la page. On l'ouvre en LECTURE SEULE, sans jamais
+     déclarer de version : impossible de déclencher un `onupgradeneeded`,
+     donc impossible d'altérer le schéma. Le module observe, il ne touche à
+     rien.
+     ====================================================================== */
+
+  /* --- Lecture non intrusive du garage --------------------------------- */
+  let _captures = null, _capturesLe = 0;
+
+  function lireGarage() {
+    // Cache court : le rendu peut être déclenché plusieurs fois par seconde.
+    if (_captures && Date.now() - _capturesLe < 3000) return Promise.resolve(_captures);
+    return new Promise((res) => {
+      let fini = false;
+      const rendre = (v) => { if (fini) return; fini = true; _captures = v; _capturesLe = Date.now(); res(v); };
+      setTimeout(() => rendre(_captures || new Set()), 1500);   // ne bloque jamais le rendu
+      try {
+        // Aucune version demandée : on ouvre l'existante, jamais on ne la migre.
+        const rq = indexedDB.open('garage-manifest');
+        rq.onerror = () => rendre(new Set());
+        rq.onsuccess = () => {
+          const db = rq.result;
+          if (!db.objectStoreNames.contains('spots')) return rendre(new Set());
+          try {
+            const st = db.transaction('spots', 'readonly').objectStore('spots');
+            const all = st.getAllKeys();
+            all.onsuccess = () => rendre(new Set(all.result.filter(k => typeof k === 'string' && !k.startsWith('__'))));
+            all.onerror = () => rendre(new Set());
+          } catch (_) { rendre(new Set()); }
+        };
+      } catch (_) { rendre(new Set()); }
+    });
+  }
+
+  /* --- Prédicats réutilisables ----------------------------------------- */
+
+  /** Toutes les descriptions mécaniques d'un modèle, concaténées. */
+  const _mecaCache = new Map();
+  function mecaDe(id) {
+    if (_mecaCache.has(id)) return _mecaCache.get(id);
+    let txt = '';
+    const g = GENS[id];
+    if (g) for (const gen of g) {
+      if (gen && !Array.isArray(gen) && Array.isArray(gen.m))
+        txt += ' ' + gen.c + ' ' + gen.a + ' ' + gen.m.map(x => x.join(' ')).join(' ');
+      else txt += ' ' + gen.join(' ');
+    }
+    const cle = MAP[id];
+    if (cle && SPECS[cle]) {
+      const f = SPECS[cle];
+      txt += ' ' + [f.arch, f.adm, f.pos, f.tx, f.bv, f.son, f.note, f.rupteur].filter(Boolean).join(' ');
+    }
+    _mecaCache.set(id, txt);
+    return txt;
+  }
+
+  const aMotif   = (id, re) => re.test(mecaDe(id));
+
+  /** Vrai si une GÉNÉRATION débutant après `anneeMin` porte le motif.
+      Sans cette granularité, « manuelle 6 » sur une E30 de 1986 et « 2021 »
+      lu dans la note d'une autre génération suffisaient à valider le critère :
+      le prédicat devenait faux tout en restant syntaxiquement correct. */
+  function genDepuis(id, re, anneeMin) {
+    const g = GENS[id]; if (!g) return false;
+    for (const gen of g) {
+      const detaille = gen && !Array.isArray(gen) && Array.isArray(gen.m);
+      const an = detaille ? gen.a : gen[1];
+      const debut = parseInt(String(an).match(/\d{4}/) || 0, 10);
+      if (!debut || debut < anneeMin) continue;
+      const txt = detaille ? gen.m.map(x => x.join(' ')).join(' ') : gen.join(' ');
+      if (re.test(txt)) return true;
+    }
+    return false;
+  }
+  const aFamille = (id, cle) => (indexMoteurs().get(cle) || []).some(x => x.id === id);
+  const specDe   = id => (MAP[id] && SPECS[MAP[id]]) || null;
+
+  /** Puissance maximale connue d'un modèle, tous niveaux confondus. */
+  function chMax(id) {
+    let max = 0;
+    const f = specDe(id);
+    if (f && f.ch) max = f.ch;
+    const g = GENS[id] || [];
+    for (const gen of g) {
+      const lignes = (gen && !Array.isArray(gen) && Array.isArray(gen.m)) ? gen.m.map(x => x[2]) : [gen[3]];
+      for (const l of lignes) {
+        const nums = String(l || '').replace(/\s/g, '').match(/\d{2,5}/g) || [];
+        for (const n of nums) max = Math.max(max, +n);
+      }
+    }
+    return max;
+  }
+
+  /** Régime maximal annoncé (rupteur ou mention explicite dans le texte). */
+  function regimeMax(id) {
+    const f = specDe(id);
+    let max = f && f.rupteur ? f.rupteur : 0;
+    const m = mecaDe(id).replace(/\s/g, '').match(/(\d{4,5})tr\/min/g) || [];
+    for (const x of m) max = Math.max(max, +x.replace(/\D/g, ''));
+    return max;
+  }
+
+  /* --- Définition des collections --------------------------------------
+     Une collection = un nom, une icône, une phrase, un prédicat.
+     Rien d'autre. Ajouter une famille se fait en trois lignes.
+     ------------------------------------------------------------------- */
+
+  const COLLECS = [
+    { id:'mezger', ic:'⚙️', n:'Le club Mezger',
+      d:'Le flat-six à vilebrequin de 962 du Mans. De la 996 GT3 à la GT2 RS, le bloc que les porschistes vénèrent.',
+      t:id => aFamille(id, 'mezger') },
+
+    { id:'prv', ic:'🤝', n:'La tournée du PRV',
+      d:'Peugeot-Renault-Volvo. Un même V6 chez Citroën, DeLorean, Alpine, Venturi et Lancia — cinq marques, aucune parenté commerciale.',
+      t:id => aFamille(id, 'prv') },
+
+    { id:'busso', ic:'🎼', n:'La chorale Busso',
+      d:'Vingt-huit ans de V6 Alfa Romeo. Souvent cité comme le six cylindres le plus mélodieux jamais produit.',
+      t:id => aFamille(id, 'busso') },
+
+    { id:'rotary', ic:'🌀', n:'Rotary Club',
+      d:'Le moteur Wankel. Pas de pistons, pas de soupapes, un son que rien d\'autre ne produit.',
+      t:id => aMotif(id, /rotatif|birotor|rotor|Wankel|13B|R26B/i) },
+
+    { id:'cinq', ic:'🎺', n:'Cinq en ligne',
+      d:'L\'architecture bâtarde entre le quatre et le six. Ordre d\'allumage décalé, timbre reconnaissable entre mille.',
+      t:id => aMotif(id, /5 en ligne|cinq[- ]cylindres|5 cyl\./i) },
+
+    { id:'douze', ic:'👑', n:'Douze cylindres',
+      d:'V12, W12, flat-12. Le luxe d\'une combustion que rien ne justifie sinon le plaisir.',
+      t:id => aMotif(id, /V12|W12|flat-12|12 cyl|W16/i) },
+
+    { id:'dix', ic:'🔟', n:'Le clan des V10',
+      d:'Une architecture rare, née de la Formule 1 et disparue avec elle.',
+      t:id => aMotif(id, /V10/i) },
+
+    { id:'neufmille', ic:'📈', n:'Le mur des 9 000',
+      d:'Neuf mille tours par minute ou plus. Une frontière que très peu de moteurs de route ont franchie.',
+      t:id => regimeMax(id) >= 8800 },
+
+    { id:'atmo', ic:'🌬️', n:'Dernier souffle',
+      d:'Plus de 400 ch sans la moindre suralimentation. Une espèce en voie d\'extinction réglementaire.',
+      t:id => chMax(id) >= 400 && aMotif(id, /atmo/i) && !aMotif(id, /biturbo|quadriturbo/i) },
+
+    { id:'central', ic:'🎯', n:'Le moteur au centre',
+      d:'Bloc entre le conducteur et l\'essieu arrière. L\'architecture de la voiture de course, transposée à la route.',
+      t:id => aMotif(id, /moteur central|position centrale|central arrière/i) },
+
+    { id:'arriere', ic:'🐸', n:'Tout à l\'arrière',
+      d:'Moteur en porte-à-faux derrière l\'essieu. Contre toute logique dynamique — et pourtant.',
+      t:id => aMotif(id, /moteur arrière|position arrière|moteur en porte-à-faux/i) },
+
+    { id:'compresseur', ic:'🌪️', n:'L\'ère du compresseur',
+      d:'Suralimentation mécanique. Aucune inertie, un sifflement continu, et une consommation assumée.',
+      t:id => aMotif(id, /compresseur|compressé|compressée|G-Lader|Kompressor/i) },
+
+    { id:'groupeb', ic:'🔥', n:'Groupe B',
+      d:'1982-1986. Quatre saisons, aucune limite technique, et une interdiction dans le sang.',
+      t:id => aMotif(id, /Groupe B/i) },
+
+    { id:'homolog', ic:'📜', n:'Nées pour homologuer',
+      d:'Construites uniquement pour obtenir le droit de courir. Séries courtes, équipement absent, cotes déraisonnables.',
+      t:id => aMotif(id, /homologation|d'homologation|homologuer/i) },
+
+    { id:'mille', ic:'⚡', n:'Le club des mille',
+      d:'Mille chevaux ou plus. La barre que seule une poignée de constructeurs a franchie.',
+      t:id => chMax(id) >= 1000 },
+
+    { id:'rarissime', ic:'💎', n:'Moins de cinq cents',
+      d:'Production totale sous les cinq cents exemplaires. En croiser une relève du hasard pur.',
+      t:id => { const f = specDe(id); return f && f.prod != null && f.prod <= 500; } },
+
+    { id:'manuelle', ic:'🕹️', n:'Résistance manuelle',
+      d:'Trois pédales et un levier, sur des voitures postérieures à 2015. Un choix militant.',
+      t:id => genDepuis(id, /manuelle [67]/i, 2015) },
+
+    { id:'vilebrequinplat', ic:'🎻', n:'Vilebrequin plat',
+      d:'Manetons à 180°. Un V8 qui hurle comme un V8 de course au lieu de gronder.',
+      t:id => aMotif(id, /vilebrequin plat/i) },
+
+    { id:'quadri', ic:'🌀', n:'Quatre turbos',
+      d:'Quadriturbo. Une réponse d\'ingénieur à une question que personne n\'avait posée.',
+      t:id => aMotif(id, /quadriturbo|quatre turbos/i) },
+
+    { id:'diesel', ic:'🛢️', n:'Le diesel qui gagne',
+      d:'Le gazole en compétition. Audi puis Peugeot ont gagné Le Mans avec, avant que le règlement ne referme la porte.',
+      t:id => aMotif(id, /diesel/i) && aMotif(id, /Mans|championnat|victoire|course/i) },
+
+    { id:'hybride', ic:'🔋', n:'Hybrides de pointe',
+      d:'L\'électricité au service de la performance, pas de la sobriété.',
+      t:id => aMotif(id, /hybride/i) && chMax(id) >= 600 },
+
+    { id:'lemans', ic:'🏁', n:'Vainqueurs du Mans',
+      d:'Elles ont gagné les 24 Heures. Toutes catégories, toutes époques.',
+      t:id => aMotif(id, /Victoire[s]? au (général au )?Mans|au Mans \d{4}|Victoire au Mans/i) },
+
+    { id:'nurburgring', ic:'⏱️', n:'Le chrono de la Nordschleife',
+      d:'Elles ont détenu un record au Nürburgring, dans leur catégorie ou toutes catégories confondues.',
+      t:id => aMotif(id, /Nürburgring/i) },
+
+    { id:'grille', ic:'🎰', n:'La boîte à grille',
+      d:'Levier métallique dans une grille ouverte. Le geste le plus copié et le moins remplacé de l\'automobile.',
+      t:id => aMotif(id, /à grille/i) },
+
+    { id:'escamotables', ic:'👁️', n:'Phares escamotables',
+      d:'Interdits de fait depuis les normes piétons de 2004. Une esthétique entière disparue par décret.',
+      t:id => aMotif(id, /escamotables/i) },
+
+    { id:'kei', ic:'🍙', n:'Kei cars',
+      d:'Bridées à 64 ch et 660 cm³ par la loi japonaise. La contrainte comme moteur de créativité.',
+      t:id => aMotif(id, /kei|657 cm³|656 cm³|658 cm³|660 cm³/i) },
+
+    { id:'f1route', ic:'🏎️', n:'Un moteur de F1 sur la route',
+      d:'Blocs directement dérivés de la Formule 1, homologués pour un usage routier.',
+      t:id => aMotif(id, /issu de la F1|dérivé de la F1|de Formule 1|programme Formule 1|V10 de Formule 1|moteur de Formule 1/i) },
+
+    { id:'pikespeak', ic:'⛰️', n:'Pikes Peak',
+      d:'La course de côte du Colorado. Vingt kilomètres, cent cinquante-six virages, quatre mille mètres d\'altitude.',
+      t:id => aMotif(id, /Pikes Peak/i) },
+
+    { id:'annee', ic:'🥇', n:'Voiture de l\'Année',
+      d:'Élues par le jury européen. Le titre le plus convoité — et parfois le plus discuté.',
+      t:id => aMotif(id, /Voiture de l'Année/i) },
+
+    { id:'aeroactive', ic:'🪁', n:'Aérodynamique active',
+      d:'Ailerons, volets et conduits qui bougent en roulant. La voiture change de forme selon ce qu\'on lui demande.',
+      t:id => aMotif(id, /aéro active|aérodynamique active|volets aérodynamiques|aileron actif|aileron mobile|ALA|prises d'air latérales mobiles/i) },
+
+    { id:'record', ic:'🚀', n:'Record du monde de vitesse',
+      d:'Elles ont détenu, à un moment, le titre de voiture de série la plus rapide du monde.',
+      t:id => aMotif(id, /record du monde|la plus rapide du monde|voiture de série la plus rapide/i) },
+
+    { id:'carbone', ic:'🕸️', n:'Monocoque carbone',
+      d:'Châssis en fibre de carbone. Né en Formule 1 en 1981, descendu sur route avec la McLaren F1.',
+      t:id => aMotif(id, /monocoque carbone|châssis carbone|coque en fibre de carbone|Monocage|monocoque en fibre/i) },
+
+    { id:'tonne', ic:'🪶', n:'Sous la tonne',
+      d:'Moins de mille kilos. La légèreté comme doctrine, pas comme argument marketing.',
+      t:id => { const f = specDe(id); return f && f.kg && f.kg < 1000; } },
+
+    { id:'sequentiel', ic:'🔀', n:'Turbos séquentiels',
+      d:'Deux turbos qui se relaient : le petit à bas régime, le gros ensuite. Une complication au service de la linéarité.',
+      t:id => aMotif(id, /séquentiel/i) && aMotif(id, /turbo/i) },
+
+    { id:'orphelines', ic:'🕯️', n:'Les orphelines',
+      d:'Marques mortes, absorbées ou disparues du marché. Chaque exemplaire croisé est un survivant.',
+      t:id => ['Saab','Rover','Pontiac','Oldsmobile','Plymouth','Hummer','Daewoo','Talbot','Simca',
+               'Panhard','Facel Vega','Matra','Venturi','De Tomaso','TVR','Lancia','Autobianchi',
+               'Mercury','AMC','Studebaker','Tucker','Cord','Duesenberg','Holden','Trabant',
+               'DeLorean','Jensen','Vector','Wiesmann','Gumpert','Spyker','Bizzarrini','Iso',
+               'Datsun','Scion','Isuzu','Daihatsu','Tatra','Lada','Hindustan','Puma','Pegaso']
+              .includes(marqueDe(id)) },
+
+    { id:'transaxle', ic:'⚖️', n:'Transaxle',
+      d:'Boîte accolée au pont arrière. Une complication mécanique au seul service de la répartition des masses.',
+      t:id => aMotif(id, /transaxle/i) },
+  ];
+
+
+  /* --- Calcul et rendu des collections ---------------------------------- */
+
+  let _collecsCache = null;
+  function calculerCollecs() {
+    if (_collecsCache) return _collecsCache;
+    let ids = [];
+    try { ids = (typeof CARS !== 'undefined' && Array.isArray(CARS)) ? CARS.map(c => c.id) : []; } catch (_) {}
+    if (!ids.length) ids = Object.keys(GENS);
+    const out = [];
+    for (const c of COLLECS) {
+      const membres = [];
+      for (const id of ids) { try { if (c.t(id)) membres.push(id); } catch (_) {} }
+      if (membres.length >= 2) out.push({ ...c, membres });
+    }
+    return (_collecsCache = out.sort((a, b) => b.membres.length - a.membres.length));
+  }
+
+  function carteCollec(c, possedes) {
+    const eus = c.membres.filter(id => possedes.has(id));
+    const pct = Math.round(eus.length / c.membres.length * 100);
+    const complet = eus.length === c.membres.length;
+    /* data-car est lu par la délégation d'événements d'index.html : ces puces
+       ouvrent donc la fiche du modèle sans qu'aucun écouteur soit ajouté ici.
+       On se branche sur le mécanisme existant plutôt que d'en créer un second. */
+    const puces = c.membres
+      .sort((a, b) => (possedes.has(b) - possedes.has(a)) || nomCatalogue(a).localeCompare(nomCatalogue(b)))
+      .map(id => `<button class="gcl-p${possedes.has(id) ? ' on' : ''}" data-car="${esc(id)}">${esc(nomCatalogue(id))}</button>`)
+      .join('');
+    return `<details class="gcl${complet ? ' fait' : ''}">
+      <summary>
+        <span class="gcl-ic">${c.ic}</span>
+        <span class="gcl-t"><b>${esc(c.n)}</b><i>${eus.length} / ${c.membres.length}</i></span>
+        <span class="gcl-j"><i style="width:${pct}%"></i></span>
+      </summary>
+      <p class="gcl-d">${esc(c.d)}</p>
+      <div class="gcl-l">${puces}</div>
+    </details>`;
+  }
+
+  function collecsHTML(possedes) {
+    const l = calculerCollecs();
+    const totalM = l.reduce((n, c) => n + c.membres.length, 0);
+    const acquis = l.reduce((n, c) => n + c.membres.filter(id => possedes.has(id)).length, 0);
+    const finies = l.filter(c => c.membres.every(id => possedes.has(id))).length;
+    return `<div class="section panel gcl-wrap">
+      <div class="gcl-head">
+        <div class="h2">Collections mécaniques</div>
+        <span>${finies}/${l.length} bouclées · ${acquis}/${totalM} pièces</span>
+      </div>
+      <p class="gcl-intro">Ton catalogue range par marque et par pays. Un passionné range par architecture. Voici l'autre classement.</p>
+      ${l.map(c => carteCollec(c, possedes)).join('')}
+    </div>`;
+  }
+
+  /* --- Greffe dans l'onglet Défis --------------------------------------
+     L'app reconstruit #view entièrement à chaque render(). On réinjecte
+     donc à chaque mutation, en vérifiant l'absence préalable — idempotent
+     par construction, aucun risque de doublon ni de fuite.
+     ------------------------------------------------------------------- */
+  /* VERROU OBLIGATOIRE : la greffe modifie #view, ce qui redéclenche
+     l'observateur qui l'a appelée. Sans ce drapeau, on obtient une boucle de
+     mutation infinie qui gèle l'onglet — bug trouvé au banc d'essai, pas à la
+     relecture. Toute écriture dans un nœud observé doit être verrouillée. */
+  let _greffeEnCours = false;
+
+  function grefferCollecs() {
+    if (_greffeEnCours) return;
+    const vue = document.getElementById('view');
+    if (!vue) return;
+    if (!vue.querySelector('.rankbar')) return;          // on n'est pas sur l'onglet Défis
+    if (vue.querySelector('.gcl-wrap')) return;          // déjà greffé
+
+    _greffeEnCours = true;
+    const ancre = document.createElement('div');
+    ancre.className = 'gcl-wrap';                        // marqué dès l'insertion : idempotent immédiatement
+    vue.appendChild(ancre);
+
+    lireGarage().then(possedes => {
+      try {
+        if (document.body.contains(ancre)) ancre.outerHTML = collecsHTML(possedes);
+      } finally { _greffeEnCours = false; }
+    }).catch(() => { _greffeEnCours = false; });
+  }
+
+
+  /* ======================================================================
+     DISTINCTIONS
+     ----------------------------------------------------------------------
+     Un chiffre isolé ne dit rien. « 986 kg » ne parle qu'à qui a déjà les
+     ordres de grandeur. « La plus légère du catalogue » parle à tout le
+     monde. On calcule donc, pour chaque modèle, les classements où il
+     figure dans les trois premiers — et on n'affiche rien sinon. Une
+     distinction distribuée à tout le monde n'est plus une distinction.
+     ====================================================================== */
+
+  const PALMARES = [
+    { c:'kgch',  lib:'meilleur rapport poids/puissance', sens:-1, val:f => deriver(f).kgch },
+    { c:'chT',   lib:'puissance par tonne',              sens: 1, val:f => deriver(f).chT  },
+    { c:'chL',   lib:'puissance spécifique',             sens: 1, val:f => deriver(f).chL  },
+    { c:'kg',    lib:'plus légère',                      sens:-1, val:f => f.kg            },
+    { c:'ch',    lib:'plus puissante',                   sens: 1, val:f => f.ch            },
+    { c:'rupteur', lib:'plus haut régime',               sens: 1, val:f => f.rupteur       },
+    { c:'prod',  lib:'plus rare',                        sens:-1, val:f => f.prod          },
+  ];
+
+  let _palmCache = null;
+  function classements() {
+    if (_palmCache) return _palmCache;
+    const out = {};
+    for (const p of PALMARES) {
+      const l = Object.keys(SPECS)
+        /* Le moteur rotatif est exclu des classements rapportés à la cylindrée :
+           1,3 L au sens Wankel correspond à environ 2,6 L au sens d'un moteur à
+           pistons. Le comparer aux autres produirait un classement faux tout en
+           étant arithmétiquement correct — c'est le pire type d'erreur. */
+        .filter(k => !(/L|nmL/.test(p.c) && /rotatif|birotor/i.test(SPECS[k].arch || '')))
+        .map(k => ({ k, v: p.val(SPECS[k]) }))
+        .filter(x => typeof x.v === 'number' && isFinite(x.v))
+        .sort((a, b) => (b.v - a.v) * p.sens);
+      out[p.c] = l.map(x => x.k);
+    }
+    return (_palmCache = out);
+  }
+
+  const ORDINAUX = ['', '', '2ᵉ', '3ᵉ'];
+
+  function distinctionsHTML(idCatalogue) {
+    const cle = MAP[idCatalogue];
+    if (!cle || !SPECS[cle]) return '';
+    const cl = classements();
+    const mentions = [];
+    for (const p of PALMARES) {
+      const rang = cl[p.c].indexOf(cle);
+      if (rang < 0 || rang > 2 || cl[p.c].length < 12) continue;
+      mentions.push(rang === 0
+        ? `<span class="gdi or">🏆 ${esc(p.lib)} du catalogue</span>`
+        : `<span class="gdi">${ORDINAUX[rang + 1]} ${esc(p.lib)}</span>`);
+    }
+    if (!mentions.length) return '';
+    return `<div class="gdi-l">${mentions.join('')}</div>`;
+  }
+
+  /* ======================================================================
+     RECADRAGE INTELLIGENT DES PHOTOS
+     ----------------------------------------------------------------------
+     PROBLÈME OBSERVÉ : une photo bien cadrée par l'utilisateur apparaît
+     décentrée dans l'app. Cause : `object-fit: cover` recadre au CENTRE
+     vertical par défaut. Or sur une photo de voiture prise debout, le ciel
+     occupe le tiers supérieur et le sujet vit dans la moitié basse. Le crop
+     mathématiquement centré est donc systématiquement mal placé.
+
+     SOLUTION ÉCARTÉE : une valeur fixe du type `object-position: center 65%`.
+     Ça corrige la photo de station-service et casse le portrait serré, le
+     plan en contre-plongée, la photo prise depuis un pont. On déplacerait le
+     problème au lieu de le résoudre.
+
+     SOLUTION RETENUE : mesurer où se trouve réellement le sujet. Le ciel est
+     une surface lisse — variation de luminance quasi nulle. Une carrosserie,
+     des jantes, une route, une station-service sont des surfaces à fort
+     gradient. On calcule donc l'ÉNERGIE de détail par bande horizontale, et
+     le centre de masse de cette énergie donne la hauteur du sujet.
+
+     Coût : une image réduite à 24×32 puis un parcours de 768 pixels. Moins
+     d'une milliseconde, une seule fois par photo, résultat mis en cache.
+     ====================================================================== */
+
+  const _cropCache = new Map();
+  let _cropCanvas = null;
+
+  /** Position verticale du sujet, en pourcentage de la hauteur (25 à 75). */
+  function centreSujet(img) {
+    const L = 24, H = 32;
+    if (!_cropCanvas) {
+      _cropCanvas = document.createElement('canvas');
+      _cropCanvas.width = L; _cropCanvas.height = H;
+    }
+    const ctx = _cropCanvas.getContext('2d', { willReadFrequently: true });
+    ctx.drawImage(img, 0, 0, L, H);
+    const d = ctx.getImageData(0, 0, L, H).data;
+
+    // Luminance perçue
+    const g = new Float32Array(L * H);
+    for (let i = 0; i < L * H; i++) {
+      const o = i * 4;
+      g[i] = 0.299 * d[o] + 0.587 * d[o + 1] + 0.114 * d[o + 2];
+    }
+
+    // Énergie de détail par ligne : somme des gradients horizontal et vertical.
+    const energie = new Float32Array(H);
+    let total = 0;
+    for (let y = 0; y < H; y++) {
+      let e = 0;
+      for (let x = 0; x < L; x++) {
+        const i = y * L + x;
+        if (x < L - 1) e += Math.abs(g[i] - g[i + 1]);
+        if (y < H - 1) e += Math.abs(g[i] - g[i + L]);
+      }
+      energie[y] = e; total += e;
+    }
+    if (total < 1) return 50;                       // image uniforme : on ne touche à rien
+
+    /* Seuil de bruit : on ignore les bandes dont l'énergie est très inférieure
+       à la moyenne. Sans ce filtre, un ciel légèrement nuageux compte autant
+       qu'une carrosserie et ramène le centre de masse vers le milieu. */
+    const moy = total / H;
+    let som = 0, poids = 0;
+    for (let y = 0; y < H; y++) {
+      const e = energie[y] < moy * 0.35 ? 0 : energie[y];
+      som += e * (y + 0.5); poids += e;
+    }
+    if (poids < 1) return 50;
+
+    const pct = (som / poids) / H * 100;
+    return Math.max(25, Math.min(75, Math.round(pct)));   // garde-fou : jamais de crop extrême
+  }
+
+  function recadrer(img) {
+    if (!img || img.dataset.gcrop) return;
+    const src = img.currentSrc || img.src;
+    if (!src || src.indexOf('data:image') !== 0) return;   // photos locales uniquement
+
+    const appliquer = () => {
+      try {
+        if (!img.naturalWidth) return;
+        let pct = _cropCache.get(src);
+        if (pct === undefined) { pct = centreSujet(img); _cropCache.set(src, pct); }
+        img.dataset.gcrop = pct;
+        img.style.objectPosition = `center ${pct}%`;
+      } catch (_) { img.dataset.gcrop = 'ko'; }
+    };
+
+    if (img.complete && img.naturalWidth) appliquer();
+    else img.addEventListener('load', appliquer, { once: true });
+  }
+
+  function recadrerTout() {
+    document.querySelectorAll('#overlay img, #view img, .rv-card img')
+      .forEach(recadrer);
+  }
+
+  /* ======================================================================
+     RATTACHEMENT DES VOITURES « NON CLASSÉ »
+     ----------------------------------------------------------------------
+     Quand une voiture manque au catalogue, tu la crées en « Non classé »
+     sous un identifiant `custom:...`. Si le modèle rejoint plus tard le
+     catalogue officiel, ta capture reste orpheline : hors marque, hors pays,
+     hors score, et en double du modèle officiel.
+
+     Ce module détecte ces correspondances et propose de rattacher.
+
+     TROIS RÈGLES DE SÛRETÉ, parce qu'on touche à tes données :
+
+     1. RIEN N'EST FAIT SANS TON ACCORD. Le module lit, compare, et affiche
+        une proposition. Aucune écriture avant un clic explicite. Une
+        migration silencieuse qui se trompe est indétectable.
+
+     2. ON ÉCRIT AVANT DE SUPPRIMER. La nouvelle entrée est enregistrée et
+        confirmée, ensuite seulement l'ancienne est retirée. Si l'écriture
+        échoue, la capture d'origine est toujours là.
+
+     3. ON FUSIONNE, ON N'ÉCRASE PAS. Si le modèle officiel est déjà au
+        garage, les photos des deux entrées sont réunies, la date la plus
+        ancienne conservée, les notes concaténées, le favori conservé si
+        l'un des deux l'était. Aucune photo perdue.
+     ====================================================================== */
+
+  function _bigrammes(t) { const o = new Set(); for (let i = 0; i < t.length - 1; i++) o.add(t.slice(i, i + 2)); return o; }
+  function _dice(a, b) {
+    if (!a || !b) return 0;
+    if (a === b) return 1;
+    const A = _bigrammes(a), B = _bigrammes(b);
+    let n = 0; for (const g of A) if (B.has(g)) n++;
+    return (2 * n) / (A.size + B.size);
+  }
+
+  function ouvrirBase(mode) {
+    return new Promise((res, rej) => {
+      let fini = false;
+      const t = setTimeout(() => { if (!fini) { fini = true; rej(new Error('timeout')); } }, 4000);
+      try {
+        const rq = indexedDB.open('garage-manifest');       // jamais de version : aucune migration possible
+        rq.onsuccess = () => { if (fini) return; fini = true; clearTimeout(t); res(rq.result); };
+        rq.onerror   = () => { if (fini) return; fini = true; clearTimeout(t); rej(rq.error); };
+      } catch (e) { clearTimeout(t); rej(e); }
+    });
+  }
+
+  const _lire = (st, k) => new Promise((res) => { const r = st.get(k); r.onsuccess = () => res(r.result); r.onerror = () => res(null); });
+  const _tous = (st)    => new Promise((res) => { const r = st.getAll(); r.onsuccess = () => res(r.result || []); r.onerror = () => res([]); });
+
+  /** Cherche, pour chaque « Non classé » capturé, une entrée officielle correspondante. */
+  async function chercherRattachements() {
+    let cat = [];
+    try { cat = (typeof CARS !== 'undefined' && Array.isArray(CARS)) ? CARS.filter(c => !c.custom) : []; } catch (_) {}
+    if (!cat.length) return [];
+
+    let db;
+    try { db = await ouvrirBase(); } catch (_) { return []; }
+    if (!db.objectStoreNames.contains('spots')) return [];
+
+    const st = db.transaction('spots', 'readonly').objectStore('spots');
+    const reg = await _lire(st, '__customcars__');
+    const customs = (reg && Array.isArray(reg.list)) ? reg.list : [];
+    if (!customs.length) return [];
+
+    const spots = await _tous(st);
+    const parId = new Map(spots.map(s => [s.carId, s]));
+
+    const props = [];
+    for (const cu of customs) {
+      const capture = parId.get(cu.id);
+      if (!capture) continue;                                  // custom créée mais jamais utilisée
+      const cibleTxt = norm(`${cu.brand} ${cu.model}`);
+      const marqueCu = norm(cu.brand);
+
+      let best = null, score = 0;
+      for (const c of cat) {
+        const sim = _dice(cibleTxt, norm(`${c.brand} ${c.model}`));
+        /* La marque doit correspondre. Sans cette contrainte, « Clio V6 » et
+           « Clio R.S. » atteignent 0,85 de similarité et on rattacherait la
+           capture au mauvais modèle — une erreur invisible et permanente. */
+        const memeMarque = norm(c.brand) === marqueCu
+          || norm(c.brand).includes(marqueCu) || marqueCu.includes(norm(c.brand));
+        if (!memeMarque) continue;
+        if (sim > score) { score = sim; best = c; }
+      }
+      /* Seuil volontairement haut : on écrit dans les données de l'utilisateur.
+         Un rattachement manqué se rattrape, un rattachement erroné non. */
+      if (best && score >= 0.86) {
+        props.push({ custom: cu, capture, cible: best, score: Math.round(score * 100),
+                     existante: parId.get(best.id) || null });
+      }
+    }
+    return props;
+  }
+
+  /** Fusionne deux captures sans jamais perdre de contenu. */
+  function fusionner(cibleId, ancienne, existante) {
+    const photos = [...(existante?.photos || []), ...(ancienne.photos || [])]
+      .filter((p, i, t) => p && t.indexOf(p) === i);           // dédoublonnage strict
+    const dates = [existante?.at, ancienne.at].filter(Boolean).sort();
+    const notes = [existante?.note, ancienne.note].filter(n => n && n.trim());
+    return {
+      carId: cibleId,
+      at: dates[0] || new Date().toISOString(),                // la plus ancienne des deux
+      loc: existante?.loc || ancienne.loc || '',
+      coords: existante?.coords || ancienne.coords || null,
+      note: [...new Set(notes)].join(' · ').slice(0, 2000),
+      photos,
+      cover: Math.min(existante?.cover || 0, Math.max(0, photos.length - 1)),
+      variants: [...new Set([...(existante?.variants || []), ...(ancienne.variants || [])])],
+      favorite: !!(existante?.favorite || ancienne.favorite)
+    };
+  }
+
+  async function appliquerRattachements(props) {
+    const db = await ouvrirBase();
+    const journal = [];
+    for (const pr of props) {
+      const tx = db.transaction('spots', 'readwrite');
+      const st = tx.objectStore('spots');
+      const fusion = fusionner(pr.cible.id, pr.capture, pr.existante);
+
+      // 1. On écrit la nouvelle entrée, et on attend sa confirmation.
+      const ecrit = await new Promise(res => {
+        const r = st.put(fusion); r.onsuccess = () => res(true); r.onerror = () => res(false);
+      });
+      if (!ecrit) { journal.push(`échec : ${pr.custom.brand} ${pr.custom.model} (conservée)`); continue; }
+
+      // 2. Seulement ensuite, on retire l'ancienne et on nettoie le registre.
+      await new Promise(res => { const r = st.delete(pr.custom.id); r.onsuccess = r.onerror = () => res(); });
+      const reg = await _lire(st, '__customcars__');
+      if (reg && Array.isArray(reg.list)) {
+        reg.list = reg.list.filter(c => c.id !== pr.custom.id);
+        await new Promise(res => { const r = st.put(reg); r.onsuccess = r.onerror = () => res(); });
+      }
+      journal.push(`${pr.custom.brand} ${pr.custom.model} → ${pr.cible.brand} ${pr.cible.model}`);
+    }
+    console.info('[GMSpecs] rattachements :', journal);
+    return journal;
+  }
+
+  /* --- Bandeau de proposition ------------------------------------------ */
+  let _bandeauFait = false;
+
+  async function proposerRattachements() {
+    if (_bandeauFait || document.getElementById('gmr-rat')) return;
+    _bandeauFait = true;
+    let props = [];
+    try { props = await chercherRattachements(); } catch (_) { return; }
+    if (!props.length) return;
+
+    const el = document.createElement('div');
+    el.id = 'gmr-rat';
+    el.innerHTML = `<div class="gmr-rc">
+      <b>${props.length} voiture${props.length > 1 ? 's' : ''} non classée${props.length > 1 ? 's' : ''} ${props.length > 1 ? 'ont' : 'a'} rejoint le catalogue</b>
+      <span>${props.map(p => `${esc(p.custom.brand)} ${esc(p.custom.model)} → ${esc(p.cible.brand)} ${esc(p.cible.model)}`).join('<br>')}</span>
+      <em>Tes photos, ta date et ta note sont conservées. Rien n'est supprimé avant que la nouvelle fiche soit enregistrée.</em>
+      <div class="gmr-ra">
+        <button class="btn" data-rat="non">Plus tard</button>
+        <button class="btn red" data-rat="oui">Rattacher</button>
+      </div></div>`;
+    el.addEventListener('click', async (e) => {
+      const b = e.target.closest('[data-rat]'); if (!b) return;
+      if (b.dataset.rat === 'non') return el.remove();
+      b.disabled = true; b.textContent = 'Rattachement…';
+      try { await appliquerRattachements(props); } catch (_) {}
+      el.remove();
+      location.reload();                    // l'app a déjà chargé son état en mémoire
+    });
+    document.body.appendChild(el);
   }
 
   /* ======================================================================
@@ -4148,8 +4838,49 @@
   .gmm[open] summary b{ color:var(--red); }
   .gmm-d{ margin:0 0 9px; font:400 11.5px/1.5 var(--sans); color:var(--muted2); }
   .gmm-l{ display:flex; flex-wrap:wrap; gap:5px; padding-bottom:12px; }
-  .gmm-l span{ padding:5px 9px; border:1px solid var(--line); border-radius:999px;
-    background:var(--panel2); font:500 11px/1 var(--sans); color:var(--muted); }
+  .gmm-l button{ padding:6px 10px; border:1px solid var(--line); border-radius:999px;
+    background:var(--panel2); font:500 11px/1 var(--sans); color:var(--muted); cursor:pointer; }
+  .gmm-l button:active{ transform:scale(.96); border-color:var(--red-dk); }
+
+  .gcl-head{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; }
+  .gcl-head span{ font:500 10px/1 var(--mono); letter-spacing:.04em; color:var(--dim); }
+  .gcl-intro{ margin:8px 0 14px; font:400 12px/1.5 var(--sans); color:var(--muted2); }
+  .gcl{ border-top:1px solid var(--line); }
+  .gcl summary{ display:flex; align-items:center; gap:11px; padding:12px 0; cursor:pointer; list-style:none; }
+  .gcl summary::-webkit-details-marker{ display:none; }
+  .gcl-ic{ font-size:1.15rem; flex:none; width:26px; text-align:center; }
+  .gcl-t{ flex:1; min-width:0; }
+  .gcl-t b{ display:block; font:600 13px/1.25 var(--sans); }
+  .gcl-t i{ display:block; margin-top:3px; font-style:normal; font:600 10px/1 var(--mono);
+    letter-spacing:.05em; color:var(--dim); font-variant-numeric:tabular-nums; }
+  .gcl-j{ flex:0 0 54px; height:4px; border-radius:3px; background:#232327; overflow:hidden; }
+  .gcl-j>i{ display:block; height:100%; background:var(--red); border-radius:3px; transition:width .5s ease; }
+  .gcl.fait .gcl-t b{ color:var(--legendaire); }
+  .gcl.fait .gcl-j>i{ background:var(--legendaire); }
+  .gcl[open] .gcl-t b{ color:var(--red); }
+  .gcl-d{ margin:0 0 10px; font:400 12px/1.55 var(--sans); color:var(--muted2); }
+  .gcl-l{ display:flex; flex-wrap:wrap; gap:5px; padding-bottom:13px; }
+  .gcl-p{ padding:6px 10px; border:1px solid var(--line); border-radius:999px; background:var(--panel2);
+    font:500 11px/1 var(--sans); color:var(--dim); cursor:pointer; }
+  .gcl-p:active{ transform:scale(.96); }
+  .gcl-p.on{ color:var(--txt); border-color:var(--red-dk); background:rgba(239,68,68,.12); }
+
+  .gdi-l{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px; }
+  .gdi{ padding:5px 10px; border-radius:999px; border:1px solid var(--line2);
+    background:var(--panel2); font:600 10px/1.3 var(--mono); letter-spacing:.04em;
+    text-transform:uppercase; color:var(--muted); }
+  .gdi.or{ color:var(--legendaire); border-color:rgba(251,191,36,.45);
+    background:rgba(251,191,36,.08); }
+
+  #gmr-rat{ position:fixed; left:12px; right:12px; bottom:calc(var(--tabh,64px) + 12px + var(--sb,0px));
+    z-index:255; display:flex; justify-content:center; }
+  .gmr-rc{ width:100%; max-width:520px; background:var(--panel); border:1px solid var(--line2);
+    border-radius:14px; padding:14px 16px; box-shadow:0 12px 40px rgba(0,0,0,.55); }
+  .gmr-rc b{ display:block; font:600 13px/1.35 var(--sans); }
+  .gmr-rc span{ display:block; margin-top:7px; font:500 11.5px/1.6 var(--mono); color:var(--peucommun); }
+  .gmr-rc em{ display:block; margin-top:8px; font-style:normal; font:400 11px/1.5 var(--sans); color:var(--dim); }
+  .gmr-ra{ display:flex; gap:8px; margin-top:12px; }
+  .gmr-ra .btn{ flex:1; text-align:center; }
   `;
 
   function injecterCSS() {
@@ -4189,12 +4920,22 @@
 
   function autoInstall() {
     injecterCSS();
+    const vue = document.getElementById('view');
+    if (vue) new MutationObserver(() => {
+      try { grefferCollecs(); } catch (_) {}
+      try { recadrerTout(); } catch (_) {}
+    }).observe(vue, { childList: true, subtree: true });
+    try { grefferCollecs(); } catch (_) {}
     const n = etendreVariants();
     if (n) console.info(`[GMSpecs] ${n} modèle(s) enrichi(s) de leurs générations dans le système de collection`);
     const cible = document.getElementById('overlay') || document.body;
-    new MutationObserver(() => { try { greffer(); } catch (_) {} })
-      .observe(cible, { childList: true, subtree: true });
-    try { greffer(); } catch (_) {}
+    new MutationObserver(() => {
+      try { greffer(); } catch (_) {}
+      try { recadrerTout(); } catch (_) {}
+    }).observe(cible, { childList: true, subtree: true });
+    try { greffer(); recadrerTout(); } catch (_) {}
+    /* Différé : on laisse l'app finir son propre démarrage avant d'ouvrir la base. */
+    setTimeout(() => { try { proposerRattachements(); } catch (_) {} }, 2500);
   }
 
   if (document.readyState === 'loading')
@@ -4237,7 +4978,15 @@
 
     rarete, deriver, percentile, signature,
     valider, audit,
-    MOTEURS, famillesDe,
+    MOTEURS, famillesDe, COLLECS,
+    recadrer, recadrerTout, centreSujet,
+    chercherRattachements, appliquerRattachements, proposerRattachements,
+
+    /** Les collections mécaniques et leurs membres. */
+    collections: () => calculerCollecs().map(c => ({
+      id: c.id, nom: c.n, description: c.d,
+      membres: c.membres.map(nomCatalogue).sort()
+    })),
 
     /** Toutes les familles de blocs partagées, triées par nombre de porteurs. */
     moteurs() {
