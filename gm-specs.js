@@ -4746,6 +4746,357 @@
   }
 
   /* ======================================================================
+     LE MYSTÈRE DU JOUR
+     ----------------------------------------------------------------------
+     Une voiture à deviner, tirée au sort de façon DÉTERMINISTE à partir de
+     la date : tout le monde a la même, sans serveur, sans réseau, sans
+     synchronisation. Le même principe que les défis quotidiens déjà en
+     place — la graine, c'est le jour.
+
+     Six essais. Chaque proposition renvoie une comparaison attribut par
+     attribut : marque, pays, décennie, puissance, architecture, rareté.
+     C'est ce retour qui rend le jeu jouable — on ne devine pas, on déduit.
+
+     POURQUOI CETTE FONCTIONNALITÉ EXISTE : l'app ne se rouvre aujourd'hui
+     que si tu as croisé une voiture. Le reste du temps, elle dort. Le
+     mystère donne une raison quotidienne d'y revenir, et il transforme les
+     1 073 motorisations écrites en matière de jeu plutôt qu'en archive.
+     ====================================================================== */
+
+  const ORDRE_RARETE = ['commun', 'peucommun', 'rare', 'epique', 'legendaire'];
+
+  /** Architecture normalisée d'un modèle, pour comparaison. */
+  function archiDe(id) {
+    const m = mecaDe(id);
+    const tests = [
+      [/\bW16\b/i, 'W16'], [/\bW12\b/i, 'W12'], [/\bV16\b/i, 'V16'],
+      [/\bV12\b|flat-12|12 cylindres à plat/i, 'V12'], [/\bV10\b/i, 'V10'],
+      [/\bV8\b/i, 'V8'], [/\bV6\b/i, 'V6'], [/\bV4\b/i, 'V4'],
+      [/flat-6|6 cylindres à plat|boxer 6/i, 'Flat-6'],
+      [/flat-4|4 cylindres à plat|boxer 4/i, 'Flat-4'],
+      [/rotatif|birotor|quadrirotor|Wankel/i, 'Rotatif'],
+      [/électrique/i, 'Électrique'],
+      [/\bVR6\b/i, 'VR6'],
+      [/(6|six) en ligne|6 cyl\.? en ligne/i, '6 en ligne'],
+      [/(5|cinq) en ligne|5 cyl\.? en ligne/i, '5 en ligne'],
+      [/(4|quatre) en ligne|4 cyl\.?|quatre cylindres/i, '4 cylindres'],
+      [/(3|trois) cyl|3 cyl\.?/i, '3 cylindres'],
+      [/bicylindre|2 cyl/i, 'Bicylindre'],
+      [/monocylindre/i, 'Monocylindre'],
+      [/8 en ligne|8 cylindres en ligne/i, '8 en ligne'],
+    ];
+    for (const [re, nom] of tests) if (re.test(m)) return nom;
+    return null;
+  }
+
+  function annee1(id) {
+    try {
+      if (typeof CARS !== 'undefined' && Array.isArray(CARS)) {
+        const c = CARS.find(x => x.id === id);
+        const a = c && String(c.yr || '').match(/\d{4}/);
+        if (a) return +a[0];
+      }
+    } catch (_) {}
+    const g = GENS[id];
+    if (g && g.length) {
+      const gen = g[0];
+      const an = (gen && !Array.isArray(gen) && gen.a) ? gen.a : gen[1];
+      const a = String(an || '').match(/\d{4}/);
+      if (a) return +a[0];
+    }
+    return null;
+  }
+
+  function ficheJeu(id) {
+    let c = null;
+    try { c = (typeof CARS !== 'undefined' && Array.isArray(CARS)) ? CARS.find(x => x.id === id) : null; } catch (_) {}
+    if (!c) return null;
+    return {
+      id, marque: c.brand, modele: c.model, pays: c.c || '', cat: c.cat || '',
+      rarete: ORDRE_RARETE.indexOf(c.r) >= 0 ? ORDRE_RARETE.indexOf(c.r) : 0,
+      annee: annee1(id), ch: chMax(id), archi: archiDe(id)
+    };
+  }
+
+  /* Pool jouable : on n'y met que les modèles suffisamment décrits pour que
+     les indices soient tous exploitables. Une voiture sans architecture
+     connue ni puissance rendrait la partie injouable et frustrante. */
+  let _pool = null;
+  function poolMystere() {
+    if (_pool) return _pool;
+    let ids = [];
+    try { ids = (typeof CARS !== 'undefined' && Array.isArray(CARS)) ? CARS.map(x => x.id) : []; } catch (_) {}
+    _pool = [...new Set(ids)]
+      .map(ficheJeu)
+      .filter(f => f && f.archi && f.annee && f.ch > 0 && (GENS[f.id] || MAP[f.id] || ARCHI[f.id]));
+    return _pool;
+  }
+
+  const jourClef = (d = new Date()) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+  /** Numéro d'énigme : nombre de jours depuis le lancement. */
+  function numeroMystere(d = new Date()) {
+    const debut = Date.UTC(2026, 0, 1);
+    return Math.floor((Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - debut) / 864e5) + 1;
+  }
+
+  /** Tirage déterministe : même jour, même voiture, pour tout le monde. */
+  function mystereDuJour(d = new Date()) {
+    const pool = poolMystere();
+    if (!pool.length) return null;
+    const r = mulberry32Local(hashLocal('gm-mystere-' + jourClef(d)));
+    return pool[Math.floor(r() * pool.length)];
+  }
+
+  function hashLocal(t) { let h = 2166136261; for (let i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+  function mulberry32Local(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+  /** Comparaison d'une proposition à la solution, attribut par attribut. */
+  function comparer(prop, sol) {
+    /* Une donnée absente ne doit JAMAIS produire une égalité : deux champs
+       vides sont strictement égaux au sens de JavaScript, ce qui afficherait
+       une case verte trompeuse et fausserait toute la déduction du joueur. */
+    const vide = (a, b) => !a || !b;
+    const eq = (a, b) => !!a && !!b && a === b;
+    const fleche = (a, b, tol) => {
+      if (a == null || b == null) return { e: '⬜', t: '?' };
+      if (Math.abs(a - b) <= (tol || 0)) return { e: '🟩', t: '=' };
+      return a < b ? { e: '🔼', t: '↑' } : { e: '🔽', t: '↓' };
+    };
+    return [
+      { k: 'Marque',  v: prop.marque || '?',
+        ...(vide(prop.marque, sol.marque) ? { e: '⬜', t: '?' } : eq(prop.marque, sol.marque) ? { e: '🟩', t: '=' } : { e: '⬛', t: '≠' }) },
+      { k: 'Pays',    v: prop.pays || '?',
+        ...(vide(prop.pays, sol.pays)     ? { e: '⬜', t: '?' } : eq(prop.pays, sol.pays)     ? { e: '🟩', t: '=' } : { e: '⬛', t: '≠' }) },
+      { k: 'Archi',   v: prop.archi || '?',
+        ...(vide(prop.archi, sol.archi)   ? { e: '⬜', t: '?' } : eq(prop.archi, sol.archi)   ? { e: '🟩', t: '=' } : { e: '⬛', t: '≠' }) },
+      /* Décennie plutôt qu'année : deviner « 1987 » au lieu de « 1985 » n'a
+         aucun intérêt ludique, et la tolérance rend la déduction possible. */
+      { k: 'Époque',  v: prop.annee ? `${Math.floor(prop.annee / 10) * 10}s` : '?', ...fleche(prop.annee, sol.annee, 5) },
+      { k: 'Puissance', v: prop.ch ? `${prop.ch} ch` : '?', ...fleche(prop.ch, sol.ch, Math.max(15, sol.ch * 0.08)) },
+      { k: 'Rareté',  v: ORDRE_RARETE[prop.rarete], ...fleche(prop.rarete, sol.rarete, 0) },
+    ];
+  }
+
+  /* Indices : dévoilés un par un à chaque échec, du plus général au plus
+     précis. Le dernier ne donne jamais la réponse, seulement l'initiale. */
+  function indicesDe(sol) {
+    const dec = Math.floor(sol.annee / 10) * 10;
+    return [
+      { t: 'Catégorie',    v: sol.cat || '—' },
+      { t: 'Époque',       v: `années ${dec}` },
+      { t: 'Architecture', v: sol.archi },
+      { t: 'Pays',         v: sol.pays },
+      { t: 'Puissance',    v: `environ ${Math.round(sol.ch / 25) * 25} ch` },
+      { t: 'Initiales',    v: `${sol.marque[0]}. ${sol.modele[0]}.` },
+    ];
+  }
+
+
+  /* --- Persistance : état du jour et série ------------------------------ */
+  const MYS = { pret: false, etat: null, serie: 0, meilleure: 0, joues: 0, gagnes: 0, db: null, sol: null };
+
+  function ouvrirMystere() {
+    return new Promise((res) => {
+      let f = false; const t = setTimeout(() => { if (!f) { f = true; res(null); } }, 2500);
+      try {
+        const rq = indexedDB.open('gm-mystere', 1);
+        rq.onupgradeneeded = () => { const db = rq.result; if (!db.objectStoreNames.contains('jeu')) db.createObjectStore('jeu', { keyPath: 'id' }); };
+        rq.onsuccess = () => { if (f) return; f = true; clearTimeout(t); res(rq.result); };
+        rq.onerror   = () => { if (f) return; f = true; clearTimeout(t); res(null); };
+      } catch (_) { clearTimeout(t); res(null); }
+    });
+  }
+
+  const _mysLire = (st, k) => new Promise(r => { const q = st.get(k); q.onsuccess = () => r(q.result); q.onerror = () => r(null); });
+
+  async function chargerMystere() {
+    MYS.db = await ouvrirMystere();
+    MYS.sol = mystereDuJour();
+    const cle = jourClef();
+    if (MYS.db) {
+      try {
+        const st = MYS.db.transaction('jeu', 'readonly').objectStore('jeu');
+        const e = await _mysLire(st, cle);
+        const s = await _mysLire(st, 'serie');
+        if (e) MYS.etat = e;
+        if (s) {
+          MYS.meilleure = s.max || 0; MYS.joues = s.joues || 0; MYS.gagnes = s.gagnes || 0;
+          /* La série ne survit qu'à une journée d'écart : sauter un jour la
+             remet à zéro, sinon elle ne voudrait plus rien dire. */
+          const hier = new Date(Date.now() - 864e5);
+          MYS.serie = (s.dernier === jourClef() || s.dernier === jourClef(hier)) ? (s.n || 0) : 0;
+        }
+      } catch (_) {}
+    }
+    if (!MYS.etat) MYS.etat = { id: cle, essais: [], fini: false, gagne: false };
+    MYS.pret = true;
+  }
+
+  function sauverMystere() {
+    if (!MYS.db) return;
+    try {
+      const st = MYS.db.transaction('jeu', 'readwrite').objectStore('jeu');
+      st.put(MYS.etat);
+      st.put({ id: 'serie', n: MYS.serie, max: MYS.meilleure, dernier: jourClef(),
+               joues: MYS.joues || 0, gagnes: MYS.gagnes || 0 });
+    } catch (_) {}
+  }
+
+  /** Enregistre une proposition et met à jour la partie. */
+  function jouer(idPropose) {
+    if (!MYS.pret || MYS.etat.fini) return;
+    const p = ficheJeu(idPropose);
+    if (!p || MYS.etat.essais.some(x => x.id === idPropose)) return;
+    const bon = idPropose === MYS.sol.id;
+    MYS.etat.essais.push({ id: idPropose, nom: `${p.marque} ${p.modele}`, cases: comparer(p, MYS.sol) });
+    if (bon || MYS.etat.essais.length >= 6) {
+      MYS.etat.fini = true; MYS.etat.gagne = bon;
+      /* La série ne compte que les victoires consécutives : un échec la
+         remet à zéro. C'est ce qui donne du poids à chaque partie. */
+      MYS.joues = (MYS.joues || 0) + 1;
+      if (bon) { MYS.gagnes = (MYS.gagnes || 0) + 1; MYS.serie++; MYS.meilleure = Math.max(MYS.meilleure, MYS.serie); }
+      else MYS.serie = 0;
+    }
+    sauverMystere();
+    redessinerMystere();
+  }
+
+  /** Résultat en emojis, sans jamais révéler la voiture. */
+  function partageMystere() {
+    const n = numeroMystere();
+    const score = MYS.etat.gagne ? `${MYS.etat.essais.length}/6` : 'X/6';
+    const grille = MYS.etat.essais.map(e => e.cases.map(c => c.e).join('')).join('\n');
+    return `Garage Manifest — Mystère #${n} : ${score}\n${grille}\n` +
+           (MYS.serie > 1 ? `Série en cours : ${MYS.serie} 🔥\n` : '');
+  }
+
+  /* --- Interface -------------------------------------------------------- */
+
+  function suggestions(q) {
+    const n = norm(q);
+    if (n.length < 2) return [];
+    const dejaJoues = new Set(MYS.etat.essais.map(e => e.id));
+    return poolMystere()
+      .filter(f => !dejaJoues.has(f.id) && norm(`${f.marque} ${f.modele}`).includes(n))
+      .sort((a, b) => norm(`${a.marque} ${a.modele}`).indexOf(n) - norm(`${b.marque} ${b.modele}`).indexOf(n)
+                      || a.marque.localeCompare(b.marque))
+      .slice(0, 7);
+  }
+
+  function mystereHTML() {
+    if (!MYS.pret || !MYS.sol) return '';
+    const e = MYS.etat, n = numeroMystere();
+    const restants = 6 - e.essais.length;
+
+    const lignes = e.essais.map(x => `
+      <div class="gmy-l">
+        <div class="gmy-n">${esc(x.nom)}</div>
+        <div class="gmy-c">${x.cases.map(c => `
+          <span class="gmy-k" data-e="${c.e === '🟩' ? 'ok' : (c.e === '⬛' ? 'no' : 'pp')}">
+            <i>${esc(c.k)}</i><b>${esc(String(c.v ?? '?'))}</b>
+            ${c.t === '↑' || c.t === '↓' ? `<u>${c.t}</u>` : ''}
+          </span>`).join('')}</div>
+      </div>`).join('');
+
+    /* Un indice de plus à chaque échec : la difficulté s'ajuste d'elle-même. */
+    const ind = indicesDe(MYS.sol).slice(0, Math.min(e.essais.length, 6));
+    const indices = ind.length ? `<div class="gmy-i">${ind.map(i =>
+      `<span><i>${esc(i.t)}</i>${esc(String(i.v))}</span>`).join('')}</div>` : '';
+
+    const saisie = e.fini ? '' : `
+      <div class="gmy-s">
+        <input id="gmy-q" placeholder="Quelle voiture ? — tape une marque…" autocomplete="off" />
+        <div class="gmy-sug" id="gmy-sug"></div>
+      </div>`;
+
+    const fin = e.fini ? `
+      <div class="gmy-fin ${e.gagne ? 'ok' : 'ko'}">
+        <b>${e.gagne ? `Trouvé en ${e.essais.length} essai${e.essais.length > 1 ? 's' : ''} !` : 'Raté pour aujourd\'hui'}</b>
+        <span>C'était la <strong>${esc(MYS.sol.marque)} ${esc(MYS.sol.modele)}</strong></span>
+        <div class="gmy-fa">
+          <button class="btn" data-my="fiche">Voir la fiche</button>
+          <button class="btn red" data-my="partage">Partager</button>
+        </div>
+        <div class="gmy-st">
+          <span><b>${MYS.joues || 0}</b>jouées</span>
+          <span><b>${MYS.joues ? Math.round((MYS.gagnes || 0) / MYS.joues * 100) : 0}%</b>réussite</span>
+          <span><b>${MYS.serie}</b>série</span>
+          <span><b>${MYS.meilleure}</b>record</span>
+        </div>
+        <p class="gmy-demain">Nouveau mystère à minuit.</p>
+      </div>` : '';
+
+    return `<div class="section panel gmy-wrap">
+      <div class="gmy-head">
+        <div class="h2">Le mystère du jour</div>
+        <span>#${n} · ${e.fini ? (e.gagne ? '✓' : '✗') : `${restants} essai${restants > 1 ? 's' : ''}`}${MYS.serie ? ` · série ${MYS.serie} 🔥` : ''}</span>
+      </div>
+      <p class="gmy-intro">Une voiture du catalogue, la même pour tout le monde. Chaque proposition te dit ce qui colle et ce qui ne colle pas.</p>
+      ${indices}
+      ${lignes}
+      ${saisie}
+      ${fin}
+    </div>`;
+  }
+
+  let _mysGreffe = false;
+  function redessinerMystere() {
+    const w = document.querySelector('.gmy-wrap');
+    if (!w) return;
+    _mysGreffe = true;
+    w.outerHTML = mystereHTML();
+    _mysGreffe = false;
+    const q = document.getElementById('gmy-q');
+    if (q && MYS.etat.essais.length) q.focus();
+  }
+
+  function grefferMystere() {
+    if (_mysGreffe) return;
+    const vue = document.getElementById('view');
+    if (!vue || !vue.querySelector('.rankbar')) return;
+    if (vue.querySelector('.gmy-wrap')) return;
+    if (!MYS.pret) return;
+    const html = mystereHTML();
+    if (!html) return;
+    const rang = vue.querySelector('.rankbar');
+    _mysGreffe = true;
+    rang.insertAdjacentHTML('afterend', html);
+    _mysGreffe = false;
+  }
+
+  /* Un seul écouteur délégué au niveau du document, posé une fois : rien à
+     nettoyer quand la vue est reconstruite. */
+  function brancherMystere() {
+    document.addEventListener('input', (ev) => {
+      if (ev.target.id !== 'gmy-q') return;
+      const box = document.getElementById('gmy-sug'); if (!box) return;
+      const l = suggestions(ev.target.value);
+      box.innerHTML = l.map(f =>
+        `<button class="gmy-o" data-my="prop" data-id="${esc(f.id)}">${esc(f.marque)} <b>${esc(f.modele)}</b></button>`).join('');
+    });
+    document.addEventListener('click', (ev) => {
+      const b = ev.target.closest('[data-my]'); if (!b) return;
+      const a = b.dataset.my;
+      if (a === 'prop') { jouer(b.dataset.id); return; }
+      if (a === 'fiche') {
+        const el = document.createElement('button');
+        el.dataset.car = MYS.sol.id; el.style.display = 'none';
+        document.body.appendChild(el); el.click(); el.remove();
+        return;
+      }
+      if (a === 'partage') {
+        const t = partageMystere();
+        if (navigator.share) navigator.share({ text: t }).catch(() => {});
+        else navigator.clipboard?.writeText(t).then(() => {
+          b.textContent = 'Copié ✓'; setTimeout(() => { b.textContent = 'Partager'; }, 1800);
+        }).catch(() => {});
+      }
+    });
+  }
+
+  /* ======================================================================
      RECADRAGE MANUEL
      ----------------------------------------------------------------------
      La détection automatique se trompera parfois — un sujet très contrasté
@@ -5288,6 +5639,53 @@
   .gdi.or{ color:var(--legendaire); border-color:rgba(251,191,36,.45);
     background:rgba(251,191,36,.08); }
 
+  .gmy-head{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; }
+  .gmy-head span{ font:600 10px/1 var(--mono); letter-spacing:.05em; color:var(--red); white-space:nowrap; }
+  .gmy-intro{ margin:8px 0 12px; font:400 12px/1.5 var(--sans); color:var(--muted2); }
+  .gmy-i{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+  .gmy-i span{ padding:6px 10px; border-radius:8px; border:1px solid var(--line);
+    background:var(--panel2); font:600 11px/1.2 var(--sans); }
+  .gmy-i span i{ display:block; font-style:normal; font:400 8.5px/1 var(--mono);
+    letter-spacing:.08em; text-transform:uppercase; color:var(--dim); margin-bottom:3px; }
+  .gmy-l{ margin-bottom:10px; }
+  .gmy-n{ font:600 12.5px/1.3 var(--sans); margin-bottom:5px; }
+  .gmy-c{ display:grid; grid-template-columns:repeat(6,1fr); gap:3px; }
+  .gmy-k{ position:relative; padding:6px 3px; border-radius:6px; text-align:center;
+    background:var(--panel2); border:1px solid var(--line); min-width:0; overflow:hidden; }
+  .gmy-k i{ display:block; font-style:normal; font:400 7.5px/1 var(--mono);
+    letter-spacing:.04em; text-transform:uppercase; color:var(--dim); }
+  .gmy-k b{ display:block; margin-top:3px; font:700 9.5px/1.15 var(--mono);
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .gmy-k u{ position:absolute; right:2px; top:2px; text-decoration:none; font-size:8px; opacity:.85; }
+  .gmy-k[data-e="ok"]{ background:rgba(45,212,191,.16); border-color:rgba(45,212,191,.45); color:var(--peucommun); }
+  .gmy-k[data-e="no"]{ opacity:.5; }
+  .gmy-k[data-e="pp"]{ background:rgba(251,191,36,.10); border-color:rgba(251,191,36,.35); color:var(--legendaire); }
+  .gmy-k[data-e="nd"]{ opacity:.32; border-style:dashed; }
+  .gmy-s{ position:relative; margin-top:12px; }
+  .gmy-s input{ width:100%; padding:11px 13px; border:1px solid var(--line); background:var(--bg);
+    border-radius:10px; font:400 14px var(--sans); color:var(--fg); }
+  .gmy-s input:focus{ outline:none; border-color:var(--red); }
+  .gmy-sug{ display:flex; flex-direction:column; margin-top:6px; }
+  .gmy-o{ text-align:left; padding:10px 12px; border:1px solid var(--line); border-radius:9px;
+    background:var(--panel2); color:var(--muted); font:400 13px/1.2 var(--sans);
+    margin-top:4px; cursor:pointer; }
+  .gmy-o b{ color:var(--fg); font-weight:600; }
+  .gmy-o:active{ border-color:var(--red-dk); }
+  .gmy-fin{ margin-top:12px; padding:13px 14px; border-radius:11px; border:1px solid var(--line);
+    border-left:3px solid var(--peucommun); background:var(--panel); }
+  .gmy-fin.ko{ border-left-color:var(--red); }
+  .gmy-fin b{ display:block; font:700 14px/1.3 var(--sans); }
+  .gmy-fin span{ display:block; margin-top:5px; font:400 13px/1.45 var(--sans); color:var(--muted); }
+  .gmy-fin strong{ color:var(--fg); }
+  .gmy-fa{ display:flex; gap:8px; margin-top:12px; }
+  .gmy-fa .btn{ flex:1; text-align:center; }
+  .gmy-st{ display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-top:12px; }
+  .gmy-st span{ text-align:center; font:400 8.5px/1.2 var(--mono); letter-spacing:.05em;
+    text-transform:uppercase; color:var(--dim); }
+  .gmy-st b{ display:block; font:700 17px/1 var(--mono); color:var(--fg); margin-bottom:4px;
+    font-variant-numeric:tabular-nums; }
+  .gmy-demain{ margin:11px 0 0; text-align:center; font:400 10.5px/1 var(--mono); color:var(--dim); }
+
   .gcz-ouvrir{ position:absolute; right:9px; bottom:9px; z-index:4; display:flex; align-items:center;
     gap:6px; padding:7px 11px; border-radius:999px; border:1px solid rgba(255,255,255,.18);
     background:rgba(11,11,13,.72); backdrop-filter:blur(6px); color:#fff;
@@ -5357,6 +5755,7 @@
     injecterCSS();
     const vue = document.getElementById('view');
     if (vue) new MutationObserver(() => {
+      try { grefferMystere(); } catch (_) {}
       try { grefferCollecs(); } catch (_) {}
       try { recadrerTout(); } catch (_) {}
     }).observe(vue, { childList: true, subtree: true });
@@ -5371,6 +5770,8 @@
     }).observe(cible, { childList: true, subtree: true });
     try { greffer(); recadrerTout(); grefferCadrage(); } catch (_) {}
     chargerCadrages().then(() => { try { recadrerTout(); } catch (_) {} });
+    brancherMystere();
+    chargerMystere().then(() => { try { grefferMystere(); } catch (_) {} });
     /* Différé : on laisse l'app finir son propre démarrage avant d'ouvrir la base. */
     setTimeout(() => { try { proposerRattachements(); } catch (_) {} }, 2500);
   }
@@ -5417,6 +5818,8 @@
     valider, audit,
     MOTEURS, famillesDe, COLLECS,
     recadrer, recadrerTout, centreSujet, grefferCadrage,
+    mystereDuJour, poolMystere, numeroMystere, partageMystere,
+    jouer, _mystere: MYS,
     chercherRattachements, appliquerRattachements, proposerRattachements,
 
     /** Les collections mécaniques et leurs membres. */
