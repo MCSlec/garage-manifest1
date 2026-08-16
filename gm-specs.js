@@ -5164,57 +5164,130 @@
 
   /* --- Interface d'ajustement ------------------------------------------ */
 
+  /* CORRECTION — le glissement seul ne suffisait pas.
+     Cause : la photo vit dans `.sh-body` (overflow-y:auto) et dans `.pager`
+     (scroll-snap-type:x). Au premier contact, le navigateur engage SON
+     défilement et émet un `pointercancel` : le geste est volé avant d'avoir
+     commencé, et `touch-action:none` sur l'image ne suffit pas toujours à
+     l'en empêcher selon le navigateur.
+
+     Décision : le curseur natif <input type="range"> devient le moyen
+     PRINCIPAL de réglage — il est tactile, accessible, et aucun conteneur ne
+     peut lui voler son geste. Le glissement sur la photo reste disponible en
+     complément, avec trois renforts : touch-action inline sur la photo ET
+     ses parents scrollables, écoute de repli sur le document, et repli
+     touchmove pour les navigateurs où les pointer events sont capricieux.
+
+     Principe général : une fonctionnalité de confort ne doit jamais dépendre
+     d'un seul mécanisme fragile. */
+
   function entrerEdition(hero, img, emp) {
     if (hero.dataset.gedit) return;
     hero.dataset.gedit = '1';
 
     let y = parseFloat(img.dataset.gcrop) || 50;
+
     const barre = document.createElement('div');
     barre.className = 'gcz-barre';
-    barre.innerHTML = `<span class="gcz-aide">Glisse la photo vers le haut ou le bas</span>
-      <span class="gcz-val">${Math.round(y)} %</span>
-      <button class="gcz-b" data-cz="auto">Auto</button>
-      <button class="gcz-b ok" data-cz="ok">Terminé</button>`;
+    barre.innerHTML =
+      `<div class="gcz-r1">
+         <span class="gcz-aide">Fais glisser le curseur ou la photo</span>
+         <span class="gcz-val">${Math.round(y)} %</span>
+       </div>
+       <input class="gcz-range" type="range" min="0" max="100" step="1" value="${Math.round(y)}"
+              aria-label="Position verticale du cadrage">
+       <div class="gcz-r2">
+         <button class="gcz-b" type="button" data-cz="auto">Automatique</button>
+         <button class="gcz-b ok" type="button" data-cz="ok">Terminé</button>
+       </div>`;
     hero.appendChild(barre);
     img.classList.add('gcz-actif');
 
+    /* Neutralisation des défilements parents pendant l'édition, avec
+       restauration à la sortie : on n'altère pas durablement l'app. */
+    const bloques = [];
+    let n = hero;
+    while (n && n !== document.body) {
+      const st = getComputedStyle(n);
+      if (/(auto|scroll)/.test(st.overflowY + st.overflowX)) {
+        bloques.push([n, n.style.touchAction, n.style.overflow]);
+        n.style.touchAction = 'pan-y';
+      }
+      n = n.parentElement;
+    }
+    img.style.touchAction = 'none';
+    hero.style.touchAction = 'none';
+
+    const range = barre.querySelector('.gcz-range');
+    const val = barre.querySelector('.gcz-val');
+
     const maj = (v, garder) => {
       y = Math.max(0, Math.min(100, v));
+      const r = Math.round(y);
       img.style.objectPosition = `center ${y}%`;
-      img.dataset.gcrop = Math.round(y);
-      barre.querySelector('.gcz-val').textContent = `${Math.round(y)} %`;
-      if (garder) sauverCadrage(emp, Math.round(y));
+      img.dataset.gcrop = r;
+      val.textContent = `${r} %`;
+      if (range.value !== String(r)) range.value = r;
+      if (garder) sauverCadrage(emp, r);
     };
 
-    let depart = null, depuis = y;
-    const onDown = (e) => {
-      depart = e.clientY; depuis = y;
-      try { img.setPointerCapture(e.pointerId); } catch (_) {}
-      e.preventDefault();
-    };
-    const onMove = (e) => {
-      if (depart === null) return;
-      /* Sensibilité rapportée à la hauteur affichée : le geste reste cohérent
-         quelle que soit la taille de l'écran. */
-      const h = hero.clientHeight || 300;
-      maj(depuis - (e.clientY - depart) / h * 100);
-      e.preventDefault();
-    };
-    const onUp = (e) => {
-      if (depart === null) return;
-      depart = null;
-      try { img.releasePointerCapture(e.pointerId); } catch (_) {}
-      maj(y, true);
-    };
+    range.addEventListener('input', () => maj(+range.value, false));
+    range.addEventListener('change', () => maj(+range.value, true));
+    /* Le curseur est dans un conteneur scrollable : sans cette barrière, un
+       glissement horizontal sur le curseur ferait défiler la page. */
+    ['pointerdown', 'touchstart'].forEach(t =>
+      range.addEventListener(t, e => e.stopPropagation(), { passive: true }));
+
+    /* --- Glissement direct sur la photo, en complément --- */
+    let depart = null, depuis = y, actif = false;
+    const sens = () => (hero.clientHeight || 260);
+
+    const debut = (cy) => { depart = cy; depuis = y; actif = true; };
+    const bouge = (cy) => { if (!actif) return; maj(depuis - (cy - depart) / sens() * 100, false); };
+    const arret = () => { if (!actif) return; actif = false; depart = null; maj(y, true); };
+
+    const onDown = (e) => { debut(e.clientY); try { img.setPointerCapture(e.pointerId); } catch (_) {} e.preventDefault(); };
+    const onMove = (e) => { if (!actif) return; bouge(e.clientY); e.preventDefault(); };
+    const onUp   = () => arret();
+
+    const onTStart = (e) => { if (e.touches[0]) { debut(e.touches[0].clientY); e.preventDefault(); } };
+    const onTMove  = (e) => { if (actif && e.touches[0]) { bouge(e.touches[0].clientY); e.preventDefault(); } };
 
     img.addEventListener('pointerdown', onDown);
     img.addEventListener('pointermove', onMove);
     img.addEventListener('pointerup', onUp);
     img.addEventListener('pointercancel', onUp);
+    // Repli : si le pointeur sort de la photo, le geste continue quand même.
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', onUp);
+    // Repli tactile pour les navigateurs où les pointer events sont annulés.
+    img.addEventListener('touchstart', onTStart, { passive: false });
+    img.addEventListener('touchmove', onTMove, { passive: false });
+    img.addEventListener('touchend', onUp);
+    img.addEventListener('touchcancel', onUp);
+
+    const sortir = () => {
+      img.removeEventListener('pointerdown', onDown);
+      img.removeEventListener('pointermove', onMove);
+      img.removeEventListener('pointerup', onUp);
+      img.removeEventListener('pointercancel', onUp);
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+      img.removeEventListener('touchstart', onTStart);
+      img.removeEventListener('touchmove', onTMove);
+      img.removeEventListener('touchend', onUp);
+      img.removeEventListener('touchcancel', onUp);
+      bloques.forEach(([el, ta]) => { el.style.touchAction = ta || ''; });
+      img.style.touchAction = '';
+      hero.style.touchAction = '';
+      img.classList.remove('gcz-actif');
+      barre.remove();
+      delete hero.dataset.gedit;
+    };
 
     barre.addEventListener('click', (e) => {
       const b = e.target.closest('[data-cz]'); if (!b) return;
-      e.stopPropagation();
+      e.stopPropagation(); e.preventDefault();
       if (b.dataset.cz === 'auto') {
         oublierCadrage(emp);
         delete img.dataset.gcrop;
@@ -5223,14 +5296,7 @@
         maj(parseFloat(img.dataset.gcrop) || 50, false);
         return;
       }
-      // Terminé : on retire tout, écouteurs compris.
-      img.removeEventListener('pointerdown', onDown);
-      img.removeEventListener('pointermove', onMove);
-      img.removeEventListener('pointerup', onUp);
-      img.removeEventListener('pointercancel', onUp);
-      img.classList.remove('gcz-actif');
-      barre.remove();
-      delete hero.dataset.gedit;
+      sortir();
     });
   }
 
@@ -5695,15 +5761,24 @@
   .gcz-ouvrir:active{ transform:scale(.95); }
   .gcz-actif{ cursor:grab; touch-action:none; }
   .gcz-actif:active{ cursor:grabbing; }
-  .gcz-barre{ position:absolute; left:0; right:0; bottom:0; z-index:5; display:flex; align-items:center;
-    gap:8px; padding:10px 11px; background:linear-gradient(transparent,rgba(11,11,13,.92) 40%); }
-  .gcz-aide{ flex:1; min-width:0; font:500 11px/1.3 var(--sans); color:rgba(255,255,255,.7); }
+  .gcz-barre{ position:absolute; left:0; right:0; bottom:0; z-index:6; padding:11px 12px 12px;
+    background:linear-gradient(transparent,rgba(11,11,13,.94) 35%); }
+  .gcz-r1{ display:flex; align-items:center; gap:8px; }
+  .gcz-aide{ flex:1; min-width:0; font:500 11px/1.3 var(--sans); color:rgba(255,255,255,.75); }
   .gcz-val{ flex:none; font:700 11px/1 var(--mono); color:#fff; font-variant-numeric:tabular-nums; }
-  .gcz-b{ flex:none; padding:7px 11px; border-radius:8px; border:1px solid rgba(255,255,255,.2);
-    background:rgba(255,255,255,.08); color:#fff; font:600 11px/1 var(--sans); cursor:pointer; }
+  .gcz-range{ -webkit-appearance:none; appearance:none; width:100%; height:26px; margin:4px 0 2px;
+    background:transparent; touch-action:none; cursor:pointer; }
+  .gcz-range::-webkit-slider-runnable-track{ height:4px; border-radius:3px; background:rgba(255,255,255,.28); }
+  .gcz-range::-moz-range-track{ height:4px; border-radius:3px; background:rgba(255,255,255,.28); }
+  .gcz-range::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:24px; height:24px;
+    margin-top:-10px; border-radius:50%; background:#fff; border:3px solid var(--red2);
+    box-shadow:0 2px 8px rgba(0,0,0,.5); }
+  .gcz-range::-moz-range-thumb{ width:24px; height:24px; border-radius:50%; background:#fff;
+    border:3px solid var(--red2); box-shadow:0 2px 8px rgba(0,0,0,.5); }
+  .gcz-r2{ display:flex; gap:8px; margin-top:6px; }
+  .gcz-b{ flex:1; padding:9px 11px; border-radius:8px; border:1px solid rgba(255,255,255,.22);
+    background:rgba(255,255,255,.1); color:#fff; font:600 12px/1 var(--sans); cursor:pointer; }
   .gcz-b.ok{ background:var(--red2); border-color:var(--red2); }
-  .gcz-barre::before{ content:""; position:absolute; left:50%; top:-26px; transform:translateX(-50%);
-    width:34px; height:4px; border-radius:3px; background:rgba(255,255,255,.35); }
 
   #gmr-rat{ position:fixed; left:12px; right:12px; bottom:calc(var(--tabh,64px) + 12px + var(--sb,0px));
     z-index:255; display:flex; justify-content:center; }
