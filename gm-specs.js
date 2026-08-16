@@ -5164,139 +5164,132 @@
 
   /* --- Interface d'ajustement ------------------------------------------ */
 
-  /* CORRECTION — le glissement seul ne suffisait pas.
-     Cause : la photo vit dans `.sh-body` (overflow-y:auto) et dans `.pager`
-     (scroll-snap-type:x). Au premier contact, le navigateur engage SON
-     défilement et émet un `pointercancel` : le geste est volé avant d'avoir
-     commencé, et `touch-action:none` sur l'image ne suffit pas toujours à
-     l'en empêcher selon le navigateur.
+  /* ÉDITEUR DE CADRAGE PLEIN ÉCRAN
+     ----------------------------------------------------------------------
+     Le curseur a été abandonné : c'est un intermédiaire abstrait. On ne
+     règle pas un cadrage avec un nombre, on le règle en VOYANT ce qui entre
+     dans le cadre et ce qui en sort.
 
-     Décision : le curseur natif <input type="range"> devient le moyen
-     PRINCIPAL de réglage — il est tactile, accessible, et aucun conteneur ne
-     peut lui voler son geste. Le glissement sur la photo reste disponible en
-     complément, avec trois renforts : touch-action inline sur la photo ET
-     ses parents scrollables, écoute de repli sur le document, et repli
-     touchmove pour les navigateurs où les pointer events sont capricieux.
+     Principe retenu : la photo entière s'affiche, à sa vraie proportion, et
+     un cadre lumineux matérialise la zone visible dans l'app. Ce qui déborde
+     est assombri. On déplace la photo derrière le cadre — le geste est
+     direct, sans traduction.
 
-     Principe général : une fonctionnalité de confort ne doit jamais dépendre
-     d'un seul mécanisme fragile. */
+     Pourquoi le plein écran : la fiche vit dans deux conteneurs à défilement
+     (`.sh-body` en Y, `.pager` en X) qui interceptaient le geste avant qu'il
+     ne commence. En sortant de leur hiérarchie — overlay attaché au <body> —
+     le problème disparaît par construction plutôt que d'être contourné.
+     ====================================================================== */
 
   function entrerEdition(hero, img, emp) {
-    if (hero.dataset.gedit) return;
-    hero.dataset.gedit = '1';
-
+    if (document.getElementById('gcz-full')) return;
+    const src = img.currentSrc || img.src;
     let y = parseFloat(img.dataset.gcrop) || 50;
 
-    const barre = document.createElement('div');
-    barre.className = 'gcz-barre';
-    barre.innerHTML =
-      `<div class="gcz-r1">
-         <span class="gcz-aide">Fais glisser le curseur ou la photo</span>
-         <span class="gcz-val">${Math.round(y)} %</span>
+    const ov = document.createElement('div');
+    ov.id = 'gcz-full';
+    ov.innerHTML =
+      `<div class="gcz-top">
+         <button class="gcz-x" type="button" data-cz="annul" aria-label="Annuler">✕</button>
+         <b>Cadrer la photo</b>
+         <button class="gcz-ok" type="button" data-cz="ok">Valider</button>
        </div>
-       <input class="gcz-range" type="range" min="0" max="100" step="1" value="${Math.round(y)}"
-              aria-label="Position verticale du cadrage">
-       <div class="gcz-r2">
-         <button class="gcz-b" type="button" data-cz="auto">Automatique</button>
-         <button class="gcz-b ok" type="button" data-cz="ok">Terminé</button>
+       <div class="gcz-scene">
+         <div class="gcz-plan"><img alt=""></div>
+         <div class="gcz-mask"><div class="gcz-cadre"></div></div>
+       </div>
+       <div class="gcz-bas">
+         <span>Fais glisser la photo pour choisir ce qui apparaît dans le cadre</span>
+         <button class="gcz-auto" type="button" data-cz="auto">Cadrage automatique</button>
        </div>`;
-    hero.appendChild(barre);
-    img.classList.add('gcz-actif');
+    document.body.appendChild(ov);
+    document.body.style.overflow = 'hidden';
 
-    /* Neutralisation des défilements parents pendant l'édition, avec
-       restauration à la sortie : on n'altère pas durablement l'app. */
-    const bloques = [];
-    let n = hero;
-    while (n && n !== document.body) {
-      const st = getComputedStyle(n);
-      if (/(auto|scroll)/.test(st.overflowY + st.overflowX)) {
-        bloques.push([n, n.style.touchAction, n.style.overflow]);
-        n.style.touchAction = 'pan-y';
-      }
-      n = n.parentElement;
+    const grand = ov.querySelector('.gcz-plan img');
+    const plan  = ov.querySelector('.gcz-plan');
+    const cadre = ov.querySelector('.gcz-cadre');
+    grand.src = src;
+
+    /* Géométrie : le cadre reproduit exactement le format d'affichage de la
+       fiche (4/3). La photo est mise à l'échelle pour couvrir sa largeur ;
+       la course verticale disponible est donc la différence entre la hauteur
+       de la photo affichée et celle du cadre. Le pourcentage `y` correspond
+       à la position de cette course, comme `object-position` — les deux
+       systèmes restent parfaitement équivalents. */
+    let course = 0, hCadre = 0, hPhoto = 0;
+
+    function poser() {
+      const scene = ov.querySelector('.gcz-scene');
+      const L = scene.clientWidth;
+      hCadre = L * 3 / 4;
+      const ratio = (grand.naturalHeight || 3) / (grand.naturalWidth || 4);
+      hPhoto = L * ratio;
+      cadre.style.height = hCadre + 'px';
+      cadre.style.top = ((scene.clientHeight - hCadre) / 2) + 'px';
+      plan.style.width = L + 'px';
+      plan.style.height = hPhoto + 'px';
+      course = Math.max(0, hPhoto - hCadre);
+      appliquer();
     }
-    img.style.touchAction = 'none';
-    hero.style.touchAction = 'none';
 
-    const range = barre.querySelector('.gcz-range');
-    const val = barre.querySelector('.gcz-val');
+    function appliquer() {
+      const haut = (ov.querySelector('.gcz-scene').clientHeight - hCadre) / 2;
+      plan.style.top = (haut - course * (y / 100)) + 'px';
+    }
 
-    const maj = (v, garder) => {
-      y = Math.max(0, Math.min(100, v));
-      const r = Math.round(y);
-      img.style.objectPosition = `center ${y}%`;
-      img.dataset.gcrop = r;
-      val.textContent = `${r} %`;
-      if (range.value !== String(r)) range.value = r;
-      if (garder) sauverCadrage(emp, r);
+    if (grand.complete && grand.naturalWidth) poser();
+    else grand.addEventListener('load', poser, { once: true });
+    const onResize = () => poser();
+    addEventListener('resize', onResize);
+
+    /* Glissement. L'overlay est attaché au <body>, hors des conteneurs
+       scrollables : aucun défilement parent ne peut voler le geste. */
+    let dep = null, dY = y, actif = false;
+    const bouge = (cy) => {
+      if (!actif || !course) return;
+      y = Math.max(0, Math.min(100, dY - (cy - dep) / course * 100));
+      appliquer();
+    };
+    const scene = ov.querySelector('.gcz-scene');
+    scene.addEventListener('pointerdown', e => { dep = e.clientY; dY = y; actif = true;
+      try { scene.setPointerCapture(e.pointerId); } catch (_) {} e.preventDefault(); });
+    scene.addEventListener('pointermove', e => { if (actif) { bouge(e.clientY); e.preventDefault(); } });
+    ['pointerup', 'pointercancel'].forEach(t => scene.addEventListener(t, () => { actif = false; }));
+    // Repli tactile, pour les navigateurs où les pointer events sont annulés.
+    scene.addEventListener('touchstart', e => { if (e.touches[0]) { dep = e.touches[0].clientY; dY = y; actif = true; e.preventDefault(); } }, { passive: false });
+    scene.addEventListener('touchmove',  e => { if (actif && e.touches[0]) { bouge(e.touches[0].clientY); e.preventDefault(); } }, { passive: false });
+    scene.addEventListener('touchend',   () => { actif = false; });
+
+    const fermer = () => {
+      removeEventListener('resize', onResize);
+      document.body.style.overflow = '';
+      ov.remove();
     };
 
-    range.addEventListener('input', () => maj(+range.value, false));
-    range.addEventListener('change', () => maj(+range.value, true));
-    /* Le curseur est dans un conteneur scrollable : sans cette barrière, un
-       glissement horizontal sur le curseur ferait défiler la page. */
-    ['pointerdown', 'touchstart'].forEach(t =>
-      range.addEventListener(t, e => e.stopPropagation(), { passive: true }));
-
-    /* --- Glissement direct sur la photo, en complément --- */
-    let depart = null, depuis = y, actif = false;
-    const sens = () => (hero.clientHeight || 260);
-
-    const debut = (cy) => { depart = cy; depuis = y; actif = true; };
-    const bouge = (cy) => { if (!actif) return; maj(depuis - (cy - depart) / sens() * 100, false); };
-    const arret = () => { if (!actif) return; actif = false; depart = null; maj(y, true); };
-
-    const onDown = (e) => { debut(e.clientY); try { img.setPointerCapture(e.pointerId); } catch (_) {} e.preventDefault(); };
-    const onMove = (e) => { if (!actif) return; bouge(e.clientY); e.preventDefault(); };
-    const onUp   = () => arret();
-
-    const onTStart = (e) => { if (e.touches[0]) { debut(e.touches[0].clientY); e.preventDefault(); } };
-    const onTMove  = (e) => { if (actif && e.touches[0]) { bouge(e.touches[0].clientY); e.preventDefault(); } };
-
-    img.addEventListener('pointerdown', onDown);
-    img.addEventListener('pointermove', onMove);
-    img.addEventListener('pointerup', onUp);
-    img.addEventListener('pointercancel', onUp);
-    // Repli : si le pointeur sort de la photo, le geste continue quand même.
-    document.addEventListener('pointermove', onMove);
-    document.addEventListener('pointerup', onUp);
-    // Repli tactile pour les navigateurs où les pointer events sont annulés.
-    img.addEventListener('touchstart', onTStart, { passive: false });
-    img.addEventListener('touchmove', onTMove, { passive: false });
-    img.addEventListener('touchend', onUp);
-    img.addEventListener('touchcancel', onUp);
-
-    const sortir = () => {
-      img.removeEventListener('pointerdown', onDown);
-      img.removeEventListener('pointermove', onMove);
-      img.removeEventListener('pointerup', onUp);
-      img.removeEventListener('pointercancel', onUp);
-      document.removeEventListener('pointermove', onMove);
-      document.removeEventListener('pointerup', onUp);
-      img.removeEventListener('touchstart', onTStart);
-      img.removeEventListener('touchmove', onTMove);
-      img.removeEventListener('touchend', onUp);
-      img.removeEventListener('touchcancel', onUp);
-      bloques.forEach(([el, ta]) => { el.style.touchAction = ta || ''; });
-      img.style.touchAction = '';
-      hero.style.touchAction = '';
-      img.classList.remove('gcz-actif');
-      barre.remove();
-      delete hero.dataset.gedit;
-    };
-
-    barre.addEventListener('click', (e) => {
+    ov.addEventListener('click', (e) => {
       const b = e.target.closest('[data-cz]'); if (!b) return;
-      e.stopPropagation(); e.preventDefault();
-      if (b.dataset.cz === 'auto') {
-        oublierCadrage(emp);
-        delete img.dataset.gcrop;
-        _cropCache.delete(img.currentSrc || img.src);
-        recadrer(img);
-        maj(parseFloat(img.dataset.gcrop) || 50, false);
+      e.stopPropagation();
+      const a = b.dataset.cz;
+      if (a === 'auto') {
+        _cropCache.delete(src);
+        const auto = centreSujet(grand);
+        y = auto; appliquer();
         return;
       }
-      sortir();
+      if (a === 'ok') {
+        const r = Math.round(y);
+        sauverCadrage(emp, r);
+        img.dataset.gcrop = r;
+        img.style.objectPosition = `center ${r}%`;
+        /* Toutes les copies de cette photo, partout dans l'app, se règlent
+           d'un coup : le cadrage est indexé par empreinte, pas par élément. */
+        document.querySelectorAll('img').forEach(o => {
+          if ((o.currentSrc || o.src) === src) {
+            o.dataset.gcrop = r; o.style.objectPosition = `center ${r}%`;
+          }
+        });
+      }
+      fermer();
     });
   }
 
@@ -5759,26 +5752,35 @@
   .gcz-ouvrir svg{ width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:2;
     stroke-linecap:round; stroke-linejoin:round; }
   .gcz-ouvrir:active{ transform:scale(.95); }
-  .gcz-actif{ cursor:grab; touch-action:none; }
-  .gcz-actif:active{ cursor:grabbing; }
-  .gcz-barre{ position:absolute; left:0; right:0; bottom:0; z-index:6; padding:11px 12px 12px;
-    background:linear-gradient(transparent,rgba(11,11,13,.94) 35%); }
-  .gcz-r1{ display:flex; align-items:center; gap:8px; }
-  .gcz-aide{ flex:1; min-width:0; font:500 11px/1.3 var(--sans); color:rgba(255,255,255,.75); }
-  .gcz-val{ flex:none; font:700 11px/1 var(--mono); color:#fff; font-variant-numeric:tabular-nums; }
-  .gcz-range{ -webkit-appearance:none; appearance:none; width:100%; height:26px; margin:4px 0 2px;
-    background:transparent; touch-action:none; cursor:pointer; }
-  .gcz-range::-webkit-slider-runnable-track{ height:4px; border-radius:3px; background:rgba(255,255,255,.28); }
-  .gcz-range::-moz-range-track{ height:4px; border-radius:3px; background:rgba(255,255,255,.28); }
-  .gcz-range::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:24px; height:24px;
-    margin-top:-10px; border-radius:50%; background:#fff; border:3px solid var(--red2);
-    box-shadow:0 2px 8px rgba(0,0,0,.5); }
-  .gcz-range::-moz-range-thumb{ width:24px; height:24px; border-radius:50%; background:#fff;
-    border:3px solid var(--red2); box-shadow:0 2px 8px rgba(0,0,0,.5); }
-  .gcz-r2{ display:flex; gap:8px; margin-top:6px; }
-  .gcz-b{ flex:1; padding:9px 11px; border-radius:8px; border:1px solid rgba(255,255,255,.22);
-    background:rgba(255,255,255,.1); color:#fff; font:600 12px/1 var(--sans); cursor:pointer; }
-  .gcz-b.ok{ background:var(--red2); border-color:var(--red2); }
+  #gcz-full{ position:fixed; inset:0; z-index:300; background:#08080a;
+    display:flex; flex-direction:column; animation:gczIn .18s ease; }
+  @keyframes gczIn{ from{ opacity:0 } }
+  .gcz-top{ display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:calc(env(safe-area-inset-top) + 12px) 14px 12px; border-bottom:1px solid rgba(255,255,255,.09); }
+  .gcz-top b{ font:600 13px/1 var(--mono); letter-spacing:.12em; text-transform:uppercase; color:#fff; }
+  .gcz-x{ width:36px; height:36px; border-radius:999px; border:1px solid rgba(255,255,255,.18);
+    background:transparent; color:#fff; font-size:15px; line-height:1; cursor:pointer; }
+  .gcz-ok{ padding:10px 16px; border-radius:9px; border:0; background:var(--red2); color:#fff;
+    font:600 13px/1 var(--sans); cursor:pointer; }
+  .gcz-scene{ position:relative; flex:1; overflow:hidden; touch-action:none; cursor:grab;
+    background:#08080a; user-select:none; }
+  .gcz-scene:active{ cursor:grabbing; }
+  .gcz-plan{ position:absolute; left:0; }
+  .gcz-plan img{ width:100%; height:100%; display:block; object-fit:fill; pointer-events:none; }
+  .gcz-mask{ position:absolute; inset:0; pointer-events:none; }
+  /* Le voile est produit par une ombre portée géante autour du cadre :
+     une seule boîte, et tout ce qui déborde est assombri, quelle que soit
+     la taille de la photo. */
+  .gcz-cadre{ position:absolute; left:0; right:0; border:2px solid #fff;
+    box-shadow:0 0 0 9999px rgba(8,8,10,.82); }
+  .gcz-cadre::before,.gcz-cadre::after{ content:""; position:absolute; left:0; right:0; height:1px;
+    background:rgba(255,255,255,.2); }
+  .gcz-cadre::before{ top:33.33% } .gcz-cadre::after{ top:66.66% }
+  .gcz-bas{ padding:14px 16px calc(env(safe-area-inset-bottom) + 16px); text-align:center;
+    border-top:1px solid rgba(255,255,255,.09); }
+  .gcz-bas span{ display:block; font:400 12.5px/1.45 var(--sans); color:rgba(255,255,255,.6); }
+  .gcz-auto{ margin-top:11px; padding:10px 15px; border-radius:9px; border:1px solid rgba(255,255,255,.2);
+    background:transparent; color:#fff; font:600 12px/1 var(--sans); cursor:pointer; }
 
   #gmr-rat{ position:fixed; left:12px; right:12px; bottom:calc(var(--tabh,64px) + 12px + var(--sb,0px));
     z-index:255; display:flex; justify-content:center; }
