@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '15.5.0';
+  const VERSION_MODULE = '16.0.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -5168,6 +5168,63 @@
   /* --- Interface d'ajustement ------------------------------------------ */
 
   /* ======================================================================
+     BANDEAU DE VERSION
+     ----------------------------------------------------------------------
+     Le panneau Réglages affiche « Prêt hors-ligne ✓ » même quand le module
+     servi est une version périmée : rien ne distingue « à jour » de « bloqué
+     sur une ancienne copie ». Pour une app qu'on corrige souvent, c'est le
+     défaut le plus coûteux — on croit tester la correction alors qu'on teste
+     l'ancien code.
+
+     On affiche donc la version du module dans les Réglages, avec un bouton
+     de purge qui ne touche QUE les modules. Le shell reste intact, donc le
+     démarrage hors-ligne n'est jamais compromis.
+     ====================================================================== */
+
+  function grefferVersion() {
+    const vue = document.getElementById('view');
+    if (!vue) return;
+    if (!/Zone sensible|ZONE SENSIBLE/i.test(vue.textContent)) return;  // onglet Réglages
+    if (vue.querySelector('.gvr')) return;
+
+    const el = document.createElement('div');
+    el.className = 'section panel gvr';
+    el.innerHTML =
+      `<div class="h2" style="margin-bottom:10px">Modules complémentaires</div>
+       <div class="gvr-l">
+         <div><b>gm-specs.js</b><small>Fiches techniques, générations, collections, mystère du jour</small></div>
+         <span class="gvr-v">v${esc(VERSION_MODULE)}</span>
+       </div>
+       <button class="btn" data-gvr="purge" style="width:100%;margin-top:12px">Forcer la mise à jour des modules</button>
+       <p class="gvr-n">Si une correction ne semble pas appliquée, ce bouton efface la copie
+       en cache des modules et recharge. Tes prises et tes photos ne sont pas touchées.</p>`;
+    vue.appendChild(el);
+  }
+
+  function brancherVersion() {
+    document.addEventListener('click', async (e) => {
+      const b = e.target.closest('[data-gvr]'); if (!b) return;
+      b.disabled = true; b.textContent = 'Nettoyage…';
+      try {
+        /* On efface directement les entrées de cache correspondant aux modules,
+           sans dépendre du service worker : si c'est justement lui qui est
+           périmé, lui demander de se purger serait absurde. */
+        for (const nom of await caches.keys()) {
+          const c = await caches.open(nom);
+          for (const r of await c.keys()) {
+            if (/gm-[a-z0-9-]+\.js$/i.test(new URL(r.url).pathname)) await c.delete(r);
+          }
+        }
+        const reg = await navigator.serviceWorker?.getRegistration();
+        reg?.active?.postMessage({ type: 'PURGE_MODULES' });
+        await reg?.update();
+      } catch (_) {}
+      b.textContent = 'Rechargement…';
+      setTimeout(() => location.reload(), 350);
+    });
+  }
+
+  /* ======================================================================
      RECADRAGE RÉEL DE LA PHOTO
      ----------------------------------------------------------------------
      POURQUOI ON CHANGE DE MÉTHODE. Le pilotage par `object-position` a
@@ -5966,6 +6023,13 @@
   .gcz-bas{ padding:14px 16px calc(env(safe-area-inset-bottom) + 16px); text-align:center;
     border-top:1px solid rgba(255,255,255,.09); }
   .gcz-bas span{ display:block; font:400 12.5px/1.45 var(--sans); color:rgba(255,255,255,.6); }
+  .gvr-l{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .gvr-l b{ display:block; font:600 13.5px/1.2 var(--sans); }
+  .gvr-l small{ display:block; margin-top:4px; font:400 11.5px/1.4 var(--sans); color:var(--muted2); }
+  .gvr-v{ flex:none; padding:5px 10px; border-radius:999px; border:1px solid var(--line2);
+    font:700 11px/1 var(--mono); color:var(--peucommun); }
+  .gvr-n{ margin:10px 0 0; font:400 11px/1.5 var(--sans); color:var(--dim); }
+
   .gcz-actions{ display:flex; gap:8px; justify-content:center; }
   .gcz-auto{ margin-top:11px; padding:10px 15px; border-radius:9px; border:1px solid rgba(255,255,255,.2);
     background:transparent; color:#fff; font:600 12px/1 var(--sans); cursor:pointer; }
@@ -6021,6 +6085,7 @@
     const vue = document.getElementById('view');
     if (vue) new MutationObserver(() => {
       try { grefferMystere(); } catch (_) {}
+      try { grefferVersion(); } catch (_) {}
       try { grefferCollecs(); } catch (_) {}
       try { recadrerTout(); } catch (_) {}
     }).observe(vue, { childList: true, subtree: true });
@@ -6037,6 +6102,7 @@
     chargerCadrages().then(() => { try { recadrerTout(); } catch (_) {} });
     console.info(`[GMSpecs] module v${VERSION_MODULE} chargé`);
     brancherMystere();
+    brancherVersion();
     chargerMystere().then(() => { try { grefferMystere(); } catch (_) {} });
     /* Différé : on laisse l'app finir son propre démarrage avant d'ouvrir la base. */
     setTimeout(() => { try { proposerRattachements(); } catch (_) {} }, 2500);
