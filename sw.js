@@ -9,7 +9,7 @@
              mis en cache, sinon l'ancienne copie est resservie indéfiniment.
 */
 
-const VERSION = "garage-v16.0.0";
+const VERSION = "garage-v16.1.0";
 
 /* ESSENTIEL : sans ces fichiers, l'app ne démarre pas hors-ligne.
    Mis en cache de façon atomique — si l'un manque, l'installation doit échouer

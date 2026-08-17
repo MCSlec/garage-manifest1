@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '16.0.0';
+  const VERSION_MODULE = '16.1.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -5259,28 +5259,53 @@
     });
   }
 
-  /** Redessine la photo au format du cadre, en respectant la position choisie. */
-  function fabriquerRecadree(imgSrc, y, ratioCadre) {
+  /** Redessine la photo dans le cadre, en respectant zoom et position.
+   *
+   *  Le zoom (`z` >= 1) réduit la zone source prélevée : on rogne. La zone
+   *  fait `L/z` de large, et sa hauteur découle du format du cadre. `x` et `y`
+   *  situent cette zone dans l'image, en pourcentage de la course disponible.
+   *
+   *  La sortie conserve la largeur d'origine : rogner ne doit pas dégrader la
+   *  résolution affichée, quitte à ré-échantillonner légèrement vers le haut.
+   */
+  function fabriquerRecadree(imgSrc, y, ratioCadre, z, x0) {
+    z = Math.max(1, z || 1);
+    x0 = (x0 == null) ? 50 : x0;
     return new Promise((res, rej) => {
       const im = new Image();
       im.onload = () => {
         try {
           const L = im.naturalWidth, H = im.naturalHeight;
-          const hCible = Math.round(L * ratioCadre);
-          if (hCible >= H) return res(null);            // rien à recadrer
-          const dispo = H - hCible;
-          const sy = Math.round(dispo * (y / 100));
-          const c = document.createElement('canvas');
-          c.width = L; c.height = hCible;
-          const x = c.getContext('2d');
-          x.imageSmoothingQuality = 'high';
-          x.drawImage(im, 0, sy, L, hCible, 0, 0, L, hCible);
-          res(c.toDataURL('image/jpeg', 0.9));
+          const sw = L / z;                       // largeur prélevée
+          const sh = sw * ratioCadre;              // hauteur imposée par le cadre
+          if (sh > H) {
+            /* La zone au format demandé est plus haute que l'image : on la
+               limite à la hauteur disponible et on réduit la largeur en
+               conséquence, pour ne jamais prélever hors de l'image. */
+            const sh2 = H, sw2 = sh2 / ratioCadre;
+            if (sw2 > L) return res(null);         // impossible : rien à faire
+            const sx = Math.round((L - sw2) * (x0 / 100));
+            return res(dessiner(im, sx, 0, sw2, sh2, ratioCadre));
+          }
+          const sx = Math.round((L - sw) * (x0 / 100));
+          const sy = Math.round((H - sh) * (y / 100));
+          res(dessiner(im, sx, sy, sw, sh, ratioCadre));
         } catch (e) { rej(e); }
       };
       im.onerror = () => rej(new Error('image illisible'));
       im.src = imgSrc;
     });
+
+    function dessiner(im, sx, sy, sw, sh, ratio) {
+      const larg = Math.round(Math.min(im.naturalWidth, Math.max(sw, 900)));
+      const c = document.createElement('canvas');
+      c.width = larg; c.height = Math.round(larg * ratio);
+      const g = c.getContext('2d');
+      g.imageSmoothingEnabled = true;
+      g.imageSmoothingQuality = 'high';
+      g.drawImage(im, sx, sy, sw, sh, 0, 0, c.width, c.height);
+      return c.toDataURL('image/jpeg', 0.9);
+    }
   }
 
   /** Remplace une photo dans la base de l'app. Renvoie le nombre de fiches touchées. */
@@ -5349,7 +5374,14 @@
   function entrerEdition(hero, img, emp) {
     if (document.getElementById('gcz-full')) return;
     const src = img.currentSrc || img.src;
-    let y = parseFloat(img.dataset.gcrop) || 50;
+
+    /* Trois paramètres décrivent entièrement le cadrage :
+         y — position verticale de la zone, en % de la course disponible
+         x — position horizontale, idem (utile seulement une fois zoomé)
+         z — facteur de rognage (1 = image entière dans sa largeur)
+       Ils sont indépendants de l'affichage, donc directement transmissibles
+       au canvas qui fabrique l'image finale. */
+    let y = parseFloat(img.dataset.gcrop) || 50, x = 50, z = 1;
 
     const ov = document.createElement('div');
     ov.id = 'gcz-full';
@@ -5364,7 +5396,13 @@
          <div class="gcz-mask"><div class="gcz-cadre"></div></div>
        </div>
        <div class="gcz-bas">
-         <span>Fais glisser la photo pour choisir ce qui apparaît dans le cadre</span>
+         <div class="gcz-zoom">
+           <button class="gcz-zb" type="button" data-cz="moins" aria-label="Réduire">–</button>
+           <input class="gcz-zr" type="range" min="100" max="400" step="1" value="100" aria-label="Rognage">
+           <button class="gcz-zb" type="button" data-cz="plus" aria-label="Agrandir">+</button>
+           <span class="gcz-zv">×1,0</span>
+         </div>
+         <span class="gcz-aide">Fais glisser la photo · pince ou utilise le curseur pour rogner</span>
          <div class="gcz-actions">
            <button class="gcz-auto" type="button" data-cz="auto">Cadrage automatique</button>
            <button class="gcz-auto" type="button" data-cz="orig" hidden>Photo d'origine</button>
@@ -5376,74 +5414,133 @@
     const grand = ov.querySelector('.gcz-plan img');
     const plan  = ov.querySelector('.gcz-plan');
     const cadre = ov.querySelector('.gcz-cadre');
+    const scene = ov.querySelector('.gcz-scene');
+    const zr    = ov.querySelector('.gcz-zr');
+    const zv    = ov.querySelector('.gcz-zv');
     grand.src = src;
 
-    /* Géométrie : le cadre reproduit exactement le format d'affichage de la
-       fiche (4/3). La photo est mise à l'échelle pour couvrir sa largeur ;
-       la course verticale disponible est donc la différence entre la hauteur
-       de la photo affichée et celle du cadre. Le pourcentage `y` correspond
-       à la position de cette course, comme `object-position` — les deux
-       systèmes restent parfaitement équivalents. */
-    let course = 0, hCadre = 0, hPhoto = 0;
-    /* Le ratio est MESURÉ sur le conteneur d'affichage réel plutôt que
-       supposé à 4/3 : si le thème change ce format un jour, l'éditeur suit
-       automatiquement au lieu de mentir sur ce qui sera visible. */
     const ratioCadre = (hero.clientHeight && hero.clientWidth)
       ? (hero.clientHeight / hero.clientWidth) : 0.75;
 
+    let L = 0, hCadre = 0, hPhoto = 0, courseY = 0, courseX = 0, gauche = 0, haut = 0;
+
     function poser() {
-      const scene = ov.querySelector('.gcz-scene');
-      const L = scene.clientWidth;
+      L = scene.clientWidth;
       hCadre = L * ratioCadre;
-      const ratio = (grand.naturalHeight || 3) / (grand.naturalWidth || 4);
-      hPhoto = L * ratio;
-      cadre.style.height = hCadre + 'px';
-      cadre.style.top = ((scene.clientHeight - hCadre) / 2) + 'px';
-      plan.style.width = L + 'px';
+      const ratioImg = (grand.naturalHeight || 3) / (grand.naturalWidth || 4);
+      /* La photo est affichée à `z` fois la largeur du cadre : au-delà de 1,
+         elle déborde des deux côtés et le cadrage horizontal devient utile. */
+      const lPhoto = L * z;
+      hPhoto = lPhoto * ratioImg;
+      plan.style.width = lPhoto + 'px';
       plan.style.height = hPhoto + 'px';
-      course = Math.max(0, hPhoto - hCadre);
-      /* Si la photo est déjà au format du cadre (ou plus large), il n'y a
-         rien à déplacer verticalement. Le dire plutôt que laisser croire à
-         une panne. */
-      const aide = ov.querySelector('.gcz-bas span');
-      if (aide) aide.textContent = course < 2
-        ? "Cette photo remplit déjà le cadre : il n'y a rien à recadrer."
-        : 'Fais glisser la photo pour choisir ce qui apparaît dans le cadre';
+      cadre.style.height = hCadre + 'px';
+      haut = (scene.clientHeight - hCadre) / 2;
+      cadre.style.top = haut + 'px';
+      courseY = Math.max(0, hPhoto - hCadre);
+      courseX = Math.max(0, lPhoto - L);
+      gauche = 0;
       appliquer();
+      const aide = ov.querySelector('.gcz-aide');
+      if (aide) aide.textContent = (courseY < 2 && courseX < 2)
+        ? 'Cette photo remplit déjà le cadre : rogne pour choisir une zone.'
+        : 'Fais glisser la photo · pince ou utilise le curseur pour rogner';
     }
 
     function appliquer() {
-      const haut = (ov.querySelector('.gcz-scene').clientHeight - hCadre) / 2;
-      plan.style.top = (haut - course * (y / 100)) + 'px';
+      plan.style.top  = (haut - courseY * (y / 100)) + 'px';
+      plan.style.left = (-courseX * (x / 100)) + 'px';
+      zv.textContent = '×' + z.toFixed(1).replace('.', ',');
+      if (zr.value !== String(Math.round(z * 100))) zr.value = Math.round(z * 100);
     }
 
-    lireOriginal(emp).then(o => {
-      const bo = ov.querySelector('[data-cz="orig"]');
-      if (o && bo) bo.hidden = false;
-    });
+    /** Change le zoom en conservant le point de l'image au centre du cadre. */
+    function zoomer(nz) {
+      nz = Math.max(1, Math.min(4, nz));
+      if (Math.abs(nz - z) < 0.001) return;
+      z = nz;
+      poser();
+    }
 
     if (grand.complete && grand.naturalWidth) poser();
     else grand.addEventListener('load', poser, { once: true });
     const onResize = () => poser();
     addEventListener('resize', onResize);
 
-    /* Glissement. L'overlay est attaché au <body>, hors des conteneurs
-       scrollables : aucun défilement parent ne peut voler le geste. */
-    let dep = null, dY = y, actif = false;
-    const bouge = (cy) => {
-      if (!actif || !course) return;
-      y = Math.max(0, Math.min(100, dY - (cy - dep) / course * 100));
-      appliquer();
+    lireOriginal(emp).then(o => {
+      const bo = ov.querySelector('[data-cz="orig"]');
+      if (o && bo) bo.hidden = false;
+    });
+
+    /* --- Gestes ---------------------------------------------------------
+       Un seul doigt déplace, deux doigts rognent. On suit les points de
+       contact dans une table plutôt que de supposer leur nombre : c'est ce
+       qui évite les sauts quand un doigt se lève avant l'autre. */
+    const pts = new Map();
+    let dep = null, dY = y, dX = x, dZ = z, ecart0 = 0;
+
+    const ecart = () => {
+      const t = [...pts.values()];
+      if (t.length < 2) return 0;
+      return Math.hypot(t[0].x - t[1].x, t[0].y - t[1].y);
     };
-    const scene = ov.querySelector('.gcz-scene');
-    scene.addEventListener('pointerdown', e => { dep = e.clientY; dY = y; actif = true;
-      try { scene.setPointerCapture(e.pointerId); } catch (_) {} e.preventDefault(); });
-    scene.addEventListener('pointermove', e => { if (actif) { bouge(e.clientY); e.preventDefault(); } });
-    ['pointerup', 'pointercancel'].forEach(t => scene.addEventListener(t, () => { actif = false; }));
-    // Repli tactile, pour les navigateurs où les pointer events sont annulés.
-    scene.addEventListener('touchstart', e => { if (e.touches[0]) { dep = e.touches[0].clientY; dY = y; actif = true; e.preventDefault(); } }, { passive: false });
-    scene.addEventListener('touchmove',  e => { if (actif && e.touches[0]) { bouge(e.touches[0].clientY); e.preventDefault(); } }, { passive: false });
-    scene.addEventListener('touchend',   () => { actif = false; });
+
+    scene.addEventListener('pointerdown', (e) => {
+      pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      try { scene.setPointerCapture(e.pointerId); } catch (_) {}
+      if (pts.size === 1) { dep = { x: e.clientX, y: e.clientY }; dY = y; dX = x; }
+      else if (pts.size === 2) { ecart0 = ecart(); dZ = z; }
+      e.preventDefault();
+    });
+
+    scene.addEventListener('pointermove', (e) => {
+      if (!pts.has(e.pointerId)) return;
+      pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (pts.size >= 2) {
+        if (ecart0 > 10) zoomer(dZ * (ecart() / ecart0));
+      } else if (dep) {
+        if (courseY > 1) y = Math.max(0, Math.min(100, dY - (e.clientY - dep.y) / courseY * 100));
+        if (courseX > 1) x = Math.max(0, Math.min(100, dX - (e.clientX - dep.x) / courseX * 100));
+        appliquer();
+      }
+      e.preventDefault();
+    });
+
+    const relacher = (e) => {
+      pts.delete(e.pointerId);
+      if (pts.size === 1) { const t = [...pts.values()][0]; dep = { x: t.x, y: t.y }; dY = y; dX = x; }
+      if (pts.size === 0) dep = null;
+    };
+    ['pointerup', 'pointercancel'].forEach(t => scene.addEventListener(t, relacher));
+
+    // Repli tactile pour les navigateurs où les pointer events sont annulés.
+    let tDep = null, tY = y, tX = x, tZ = z, tE0 = 0;
+    scene.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 1) { tDep = e.touches[0]; tY = y; tX = x; }
+      else if (e.touches.length >= 2) {
+        tE0 = Math.hypot(e.touches[0].clientX - e.touches[1].clientX,
+                         e.touches[0].clientY - e.touches[1].clientY);
+        tZ = z;
+      }
+      e.preventDefault();
+    }, { passive: false });
+    scene.addEventListener('touchmove', (e) => {
+      if (e.touches.length >= 2 && tE0 > 10) {
+        const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX,
+                             e.touches[0].clientY - e.touches[1].clientY);
+        zoomer(tZ * (d / tE0));
+      } else if (e.touches.length === 1 && tDep) {
+        if (courseY > 1) y = Math.max(0, Math.min(100, tY - (e.touches[0].clientY - tDep.clientY) / courseY * 100));
+        if (courseX > 1) x = Math.max(0, Math.min(100, tX - (e.touches[0].clientX - tDep.clientX) / courseX * 100));
+        appliquer();
+      }
+      e.preventDefault();
+    }, { passive: false });
+    scene.addEventListener('touchend', () => { tDep = null; }, { passive: true });
+
+    zr.addEventListener('input', () => zoomer(+zr.value / 100));
+    ['pointerdown', 'touchstart'].forEach(t =>
+      zr.addEventListener(t, e => e.stopPropagation(), { passive: true }));
 
     const fermer = () => {
       removeEventListener('resize', onResize);
@@ -5455,12 +5552,17 @@
       const b = e.target.closest('[data-cz]'); if (!b) return;
       e.stopPropagation();
       const a = b.dataset.cz;
+
+      if (a === 'plus')  { zoomer(z + 0.25); return; }
+      if (a === 'moins') { zoomer(z - 0.25); return; }
+
       if (a === 'auto') {
         _cropCache.delete(src);
-        const auto = centreSujet(grand);
-        y = auto; appliquer();
+        z = 1; x = 50; poser();
+        y = centreSujet(grand); appliquer();
         return;
       }
+
       if (a === 'orig') {
         b.disabled = true; b.textContent = 'Restauration…';
         try {
@@ -5479,18 +5581,13 @@
         const r = Math.round(y);
         b.disabled = true; b.textContent = 'Application…';
         try {
-          const neuve = await fabriquerRecadree(src, r, ratioCadre);
-          if (!neuve) { fermer(); return; }              // photo déjà au format
+          const neuve = await fabriquerRecadree(src, r, ratioCadre, z, Math.round(x));
+          if (!neuve) { fermer(); return; }
           garderOriginal(emp, src);
           const n = await remplacerPhoto(src, neuve);
           if (n > 0) {
-            /* L'app charge son état en MÉMOIRE au démarrage (`state.spots`) et
-               rend depuis cette mémoire, pas depuis la base. Modifier la base
-               ne suffit donc pas : il faut lui faire tout relire. Le
-               rechargement est le seul moyen fiable, et on le confirme
-               visuellement d'abord pour que l'action ne paraisse pas muette. */
             b.textContent = 'Photo recadrée ✓';
-            await new Promise(r => setTimeout(r, 450));
+            await new Promise(rs => setTimeout(rs, 450));
             fermer();
             try { location.reload(); } catch (_) {}
             setTimeout(() => { try { location.href = location.href; } catch (_) {} }, 150);
@@ -5498,12 +5595,10 @@
           }
           console.warn('[GMSpecs] photo introuvable en base — repli sur l\'affichage. '
             + 'Lance GMSpecs.diagPhoto() pour comparer les empreintes.');
-          /* Repli : la photo n'a pas été trouvée en base (cas d'un brouillon
-             non encore enregistré). On se rabat sur l'affichage CSS. */
           sauverCadrage(emp, r);
           appliquerCadrage(emp, r);
-        } catch (e) {
-          console.warn('[GMSpecs] recadrage impossible', e);
+        } catch (err) {
+          console.warn('[GMSpecs] recadrage impossible', err);
           sauverCadrage(emp, r);
           appliquerCadrage(emp, r);
         }
@@ -6030,6 +6125,20 @@
     font:700 11px/1 var(--mono); color:var(--peucommun); }
   .gvr-n{ margin:10px 0 0; font:400 11px/1.5 var(--sans); color:var(--dim); }
 
+  .gcz-zoom{ display:flex; align-items:center; gap:10px; margin-bottom:11px; }
+  .gcz-zb{ flex:none; width:36px; height:36px; border-radius:999px; border:1px solid rgba(255,255,255,.22);
+    background:rgba(255,255,255,.08); color:#fff; font:600 19px/1 var(--sans); cursor:pointer; }
+  .gcz-zr{ -webkit-appearance:none; appearance:none; flex:1; height:30px; background:transparent;
+    touch-action:none; cursor:pointer; }
+  .gcz-zr::-webkit-slider-runnable-track{ height:4px; border-radius:3px; background:rgba(255,255,255,.28); }
+  .gcz-zr::-moz-range-track{ height:4px; border-radius:3px; background:rgba(255,255,255,.28); }
+  .gcz-zr::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:22px; height:22px;
+    margin-top:-9px; border-radius:50%; background:#fff; border:3px solid var(--red2);
+    box-shadow:0 2px 8px rgba(0,0,0,.5); }
+  .gcz-zr::-moz-range-thumb{ width:22px; height:22px; border-radius:50%; background:#fff;
+    border:3px solid var(--red2); box-shadow:0 2px 8px rgba(0,0,0,.5); }
+  .gcz-zv{ flex:none; min-width:38px; text-align:right; font:700 12px/1 var(--mono); color:#fff;
+    font-variant-numeric:tabular-nums; }
   .gcz-actions{ display:flex; gap:8px; justify-content:center; }
   .gcz-auto{ margin-top:11px; padding:10px 15px; border-radius:9px; border:1px solid rgba(255,255,255,.2);
     background:transparent; color:#fff; font:600 12px/1 var(--sans); cursor:pointer; }
