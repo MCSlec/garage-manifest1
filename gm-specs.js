@@ -4719,8 +4719,9 @@
     return Math.max(25, Math.min(75, Math.round(pct)));   // garde-fou : jamais de crop extrême
   }
 
-  function recadrer(img) {
-    if (!img || img.dataset.gcrop) return;
+  function recadrer(img, force) {
+    if (!img) return;
+    if (img.dataset.gcrop && !force) return;
     const src = img.currentSrc || img.src;
     if (!src || src.indexOf('data:image') !== 0) return;   // photos locales uniquement
 
@@ -5229,6 +5230,13 @@
       plan.style.width = L + 'px';
       plan.style.height = hPhoto + 'px';
       course = Math.max(0, hPhoto - hCadre);
+      /* Si la photo est déjà au format du cadre (ou plus large), il n'y a
+         rien à déplacer verticalement. Le dire plutôt que laisser croire à
+         une panne. */
+      const aide = ov.querySelector('.gcz-bas span');
+      if (aide) aide.textContent = course < 2
+        ? "Cette photo remplit déjà le cadre : il n'y a rien à recadrer."
+        : 'Fais glisser la photo pour choisir ce qui apparaît dans le cadre';
       appliquer();
     }
 
@@ -5279,18 +5287,36 @@
       if (a === 'ok') {
         const r = Math.round(y);
         sauverCadrage(emp, r);
-        img.dataset.gcrop = r;
-        img.style.objectPosition = `center ${r}%`;
-        /* Toutes les copies de cette photo, partout dans l'app, se règlent
-           d'un coup : le cadrage est indexé par empreinte, pas par élément. */
-        document.querySelectorAll('img').forEach(o => {
-          if ((o.currentSrc || o.src) === src) {
-            o.dataset.gcrop = r; o.style.objectPosition = `center ${r}%`;
-          }
-        });
+        _cropCache.set(src, r);
+        /* On ne se fie PAS à la référence `img` capturée à l'ouverture :
+           l'app reconstruit entièrement la fiche à chaque rendu, et cette
+           référence peut pointer un élément déjà détaché du DOM — l'écriture
+           part alors dans le vide sans erreur visible. On re-sélectionne donc
+           depuis le document au moment de la validation, et on identifie les
+           cibles par EMPREINTE plutôt que par égalité stricte de src. */
+        appliquerCadrage(emp, r);
       }
       fermer();
     });
+  }
+
+  /** Applique un cadrage à toutes les images correspondant à cette empreinte. */
+  function appliquerCadrage(emp, r) {
+    const poser = () => {
+      document.querySelectorAll('img').forEach(o => {
+        const os = o.currentSrc || o.src;
+        if (!os || os.indexOf('data:image') !== 0) return;
+        if (empreintePhoto(os) !== emp) return;
+        o.dataset.gcrop = r;
+        o.style.objectPosition = `center ${r}%`;
+      });
+    };
+    poser();
+    /* Deuxième passe différée : si l'app re-rend la fiche juste après la
+       fermeture de l'éditeur, les nouveaux éléments reçoivent le réglage
+       sans attendre le prochain cycle du MutationObserver. */
+    requestAnimationFrame(poser);
+    setTimeout(poser, 260);
   }
 
   /** Ajoute le bouton d'ajustement sur la photo principale de la fiche. */
@@ -5308,7 +5334,13 @@
     b.innerHTML = '<svg viewBox="0 0 24 24"><path d="M7 3v14a2 2 0 0 0 2 2h12M3 7h14a2 2 0 0 1 2 2v12"/></svg><span>Cadrer</span>';
     b.addEventListener('click', (e) => {
       e.stopPropagation();
-      entrerEdition(hero, img, empreintePhoto(src));
+      /* Le src est relu AU CLIC : entre la greffe du bouton et l'appui, la
+         photo de couverture a pu changer via la bande de vignettes. */
+      const hv = document.querySelector('#overlay .detail-hero') || hero;
+      const iv = hv.querySelector('img') || img;
+      const sv = iv.currentSrc || iv.src;
+      if (!sv || sv.indexOf('data:image') !== 0) return;
+      entrerEdition(hv, iv, empreintePhoto(sv));
     });
     hero.appendChild(b);
   }
@@ -5894,7 +5926,7 @@
     rarete, deriver, percentile, signature,
     valider, audit,
     MOTEURS, famillesDe, COLLECS,
-    recadrer, recadrerTout, centreSujet, grefferCadrage,
+    recadrer, recadrerTout, centreSujet, grefferCadrage, appliquerCadrage,
     mystereDuJour, poolMystere, numeroMystere, partageMystere,
     jouer, _mystere: MYS,
     chercherRattachements, appliquerRattachements, proposerRattachements,
