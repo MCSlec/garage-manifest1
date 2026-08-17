@@ -5165,6 +5165,111 @@
 
   /* --- Interface d'ajustement ------------------------------------------ */
 
+  /* ======================================================================
+     RECADRAGE RÉEL DE LA PHOTO
+     ----------------------------------------------------------------------
+     POURQUOI ON CHANGE DE MÉTHODE. Le pilotage par `object-position` a
+     échoué sur l'appareil réel alors qu'il fonctionnait au banc. Peu importe
+     la cause exacte — élément remplacé, règle écrasée, cycle de rendu : le
+     mécanisme dépend de trois choses hors de notre contrôle (l'élément DOM
+     survit, le style inline gagne, l'ordre des rendus coopère). Un réglage
+     qui doit tenir ne peut pas reposer là-dessus.
+
+     La photo est donc RECADRÉE POUR DE VRAI : on redessine l'image au format
+     d'affichage, on remplace la dataURL dans la base de l'app, et il n'y a
+     plus aucun CSS à faire respecter. La vignette, la carte de partage,
+     l'export : tout hérite du recadrage sans code supplémentaire.
+
+     RÉVERSIBILITÉ. L'original est conservé dans `gm-cadrage` avant l'écriture.
+     Le bouton « Photo d'origine » le restaure. On ne détruit rien.
+
+     ORDRE DES OPÉRATIONS. On écrit la nouvelle photo et on attend la
+     confirmation de la transaction AVANT de considérer l'opération faite.
+     En cas d'échec, la photo d'origine est toujours en place.
+     ====================================================================== */
+
+  function ouvrirGarage(mode) {
+    return new Promise((res, rej) => {
+      let f = false;
+      const t = setTimeout(() => { if (!f) { f = true; rej(new Error('timeout')); } }, 4000);
+      try {
+        const rq = indexedDB.open('garage-manifest');   // sans version : aucune migration
+        rq.onsuccess = () => { if (f) return; f = true; clearTimeout(t); res(rq.result); };
+        rq.onerror   = () => { if (f) return; f = true; clearTimeout(t); rej(rq.error); };
+      } catch (e) { clearTimeout(t); rej(e); }
+    });
+  }
+
+  /** Redessine la photo au format du cadre, en respectant la position choisie. */
+  function fabriquerRecadree(imgSrc, y, ratioCadre) {
+    return new Promise((res, rej) => {
+      const im = new Image();
+      im.onload = () => {
+        try {
+          const L = im.naturalWidth, H = im.naturalHeight;
+          const hCible = Math.round(L * ratioCadre);
+          if (hCible >= H) return res(null);            // rien à recadrer
+          const dispo = H - hCible;
+          const sy = Math.round(dispo * (y / 100));
+          const c = document.createElement('canvas');
+          c.width = L; c.height = hCible;
+          const x = c.getContext('2d');
+          x.imageSmoothingQuality = 'high';
+          x.drawImage(im, 0, sy, L, hCible, 0, 0, L, hCible);
+          res(c.toDataURL('image/jpeg', 0.9));
+        } catch (e) { rej(e); }
+      };
+      im.onerror = () => rej(new Error('image illisible'));
+      im.src = imgSrc;
+    });
+  }
+
+  /** Remplace une photo dans la base de l'app. Renvoie le nombre de fiches touchées. */
+  async function remplacerPhoto(ancienne, nouvelle) {
+    const db = await ouvrirGarage();
+    if (!db.objectStoreNames.contains('spots')) return 0;
+
+    const tousSpots = await new Promise(r => {
+      const q = db.transaction('spots', 'readonly').objectStore('spots').getAll();
+      q.onsuccess = () => r(q.result || []); q.onerror = () => r([]);
+    });
+
+    const aModifier = tousSpots.filter(sp =>
+      Array.isArray(sp.photos) && sp.photos.indexOf(ancienne) >= 0);
+    if (!aModifier.length) return 0;
+
+    for (const sp of aModifier)
+      sp.photos = sp.photos.map(ph => (ph === ancienne ? nouvelle : ph));
+
+    /* Une seule transaction, et on attend sa complétion : si elle échoue,
+       IndexedDB annule TOUT et l'état d'origine est intact. */
+    await new Promise((res, rej) => {
+      const tx = db.transaction('spots', 'readwrite');
+      const st = tx.objectStore('spots');
+      aModifier.forEach(sp => st.put(sp));
+      tx.oncomplete = () => res();
+      tx.onerror = () => rej(tx.error);
+      tx.onabort = () => rej(new Error('transaction annulée'));
+    });
+    return aModifier.length;
+  }
+
+  /** Conserve l'original pour permettre un retour en arrière. */
+  function garderOriginal(emp, src) {
+    if (!_dbCadrage) return;
+    try { _dbCadrage.transaction('pos', 'readwrite').objectStore('pos').put({ id: 'orig:' + emp, y: src }); } catch (_) {}
+  }
+  function lireOriginal(emp) {
+    return new Promise(r => {
+      if (!_dbCadrage) return r(null);
+      try {
+        const q = _dbCadrage.transaction('pos', 'readonly').objectStore('pos').get('orig:' + emp);
+        q.onsuccess = () => r(q.result ? q.result.y : null);
+        q.onerror = () => r(null);
+      } catch (_) { r(null); }
+    });
+  }
+
   /* ÉDITEUR DE CADRAGE PLEIN ÉCRAN
      ----------------------------------------------------------------------
      Le curseur a été abandonné : c'est un intermédiaire abstrait. On ne
@@ -5201,7 +5306,10 @@
        </div>
        <div class="gcz-bas">
          <span>Fais glisser la photo pour choisir ce qui apparaît dans le cadre</span>
-         <button class="gcz-auto" type="button" data-cz="auto">Cadrage automatique</button>
+         <div class="gcz-actions">
+           <button class="gcz-auto" type="button" data-cz="auto">Cadrage automatique</button>
+           <button class="gcz-auto" type="button" data-cz="orig" hidden>Photo d'origine</button>
+         </div>
        </div>`;
     document.body.appendChild(ov);
     document.body.style.overflow = 'hidden';
@@ -5218,11 +5326,16 @@
        à la position de cette course, comme `object-position` — les deux
        systèmes restent parfaitement équivalents. */
     let course = 0, hCadre = 0, hPhoto = 0;
+    /* Le ratio est MESURÉ sur le conteneur d'affichage réel plutôt que
+       supposé à 4/3 : si le thème change ce format un jour, l'éditeur suit
+       automatiquement au lieu de mentir sur ce qui sera visible. */
+    const ratioCadre = (hero.clientHeight && hero.clientWidth)
+      ? (hero.clientHeight / hero.clientWidth) : 0.75;
 
     function poser() {
       const scene = ov.querySelector('.gcz-scene');
       const L = scene.clientWidth;
-      hCadre = L * 3 / 4;
+      hCadre = L * ratioCadre;
       const ratio = (grand.naturalHeight || 3) / (grand.naturalWidth || 4);
       hPhoto = L * ratio;
       cadre.style.height = hCadre + 'px';
@@ -5244,6 +5357,11 @@
       const haut = (ov.querySelector('.gcz-scene').clientHeight - hCadre) / 2;
       plan.style.top = (haut - course * (y / 100)) + 'px';
     }
+
+    lireOriginal(emp).then(o => {
+      const bo = ov.querySelector('[data-cz="orig"]');
+      if (o && bo) bo.hidden = false;
+    });
 
     if (grand.complete && grand.naturalWidth) poser();
     else grand.addEventListener('load', poser, { once: true });
@@ -5274,7 +5392,7 @@
       ov.remove();
     };
 
-    ov.addEventListener('click', (e) => {
+    ov.addEventListener('click', async (e) => {
       const b = e.target.closest('[data-cz]'); if (!b) return;
       e.stopPropagation();
       const a = b.dataset.cz;
@@ -5284,17 +5402,42 @@
         y = auto; appliquer();
         return;
       }
+      if (a === 'orig') {
+        b.disabled = true; b.textContent = 'Restauration…';
+        try {
+          const orig = await lireOriginal(emp);
+          if (orig) {
+            await remplacerPhoto(src, orig);
+            oublierCadrage(emp);
+            fermer(); location.reload(); return;
+          }
+        } catch (_) {}
+        b.disabled = false; b.textContent = "Photo d'origine";
+        return;
+      }
+
       if (a === 'ok') {
         const r = Math.round(y);
-        sauverCadrage(emp, r);
-        _cropCache.set(src, r);
-        /* On ne se fie PAS à la référence `img` capturée à l'ouverture :
-           l'app reconstruit entièrement la fiche à chaque rendu, et cette
-           référence peut pointer un élément déjà détaché du DOM — l'écriture
-           part alors dans le vide sans erreur visible. On re-sélectionne donc
-           depuis le document au moment de la validation, et on identifie les
-           cibles par EMPREINTE plutôt que par égalité stricte de src. */
-        appliquerCadrage(emp, r);
+        b.disabled = true; b.textContent = 'Application…';
+        try {
+          const neuve = await fabriquerRecadree(src, r, ratioCadre);
+          if (!neuve) { fermer(); return; }              // photo déjà au format
+          garderOriginal(emp, src);
+          const n = await remplacerPhoto(src, neuve);
+          if (n > 0) {
+            /* L'app a chargé son état en mémoire au démarrage : un rechargement
+               est le seul moyen fiable de lui faire relire la base. */
+            fermer(); location.reload(); return;
+          }
+          /* Repli : la photo n'a pas été trouvée en base (cas d'un brouillon
+             non encore enregistré). On se rabat sur l'affichage CSS. */
+          sauverCadrage(emp, r);
+          appliquerCadrage(emp, r);
+        } catch (e) {
+          console.warn('[GMSpecs] recadrage impossible', e);
+          sauverCadrage(emp, r);
+          appliquerCadrage(emp, r);
+        }
       }
       fermer();
     });
@@ -5811,6 +5954,7 @@
   .gcz-bas{ padding:14px 16px calc(env(safe-area-inset-bottom) + 16px); text-align:center;
     border-top:1px solid rgba(255,255,255,.09); }
   .gcz-bas span{ display:block; font:400 12.5px/1.45 var(--sans); color:rgba(255,255,255,.6); }
+  .gcz-actions{ display:flex; gap:8px; justify-content:center; }
   .gcz-auto{ margin-top:11px; padding:10px 15px; border-radius:9px; border:1px solid rgba(255,255,255,.2);
     background:transparent; color:#fff; font:600 12px/1 var(--sans); cursor:pointer; }
 
@@ -5927,6 +6071,7 @@
     valider, audit,
     MOTEURS, famillesDe, COLLECS,
     recadrer, recadrerTout, centreSujet, grefferCadrage, appliquerCadrage,
+    fabriquerRecadree, remplacerPhoto,
     mystereDuJour, poolMystere, numeroMystere, partageMystere,
     jouer, _mystere: MYS,
     chercherRattachements, appliquerRattachements, proposerRattachements,
