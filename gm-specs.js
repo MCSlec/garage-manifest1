@@ -19,6 +19,8 @@
 (function (global) {
   'use strict';
 
+  const VERSION_MODULE = '15.5.0';
+
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
      ----------------------------------------------------------------------
@@ -5425,10 +5427,20 @@
           garderOriginal(emp, src);
           const n = await remplacerPhoto(src, neuve);
           if (n > 0) {
-            /* L'app a chargé son état en mémoire au démarrage : un rechargement
-               est le seul moyen fiable de lui faire relire la base. */
-            fermer(); location.reload(); return;
+            /* L'app charge son état en MÉMOIRE au démarrage (`state.spots`) et
+               rend depuis cette mémoire, pas depuis la base. Modifier la base
+               ne suffit donc pas : il faut lui faire tout relire. Le
+               rechargement est le seul moyen fiable, et on le confirme
+               visuellement d'abord pour que l'action ne paraisse pas muette. */
+            b.textContent = 'Photo recadrée ✓';
+            await new Promise(r => setTimeout(r, 450));
+            fermer();
+            try { location.reload(); } catch (_) {}
+            setTimeout(() => { try { location.href = location.href; } catch (_) {} }, 150);
+            return;
           }
+          console.warn('[GMSpecs] photo introuvable en base — repli sur l\'affichage. '
+            + 'Lance GMSpecs.diagPhoto() pour comparer les empreintes.');
           /* Repli : la photo n'a pas été trouvée en base (cas d'un brouillon
              non encore enregistré). On se rabat sur l'affichage CSS. */
           sauverCadrage(emp, r);
@@ -6023,6 +6035,7 @@
     }).observe(cible, { childList: true, subtree: true });
     try { greffer(); recadrerTout(); grefferCadrage(); } catch (_) {}
     chargerCadrages().then(() => { try { recadrerTout(); } catch (_) {} });
+    console.info(`[GMSpecs] module v${VERSION_MODULE} chargé`);
     brancherMystere();
     chargerMystere().then(() => { try { grefferMystere(); } catch (_) {} });
     /* Différé : on laisse l'app finir son propre démarrage avant d'ouvrir la base. */
@@ -6072,6 +6085,49 @@
     MOTEURS, famillesDe, COLLECS,
     recadrer, recadrerTout, centreSujet, grefferCadrage, appliquerCadrage,
     fabriquerRecadree, remplacerPhoto,
+    VERSION: VERSION_MODULE,
+
+    /** Diagnostic : dit exactement ce qui est stocké et ce qui est affiché.
+     *  À lancer en console quand un cadrage semble ne pas prendre effet. */
+    async diagPhoto() {
+      const r = { version: VERSION_MODULE, base: null, fiches: [], affichees: [] };
+      try {
+        const db = await ouvrirGarage();
+        r.base = { nom: db.name, version: db.version, stores: [...db.objectStoreNames] };
+        const tous = await new Promise(res => {
+          const q = db.transaction('spots', 'readonly').objectStore('spots').getAll();
+          q.onsuccess = () => res(q.result || []); q.onerror = () => res([]);
+        });
+        for (const sp of tous) {
+          if (!Array.isArray(sp.photos) || !sp.photos.length) continue;
+          r.fiches.push({
+            id: sp.carId,
+            photos: sp.photos.map(ph => ({
+              octets: ph.length,
+              empreinte: empreintePhoto(ph),
+              debut: ph.slice(0, 40)
+            }))
+          });
+        }
+      } catch (e) { r.base = 'inaccessible : ' + e.message; }
+
+      document.querySelectorAll('img').forEach(o => {
+        const src = o.currentSrc || o.src;
+        if (!src || src.indexOf('data:image') !== 0) return;
+        r.affichees.push({ octets: src.length, empreinte: empreintePhoto(src),
+                           position: o.style.objectPosition || '(aucune)',
+                           dansOverlay: !!o.closest('#overlay') });
+      });
+
+      /* Le point décisif : une photo affichée dont l'empreinte n'existe pas
+         en base signifie que l'app rend depuis sa mémoire et non depuis la
+         base — auquel cas modifier la base ne change rien à l'écran tant
+         qu'on ne recharge pas. */
+      const empBase = new Set(r.fiches.flatMap(f => f.photos.map(p => p.empreinte)));
+      r.coherent = r.affichees.every(a => empBase.has(a.empreinte));
+      console.log('[GMSpecs] diagnostic photo', r);
+      return r;
+    },
     mystereDuJour, poolMystere, numeroMystere, partageMystere,
     jouer, _mystere: MYS,
     chercherRattachements, appliquerRattachements, proposerRattachements,
