@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '16.1.0';
+  const VERSION_MODULE = '16.3.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -5168,6 +5168,140 @@
   /* --- Interface d'ajustement ------------------------------------------ */
 
   /* ======================================================================
+     GARAGE — LES PHOTOS D'ABORD
+     ----------------------------------------------------------------------
+     CONSTAT. L'onglet Garage impose trois blocs de statistiques avant la
+     première photo : les tuiles de rareté, la complétude par marque, la
+     complétude par pays. Sur un écran de téléphone, il faut faire défiler
+     deux écrans entiers pour voir sa collection. Or les statistiques sont de
+     la CONSULTATION — on les regarde parfois — tandis que la grille est
+     l'USAGE PRINCIPAL. L'ordre actuel est l'inverse de la fréquence d'usage.
+
+     SOLUTION ÉCARTÉE : lier l'affichage au sélecteur de tri. Trier par rareté
+     n'a aucun rapport avec vouloir consulter sa complétude par marque ; on
+     obtiendrait un comportement que personne ne devine, et les stats
+     apparaîtraient au moment où l'on cherchait justement à voir la grille.
+
+     SOLUTION RETENUE : replier les statistiques derrière une seule ligne de
+     résumé, qui porte déjà l'information essentielle (rareté la mieux
+     remplie, marques et pays bouclés). Un appui déplie. Le choix est
+     mémorisé, donc l'app se plie à l'habitude de chacun au lieu d'imposer
+     la sienne.
+
+     On ne supprime rien et on ne déplace rien dans index.html : on repositionne
+     des blocs existants dans le DOM après leur rendu. Réversible en supprimant
+     le fichier.
+     ====================================================================== */
+
+  const CLE_STATS = 'gm-stats-ouvert';
+  let statsOuvert = null;
+
+  function litPrefStats() {
+    if (statsOuvert !== null) return statsOuvert;
+    try { statsOuvert = localStorage.getItem(CLE_STATS) === '1'; } catch (_) { statsOuvert = false; }
+    return statsOuvert;
+  }
+  function ecritPrefStats(v) {
+    statsOuvert = v;
+    try { localStorage.setItem(CLE_STATS, v ? '1' : '0'); } catch (_) {}
+  }
+
+  /** Résumé tenant sur une ligne, extrait des blocs déjà rendus par l'app. */
+  function resumeStats(tiles, blocs) {
+    const bouts = [];
+
+    // Rareté la plus avancée, lue directement dans les tuiles.
+    try {
+      let best = null;
+      tiles.querySelectorAll('.tile').forEach(t => {
+        const lab = (t.querySelector('.lab span') || {}).textContent || '';
+        const val = (t.querySelector('b') || {}).textContent || '';
+        const m = val.replace(/\s/g, '').match(/^(\d+)\/(\d+)$/);
+        if (!m || lab.toLowerCase().includes('tous')) return;
+        const [, a, b] = m.map(Number);
+        if (!b) return;
+        const pct = a / b;
+        if (a > 0 && (!best || pct > best.pct)) best = { lab, a, b, pct };
+      });
+      if (best) bouts.push(`${esc(best.lab.toLowerCase())} ${best.a}/${best.b}`);
+    } catch (_) {}
+
+    /* Marques et pays bouclés : c'est l'information que ces deux blocs
+       servent réellement à chercher. Le reste est du détail consultable. */
+    blocs.forEach(bl => {
+      try {
+        const titre = (bl.querySelector('.h2') || {}).textContent || '';
+        const finis = bl.querySelectorAll('.rail-head .v.done').length;
+        const quoi = /marque/i.test(titre) ? 'marque' : /pays/i.test(titre) ? 'pays' : null;
+        if (!quoi) return;
+        if (!finis) return;
+        /* Accord en genre et en nombre : « marque » est féminin, « pays »
+           masculin et invariable. Une app en français qui écrit « 1 pays
+           bouclée » se fait remarquer pour la mauvaise raison. */
+        const pluriel = finis > 1;
+        const mot = quoi === 'marque' ? (pluriel ? 'marques' : 'marque') : 'pays';
+        const part = quoi === 'marque' ? (pluriel ? 'bouclées' : 'bouclée')
+                                       : (pluriel ? 'bouclés' : 'bouclé');
+        bouts.push(`${finis} ${mot} ${part}`);
+      } catch (_) {}
+    });
+
+    return bouts.length ? bouts.join(' · ') : 'progression par rareté, marque et pays';
+  }
+
+  function grefferGarage() {
+    const vue = document.getElementById('view');
+    if (!vue) return;
+    const tiles = vue.querySelector('.tiles');
+    const filtres = vue.querySelector('.filters');
+    if (!tiles || !filtres) return;                 // on n'est pas sur le Garage
+    if (vue.querySelector('.gst')) return;          // déjà replié
+
+    /* Les deux panneaux de complétude sont ceux situés entre les tuiles et
+       les filtres. On les identifie par position plutôt que par un texte
+       traduit ou stylisé, qui pourrait changer. */
+    const blocs = [];
+    let n = tiles.nextElementSibling;
+    while (n && n !== filtres) {
+      if (n.classList.contains('section')) blocs.push(n);
+      n = n.nextElementSibling;
+    }
+    if (!blocs.length) return;
+
+    const ouvert = litPrefStats();
+    const box = document.createElement('div');
+    box.className = 'gst';
+    box.innerHTML =
+      `<button class="gst-b" type="button" data-gst="1" aria-expanded="${ouvert}">
+         <span class="gst-t">Progression</span>
+         <span class="gst-r">${resumeStats(tiles, blocs)}</span>
+         <span class="gst-c">${ouvert ? '▲' : '▼'}</span>
+       </button>
+       <div class="gst-in"></div>`;
+
+    /* Insertion AVANT les tuiles, puis déplacement des blocs à l'intérieur :
+       l'ordre visuel de l'app est conservé, seule la profondeur change. */
+    tiles.parentNode.insertBefore(box, tiles);
+    const dedans = box.querySelector('.gst-in');
+    dedans.appendChild(tiles);
+    blocs.forEach(b => dedans.appendChild(b));
+    dedans.hidden = !ouvert;
+  }
+
+  function brancherGarage() {
+    document.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-gst]'); if (!b) return;
+      const box = b.closest('.gst'); if (!box) return;
+      const dedans = box.querySelector('.gst-in');
+      const ouvre = dedans.hidden;
+      dedans.hidden = !ouvre;
+      b.setAttribute('aria-expanded', ouvre);
+      box.querySelector('.gst-c').textContent = ouvre ? '▲' : '▼';
+      ecritPrefStats(ouvre);
+    });
+  }
+
+  /* ======================================================================
      BANDEAU DE VERSION
      ----------------------------------------------------------------------
      Le panneau Réglages affiche « Prêt hors-ligne ✓ » même quand le module
@@ -6118,6 +6252,18 @@
   .gcz-bas{ padding:14px 16px calc(env(safe-area-inset-bottom) + 16px); text-align:center;
     border-top:1px solid rgba(255,255,255,.09); }
   .gcz-bas span{ display:block; font:400 12.5px/1.45 var(--sans); color:rgba(255,255,255,.6); }
+  .gst{ margin-top:14px; }
+  .gst-b{ display:flex; align-items:center; gap:11px; width:100%; padding:13px 14px;
+    border:1px solid var(--line); border-radius:12px; background:var(--panel2);
+    color:inherit; text-align:left; cursor:pointer; }
+  .gst-t{ flex:none; font:600 10px/1 var(--mono); letter-spacing:.14em; text-transform:uppercase;
+    color:var(--muted); }
+  .gst-r{ flex:1; min-width:0; font:500 11.5px/1.3 var(--sans); color:var(--dim);
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .gst-c{ flex:none; font-size:10px; color:var(--muted2); }
+  .gst-b:active{ border-color:var(--line2); }
+  .gst-in[hidden]{ display:none; }
+
   .gvr-l{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
   .gvr-l b{ display:block; font:600 13.5px/1.2 var(--sans); }
   .gvr-l small{ display:block; margin-top:4px; font:400 11.5px/1.4 var(--sans); color:var(--muted2); }
@@ -6195,10 +6341,25 @@
     if (vue) new MutationObserver(() => {
       try { grefferMystere(); } catch (_) {}
       try { grefferVersion(); } catch (_) {}
-      try { grefferCollecs(); } catch (_) {}
+      try { grefferGarage(); } catch (_) {}
+      /* Passage initial sur TOUS les greffons. L'observateur ne se déclenche que
+       sur une mutation ultérieure : si l'utilisateur arrive directement sur un
+       onglet déjà rendu, aucune mutation ne suit et rien ne se greffe jamais.
+       Bug trouvé au banc — l'observateur seul ne suffit pas. */
+    try { grefferCollecs(); } catch (_) {}
+    try { grefferMystere(); } catch (_) {}
+    try { grefferVersion(); } catch (_) {}
+    try { grefferGarage(); } catch (_) {}
       try { recadrerTout(); } catch (_) {}
     }).observe(vue, { childList: true, subtree: true });
+    /* Passage initial sur TOUS les greffons. L'observateur ne se déclenche que
+       sur une mutation ultérieure : si l'utilisateur arrive directement sur un
+       onglet déjà rendu, aucune mutation ne suit et rien ne se greffe jamais.
+       Bug trouvé au banc — l'observateur seul ne suffit pas. */
     try { grefferCollecs(); } catch (_) {}
+    try { grefferMystere(); } catch (_) {}
+    try { grefferVersion(); } catch (_) {}
+    try { grefferGarage(); } catch (_) {}
     const n = etendreVariants();
     if (n) console.info(`[GMSpecs] ${n} modèle(s) enrichi(s) de leurs générations dans le système de collection`);
     const cible = document.getElementById('overlay') || document.body;
@@ -6212,6 +6373,7 @@
     console.info(`[GMSpecs] module v${VERSION_MODULE} chargé`);
     brancherMystere();
     brancherVersion();
+    brancherGarage();
     chargerMystere().then(() => { try { grefferMystere(); } catch (_) {} });
     /* Différé : on laisse l'app finir son propre démarrage avant d'ouvrir la base. */
     setTimeout(() => { try { proposerRattachements(); } catch (_) {} }, 2500);
@@ -6259,6 +6421,7 @@
     valider, audit,
     MOTEURS, famillesDe, COLLECS,
     recadrer, recadrerTout, centreSujet, grefferCadrage, appliquerCadrage,
+    grefferGarage, grefferVersion,
     fabriquerRecadree, remplacerPhoto,
     VERSION: VERSION_MODULE,
 
