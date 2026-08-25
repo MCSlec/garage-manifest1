@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '17.3.0';
+  const VERSION_MODULE = '17.7.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -6245,6 +6245,186 @@
   }
 
   /* ======================================================================
+     CLASSER UNE VOITURE — À LA MAIN, DEPUIS SA FICHE
+     ----------------------------------------------------------------------
+     POURQUOI ON ABANDONNE L'AUTOMATIQUE. Le rattachement de masse a échoué
+     deux fois sur l'appareil réel : il dépendait de la structure du registre
+     des voitures hors catalogue, du moment de démarrage de l'app, et d'un
+     bandeau qui pouvait ne jamais apparaître. Trois points de rupture pour
+     une fonction dont l'utilisateur ne voyait jamais l'état.
+
+     On inverse : un bouton sur la fiche de la voiture concernée, une
+     recherche, et c'est l'utilisateur qui tranche. Il n'y a plus rien à
+     deviner, plus de seuil de similarité à régler, plus de correspondance
+     silencieusement manquée. Et c'est LUI qui a raison sur le modèle, pas un
+     coefficient.
+
+     Le rattachement de masse reste disponible dans les Réglages pour qui
+     veut aller vite — mais il n'est plus le seul chemin.
+     ====================================================================== */
+
+  let _classeur = null;   // { id, nom } de la voiture en cours de classement
+
+  /** La fiche ouverte concerne-t-elle une voiture hors catalogue ? */
+  function idCustomOuvert() {
+    const sheet = document.querySelector('#overlay .sheet');
+    if (!sheet) return null;
+    /* On identifie la voiture par le titre affiché plutôt que par une
+       variable interne à l'app, à laquelle on n'a pas accès. */
+    const h2 = sheet.querySelector('.info-head h2');
+    if (!h2) return null;
+    const titre = h2.textContent.trim();
+    if (!titre) return null;
+
+    /* UNIQUE critère : la fiche affiche « Non classé ». C'est l'app elle-même
+       qui l'écrit, donc c'est la source la plus fiable.
+
+       Piège évité : j'avais d'abord ajouté un test « ce nom existe-t-il dans
+       CARS ? ». Il annulait tout, car le module venait justement d'injecter
+       « Renault Rafale » dans le catalogue — le MODÈLE existait, mais la
+       CAPTURE restait rattachée à un identifiant custom. Confondre les deux
+       rendait le bouton invisible précisément sur les voitures à classer. */
+    if (!/non class/i.test(sheet.textContent)) return null;
+    return { nom: titre };
+  }
+
+  function grefferClasser() {
+    const sheet = document.querySelector('#overlay .sheet');
+    if (!sheet || sheet.querySelector('.gcl-btn')) return;
+    const cible = idCustomOuvert();
+    if (!cible) return;
+    const tete = sheet.querySelector('.info-head');
+    if (!tete) return;
+
+    const b = document.createElement('button');
+    b.className = 'btn gcl-btn';
+    b.type = 'button';
+    b.textContent = 'Associer à un modèle du catalogue';
+    b.addEventListener('click', (e) => { e.stopPropagation(); ouvrirClasseur(cible.nom); });
+    tete.insertAdjacentElement('afterend', b);
+  }
+
+  /** Retrouve l'identifiant réel de la capture à partir de son nom affiché. */
+  async function trouverCapture(nom) {
+    const db = await ouvrirGarage();
+    if (!db.objectStoreNames.contains('spots')) return null;
+    const st = db.transaction('spots', 'readonly').objectStore('spots');
+    const tous = await _tous(st);
+    const reg = await _lire(st, '__customcars__');
+    const n = norm(nom);
+
+    if (reg && Array.isArray(reg.list)) {
+      const c = reg.list.find(x => norm(`${x.brand} ${x.model}`) === n || norm(x.model) === n);
+      if (c) { const sp = tous.find(s => s.carId === c.id); if (sp) return { spot: sp, reg: c }; }
+    }
+    /* Repli : on reconstitue le nom depuis l'identifiant, comme le fait
+       l'app quand le registre est absent. */
+    for (const sp of tous) {
+      const id = sp.carId;
+      if (typeof id !== 'string' || id.indexOf('custom:') !== 0) continue;
+      const brut = norm(id.slice(7).replace(/-[a-z0-9]{1,8}$/i, '').replace(/-/g, ' '));
+      if (brut === n || brut.includes(n) || n.includes(brut)) return { spot: sp, reg: null };
+    }
+    return null;
+  }
+
+  function ouvrirClasseur(nom) {
+    if (document.getElementById('gcls')) return;
+    _classeur = { nom };
+
+    const ov = document.createElement('div');
+    ov.id = 'gcls';
+    ov.innerHTML =
+      `<div class="gcls-box">
+         <div class="gcls-head">
+           <b>Associer « ${esc(nom)} »</b>
+           <button class="gcz-x" type="button" data-gcs="fermer" aria-label="Fermer">✕</button>
+         </div>
+         <input class="gcls-q" placeholder="Cherche la marque ou le modèle…" autocomplete="off">
+         <div class="gcls-l"></div>
+         <p class="gcls-n">Tes photos, ta date et ta note sont conservées. Si le modèle est
+         déjà dans ton garage, les deux fiches sont fusionnées.</p>
+       </div>`;
+    document.body.appendChild(ov);
+    const q = ov.querySelector('.gcls-q');
+    const liste = ov.querySelector('.gcls-l');
+
+    const peindre = (texte) => {
+      let cat = [];
+      try { cat = (typeof CARS !== 'undefined' && Array.isArray(CARS)) ? CARS.filter(c => !c.custom) : []; } catch (_) {}
+      const n = norm(texte);
+      const res = (n.length < 2
+        ? cat.filter(c => _dice(norm(nom), norm(`${c.brand} ${c.model}`)) > 0.35)
+             .sort((a, b) => _dice(norm(nom), norm(`${b.brand} ${b.model}`)) - _dice(norm(nom), norm(`${a.brand} ${a.model}`)))
+        : cat.filter(c => norm(`${c.brand} ${c.model}`).includes(n))
+             .sort((a, b) => norm(`${a.brand} ${a.model}`).indexOf(n) - norm(`${b.brand} ${b.model}`).indexOf(n))
+        ).slice(0, 14);
+
+      liste.innerHTML = res.length
+        ? res.map(c => `<button class="gcls-o" data-gcs="pick" data-id="${esc(c.id)}">
+             <span>${esc(c.brand)} <b>${esc(c.model)}</b></span>
+             <i>${esc(c.cat || '')}${c.yr ? ' · ' + esc(c.yr) : ''}</i></button>`).join('')
+        : `<p class="gcls-v">Aucun modèle ne correspond. Essaie juste la marque.</p>`;
+    };
+    peindre('');
+    q.addEventListener('input', () => peindre(q.value));
+    setTimeout(() => q.focus(), 120);
+
+    ov.addEventListener('click', async (e) => {
+      const b = e.target.closest('[data-gcs]'); if (!b) return;
+      e.stopPropagation();
+      if (b.dataset.gcs === 'fermer') { ov.remove(); _classeur = null; return; }
+
+      b.disabled = true; b.style.opacity = .6;
+      const ok = await classerVers(nom, b.dataset.id);
+      if (!ok) {
+        b.disabled = false; b.style.opacity = 1;
+        liste.insertAdjacentHTML('afterbegin',
+          `<p class="gcls-v">Capture introuvable en base. Lance GMSpecs.diagRattachement() pour comprendre.</p>`);
+        return;
+      }
+      ov.remove();
+      location.reload();
+    });
+  }
+
+  /** Déplace la capture vers l'identifiant du catalogue choisi. */
+  async function classerVers(nom, idCible) {
+    try {
+      const t = await trouverCapture(nom);
+      if (!t) return false;
+      const db = await ouvrirGarage();
+      const st0 = db.transaction('spots', 'readonly').objectStore('spots');
+      const existante = await _lire(st0, idCible);
+      const fusion = fusionner(idCible, t.spot, existante);
+
+      await new Promise((res, rej) => {
+        const tx = db.transaction('spots', 'readwrite');
+        const st = tx.objectStore('spots');
+        st.put(fusion);                       // on écrit AVANT de supprimer
+        st.delete(t.spot.carId);
+        if (t.reg) {
+          /* Le registre est relu dans la même transaction pour éviter
+             d'écraser une modification concurrente. */
+          const q = st.get('__customcars__');
+          q.onsuccess = () => {
+            const r = q.result;
+            if (r && Array.isArray(r.list)) {
+              r.list = r.list.filter(c => c.id !== t.spot.carId);
+              st.put(r);
+            }
+          };
+        }
+        tx.oncomplete = () => res();
+        tx.onerror = () => rej(tx.error);
+        tx.onabort = () => rej(new Error('annulée'));
+      });
+      console.info(`[GMSpecs] « ${nom} » associée à ${idCible}`);
+      return true;
+    } catch (e) { console.warn('[GMSpecs] association impossible', e); return false; }
+  }
+
+  /* ======================================================================
      RATTACHEMENT DES VOITURES « NON CLASSÉ »
      ----------------------------------------------------------------------
      Quand une voiture manque au catalogue, tu la crées en « Non classé »
@@ -6424,7 +6604,18 @@
     return journal;
   }
 
-  /* --- Bandeau de proposition ------------------------------------------ */
+  /* --- Panneau de proposition ------------------------------------------
+     Le bandeau appliquait toutes ses correspondances d'un seul bouton.
+     Défaut de conception révélé à l'usage : « Porsche Gt3 r » était dirigée
+     vers la 911 GT3 Touring — une routière — alors qu'il s'agit de la GT3 R,
+     une voiture de course. 93 % de similarité, et deux voitures sans le
+     moindre rapport.
+
+     Une correspondance approchée ne doit jamais s'appliquer sans accord
+     explicite, ligne par ligne. Le panneau propose, chaque ligne offre trois
+     issues — accepter, choisir soi-même, ignorer. La machine suggère,
+     l'utilisateur tranche.
+     ------------------------------------------------------------------- */
   let _bandeauFait = false;
 
   async function proposerRattachements() {
@@ -6434,23 +6625,53 @@
     try { props = await chercherRattachements(); } catch (_) { return; }
     if (!props.length) return;
 
+    const ligne = (p, i) => `
+      <div class="gmr-li" data-i="${i}">
+        <div class="gmr-de">${esc(p.custom.brand)} ${esc(p.custom.model)}</div>
+        <div class="gmr-vers">→ <b>${esc(p.cible.brand)} ${esc(p.cible.model)}</b><span>${p.score} %</span></div>
+        <div class="gmr-lb">
+          <button class="gmr-a ok" data-rat="ok" data-i="${i}">Associer</button>
+          <button class="gmr-a" data-rat="autre" data-i="${i}">Choisir…</button>
+          <button class="gmr-a" data-rat="skip" data-i="${i}">Ignorer</button>
+        </div>
+      </div>`;
+
     const el = document.createElement('div');
     el.id = 'gmr-rat';
     el.innerHTML = `<div class="gmr-rc">
-      <b>${props.length} voiture${props.length > 1 ? 's' : ''} non classée${props.length > 1 ? 's' : ''} ${props.length > 1 ? 'ont' : 'a'} rejoint le catalogue</b>
-      <span>${props.map(p => `${esc(p.custom.brand)} ${esc(p.custom.model)} → ${esc(p.cible.brand)} ${esc(p.cible.model)}`).join('<br>')}</span>
-      <em>Tes photos, ta date et ta note sont conservées. Rien n'est supprimé avant que la nouvelle fiche soit enregistrée.</em>
-      <div class="gmr-ra">
-        <button class="btn" data-rat="non">Plus tard</button>
-        <button class="btn red" data-rat="oui">Rattacher</button>
-      </div></div>`;
+      <b>${props.length} voiture${props.length > 1 ? 's' : ''} non classée${props.length > 1 ? 's' : ''} peu${props.length > 1 ? 'vent' : 't'} rejoindre le catalogue</b>
+      <em>Vérifie chaque proposition : deux modèles peuvent porter un nom très proche
+      sans avoir de rapport. Rien n'est appliqué sans ton accord.</em>
+      <div class="gmr-liste">${props.map(ligne).join('')}</div>
+      <button class="btn" data-rat="fermer" style="width:100%;margin-top:10px">Fermer</button>
+    </div>`;
+
     el.addEventListener('click', async (e) => {
       const b = e.target.closest('[data-rat]'); if (!b) return;
-      if (b.dataset.rat === 'non') return el.remove();
-      b.disabled = true; b.textContent = 'Rattachement…';
-      try { await appliquerRattachements(props); } catch (_) {}
-      el.remove();
-      location.reload();                    // l'app a déjà chargé son état en mémoire
+      e.stopPropagation();
+      const a = b.dataset.rat;
+      if (a === 'fermer' || a === 'non') { el.remove(); return; }
+
+      const i = +b.dataset.i;
+      const p = props[i];
+      const bloc = el.querySelector(`.gmr-li[data-i="${i}"]`);
+      if (!p || !bloc) return;
+
+      if (a === 'skip') { bloc.remove(); if (!el.querySelector('.gmr-li')) el.remove(); return; }
+
+      if (a === 'autre') {
+        el.remove();
+        ouvrirClasseur(`${p.custom.brand} ${p.custom.model}`.trim());
+        return;
+      }
+
+      if (a === 'ok') {
+        bloc.querySelectorAll('button').forEach(x => { x.disabled = true; });
+        b.textContent = 'Association…';
+        try { await appliquerRattachements([p]); } catch (_) {}
+        bloc.remove();
+        if (!el.querySelector('.gmr-li')) { el.remove(); location.reload(); }
+      }
     });
     document.body.appendChild(el);
   }
@@ -6815,6 +7036,28 @@
   .gst-b:active{ border-color:var(--line2); }
   .gst-in[hidden]{ display:none; }
 
+  .gcl-btn{ display:block; width:100%; margin-top:12px; text-align:center; }
+  #gcls{ position:fixed; inset:0; z-index:320; background:rgba(6,6,8,.86);
+    display:flex; align-items:flex-end; justify-content:center; animation:gczIn .16s ease; }
+  .gcls-box{ width:100%; max-width:560px; max-height:88vh; display:flex; flex-direction:column;
+    background:var(--panel); border:1px solid var(--line2); border-radius:16px 16px 0 0;
+    padding:16px 16px calc(env(safe-area-inset-bottom) + 16px); }
+  .gcls-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .gcls-head b{ font:600 14px/1.3 var(--sans); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .gcls-q{ width:100%; margin-top:13px; padding:12px 14px; border:1px solid var(--line);
+    background:var(--bg); border-radius:10px; color:var(--fg); font:400 14px var(--sans); }
+  .gcls-q:focus{ outline:none; border-color:var(--red); }
+  .gcls-l{ flex:1; overflow-y:auto; margin-top:10px; -webkit-overflow-scrolling:touch; }
+  .gcls-o{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; width:100%;
+    padding:11px 12px; margin-top:5px; border:1px solid var(--line); border-radius:9px;
+    background:var(--panel2); color:var(--muted); font:400 13px/1.25 var(--sans);
+    text-align:left; cursor:pointer; }
+  .gcls-o b{ color:var(--fg); font-weight:600; }
+  .gcls-o i{ flex:none; font-style:normal; font:400 10px/1 var(--mono); color:var(--dim); }
+  .gcls-o:active{ border-color:var(--red-dk); }
+  .gcls-v{ margin:10px 2px; font:400 12px/1.5 var(--sans); color:var(--dim); }
+  .gcls-n{ margin:12px 2px 0; font:400 11px/1.5 var(--sans); color:var(--dim); }
+
   .gvr-l{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
   .gvr-l b{ display:block; font:600 13.5px/1.2 var(--sans); }
   .gvr-l small{ display:block; margin-top:4px; font:400 11.5px/1.4 var(--sans); color:var(--muted2); }
@@ -6845,10 +7088,19 @@
   .gmr-rc{ width:100%; max-width:520px; background:var(--panel); border:1px solid var(--line2);
     border-radius:14px; padding:14px 16px; box-shadow:0 12px 40px rgba(0,0,0,.55); }
   .gmr-rc b{ display:block; font:600 13px/1.35 var(--sans); }
-  .gmr-rc span{ display:block; margin-top:7px; font:500 11.5px/1.6 var(--mono); color:var(--peucommun); }
   .gmr-rc em{ display:block; margin-top:8px; font-style:normal; font:400 11px/1.5 var(--sans); color:var(--dim); }
-  .gmr-ra{ display:flex; gap:8px; margin-top:12px; }
-  .gmr-ra .btn{ flex:1; text-align:center; }
+  .gmr-liste{ margin-top:12px; max-height:46vh; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+  .gmr-li{ padding:11px 0; border-top:1px solid var(--line); }
+  .gmr-li:first-child{ border-top:none; }
+  .gmr-de{ font:500 12px/1.3 var(--sans); color:var(--muted2); }
+  .gmr-vers{ margin-top:4px; font:400 12.5px/1.35 var(--sans); color:var(--muted); }
+  .gmr-vers b{ display:inline; font-weight:600; color:var(--fg); }
+  .gmr-vers span{ margin-left:6px; font:600 10px/1 var(--mono); color:var(--peucommun); }
+  .gmr-lb{ display:flex; gap:6px; margin-top:9px; }
+  .gmr-a{ flex:1; padding:8px 6px; border-radius:8px; border:1px solid var(--line2);
+    background:var(--panel2); color:var(--muted); font:600 11.5px/1 var(--sans); cursor:pointer; }
+  .gmr-a.ok{ background:var(--red2); border-color:var(--red2); color:#fff; }
+  .gmr-a:disabled{ opacity:.5; }
   `;
 
   function injecterCSS() {
@@ -6921,8 +7173,9 @@
       try { greffer(); } catch (_) {}
       try { recadrerTout(); } catch (_) {}
       try { grefferCadrage(); } catch (_) {}
+      try { grefferClasser(); } catch (_) {}
     }).observe(cible, { childList: true, subtree: true });
-    try { greffer(); recadrerTout(); grefferCadrage(); } catch (_) {}
+    try { greffer(); recadrerTout(); grefferCadrage(); grefferClasser(); } catch (_) {}
     chargerCadrages().then(() => { try { recadrerTout(); } catch (_) {} });
     console.info(`[GMSpecs] module v${VERSION_MODULE} chargé`);
     brancherMystere();
@@ -6975,7 +7228,7 @@
     valider, audit, auditFiches,
     MOTEURS, famillesDe, COLLECS,
     recadrer, recadrerTout, centreSujet, grefferCadrage, appliquerCadrage,
-    grefferGarage, grefferVersion,
+    grefferGarage, grefferVersion, grefferClasser, ouvrirClasseur, classerVers,
     etendreCatalogue, CATALOGUE_PLUS,
     fabriquerRecadree, remplacerPhoto,
     VERSION: VERSION_MODULE,
