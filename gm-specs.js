@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '16.3.0';
+  const VERSION_MODULE = '17.0.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -399,6 +399,156 @@
      ====================================================================== */
 
   const GENS = {
+
+    /* ---- LOT VILLE 2026 : générations avec intervalles de puissance --------
+       Sur ces modèles, les versions se comptent par dizaines (essence, diesel,
+       hybride, finitions, marchés). Détailler chaque motorisation n'apporterait
+       rien : ce qu'on veut savoir en croisant la voiture, c'est de QUELLE
+       génération il s'agit et dans quelle FOURCHETTE elle se situe. D'où
+       l'intervalle par génération, comme demandé.
+       ------------------------------------------------------------------- */
+
+    'renault-rafale': [
+      ['1re gén.','2023–','1.2 E-Tech hybride et 1.2 E-Tech 4x4','200–300 ch','Coupé SUV nommé d\'après le Caudron Rafale, avion de record des années 1930. La version 300 ch inaugure une transmission intégrale par moteur électrique arrière.'],
+    ],
+    'renault-austral': [
+      ['1re gén.','2022–','1.2 et 1.3 mild hybrid, E-Tech full hybrid','130–200 ch','Remplace le Kadjar. Roues arrière directrices 4Control en option — rare sur ce segment.'],
+    ],
+    'renault-arkana': [
+      ['1re gén.','2019–','TCe mild hybrid, E-Tech hybride','140–160 ch','SUV coupé produit en Corée et en Russie avant sa production européenne.'],
+    ],
+    'renault-captur': [
+      ['I','2013–2019','TCe essence, dCi diesel','90–150 ch','Le plus vendu des petits SUV en Europe pendant plusieurs années.'],
+      ['II','2019–','TCe, E-Tech hybride rechargeable puis full hybrid','90–160 ch',''],
+    ],
+    'renault-5-etech': [
+      ['R5 E-Tech','2024–','moteur électrique, batteries 40 et 52 kWh','120–150 ch','Voiture de l\'Année 2025. Réinterprétation de la R5 de 1972, sur plateforme AmpR Small.'],
+    ],
+    'renault-4-etech': [
+      ['R4 E-Tech','2025–','moteur électrique, batterie 52 kWh','120–150 ch','Même plateforme que la R5, empattement allongé.'],
+    ],
+    'renault-zoe': [
+      ['Ph.1 / Ph.2','2012–2024','moteur électrique, batteries 22 à 52 kWh','88–136 ch','La première électrique de grande diffusion en France. Batterie longtemps louée séparément.'],
+    ],
+    'alpine-a290': [
+      ['A290','2024–','moteur électrique avant, batterie 52 kWh','180–220 ch','Première Alpine électrique. Base R5 E-Tech, voies élargies, différentiel à glissement limité.'],
+    ],
+    'dacia-spring': [
+      ['I / II','2021–','moteur électrique, batterie 26,8 kWh','45–65 ch','L\'électrique la moins chère du marché européen. Moins de 1 000 kg.'],
+    ],
+    'dacia-jogger': [
+      ['1re gén.','2022–','TCe, ECO-G GPL, hybride 140','100–140 ch','Sept places pour le prix d\'une compacte : un positionnement sans concurrent direct.'],
+    ],
+
+    'peugeot-2008': [
+      ['I','2013–2019','PureTech, BlueHDi','82–130 ch',''],
+      ['II','2019–','PureTech, BlueHDi, e-2008','100–156 ch','Voiture de l\'Année 2020 pour la version électrique.'],
+    ],
+    'peugeot-5008': [
+      ['I (monospace)','2009–2017','THP, HDi','120–165 ch',''],
+      ['II / III (SUV)','2017–','PureTech, BlueHDi, hybride','130–320 ch','Passage du monospace au SUV 7 places.'],
+    ],
+    'peugeot-408': [
+      ['1re gén.','2022–','PureTech, hybride rechargeable, e-408','130–225 ch','Silhouette de berline surélevée, entre break et SUV coupé.'],
+    ],
+    'citroen-c5-aircross': [
+      ['I','2018–2024','PureTech, BlueHDi, hybride rechargeable','130–225 ch','Suspension à butées hydrauliques progressives, héritière de l\'hydropneumatique.'],
+      ['II','2025–','hybride et électrique','145–230 ch',''],
+    ],
+    'citroen-ami': [
+      ['Ami','2020–','moteur électrique 6 kW','8 ch','Quadricycle léger accessible dès 14 ans en France. 75 km/h maximum, portes symétriques inversées pour réduire les coûts.'],
+    ],
+
+    'mini-countryman-jcw': [
+      ['R60','2012–2016','1.6 turbo, ALL4','218 ch','Premier Countryman JCW. Base de la Mini engagée en rallye-raid Dakar.'],
+      ['F60','2017–2023','2.0 turbo, ALL4','231–306 ch','Le passage à 306 ch en 2020 en fait la Mini de série la plus puissante de l\'époque.'],
+      ['U25','2024–','2.0 turbo, ALL4','300 ch','Nouvelle génération, nettement plus grande. Version électrique JCW distincte.'],
+    ],
+    'mini-countryman': [
+      ['R60','2010–2016','essence et diesel, ALL4 en option','90–218 ch','Première Mini à quatre roues motrices et à cinq portes.'],
+      ['F60','2017–2023','essence, diesel, hybride rechargeable','102–306 ch',''],
+      ['U25','2024–','essence et électrique','170–313 ch','Produite en Allemagne, une première pour un Countryman.'],
+    ],
+    'mini-jcw': [
+      ['R53 / R56','2006–2013','1.6 compressé puis turbo','210–218 ch','La GP1 et la GP2, séries limitées à 2 000 exemplaires chacune.'],
+      ['F56','2014–2023','2.0 turbo','231–306 ch','La GP3 à 306 ch, 2 places, arches carbone.'],
+      ['F66','2024–','2.0 turbo','231 ch',''],
+    ],
+
+    'porsche-911-gt3-r': [
+      ['991 GT3 R','2016–2018','flat-6 4.0 atmo','500 ch (selon Balance of Performance)','Homologuée GT3, dérivée de la 911 GT3 Cup mais avec suspension et aéro de compétition.'],
+      ['991.2 GT3 R','2019–2022','flat-6 4.2 atmo','550 ch (BoP)','Cylindrée portée à 4,2 L, refroidissement revu.'],
+      ['992 GT3 R','2023–','flat-6 4.2 atmo','565 ch (BoP)','Moteur reculé de 5,5 cm pour améliorer la répartition des masses.'],
+    ],
+
+    'bmw-serie1': [
+      ['E81/E87','2004–2011','4 et 6 cyl. atmo et turbo','115–306 ch','Seule compacte à propulsion du marché. La 130i et la 1M sont les recherchées.'],
+      ['F20/F21','2011–2019','3, 4 et 6 cyl. turbo','95–340 ch','Dernière Série 1 à propulsion. La M140i et son six en ligne.'],
+      ['F40 / F70','2019–','3 et 4 cyl. turbo','109–306 ch','Passage à la traction, très critiqué par les fidèles.'],
+    ],
+    'bmw-x1': [
+      ['E84','2009–2015','4 et 6 cyl.','143–306 ch',''],
+      ['F48','2015–2022','3 et 4 cyl., hybride','116–306 ch','Passage à la traction et à la plateforme UKL.'],
+      ['U11','2022–','3 et 4 cyl., iX1 électrique','136–313 ch',''],
+    ],
+    'mercedes-gle': [
+      ['W163 / W164 (ML)','1997–2011','V6, V8, diesel','163–510 ch','Appelé Classe M jusqu\'en 2015. Le ML 63 AMG et son V8 6.2 atmo.'],
+      ['W166','2011–2019','V6, V8, hybride, diesel','204–585 ch','Renommé GLE en 2015.'],
+      ['W167','2019–','6 en ligne, V8, hybrides rechargeables','245–612 ch','Suspension E-Active Body Control à 48 V, capable de faire rebondir la voiture pour se désensabler.'],
+    ],
+    'mercedes-classe-e': [
+      ['W124','1984–1995','4, 5, 6 cyl. et V8','75–326 ch','La 500 E, assemblée par Porsche à Zuffenhausen.'],
+      ['W210 / W211','1995–2009','4 cyl. à V8','95–514 ch','Les phares à quatre yeux de la W210.'],
+      ['W212 / W213','2009–2023','4 cyl. à V8, hybrides','136–612 ch',''],
+      ['W214','2023–','4 et 6 cyl. hybridés','197–381 ch',''],
+    ],
+    'audi-q3': [
+      ['8U','2011–2018','TFSI et TDI','140–367 ch','La RS Q3 et son cinq-cylindres 2.5.'],
+      ['F3','2018–','TFSI, TDI, hybride','150–400 ch','Version Sportback à toit fuyant.'],
+    ],
+    'audi-etron-gt': [
+      ['1re gén.','2021–','deux moteurs électriques, 800 V','476–925 ch','Plateforme J1 partagée avec la Porsche Taycan. La RS e-tron GT Performance atteint 925 ch en 2024.'],
+    ],
+    'vw-t-roc': [
+      ['I','2017–2025','TSI et TDI','95–300 ch','La version R à 300 ch reprend la mécanique de la Golf R.'],
+      ['II','2025–','TSI mild hybrid et hybride','116–204 ch',''],
+    ],
+    'vw-id3': [
+      ['1re gén.','2019–','moteur électrique arrière, batteries 45 à 79 kWh','145–326 ch','Première VW sur plateforme MEB. La GTX à 326 ch en 2024.'],
+    ],
+
+    'toyota-chr': [
+      ['I','2016–2023','1.2 turbo, 1.8 et 2.0 hybride','116–184 ch','Design très clivant, poignées arrière dissimulées.'],
+      ['II','2023–','1.8 et 2.0 hybride, hybride rechargeable','140–223 ch',''],
+    ],
+    'toyota-aygo': [
+      ['I / II','2005–2021','1.0 trois cylindres','68–72 ch','Développée avec PSA — jumelle des Peugeot 107/108 et Citroën C1.'],
+      ['X (2022)','2022–','1.0 puis 1.5 hybride','72–116 ch','Passage au format crossover.'],
+    ],
+    'nissan-juke': [
+      ['F15','2010–2019','essence et diesel','94–218 ch','La Nismo RS à 218 ch. Design en rupture qui a créé le segment.'],
+      ['F16','2019–','1.0 turbo, hybride','114–143 ch',''],
+    ],
+    'hyundai-ioniq5': [
+      ['NE','2021–','électrique, réseau 800 V','170–325 ch','Voiture de l\'Année 2022. Charge de 10 à 80 % en 18 minutes, et alimentation d\'appareils extérieurs.'],
+    ],
+    'genesis-gv60': [
+      ['JW','2021–','électrique 800 V, un ou deux moteurs','229–490 ch','Premier Genesis conçu d\'emblée en électrique. Boost temporaire de 10 secondes.'],
+    ],
+    'tesla-modely': [
+      ['1re gén.','2020–','un ou deux moteurs électriques','299–534 ch','Le véhicule le plus vendu au monde en 2023, toutes énergies confondues.'],
+      ['Juniper','2025–','un ou deux moteurs','300–460 ch','Restylage profond, insonorisation revue.'],
+    ],
+    'ford-puma': [
+      ['1re gén.','2019–','1.0 EcoBoost mild hybrid, Puma ST','125–200 ch','Le coffre à double fond « MegaBox », lavable et vidangeable.'],
+    ],
+    'ram-1500': [
+      ['DS / DT','2009–','V6 3.6, V8 5.7 HEMI, diesel','240–702 ch','Suspension arrière à ressorts hélicoïdaux, rare sur un pick-up. La TRX et son V8 compressé de 702 ch.'],
+    ],
+    'jeep-avenger': [
+      ['1re gén.','2023–','électrique, essence 1.2','100–156 ch','Voiture de l\'Année 2023. Premier Jeep conçu pour l\'Europe.'],
+    ],
+
 
     /* ---- Concepts restés sans suite ------------------------------------
        Jamais commercialisés, mais construits, roulants et présentés. Les
@@ -4001,6 +4151,54 @@
     'renault-estafette':'4 cyl. atmo traction',
     'ligier-js50':'bicylindre diesel sans permis',
     'citroen-ami-2020':'moteur électrique sans permis',
+    'renault-kadjar':'4 cyl. TCe et dCi traction',
+    'renault-trafic':'4 cyl. diesel traction utilitaire',
+    'renault-kangoo':'4 cyl. essence et diesel traction utilitaire',
+    'dacia-bigster':'4 cyl. hybride traction et 4x4',
+    'peugeot-partner':'4 cyl. PureTech et BlueHDi traction utilitaire',
+    'peugeot-boxer':'4 cyl. BlueHDi traction utilitaire',
+    'citroen-c3-aircross':'3 et 4 cyl. turbo traction',
+    'citroen-berlingo':'4 cyl. essence diesel et électrique traction utilitaire',
+    'ds-7':'4 cyl. turbo et hybride rechargeable traction et intégrale',
+    'ds-3':'3 et 4 cyl. turbo et électrique traction',
+    'ds-4-moderne':'4 cyl. turbo et hybride rechargeable traction',
+    'opel-mokka':'3 et 4 cyl. turbo et électrique traction',
+    'opel-grandland':'4 cyl. turbo et hybride rechargeable traction et intégrale',
+    'mini-clubman':'3 et 4 cyl. turbo traction et ALL4',
+    'bmw-serie2':'3, 4 et 6 cyl. turbo propulsion et intégrale',
+    'bmw-x3-moderne':'4 et 6 cyl. turbo intégrale xDrive',
+    'bmw-i4':'un ou deux moteurs électriques propulsion et intégrale',
+    'bmw-ix':'deux moteurs électriques intégrale',
+    'mercedes-glc':'4 et 6 cyl. turbo hybride intégrale 4Matic',
+    'mercedes-cla':'4 cyl. turbo et électrique traction et 4Matic',
+    'mercedes-vito':'4 cyl. diesel et électrique utilitaire',
+    'mercedes-sprinter':'4 et 6 cyl. diesel utilitaire',
+    'audi-q8':'V6 et V8 turbo quattro',
+    'vw-id4':'moteur électrique arrière propulsion et intégrale',
+    'vw-transporter':'4 cyl. diesel et électrique utilitaire',
+    'vw-touran':'4 cyl. TSI et TDI traction monospace',
+    'cupra-born':'moteur électrique arrière propulsion',
+    'cupra-terramar':'4 cyl. TSI et hybride rechargeable traction et intégrale',
+    'skoda-kodiaq':'4 cyl. TSI TDI et hybride traction et intégrale',
+    'skoda-enyaq':'moteur électrique propulsion et intégrale',
+    'toyota-bz4x':'moteur électrique traction et intégrale',
+    'toyota-proace':'4 cyl. diesel et électrique utilitaire',
+    'honda-jazz':'4 cyl. essence et hybride e:HEV traction',
+    'nissan-ariya':'moteur électrique traction et intégrale e-4ORCE',
+    'mazda-cx5':'4 cyl. SkyActiv essence et diesel traction et intégrale',
+    'mazda-cx60':'6 en ligne 3.3 diesel et hybride rechargeable propulsion et intégrale',
+    'suzuki-vitara-moderne':'4 cyl. atmo turbo et hybride AllGrip',
+    'hyundai-kona':'4 cyl. turbo hybride et électrique traction',
+    'kia-niro':'4 cyl. hybride et électrique traction',
+    'mg-zs':'4 cyl. essence hybride et électrique traction',
+    'mg4':'moteur électrique arrière propulsion et intégrale',
+    'byd-atto3':'moteur électrique Blade Battery traction',
+    'jeep-compass':'4 cyl. turbo hybride rechargeable traction et 4x4',
+    'ford-kuga':'4 cyl. EcoBoost et hybride rechargeable traction et intégrale',
+    'ford-transit':'4 et 5 cyl. diesel et électrique utilitaire',
+    'ford-ranger':'4 et 5 cyl. diesel et V6 4x4 pick-up',
+    'porsche-911-gt3-cup':'flat-6 4.0 atmo moteur arrière propulsion séquentielle 6',
+    'alpine-a110-cup':'4 cyl. 1.8 turbo moteur central propulsion',
 
     /* --- Codes moteurs manquants, repérés par moteursOrphelins() ---------
        Ces modèles étaient décrits par leur architecture mais pas par leur
