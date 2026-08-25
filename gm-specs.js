@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '17.2.0';
+  const VERSION_MODULE = '17.3.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -5762,6 +5762,7 @@
          <span class="gvr-v">v${esc(VERSION_MODULE)}</span>
        </div>
        <button class="btn" data-gvr="purge" style="width:100%;margin-top:12px">Forcer la mise à jour des modules</button>
+       <button class="btn" data-gvr="rattacher" style="width:100%;margin-top:8px">Rattacher les voitures non classées</button>
        <p class="gvr-n">Si une correction ne semble pas appliquée, ce bouton efface la copie
        en cache des modules et recharge. Tes prises et tes photos ne sont pas touchées.</p>`;
     vue.appendChild(el);
@@ -5770,6 +5771,31 @@
   function brancherVersion() {
     document.addEventListener('click', async (e) => {
       const b = e.target.closest('[data-gvr]'); if (!b) return;
+
+      /* Rattachement à la demande. Le bandeau automatique reste, mais il peut
+         ne jamais apparaître selon le moment où l'app démarre : un bouton
+         explicite garantit que la fonction est atteignable, et il dit ce
+         qu'il a trouvé même quand il ne trouve rien — un silence laisse
+         croire à une panne. */
+      if (b.dataset.gvr === 'rattacher') {
+        const txt0 = b.textContent;
+        b.disabled = true; b.textContent = 'Recherche…';
+        let props = [];
+        try { props = await chercherRattachements(); } catch (_) {}
+        if (!props.length) {
+          b.textContent = 'Aucune correspondance trouvée';
+          setTimeout(() => { b.disabled = false; b.textContent = txt0; }, 2600);
+          return;
+        }
+        const liste = props.map(p => `${p.custom.brand} ${p.custom.model} → ${p.cible.brand} ${p.cible.model}`).join('\n');
+        b.textContent = `Rattachement de ${props.length}…`;
+        console.info('[GMSpecs] rattachements :\n' + liste);
+        try { await appliquerRattachements(props); } catch (_) {}
+        b.textContent = 'Terminé ✓ rechargement…';
+        setTimeout(() => location.reload(), 500);
+        return;
+      }
+
       b.disabled = true; b.textContent = 'Nettoyage…';
       try {
         /* On efface directement les entrées de cache correspondant aux modules,
@@ -6279,12 +6305,39 @@
     if (!db.objectStoreNames.contains('spots')) return [];
 
     const st = db.transaction('spots', 'readonly').objectStore('spots');
-    const reg = await _lire(st, '__customcars__');
-    const customs = (reg && Array.isArray(reg.list)) ? reg.list : [];
-    if (!customs.length) return [];
-
     const spots = await _tous(st);
     const parId = new Map(spots.map(s => [s.carId, s]));
+
+    /* Deux sources pour retrouver les voitures hors catalogue :
+       le registre __customcars__ quand il existe, ET les clés commençant par
+       « custom: » directement dans les captures. Se fier au seul registre
+       rendait la détection muette dès que sa structure différait de ce qu'on
+       supposait — et une fonctionnalité muette est indiscernable d'une
+       fonctionnalité absente. */
+    const reg = await _lire(st, '__customcars__');
+    const customs = [];
+    const vus = new Set();
+
+    const ajouter = (id, brand, model) => {
+      if (!id || vus.has(id)) return;
+      vus.add(id);
+      customs.push({ id, brand: brand || '', model: model || '' });
+    };
+
+    if (reg && Array.isArray(reg.list))
+      reg.list.forEach(c => ajouter(c.id, c.brand, c.model));
+
+    for (const sp of spots) {
+      const id = sp.carId;
+      if (typeof id !== 'string' || id.indexOf('custom:') !== 0) continue;
+      if (vus.has(id)) continue;
+      /* Nom déduit de l'identifiant : « custom:renault-rafale-x7 » donne
+         « renault rafale ». Le suffixe aléatoire final est retiré. */
+      const brut = id.slice(7).replace(/-[a-z0-9]{1,8}$/i, '').replace(/-/g, ' ').trim();
+      const mots = brut.split(' ');
+      ajouter(id, mots[0] || '', mots.slice(1).join(' ') || brut);
+    }
+    if (!customs.length) return [];
 
     const props = [];
     for (const cu of customs) {
@@ -6293,9 +6346,20 @@
       const cibleTxt = norm(`${cu.brand} ${cu.model}`);
       const marqueCu = norm(cu.brand);
 
+      const motsCu = cibleTxt.split(' ').filter(m => m.length > 1);
+
       let best = null, score = 0;
       for (const c of cat) {
-        const sim = _dice(cibleTxt, norm(`${c.brand} ${c.model}`));
+        const cible = norm(`${c.brand} ${c.model}`);
+        /* Deux mesures complémentaires. Dice compare la forme globale ;
+           l'inclusion vérifie que tous les mots saisis se retrouvent dans le
+           modèle du catalogue. « Porsche Gt3 r » n'atteint pas 0,86 de Dice
+           face à « Porsche 911 GT3 R » — le « 911 » absent pèse trop — alors
+           que ses mots y sont tous. Sans la seconde mesure, ce rattachement
+           pourtant évident serait manqué. */
+        const inclus = motsCu.length >= 2 && motsCu.every(m => cible.includes(m))
+          ? 0.88 + Math.min(0.1, motsCu.length / 40) : 0;
+        const sim = Math.max(_dice(cibleTxt, cible), inclus);
         /* La marque doit correspondre. Sans cette contrainte, « Clio V6 » et
            « Clio R.S. » atteignent 0,85 de similarité et on rattacherait la
            capture au mauvais modèle — une erreur invisible et permanente. */
@@ -6960,6 +7024,24 @@
     mystereDuJour, poolMystere, numeroMystere, partageMystere,
     jouer, _mystere: MYS,
     chercherRattachements, appliquerRattachements, proposerRattachements,
+
+    /** Diagnostic : ce que le module voit comme voitures hors catalogue,
+     *  et à quel modèle il compte les rattacher. */
+    async diagRattachement() {
+      const r = { candidats: [], catalogue: 0 };
+      try { r.catalogue = (typeof CARS !== 'undefined') ? CARS.length : 0; } catch (_) {}
+      try {
+        const props = await chercherRattachements();
+        r.candidats = props.map(p => ({
+          de: `${p.custom.brand} ${p.custom.model}`.trim(),
+          vers: `${p.cible.brand} ${p.cible.model}`,
+          score: p.score + ' %',
+          fusion: !!p.existante
+        }));
+      } catch (e) { r.erreur = e.message; }
+      console.log('[GMSpecs] rattachements possibles', r);
+      return r;
+    },
 
     /** Les collections mécaniques et leurs membres. */
     collections: () => calculerCollecs().map(c => ({
