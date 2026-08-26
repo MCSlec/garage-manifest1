@@ -2142,6 +2142,16 @@ const VARIANTS = {
 };
 
 
+</script>
+
+<!-- Module Garage Manifest — fiches techniques, générations, collections, mystère du jour.
+     POSITION CRITIQUE : ce script doit être chargé APRÈS la déclaration de CARS et de
+     VARIANTS (il les complète), mais AVANT la fonction principale ci-dessous, qui fige
+     CARS_BY_ID et TOTAL au démarrage. Placé plus bas, ses ajouts au catalogue arriveraient
+     trop tard : les modèles existeraient dans CARS mais resteraient invisibles pour l'app. -->
+<script src="./gm-specs.js"></script>
+
+<script>
 (() => {
   "use strict";
 
@@ -3873,6 +3883,5 @@ const VARIANTS = {
   init();
 })();
 </script>
-<script src="./gm-specs.js"></script>
 </body>
 </html>
