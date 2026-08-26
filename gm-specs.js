@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '17.7.0';
+  const VERSION_MODULE = '18.1.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -399,6 +399,126 @@
      ====================================================================== */
 
   const GENS = {
+
+    /* ---- Déclinaisons Porsche : générations et puissances --------------- */
+    'porsche-cayman': [
+      ['987','2005–2012','flat-6 2.7 / 2.9 atmo','245–265 ch','Le Cayman d\'origine, dérivé du Boxster mais à coque fermée et bien plus rigide.'],
+      ['981','2012–2016','flat-6 2.7 atmo','275 ch','Empattement allongé, direction électromécanique.'],
+      ['718 (982)','2016–','flat-4 2.0 turbo','300 ch','Le passage au flat-4 turbo a fait scandale chez les puristes.'],
+    ],
+    'porsche-cayman-s': [
+      ['987 S','2005–2012','flat-6 3.4 atmo','295–320 ch',''],
+      ['981 S','2012–2016','flat-6 3.4 atmo','325 ch',''],
+      ['981 GTS','2014–2016','flat-6 3.4 atmo','340 ch','30 mm plus bas, PASM et échappement sport de série. La 981 la plus recherchée après la GT4.'],
+      ['718 S / GTS 2.5','2016–2020','flat-4 2.5 turbo','350–365 ch',''],
+      ['718 GTS 4.0','2020–','flat-6 4.0 atmo','400 ch','Le retour du six cylindres atmosphérique après la fronde des clients.'],
+    ],
+    'porsche-boxster': [
+      ['986','1996–2004','flat-6 2.5 / 2.7 atmo','204–240 ch','Le roadster qui a sauvé Porsche financièrement.'],
+      ['987 / 981','2004–2016','flat-6 2.7 / 2.9 atmo','245–265 ch',''],
+      ['718 (982)','2016–','flat-4 2.0 turbo','300 ch',''],
+    ],
+    'porsche-boxster-s': [
+      ['986 S','1999–2004','flat-6 3.2 atmo','252–264 ch',''],
+      ['987 / 981 S','2004–2016','flat-6 3.2 / 3.4 atmo','280–330 ch','La 981 GTS monte à 330 ch.'],
+      ['718 S / GTS 4.0','2016–','flat-4 2.5 turbo puis flat-6 4.0 atmo','350–400 ch',''],
+    ],
+    'porsche-boxster-spyder': [
+      ['987 Spyder','2010–2012','flat-6 3.4 atmo','320 ch','80 kg de moins, capote manuelle rudimentaire, poignées de portes remplacées par des sangles.'],
+      ['981 Spyder','2015–2016','flat-6 3.8 atmo','375 ch','Moteur de 911 Carrera S, boîte manuelle imposée.'],
+      ['718 Spyder','2019–','flat-6 4.0 atmo','420 ch','Mécanique du GT4, aileron escamotable.'],
+    ],
+    'porsche-cayman-gt4': [
+      ['981 GT4','2015–2016','flat-6 3.8 atmo (911 Carrera S)','385 ch','Le premier GT4 : freins et suspension de 911 GT3, boîte manuelle uniquement.'],
+      ['718 GT4','2019–','flat-6 4.0 atmo','420 ch','Diffuseur arrière issu du 911 RSR.'],
+      ['718 GT4 RS','2021–','flat-6 4.0 atmo (911 GT3)','500 ch','Admissions derrière les oreilles du conducteur. 9 000 tr/min.'],
+    ],
+    'porsche-911-carrera-s': [
+      ['996 / 997 S','1997–2012','flat-6 3.4 à 3.8 atmo','300–408 ch',''],
+      ['991 S','2011–2019','flat-6 3.8 atmo puis 3.0 biturbo','400–450 ch',''],
+      ['992 S','2019–','flat-6 3.0 biturbo','450–480 ch',''],
+    ],
+    'porsche-911-gts': [
+      ['997 GTS','2010–2012','flat-6 3.8 atmo','408 ch','Carrosserie large de Carrera 4, moteur de Carrera S poussé.'],
+      ['991 GTS','2014–2019','flat-6 3.8 atmo puis 3.0 biturbo','430–450 ch',''],
+      ['992 GTS','2021–','flat-6 3.0 biturbo puis 3.6 hybride','480–541 ch','La 992.2 GTS de 2024 inaugure un turbo à assistance électrique.'],
+    ],
+    'porsche-911-targa': [
+      ['Classique','1967–1993','flat-6 air','130–250 ch','L\'arceau inox est né d\'une crainte d\'interdiction des cabriolets aux États-Unis.'],
+      ['993 – 997','1995–2012','flat-6','272–408 ch','Toit vitré coulissant, sans arceau.'],
+      ['991 / 992','2014–','flat-6 3.0 à 4.0','370–480 ch','Retour de l\'arceau, avec une capote entièrement automatisée.'],
+    ],
+    'porsche-macan-gts': [
+      ['95B GTS / Turbo','2014–2024','V6 3.0 / 3.6 biturbo','360–440 ch','Châssis abaissé, freins agrandis. Le SUV le plus dynamique du segment selon la presse.'],
+      ['Électrique Turbo','2024–','deux moteurs, 800 V','639 ch',''],
+    ],
+    'porsche-panamera-turbo': [
+      ['970 / 971','2009–2023','V8 4.0 à 4.8 biturbo, hybride','500–700 ch','La Turbo S E-Hybrid 971 atteint 700 ch.'],
+      ['972','2023–','V8 4.0 biturbo hybride','680–782 ch','La Porsche de série la plus puissante après la 918.'],
+    ],
+    'porsche-taycan-turbo': [
+      ['J1','2019–2023','deux moteurs, 800 V','680–761 ch','Boîte à deux rapports sur l\'essieu arrière, unique dans l\'électrique.'],
+      ['J1 restylée','2024–','deux moteurs, 800 V','700–1 108 ch','La Turbo GT a repris le record du Nürburgring pour une électrique.'],
+    ],
+
+    /* ---- AMG, M et RS : les versions qu'on distingue de loin ------------- */
+    'mercedes-a35': [
+      ['W177','2018–','2.0 turbo, 4Matic','306 ch','L\'AMG d\'accès : mécanique de Golf R poussée, châssis raffermi.'],
+    ],
+    'mercedes-e53': [
+      ['W213','2018–2023','6 en ligne 3.0 turbo + compresseur électrique 48 V','435–457 ch','Le compresseur électrique comble le temps de réponse du turbo.'],
+      ['W214','2024–','4 cyl. 2.0 hybride rechargeable','585 ch',''],
+    ],
+    'mercedes-g63': [
+      ['W463 (2012)','2012–2018','V8 5.5 biturbo','544–571 ch','Trois blocages de différentiels conservés malgré la puissance.'],
+      ['W463 (2018)','2018–','V8 4.0 biturbo','585 ch','Suspension avant indépendante, mais essieu arrière rigide maintenu.'],
+    ],
+    'bmw-m2-cs': [
+      ['F87 CS','2020','S55 3.0 biturbo','450 ch','Capot et toit carbone, amortisseurs réglables. 2 200 exemplaires.'],
+      ['G87 CS','2025–','S58 3.0 biturbo','530 ch',''],
+    ],
+    'bmw-m4-csl': [
+      ['G82 CSL','2022–','S58 3.0 biturbo','550 ch','100 kg de moins, 2 places, 1 000 exemplaires. Record du tour au Nürburgring pour une BMW de série.'],
+    ],
+    'bmw-x3m': [
+      ['F97 / G45','2019–','S58 3.0 biturbo','480–530 ch','Le six en ligne de la M3 dans un SUV compact.'],
+    ],
+    'audi-rsq8': [
+      ['4M','2019–','V8 4.0 biturbo','600–640 ch','A détenu le record des SUV au Nürburgring. Anti-roulis actif à 48 V.'],
+    ],
+    'audi-rs-etron-gt': [
+      ['1re gén.','2021–','deux moteurs électriques, 800 V','598–925 ch','La Performance de 2024 monte à 925 ch — l\'Audi de série la plus puissante.'],
+    ],
+    'vw-golf-gti-clubsport': [
+      ['Mk7','2016–2020','2.0 TSI','265–310 ch','La Clubsport S, 2 places et 400 exemplaires, a repris le record des tractions au Nürburgring.'],
+      ['Mk8','2020–','2.0 TSI','300 ch','Châssis et différentiel spécifiques, mode Nürburgring.'],
+    ],
+    'vw-t-roc-r': [
+      ['1re gén.','2019–','2.0 TSI, 4Motion','300 ch','Mécanique de Golf R dans une carrosserie de SUV compact.'],
+    ],
+    'alpine-a110-s': [
+      ['S','2019–','1.8 turbo','292–300 ch','Châssis raffermi, barres anti-roulis plus rigides que la version de base.'],
+      ['R','2022–','1.8 turbo','300 ch','Jantes et capot carbone : 34 kg de moins que la S. Orientée circuit.'],
+    ],
+    'toyota-gr-corolla': [
+      ['1re gén.','2022–','G16E-GTS 1.6 · 3 cyl. turbo','300–304 ch','Le trois-cylindres de la GR Yaris, avec trois sorties d\'échappement.'],
+    ],
+    'nissan-gtr-nismo': [
+      ['R35 Nismo','2013–','VR38DETT 3.8 biturbo','600 ch','Turbos issus du GT3, aéro carbone, châssis renforcé à la colle structurelle.'],
+    ],
+    'jaguar-ftype-r': [
+      ['X152 R','2013–2024','V8 5.0 compressé','550–575 ch','L\'échappement à valves : l\'une des sonorités les plus démonstratives du marché.'],
+      ['X152 SVR','2016–2020','V8 5.0 compressé','575 ch','Échappement titane, 322 km/h.'],
+    ],
+    'mini-cooper-s': [
+      ['R53','2002–2006','1.6 à compresseur','163–170 ch','Le sifflement du compresseur : la préférée des amateurs.'],
+      ['R56 / F56','2006–','1.6 puis 2.0 turbo','175–192 ch',''],
+    ],
+    'ford-fiesta-st-moderne': [
+      ['Mk6 / Mk7','2005–2017','2.0 atmo puis 1.6 EcoBoost','150–200 ch','Le châssis de la Mk7 est unanimement salué.'],
+      ['Mk8','2018–2023','1.5 · 3 cyl. turbo','200 ch','Désactivation d\'un cylindre en charge partielle.'],
+    ],
+
 
     /* ---- LOT VILLE 2026 : générations avec intervalles de puissance --------
        Sur ces modèles, les versions se comptent par dizaines (essence, diesel,
@@ -3925,6 +4045,65 @@
      ====================================================================== */
 
   const CATALOGUE_PLUS = [
+
+    /* ---- DÉCLINAISONS QUI CHANGENT LA VOITURE ---------------------------
+       Une Cayman GTS n'est pas une Cayman, une A45 n'est pas une Classe A.
+       Ces versions ont un châssis, une puissance et une valeur différents —
+       les fondre dans le modèle de base fait perdre ce qui fait l'intérêt de
+       la prise. On ne crée une entrée que si la version se reconnaît à l'œil
+       ET se distingue mécaniquement : un simple niveau de finition n'en
+       mérite pas une. */
+    { id:'porsche-cayman', brand:'Porsche', model:'Cayman', yr:'2005–', c:'🇩🇪', cat:'Sportive', r:'peucommun' },
+    { id:'porsche-cayman-s', brand:'Porsche', model:'Cayman S', yr:'2005–', c:'🇩🇪', cat:'Sportive', r:'rare' },
+    { id:'porsche-boxster', brand:'Porsche', model:'Boxster', yr:'1996–', c:'🇩🇪', cat:'Roadster', r:'peucommun' },
+    { id:'porsche-boxster-s', brand:'Porsche', model:'Boxster S', yr:'1999–', c:'🇩🇪', cat:'Roadster', r:'rare' },
+    { id:'porsche-boxster-spyder', brand:'Porsche', model:'Boxster Spyder', yr:'2010–', c:'🇩🇪', cat:'Roadster', r:'epique' },
+    { id:'porsche-cayman-gt4', brand:'Porsche', model:'718 Cayman GT4', yr:'2015–', c:'🇩🇪', cat:'Sportive', r:'epique' },
+    { id:'porsche-911-carrera-s', brand:'Porsche', model:'911 Carrera S', yr:'1997–', c:'🇩🇪', cat:'Sportive', r:'rare' },
+    { id:'porsche-911-gts', brand:'Porsche', model:'911 Carrera GTS', yr:'2010–', c:'🇩🇪', cat:'Sportive', r:'epique' },
+    { id:'porsche-911-targa', brand:'Porsche', model:'911 Targa', yr:'1967–', c:'🇩🇪', cat:'Sportive', r:'rare' },
+    { id:'porsche-macan-gts', brand:'Porsche', model:'Macan GTS / Turbo', yr:'2014–', c:'🇩🇪', cat:'SUV', r:'rare' },
+    { id:'porsche-panamera-turbo', brand:'Porsche', model:'Panamera Turbo', yr:'2009–', c:'🇩🇪', cat:'Berline', r:'epique' },
+    { id:'porsche-taycan-turbo', brand:'Porsche', model:'Taycan Turbo / Turbo S', yr:'2019–', c:'🇩🇪', cat:'Berline', r:'epique' },
+
+    { id:'mercedes-a35', brand:'Mercedes-AMG', model:'A 35', yr:'2018–', c:'🇩🇪', cat:'Sportive', r:'rare' },
+    { id:'mercedes-c43-amg', brand:'Mercedes-AMG', model:'C 43', yr:'2016–', c:'🇩🇪', cat:'Berline', r:'peucommun' },
+    { id:'mercedes-e53', brand:'Mercedes-AMG', model:'E 53', yr:'2018–', c:'🇩🇪', cat:'Berline', r:'rare' },
+    { id:'mercedes-glc43', brand:'Mercedes-AMG', model:'GLC 43 / 63', yr:'2016–', c:'🇩🇪', cat:'SUV', r:'rare' },
+    { id:'mercedes-gle63', brand:'Mercedes-AMG', model:'GLE 53 / 63', yr:'2015–', c:'🇩🇪', cat:'SUV', r:'rare' },
+    { id:'mercedes-g63', brand:'Mercedes-AMG', model:'G 63', yr:'2012–', c:'🇩🇪', cat:'SUV', r:'epique' },
+
+    { id:'bmw-330i', brand:'BMW', model:'330i / 330e', yr:'2015–', c:'🇩🇪', cat:'Berline', r:'commun' },
+    { id:'bmw-m550i', brand:'BMW', model:'M550i / 540i', yr:'2016–', c:'🇩🇪', cat:'Berline', r:'rare' },
+    { id:'bmw-x3m', brand:'BMW', model:'X3 M / X4 M', yr:'2019–', c:'🇩🇪', cat:'SUV', r:'rare' },
+    { id:'bmw-x5m-comp', brand:'BMW', model:'X5 M / X6 M', yr:'2009–', c:'🇩🇪', cat:'SUV', r:'rare' },
+    { id:'bmw-m2-cs', brand:'BMW', model:'M2 CS', yr:'2020–', c:'🇩🇪', cat:'Sportive', r:'epique' },
+    { id:'bmw-m4-csl', brand:'BMW', model:'M4 CSL', yr:'2022–', c:'🇩🇪', cat:'Sportive', r:'legendaire' },
+
+    { id:'audi-s3-limo', brand:'Audi', model:'S3 Sportback / Berline', yr:'1999–', c:'🇩🇪', cat:'Sportive', r:'peucommun' },
+    { id:'audi-rsq3-moderne', brand:'Audi', model:'RS Q3', yr:'2013–', c:'🇩🇪', cat:'SUV', r:'rare' },
+    { id:'audi-rsq8', brand:'Audi', model:'RS Q8', yr:'2019–', c:'🇩🇪', cat:'SUV', r:'epique' },
+    { id:'audi-rs-etron-gt', brand:'Audi', model:'RS e-tron GT', yr:'2021–', c:'🇩🇪', cat:'Berline', r:'epique' },
+
+    { id:'vw-golf-gti-clubsport', brand:'Volkswagen', model:'Golf GTI Clubsport', yr:'2016–', c:'🇩🇪', cat:'Sportive', r:'rare' },
+    { id:'vw-t-roc-r', brand:'Volkswagen', model:'T-Roc R', yr:'2019–', c:'🇩🇪', cat:'SUV', r:'rare' },
+    { id:'cupra-leon', brand:'Cupra', model:'León', yr:'2018–', c:'🇪🇸', cat:'Compacte', r:'peucommun' },
+
+    { id:'renault-clio-rs-line', brand:'Renault', model:'Clio R.S. Line', yr:'2019–', c:'🇫🇷', cat:'Citadine', r:'commun' },
+    { id:'renault-megane-etech', brand:'Renault', model:'Mégane E-Tech', yr:'2022–', c:'🇫🇷', cat:'Compacte', r:'commun' },
+    { id:'peugeot-308-gt', brand:'Peugeot', model:'308 GT / GTi', yr:'2013–', c:'🇫🇷', cat:'Compacte', r:'peucommun' },
+    { id:'alpine-a110-s', brand:'Alpine', model:'A110 S / R', yr:'2019–', c:'🇫🇷', cat:'Sportive', r:'epique' },
+
+    { id:'toyota-gr-corolla', brand:'Toyota', model:'GR Corolla', yr:'2022–', c:'🇯🇵', cat:'Sportive', r:'rare' },
+    { id:'honda-civic-si', brand:'Honda', model:'Civic Si / Sport', yr:'1985–', c:'🇯🇵', cat:'Compacte', r:'peucommun' },
+    { id:'nissan-gtr-nismo', brand:'Nissan', model:'GT-R Nismo', yr:'2013–', c:'🇯🇵', cat:'Supercar', r:'epique' },
+    { id:'mazda-mx5-rf', brand:'Mazda', model:'MX-5 RF', yr:'2016–', c:'🇯🇵', cat:'Roadster', r:'peucommun' },
+
+    { id:'ford-fiesta-st-moderne', brand:'Ford', model:'Fiesta ST', yr:'2005–', c:'🇺🇸', cat:'Sportive', r:'rare' },
+    { id:'ford-mustang-mach1', brand:'Ford', model:'Mustang Mach 1', yr:'1969–', c:'🇺🇸', cat:'Sportive', r:'epique' },
+    { id:'mini-cooper-s', brand:'Mini', model:'Cooper S', yr:'2001–', c:'🇬🇧', cat:'Sportive', r:'peucommun' },
+    { id:'jaguar-ftype-r', brand:'Jaguar', model:'F-Type R / SVR', yr:'2013–', c:'🇬🇧', cat:'Sportive', r:'epique' },
+
     { id:'audi-s1-quattro', brand:'Audi', model:'S1 Sportback', yr:'2014–2018', c:'🇩🇪', cat:'Sportive', r:'rare' },
     { id:'audi-s4', brand:'Audi', model:'S4', yr:'1997–', c:'🇩🇪', cat:'Sportive', r:'peucommun' },
     { id:'audi-s5', brand:'Audi', model:'S5', yr:'2007–', c:'🇩🇪', cat:'Sportive', r:'peucommun' },
@@ -4337,6 +4516,21 @@
     'renault-estafette':'4 cyl. atmo traction',
     'ligier-js50':'bicylindre diesel sans permis',
     'citroen-ami-2020':'moteur électrique sans permis',
+    'mercedes-c43-amg':'V6 3.0 biturbo puis 4 cyl. hybride 4Matic 367–449 ch',
+    'mercedes-glc43':'V6 3.0 biturbo et V8 4.0 biturbo 4Matic 390–510 ch',
+    'mercedes-gle63':'6 en ligne 3.0 hybridé et V8 4.0 biturbo 4Matic 435–612 ch',
+    'bmw-330i':'4 cyl. 2.0 turbo et hybride rechargeable propulsion 184–292 ch',
+    'bmw-m550i':'V8 4.4 biturbo et 6 en ligne 3.0 turbo xDrive 333–530 ch',
+    'bmw-x5m-comp':'V8 S63 4.4 biturbo xDrive 555–625 ch',
+    'audi-s3-limo':'4 cyl. 2.0 TFSI quattro 265–333 ch',
+    'audi-rsq3-moderne':'5 en ligne 2.5 TFSI turbo quattro 310–400 ch',
+    'cupra-leon':'4 cyl. 2.0 TSI et hybride rechargeable traction 150–333 ch',
+    'renault-clio-rs-line':'3 et 4 cyl. TCe et E-Tech hybride traction 90–145 ch',
+    'renault-megane-etech':'moteur électrique traction 130–220 ch',
+    'peugeot-308-gt':'4 cyl. THP et PureTech turbo traction 205–272 ch',
+    'honda-civic-si':'4 cyl. VTEC atmo et turbo traction 125–200 ch',
+    'mazda-mx5-rf':'4 cyl. 2.0 SkyActiv atmo propulsion toit rigide 160–184 ch',
+    'ford-mustang-mach1':'V8 5.0 et 7.0 atmo propulsion 300–480 ch',
     'alpine-a610':'V6 PRV 3.0 turbo moteur arrière propulsion 250 ch',
     'renault-alpine-a610':'V6 PRV 3.0 turbo moteur arrière propulsion 250 ch phares escamotables',
     'audi-rs2-avant-b4':'5 en ligne 2.2 turbo quattro 315 ch break',
@@ -5734,6 +5928,77 @@
   }
 
   /* ======================================================================
+     AUTO-SURVEILLANCE DE VERSION
+     ----------------------------------------------------------------------
+     PROBLÈME RÉCURRENT. Trois corrections successives ont été livrées sans
+     jamais atteindre l'appareil : le service worker servait une copie en
+     cache, et rien ne le signalait. L'utilisateur testait l'ancien code en
+     croyant tester le nouveau, et rapportait des bugs déjà corrigés. C'est
+     le pire mode de défaillance possible — il fait perdre du temps aux deux
+     côtés et donne l'impression que les corrections ne fonctionnent pas.
+
+     Le module va donc chercher sa propre version sur le réseau, en
+     contournant explicitement le cache, et compare. S'il tourne sur une
+     copie périmée, il le dit et propose de se recharger.
+
+     Coût : une requête de quelques kilo-octets au démarrage, uniquement si
+     le réseau est disponible. Silence complet si tout va bien.
+     ====================================================================== */
+
+  async function verifierVersion() {
+    if (!navigator.onLine) return;
+    try {
+      /* `cache: 'no-store'` court-circuite le cache HTTP ; le paramètre
+         d'horodatage court-circuite en plus le service worker, qui pourrait
+         répondre depuis sa propre réserve. Les deux sont nécessaires. */
+      const url = new URL('gm-specs.js', location.href);
+      url.searchParams.set('v', Date.now());
+      const r = await fetch(url, { cache: 'no-store' });
+      if (!r.ok) return;
+      const txt = await r.text();
+      const m = txt.match(/VERSION_MODULE\s*=\s*'([\d.]+)'/);
+      if (!m) return;
+      const dispo = m[1];
+      if (dispo === VERSION_MODULE) return;
+
+      console.warn(`[GMSpecs] version chargée ${VERSION_MODULE}, disponible ${dispo}`);
+      bandeauVersion(dispo);
+    } catch (_) { /* hors ligne ou fichier inaccessible : on n'insiste pas */ }
+  }
+
+  function bandeauVersion(dispo) {
+    if (document.getElementById('gmv')) return;
+    const el = document.createElement('div');
+    el.id = 'gmv';
+    el.innerHTML = `<div class="gmv-b">
+      <div>
+        <b>Module non à jour</b>
+        <span>Tu utilises la v${esc(VERSION_MODULE)}, la v${esc(dispo)} est disponible.
+        Les corrections récentes ne sont pas actives.</span>
+      </div>
+      <button class="gmv-a" type="button" data-gmv="1">Charger</button>
+    </div>`;
+    el.addEventListener('click', async (e) => {
+      if (!e.target.closest('[data-gmv]')) return;
+      const b = e.target.closest('[data-gmv]');
+      b.disabled = true; b.textContent = '…';
+      try {
+        /* On efface la copie en cache des modules avant de recharger, sinon
+           le service worker resservirait exactement la même version. */
+        for (const nom of await caches.keys()) {
+          const c = await caches.open(nom);
+          for (const req of await c.keys())
+            if (/gm-[a-z0-9-]+\.js$/i.test(new URL(req.url).pathname)) await c.delete(req);
+        }
+        const reg = await navigator.serviceWorker?.getRegistration();
+        await reg?.update();
+      } catch (_) {}
+      setTimeout(() => location.reload(), 300);
+    });
+    document.body.appendChild(el);
+  }
+
+  /* ======================================================================
      BANDEAU DE VERSION
      ----------------------------------------------------------------------
      Le panneau Réglages affiche « Prêt hors-ligne ✓ » même quand le module
@@ -6419,6 +6684,9 @@
         tx.onerror = () => rej(tx.error);
         tx.onabort = () => rej(new Error('annulée'));
       });
+      /* L'app garde son état en mémoire (`state.spots`) et rend depuis lui.
+         Écrire en base ne suffit pas : on la force à tout relire. Le
+         rechargement est déclenché par l'appelant. */
       console.info(`[GMSpecs] « ${nom} » associée à ${idCible}`);
       return true;
     } catch (e) { console.warn('[GMSpecs] association impossible', e); return false; }
@@ -7058,6 +7326,20 @@
   .gcls-v{ margin:10px 2px; font:400 12px/1.5 var(--sans); color:var(--dim); }
   .gcls-n{ margin:12px 2px 0; font:400 11px/1.5 var(--sans); color:var(--dim); }
 
+  #gmv{ position:fixed; left:10px; right:10px; top:calc(env(safe-area-inset-top) + 10px);
+    z-index:400; display:flex; justify-content:center; }
+  /* Couleurs figées, sans variables de thème : ce bandeau doit rester lisible
+     même si le module tourne dans un contexte où le thème n'est pas chargé —
+     c'est justement le genre de situation où il a le plus besoin d'être vu. */
+  .gmv-b{ width:100%; max-width:520px; display:flex; align-items:center; gap:12px;
+    padding:12px 14px; border-radius:12px; background:#dc2626; color:#fff;
+    box-shadow:0 10px 30px rgba(0,0,0,.5);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; }
+  .gmv-b b{ display:block; font:700 13px/1.2 inherit; color:#fff; }
+  .gmv-b span{ display:block; margin-top:4px; font:400 11.5px/1.45 inherit; color:rgba(255,255,255,.93); }
+  .gmv-a{ flex:none; padding:9px 14px; border-radius:8px; border:0; background:#fff;
+    color:#dc2626; font:700 12px/1 inherit; cursor:pointer; }
+
   .gvr-l{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
   .gvr-l b{ display:block; font:600 13.5px/1.2 var(--sans); }
   .gvr-l small{ display:block; margin-top:4px; font:400 11.5px/1.4 var(--sans); color:var(--muted2); }
@@ -7139,8 +7421,8 @@
   }
 
   function autoInstall() {
-    /* En tout premier : le catalogue doit être complet avant que quoi que ce
-       soit ne le lise — compteurs, filtres, collections, mystère du jour. */
+    /* Filet : si l'injection immédiate a échoué (CARS pas encore défini au
+       moment du parsing), on retente ici. Sans effet si elle a réussi. */
     etendreCatalogue();
     injecterCSS();
     const vue = document.getElementById('view');
@@ -7178,6 +7460,7 @@
     try { greffer(); recadrerTout(); grefferCadrage(); grefferClasser(); } catch (_) {}
     chargerCadrages().then(() => { try { recadrerTout(); } catch (_) {} });
     console.info(`[GMSpecs] module v${VERSION_MODULE} chargé`);
+    setTimeout(() => { try { verifierVersion(); } catch (_) {} }, 1800);
     brancherMystere();
     brancherVersion();
     brancherGarage();
@@ -7185,6 +7468,21 @@
     /* Différé : on laisse l'app finir son propre démarrage avant d'ouvrir la base. */
     setTimeout(() => { try { proposerRattachements(); } catch (_) {} }, 2500);
   }
+
+  /* INJECTION IMMÉDIATE — point critique d'ordonnancement.
+     ----------------------------------------------------------------------
+     `autoInstall` est différé jusqu'à DOMContentLoaded. Or l'application
+     démarre elle aussi sur cet événement, et son écouteur est enregistré
+     AVANT le nôtre puisque son script est déclaré plus haut dans le document.
+     Elle construit donc ses index à partir de CARS avant que nous l'ayons
+     complété : une capture rattachée à « renault-rafale » pointait vers un
+     modèle que l'app ne connaissait pas encore, et disparaissait du garage.
+
+     L'extension du catalogue doit donc avoir lieu ici, à l'exécution du
+     script — c'est-à-dire pendant le parsing, avant tout DOMContentLoaded.
+     Tout le reste (CSS, greffons, observateurs) peut légitimement attendre
+     le DOM ; le catalogue, non. */
+  try { etendreCatalogue(); } catch (_) {}
 
   if (document.readyState === 'loading')
     document.addEventListener('DOMContentLoaded', autoInstall);
@@ -7229,6 +7527,7 @@
     MOTEURS, famillesDe, COLLECS,
     recadrer, recadrerTout, centreSujet, grefferCadrage, appliquerCadrage,
     grefferGarage, grefferVersion, grefferClasser, ouvrirClasseur, classerVers,
+    verifierVersion, bandeauVersion,
     etendreCatalogue, CATALOGUE_PLUS,
     fabriquerRecadree, remplacerPhoto,
     VERSION: VERSION_MODULE,
