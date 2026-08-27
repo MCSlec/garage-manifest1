@@ -23,8 +23,8 @@
 //   ouvert vers une adresse arbitraire, quelle que soit la requête envoyée.
 //
 // Déploiement (gratuit, ~5 minutes) : voir README.md, section "Reconnaissance IA".
-// Pour activer /notify : wrangler secret put RESEND_API_KEY
-//                         wrangler secret put NOTIFY_TO   (ton adresse Resend)
+// Pour activer /notify : wrangler secret put RESEND_API_KEY   (SEULE étape secrète)
+//                         (l'adresse de réception est déjà dans ce fichier, en clair)
 // ============================================================================
 
 const MODEL = "claude-haiku-4-5-20251001"; // rapide et économique ; "claude-sonnet-5" pour plus de précision
@@ -42,6 +42,12 @@ Format exact : [{"brand":"Peugeot","model":"306","confidence":0.85}]
 // La photo est déjà compressée côté app (~1000 px, JPEG 0.72) avant l'envoi ; cette
 // limite est un garde-fou côté serveur, pas le réglage principal de compression.
 const NOTIFY_MAX_PHOTO_B64 = 2_000_000; // ~1,5 Mo réels une fois décodée
+
+// Adresse de réception des signalements. Ce n'est PAS un secret — une adresse
+// mail ne permet à personne de rien faire en ton nom, contrairement à une clé
+// API. Elle peut donc rester en dur dans le code sans risque, ce qui t'évite
+// une étape de configuration.
+const NOTIFY_TO = "dijon.autodetail@gmail.com";
 
 function corsHeaders(origin) {
   return {
@@ -149,10 +155,6 @@ async function notifier(request, env, origin) {
   if (!env.RESEND_API_KEY) {
     return json({ error: "RESEND_API_KEY manquante côté serveur (wrangler secret put)" }, 500, origin);
   }
-  if (!env.NOTIFY_TO) {
-    return json({ error: "NOTIFY_TO manquante côté serveur (wrangler secret put)" }, 500, origin);
-  }
-
   let body;
   try {
     body = await request.json();
@@ -196,7 +198,7 @@ async function notifier(request, env, origin) {
       },
       body: JSON.stringify({
         from: "Garage Manifest <onboarding@resend.dev>",
-        to: [env.NOTIFY_TO],           // FIXÉ CÔTÉ SERVEUR — jamais fourni par le client
+        to: [NOTIFY_TO],               // FIXÉ CÔTÉ SERVEUR — jamais fourni par le client
         subject: `Non classé : ${nom}`,
         html,
       }),
