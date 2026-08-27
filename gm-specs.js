@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '19.0.0';
+  const VERSION_MODULE = '19.2.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -399,6 +399,11 @@
      ====================================================================== */
 
   const GENS = {
+
+    'porsche-911-gt2rs-clubsport': [
+      ['991.2 Clubsport','2018–2019','flat-6 3.8 biturbo (GT2 RS)','700 ch','200 exemplaires dans le monde. Non homologuée route : freins acier au lieu de la céramique du modèle de route, pour respecter le règlement sportif. Arceau, baquet Recaro, harnais 6 points. Volant et écran repris de la 911 GT3 R.'],
+    ],
+
 
     /* ---- Déclinaisons Porsche : générations et puissances --------------- */
     'porsche-cayman': [
@@ -4114,6 +4119,7 @@
     { id:'audi-a5', brand:'Audi', model:'A5', yr:'2007–', c:'🇩🇪', cat:'Coupé', r:'commun' },
     { id:'audi-rs2-avant-b4', brand:'Audi', model:'RS2 Avant', yr:'1994–1996', c:'🇩🇪', cat:'Youngtimer', r:'legendaire' },
     { id:'audi-r8-v12-tdi', brand:'Audi', model:'R8 V12 TDI (concept)', yr:'2008–2009', c:'🇩🇪', cat:'Concept', r:'legendaire' },
+    { id:'porsche-911-gt2rs-clubsport', brand:'Porsche', model:'911 GT2 RS Clubsport', yr:'2018–2019', c:'🇩🇪', cat:'Piste', r:'legendaire' },
     { id:'renault-clio-rs16', brand:'Renault', model:'Clio R.S. 16 (concept)', yr:'2016', c:'🇫🇷', cat:'Concept', r:'legendaire' },
     { id:'bmw-m135i', brand:'BMW', model:'M135i / M140i', yr:'2012–', c:'🇩🇪', cat:'Sportive', r:'peucommun' },
     { id:'bmw-m235i', brand:'BMW', model:'M235i / M240i', yr:'2014–', c:'🇩🇪', cat:'Sportive', r:'peucommun' },
@@ -5185,16 +5191,24 @@
 
     { id:'proto', ic:'🔬', n:'Restées à l\'état de prototype',
       d:'Présentées, roulantes, applaudies — et jamais commercialisées. Un ou deux exemplaires existent, et ils sont dans un musée.',
-      /* Premier essai fondé sur les mots « concept » et « prototype » : il
-         attrapait la M5 (« programme F1 »), la Corvette C8 et la 911, dont les
-         notes emploient ces termes à propos d'autre chose. On s'appuie donc
-         d'abord sur un FAIT — le volume de production — et seulement ensuite
-         sur des formulations sans ambiguïté possible. */
+      /* Fondé d'abord sur un FAIT — le volume de production — et seulement
+         ensuite sur des formulations sans ambiguïté. Un premier essai basé
+         sur les mots « concept »/« prototype » attrapait la M5 (« programme
+         F1 »), la Corvette C8 et la 911, dont les notes emploient ces termes
+         à propos d'autre chose. */
       t:id => {
         const f = specDe(id);
         if (f && f.prod != null && f.prod <= 3) return true;
         return /\(concept\)|resté[e]?s? à l'état de prototype|jamais (été )?commercialisé|n'a jamais été vendu|un seul exemplaire (roulant|route|construit)|Un seul exemplaire/i.test(texteDe(id));
       } },
+
+    { id:'piste', ic:'🏴', n:'Piste uniquement',
+      d:'Dérivées d\'une voiture de route mais jamais homologuées : freins course, arceau, harnais. Elles ne rouleront jamais sur route ouverte.',
+      /* Catégorie dédiée plutôt que palier de rareté : la GT2 RS Clubsport
+         (200 ex., piste) et la GT2 RS de route restent toutes deux légendaires
+         — leur différence est de NATURE, pas de quantité, donc elle vit dans
+         `cat`, pas dans `r`. */
+      t: id => { const c = (CARS.find(x => x.id === id) || {}).cat; return c === 'Piste'; } },
 
     { id:'transaxle', ic:'⚖️', n:'Transaxle',
       d:'Boîte accolée au pont arrière. Une complication mécanique au seul service de la répartition des masses.',
@@ -6000,77 +6014,6 @@
       box.querySelector('.gst-c').textContent = ouvre ? '▲' : '▼';
       ecritPrefStats(ouvre);
     });
-  }
-
-  /* ======================================================================
-     AUTO-SURVEILLANCE DE VERSION
-     ----------------------------------------------------------------------
-     PROBLÈME RÉCURRENT. Trois corrections successives ont été livrées sans
-     jamais atteindre l'appareil : le service worker servait une copie en
-     cache, et rien ne le signalait. L'utilisateur testait l'ancien code en
-     croyant tester le nouveau, et rapportait des bugs déjà corrigés. C'est
-     le pire mode de défaillance possible — il fait perdre du temps aux deux
-     côtés et donne l'impression que les corrections ne fonctionnent pas.
-
-     Le module va donc chercher sa propre version sur le réseau, en
-     contournant explicitement le cache, et compare. S'il tourne sur une
-     copie périmée, il le dit et propose de se recharger.
-
-     Coût : une requête de quelques kilo-octets au démarrage, uniquement si
-     le réseau est disponible. Silence complet si tout va bien.
-     ====================================================================== */
-
-  async function verifierVersion() {
-    if (!navigator.onLine) return;
-    try {
-      /* `cache: 'no-store'` court-circuite le cache HTTP ; le paramètre
-         d'horodatage court-circuite en plus le service worker, qui pourrait
-         répondre depuis sa propre réserve. Les deux sont nécessaires. */
-      const url = new URL('gm-specs.js', location.href);
-      url.searchParams.set('v', Date.now());
-      const r = await fetch(url, { cache: 'no-store' });
-      if (!r.ok) return;
-      const txt = await r.text();
-      const m = txt.match(/VERSION_MODULE\s*=\s*'([\d.]+)'/);
-      if (!m) return;
-      const dispo = m[1];
-      if (dispo === VERSION_MODULE) return;
-
-      console.warn(`[GMSpecs] version chargée ${VERSION_MODULE}, disponible ${dispo}`);
-      bandeauVersion(dispo);
-    } catch (_) { /* hors ligne ou fichier inaccessible : on n'insiste pas */ }
-  }
-
-  function bandeauVersion(dispo) {
-    if (document.getElementById('gmv')) return;
-    const el = document.createElement('div');
-    el.id = 'gmv';
-    el.innerHTML = `<div class="gmv-b">
-      <div>
-        <b>Module non à jour</b>
-        <span>Tu utilises la v${esc(VERSION_MODULE)}, la v${esc(dispo)} est disponible.
-        Les corrections récentes ne sont pas actives.</span>
-      </div>
-      <button class="gmv-a" type="button" data-gmv="1">Charger</button>
-    </div>`;
-    el.addEventListener('click', async (e) => {
-      if (!e.target.closest('[data-gmv]')) return;
-      const b = e.target.closest('[data-gmv]');
-      b.disabled = true; b.textContent = '…';
-      try {
-        /* On efface la copie en cache des modules avant de recharger, sinon
-           le service worker resservirait exactement la même version. */
-        for (const nom of await caches.keys()) {
-          const c = await caches.open(nom);
-          for (const req of await c.keys())
-            if (/gm-[a-z0-9-]+\.js$/i.test(new URL(req.url).pathname)) await c.delete(req);
-        }
-        const reg = await navigator.serviceWorker?.getRegistration();
-        await reg?.update();
-      } catch (_) {}
-      setTimeout(() => location.reload(), 300);
-    });
-    document.body.appendChild(el);
   }
 
   /* ======================================================================
@@ -7401,20 +7344,6 @@
   .gcls-v{ margin:10px 2px; font:400 12px/1.5 var(--sans); color:var(--dim); }
   .gcls-n{ margin:12px 2px 0; font:400 11px/1.5 var(--sans); color:var(--dim); }
 
-  #gmv{ position:fixed; left:10px; right:10px; top:calc(env(safe-area-inset-top) + 10px);
-    z-index:400; display:flex; justify-content:center; }
-  /* Couleurs figées, sans variables de thème : ce bandeau doit rester lisible
-     même si le module tourne dans un contexte où le thème n'est pas chargé —
-     c'est justement le genre de situation où il a le plus besoin d'être vu. */
-  .gmv-b{ width:100%; max-width:520px; display:flex; align-items:center; gap:12px;
-    padding:12px 14px; border-radius:12px; background:#dc2626; color:#fff;
-    box-shadow:0 10px 30px rgba(0,0,0,.5);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; }
-  .gmv-b b{ display:block; font:700 13px/1.2 inherit; color:#fff; }
-  .gmv-b span{ display:block; margin-top:4px; font:400 11.5px/1.45 inherit; color:rgba(255,255,255,.93); }
-  .gmv-a{ flex:none; padding:9px 14px; border-radius:8px; border:0; background:#fff;
-    color:#dc2626; font:700 12px/1 inherit; cursor:pointer; }
-
   .gvr-l{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
   .gvr-l b{ display:block; font:600 13.5px/1.2 var(--sans); }
   .gvr-l small{ display:block; margin-top:4px; font:400 11.5px/1.4 var(--sans); color:var(--muted2); }
@@ -7535,7 +7464,6 @@
     try { greffer(); recadrerTout(); grefferCadrage(); grefferClasser(); } catch (_) {}
     chargerCadrages().then(() => { try { recadrerTout(); } catch (_) {} });
     console.info(`[GMSpecs] module v${VERSION_MODULE} chargé`);
-    setTimeout(() => { try { verifierVersion(); } catch (_) {} }, 1800);
     brancherMystere();
     brancherVersion();
     brancherGarage();
@@ -7605,7 +7533,6 @@
     MOTEURS, famillesDe, COLLECS,
     recadrer, recadrerTout, centreSujet, grefferCadrage, appliquerCadrage,
     grefferGarage, grefferVersion, grefferClasser, ouvrirClasseur, classerVers,
-    verifierVersion, bandeauVersion,
     etendreCatalogue, CATALOGUE_PLUS, reclasserCourant,
     fabriquerRecadree, remplacerPhoto,
     VERSION: VERSION_MODULE,
