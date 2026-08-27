@@ -21,7 +21,7 @@
     --bg:#0b0b0d; --panel:#161618; --panel2:#111113; --line:#27272a; --line2:#3f3f46;
     --txt:#f4f4f5; --fg:#f4f4f5; --muted:#a1a1aa; --muted2:#71717a; --dim:#52525b;
     --red:#ef4444; --red2:#dc2626; --red-dk:#b91c1c;
-    --commun:#a1a1aa; --peucommun:#2dd4bf; --rare:#818cf8; --epique:#e879f9; --legendaire:#fbbf24;
+    --courant:#6b7280; --commun:#a1a1aa; --peucommun:#2dd4bf; --rare:#818cf8; --epique:#e879f9; --legendaire:#fbbf24;
     --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
     --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     --st: env(safe-area-inset-top); --sb: env(safe-area-inset-bottom);
@@ -2159,14 +2159,19 @@ const VARIANTS = {
   const CARS_BY_ID = Object.fromEntries(CARS.map(c => [c.id, c]));
   const TOTAL = CARS.length;
 
+  /* Six paliers depuis 2026. « Courant » a été ajouté en bas : sans lui, une
+     Golf GTI et une 206 de base se retrouvaient au même niveau, ce qui vidait
+     le palier « Commun » de son sens. Désormais « Courant » désigne ce qu'on
+     croise sans y prêter attention, et « Commun » ce qu'on remarque encore. */
   const RARITY = {
-    commun:     { rank:0, label:"Commun",     pts:1,  color:"var(--commun)" },
-    peucommun:  { rank:1, label:"Peu commun", pts:3,  color:"var(--peucommun)" },
-    rare:       { rank:2, label:"Rare",       pts:8,  color:"var(--rare)" },
-    epique:     { rank:3, label:"Épique",     pts:20, color:"var(--epique)" },
-    legendaire: { rank:4, label:"Légendaire", pts:50, color:"var(--legendaire)" },
+    courant:    { rank:0, label:"Courant",    pts:1,  color:"var(--courant)" },
+    commun:     { rank:1, label:"Commun",     pts:2,  color:"var(--commun)" },
+    peucommun:  { rank:2, label:"Peu commun", pts:4,  color:"var(--peucommun)" },
+    rare:       { rank:3, label:"Rare",       pts:8,  color:"var(--rare)" },
+    epique:     { rank:4, label:"Épique",     pts:20, color:"var(--epique)" },
+    legendaire: { rank:5, label:"Légendaire", pts:50, color:"var(--legendaire)" },
   };
-  const RARITY_ORDER = ["commun","peucommun","rare","epique","legendaire"];
+  const RARITY_ORDER = ["courant","commun","peucommun","rare","epique","legendaire"];
   const COUNTRY = {
     "🇫🇷":"France","🇩🇪":"Allemagne","🇮🇹":"Italie","🇬🇧":"Royaume-Uni","🇪🇸":"Espagne",
     "🇨🇿":"Rép. tchèque","🇸🇪":"Suède","🇭🇷":"Croatie","🇳🇱":"Pays-Bas","🇩🇰":"Danemark",
@@ -2368,7 +2373,9 @@ const VARIANTS = {
   function computeStats() {
     const collected = CARS.filter(c => has(c.id));
     const count = collected.length;
-    const score = collected.reduce((n,c) => n + RARITY[c.r].pts, 0) + (META.bonus||0);
+    /* Filet : une rareté absente de RARITY ferait planter tout le calcul du
+       score. On retombe sur « courant » plutôt que d'interrompre l'app. */
+    const score = collected.reduce((n,c) => n + ((RARITY[c.r]||RARITY.courant).pts), 0) + (META.bonus||0);
 
     const byRarity = {}; RARITY_ORDER.forEach(k => byRarity[k] = { have:0, total:0 });
     const brandMap = {}, countryMap = {}, catMap = {};
@@ -2387,7 +2394,7 @@ const VARIANTS = {
 
     // rareté maxi collectée
     let rarest = null;
-    for (const c of collected) if (!rarest || RARITY[c.r].rank > RARITY[rarest.r].rank) rarest = c;
+    for (const c of collected) if (!rarest || rRank(c.r) > rRank(rarest.r)) rarest = c;
 
     // récents
     const recent = collected
@@ -2418,7 +2425,7 @@ const VARIANTS = {
   const $ = (s, r=document) => r.querySelector(s);
   const escapeHtml = (s) => String(s||"").replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
   const fmtDate = (iso) => { try { return new Date(iso).toLocaleDateString("fr-FR",{ day:"2-digit", month:"short", year:"numeric" }); } catch { return ""; } };
-  const rColor = (r) => RARITY[r].color;
+  const rColor = (r) => (RARITY[r] || RARITY.courant).color;
 
   const brands = ["all", ...[...new Set(CARS.map(c => c.brand))].sort((a,b)=>a.localeCompare(b))];
   const countries = ["all", ...Object.keys(COUNTRY).filter(f => CARS.some(c => c.c===f))];

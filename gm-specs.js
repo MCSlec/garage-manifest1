@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '18.1.0';
+  const VERSION_MODULE = '19.0.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -4056,84 +4056,84 @@
     { id:'porsche-cayman', brand:'Porsche', model:'Cayman', yr:'2005–', c:'🇩🇪', cat:'Sportive', r:'peucommun' },
     { id:'porsche-cayman-s', brand:'Porsche', model:'Cayman S', yr:'2005–', c:'🇩🇪', cat:'Sportive', r:'rare' },
     { id:'porsche-boxster', brand:'Porsche', model:'Boxster', yr:'1996–', c:'🇩🇪', cat:'Roadster', r:'peucommun' },
-    { id:'porsche-boxster-s', brand:'Porsche', model:'Boxster S', yr:'1999–', c:'🇩🇪', cat:'Roadster', r:'rare' },
-    { id:'porsche-boxster-spyder', brand:'Porsche', model:'Boxster Spyder', yr:'2010–', c:'🇩🇪', cat:'Roadster', r:'epique' },
-    { id:'porsche-cayman-gt4', brand:'Porsche', model:'718 Cayman GT4', yr:'2015–', c:'🇩🇪', cat:'Sportive', r:'epique' },
-    { id:'porsche-911-carrera-s', brand:'Porsche', model:'911 Carrera S', yr:'1997–', c:'🇩🇪', cat:'Sportive', r:'rare' },
-    { id:'porsche-911-gts', brand:'Porsche', model:'911 Carrera GTS', yr:'2010–', c:'🇩🇪', cat:'Sportive', r:'epique' },
+    { id:'porsche-boxster-s', brand:'Porsche', model:'Boxster S', yr:'1999–', c:'🇩🇪', cat:'Roadster', r:'peucommun' },
+    { id:'porsche-boxster-spyder', brand:'Porsche', model:'Boxster Spyder', yr:'2010–', c:'🇩🇪', cat:'Roadster', r:'legendaire' },
+    { id:'porsche-cayman-gt4', brand:'Porsche', model:'718 Cayman GT4', yr:'2015–', c:'🇩🇪', cat:'Sportive', r:'legendaire' },
+    { id:'porsche-911-carrera-s', brand:'Porsche', model:'911 Carrera S', yr:'1997–', c:'🇩🇪', cat:'Sportive', r:'peucommun' },
+    { id:'porsche-911-gts', brand:'Porsche', model:'911 Carrera GTS', yr:'2010–', c:'🇩🇪', cat:'Sportive', r:'rare' },
     { id:'porsche-911-targa', brand:'Porsche', model:'911 Targa', yr:'1967–', c:'🇩🇪', cat:'Sportive', r:'rare' },
-    { id:'porsche-macan-gts', brand:'Porsche', model:'Macan GTS / Turbo', yr:'2014–', c:'🇩🇪', cat:'SUV', r:'rare' },
-    { id:'porsche-panamera-turbo', brand:'Porsche', model:'Panamera Turbo', yr:'2009–', c:'🇩🇪', cat:'Berline', r:'epique' },
-    { id:'porsche-taycan-turbo', brand:'Porsche', model:'Taycan Turbo / Turbo S', yr:'2019–', c:'🇩🇪', cat:'Berline', r:'epique' },
+    { id:'porsche-macan-gts', brand:'Porsche', model:'Macan GTS / Turbo', yr:'2014–', c:'🇩🇪', cat:'SUV', r:'peucommun' },
+    { id:'porsche-panamera-turbo', brand:'Porsche', model:'Panamera Turbo', yr:'2009–', c:'🇩🇪', cat:'Berline', r:'rare' },
+    { id:'porsche-taycan-turbo', brand:'Porsche', model:'Taycan Turbo / Turbo S', yr:'2019–', c:'🇩🇪', cat:'Berline', r:'rare' },
 
-    { id:'mercedes-a35', brand:'Mercedes-AMG', model:'A 35', yr:'2018–', c:'🇩🇪', cat:'Sportive', r:'rare' },
+    { id:'mercedes-a35', brand:'Mercedes-AMG', model:'A 35', yr:'2018–', c:'🇩🇪', cat:'Sportive', r:'peucommun' },
     { id:'mercedes-c43-amg', brand:'Mercedes-AMG', model:'C 43', yr:'2016–', c:'🇩🇪', cat:'Berline', r:'peucommun' },
-    { id:'mercedes-e53', brand:'Mercedes-AMG', model:'E 53', yr:'2018–', c:'🇩🇪', cat:'Berline', r:'rare' },
-    { id:'mercedes-glc43', brand:'Mercedes-AMG', model:'GLC 43 / 63', yr:'2016–', c:'🇩🇪', cat:'SUV', r:'rare' },
-    { id:'mercedes-gle63', brand:'Mercedes-AMG', model:'GLE 53 / 63', yr:'2015–', c:'🇩🇪', cat:'SUV', r:'rare' },
-    { id:'mercedes-g63', brand:'Mercedes-AMG', model:'G 63', yr:'2012–', c:'🇩🇪', cat:'SUV', r:'epique' },
+    { id:'mercedes-e53', brand:'Mercedes-AMG', model:'E 53', yr:'2018–', c:'🇩🇪', cat:'Berline', r:'peucommun' },
+    { id:'mercedes-glc43', brand:'Mercedes-AMG', model:'GLC 43 / 63', yr:'2016–', c:'🇩🇪', cat:'SUV', r:'peucommun' },
+    { id:'mercedes-gle63', brand:'Mercedes-AMG', model:'GLE 53 / 63', yr:'2015–', c:'🇩🇪', cat:'SUV', r:'peucommun' },
+    { id:'mercedes-g63', brand:'Mercedes-AMG', model:'G 63', yr:'2012–', c:'🇩🇪', cat:'SUV', r:'rare' },
 
     { id:'bmw-330i', brand:'BMW', model:'330i / 330e', yr:'2015–', c:'🇩🇪', cat:'Berline', r:'commun' },
-    { id:'bmw-m550i', brand:'BMW', model:'M550i / 540i', yr:'2016–', c:'🇩🇪', cat:'Berline', r:'rare' },
-    { id:'bmw-x3m', brand:'BMW', model:'X3 M / X4 M', yr:'2019–', c:'🇩🇪', cat:'SUV', r:'rare' },
-    { id:'bmw-x5m-comp', brand:'BMW', model:'X5 M / X6 M', yr:'2009–', c:'🇩🇪', cat:'SUV', r:'rare' },
+    { id:'bmw-m550i', brand:'BMW', model:'M550i / 540i', yr:'2016–', c:'🇩🇪', cat:'Berline', r:'peucommun' },
+    { id:'bmw-x3m', brand:'BMW', model:'X3 M / X4 M', yr:'2019–', c:'🇩🇪', cat:'SUV', r:'peucommun' },
+    { id:'bmw-x5m-comp', brand:'BMW', model:'X5 M / X6 M', yr:'2009–', c:'🇩🇪', cat:'SUV', r:'peucommun' },
     { id:'bmw-m2-cs', brand:'BMW', model:'M2 CS', yr:'2020–', c:'🇩🇪', cat:'Sportive', r:'epique' },
     { id:'bmw-m4-csl', brand:'BMW', model:'M4 CSL', yr:'2022–', c:'🇩🇪', cat:'Sportive', r:'legendaire' },
 
     { id:'audi-s3-limo', brand:'Audi', model:'S3 Sportback / Berline', yr:'1999–', c:'🇩🇪', cat:'Sportive', r:'peucommun' },
-    { id:'audi-rsq3-moderne', brand:'Audi', model:'RS Q3', yr:'2013–', c:'🇩🇪', cat:'SUV', r:'rare' },
-    { id:'audi-rsq8', brand:'Audi', model:'RS Q8', yr:'2019–', c:'🇩🇪', cat:'SUV', r:'epique' },
-    { id:'audi-rs-etron-gt', brand:'Audi', model:'RS e-tron GT', yr:'2021–', c:'🇩🇪', cat:'Berline', r:'epique' },
+    { id:'audi-rsq3-moderne', brand:'Audi', model:'RS Q3', yr:'2013–', c:'🇩🇪', cat:'SUV', r:'peucommun' },
+    { id:'audi-rsq8', brand:'Audi', model:'RS Q8', yr:'2019–', c:'🇩🇪', cat:'SUV', r:'rare' },
+    { id:'audi-rs-etron-gt', brand:'Audi', model:'RS e-tron GT', yr:'2021–', c:'🇩🇪', cat:'Berline', r:'rare' },
 
     { id:'vw-golf-gti-clubsport', brand:'Volkswagen', model:'Golf GTI Clubsport', yr:'2016–', c:'🇩🇪', cat:'Sportive', r:'rare' },
-    { id:'vw-t-roc-r', brand:'Volkswagen', model:'T-Roc R', yr:'2019–', c:'🇩🇪', cat:'SUV', r:'rare' },
-    { id:'cupra-leon', brand:'Cupra', model:'León', yr:'2018–', c:'🇪🇸', cat:'Compacte', r:'peucommun' },
+    { id:'vw-t-roc-r', brand:'Volkswagen', model:'T-Roc R', yr:'2019–', c:'🇩🇪', cat:'SUV', r:'peucommun' },
+    { id:'cupra-leon', brand:'Cupra', model:'León', yr:'2018–', c:'🇪🇸', cat:'Compacte', r:'commun' },
 
     { id:'renault-clio-rs-line', brand:'Renault', model:'Clio R.S. Line', yr:'2019–', c:'🇫🇷', cat:'Citadine', r:'commun' },
     { id:'renault-megane-etech', brand:'Renault', model:'Mégane E-Tech', yr:'2022–', c:'🇫🇷', cat:'Compacte', r:'commun' },
-    { id:'peugeot-308-gt', brand:'Peugeot', model:'308 GT / GTi', yr:'2013–', c:'🇫🇷', cat:'Compacte', r:'peucommun' },
-    { id:'alpine-a110-s', brand:'Alpine', model:'A110 S / R', yr:'2019–', c:'🇫🇷', cat:'Sportive', r:'epique' },
+    { id:'peugeot-308-gt', brand:'Peugeot', model:'308 GT / GTi', yr:'2013–', c:'🇫🇷', cat:'Compacte', r:'commun' },
+    { id:'alpine-a110-s', brand:'Alpine', model:'A110 S / R', yr:'2019–', c:'🇫🇷', cat:'Sportive', r:'rare' },
 
     { id:'toyota-gr-corolla', brand:'Toyota', model:'GR Corolla', yr:'2022–', c:'🇯🇵', cat:'Sportive', r:'rare' },
-    { id:'honda-civic-si', brand:'Honda', model:'Civic Si / Sport', yr:'1985–', c:'🇯🇵', cat:'Compacte', r:'peucommun' },
+    { id:'honda-civic-si', brand:'Honda', model:'Civic Si / Sport', yr:'1985–', c:'🇯🇵', cat:'Compacte', r:'commun' },
     { id:'nissan-gtr-nismo', brand:'Nissan', model:'GT-R Nismo', yr:'2013–', c:'🇯🇵', cat:'Supercar', r:'epique' },
-    { id:'mazda-mx5-rf', brand:'Mazda', model:'MX-5 RF', yr:'2016–', c:'🇯🇵', cat:'Roadster', r:'peucommun' },
+    { id:'mazda-mx5-rf', brand:'Mazda', model:'MX-5 RF', yr:'2016–', c:'🇯🇵', cat:'Roadster', r:'commun' },
 
-    { id:'ford-fiesta-st-moderne', brand:'Ford', model:'Fiesta ST', yr:'2005–', c:'🇺🇸', cat:'Sportive', r:'rare' },
-    { id:'ford-mustang-mach1', brand:'Ford', model:'Mustang Mach 1', yr:'1969–', c:'🇺🇸', cat:'Sportive', r:'epique' },
-    { id:'mini-cooper-s', brand:'Mini', model:'Cooper S', yr:'2001–', c:'🇬🇧', cat:'Sportive', r:'peucommun' },
-    { id:'jaguar-ftype-r', brand:'Jaguar', model:'F-Type R / SVR', yr:'2013–', c:'🇬🇧', cat:'Sportive', r:'epique' },
+    { id:'ford-fiesta-st-moderne', brand:'Ford', model:'Fiesta ST', yr:'2005–', c:'🇺🇸', cat:'Sportive', r:'peucommun' },
+    { id:'ford-mustang-mach1', brand:'Ford', model:'Mustang Mach 1', yr:'1969–', c:'🇺🇸', cat:'Sportive', r:'rare' },
+    { id:'mini-cooper-s', brand:'Mini', model:'Cooper S', yr:'2001–', c:'🇬🇧', cat:'Sportive', r:'commun' },
+    { id:'jaguar-ftype-r', brand:'Jaguar', model:'F-Type R / SVR', yr:'2013–', c:'🇬🇧', cat:'Sportive', r:'rare' },
 
-    { id:'audi-s1-quattro', brand:'Audi', model:'S1 Sportback', yr:'2014–2018', c:'🇩🇪', cat:'Sportive', r:'rare' },
+    { id:'audi-s1-quattro', brand:'Audi', model:'S1 Sportback', yr:'2014–2018', c:'🇩🇪', cat:'Sportive', r:'peucommun' },
     { id:'audi-s4', brand:'Audi', model:'S4', yr:'1997–', c:'🇩🇪', cat:'Sportive', r:'peucommun' },
     { id:'audi-s5', brand:'Audi', model:'S5', yr:'2007–', c:'🇩🇪', cat:'Sportive', r:'peucommun' },
     { id:'audi-s6', brand:'Audi', model:'S6', yr:'1994–', c:'🇩🇪', cat:'Berline', r:'rare' },
-    { id:'audi-s7', brand:'Audi', model:'S7 Sportback', yr:'2012–', c:'🇩🇪', cat:'Berline', r:'rare' },
+    { id:'audi-s7', brand:'Audi', model:'S7 Sportback', yr:'2012–', c:'🇩🇪', cat:'Berline', r:'peucommun' },
     { id:'audi-s8', brand:'Audi', model:'S8', yr:'1996–', c:'🇩🇪', cat:'Berline', r:'rare' },
     { id:'audi-sq5', brand:'Audi', model:'SQ5', yr:'2013–', c:'🇩🇪', cat:'SUV', r:'peucommun' },
     { id:'audi-a5', brand:'Audi', model:'A5', yr:'2007–', c:'🇩🇪', cat:'Coupé', r:'commun' },
     { id:'audi-rs2-avant-b4', brand:'Audi', model:'RS2 Avant', yr:'1994–1996', c:'🇩🇪', cat:'Youngtimer', r:'legendaire' },
     { id:'audi-r8-v12-tdi', brand:'Audi', model:'R8 V12 TDI (concept)', yr:'2008–2009', c:'🇩🇪', cat:'Concept', r:'legendaire' },
     { id:'renault-clio-rs16', brand:'Renault', model:'Clio R.S. 16 (concept)', yr:'2016', c:'🇫🇷', cat:'Concept', r:'legendaire' },
-    { id:'bmw-m135i', brand:'BMW', model:'M135i / M140i', yr:'2012–', c:'🇩🇪', cat:'Sportive', r:'rare' },
-    { id:'bmw-m235i', brand:'BMW', model:'M235i / M240i', yr:'2014–', c:'🇩🇪', cat:'Sportive', r:'rare' },
-    { id:'bmw-335i', brand:'BMW', model:'335i (N54/N55)', yr:'2006–2015', c:'🇩🇪', cat:'Berline', r:'peucommun' },
-    { id:'bmw-m340i', brand:'BMW', model:'M340i', yr:'2019–', c:'🇩🇪', cat:'Berline', r:'rare' },
+    { id:'bmw-m135i', brand:'BMW', model:'M135i / M140i', yr:'2012–', c:'🇩🇪', cat:'Sportive', r:'peucommun' },
+    { id:'bmw-m235i', brand:'BMW', model:'M235i / M240i', yr:'2014–', c:'🇩🇪', cat:'Sportive', r:'peucommun' },
+    { id:'bmw-335i', brand:'BMW', model:'335i (N54/N55)', yr:'2006–2015', c:'🇩🇪', cat:'Berline', r:'commun' },
+    { id:'bmw-m340i', brand:'BMW', model:'M340i', yr:'2019–', c:'🇩🇪', cat:'Berline', r:'peucommun' },
     { id:'bmw-130i', brand:'BMW', model:'130i', yr:'2005–2011', c:'🇩🇪', cat:'Youngtimer', r:'rare' },
     { id:'bmw-m5-touring', brand:'BMW', model:'M5 Touring', yr:'1992–', c:'🇩🇪', cat:'Break', r:'epique' },
     { id:'mercedes-cla45', brand:'Mercedes-AMG', model:'CLA 45', yr:'2013–', c:'🇩🇪', cat:'Sportive', r:'rare' },
     { id:'mercedes-c43', brand:'Mercedes-AMG', model:'C 43', yr:'2016–', c:'🇩🇪', cat:'Berline', r:'peucommun' },
     { id:'mercedes-gt63', brand:'Mercedes-AMG', model:'GT 63 4 portes', yr:'2018–', c:'🇩🇪', cat:'Berline', r:'epique' },
     { id:'mercedes-190e-cosworth', brand:'Mercedes-Benz', model:'190 E 2.3-16', yr:'1983–1988', c:'🇩🇪', cat:'Youngtimer', r:'rare' },
-    { id:'vw-golf-gtd', brand:'Volkswagen', model:'Golf GTD', yr:'1982–', c:'🇩🇪', cat:'Sportive', r:'peucommun' },
-    { id:'vw-golf-gte', brand:'Volkswagen', model:'Golf GTE', yr:'2014–', c:'🇩🇪', cat:'Sportive', r:'peucommun' },
+    { id:'vw-golf-gtd', brand:'Volkswagen', model:'Golf GTD', yr:'1982–', c:'🇩🇪', cat:'Sportive', r:'commun' },
+    { id:'vw-golf-gte', brand:'Volkswagen', model:'Golf GTE', yr:'2014–', c:'🇩🇪', cat:'Sportive', r:'commun' },
     { id:'vw-golf-16s', brand:'Volkswagen', model:'Golf GTI 16S (Mk2)', yr:'1986–1991', c:'🇩🇪', cat:'Youngtimer', r:'rare' },
     { id:'vw-golf-g60', brand:'Volkswagen', model:'Golf G60 / Rallye', yr:'1988–1991', c:'🇩🇪', cat:'Youngtimer', r:'legendaire' },
-    { id:'porsche-911-gt3-touring', brand:'Porsche', model:'911 GT3 Touring', yr:'2017–', c:'🇩🇪', cat:'Supercar', r:'legendaire' },
+    { id:'porsche-911-gt3-touring', brand:'Porsche', model:'911 GT3 Touring', yr:'2017–', c:'🇩🇪', cat:'Supercar', r:'epique' },
     { id:'porsche-911-sport-classic', brand:'Porsche', model:'911 Sport Classic', yr:'2010–', c:'🇩🇪', cat:'Supercar', r:'legendaire' },
     { id:'porsche-911-r', brand:'Porsche', model:'911 R (991)', yr:'2016', c:'🇩🇪', cat:'Supercar', r:'legendaire' },
     { id:'porsche-911-speedster', brand:'Porsche', model:'911 Speedster', yr:'1989–', c:'🇩🇪', cat:'Roadster', r:'legendaire' },
-    { id:'porsche-cayman-gts', brand:'Porsche', model:'718 Cayman GTS 4.0', yr:'2020–', c:'🇩🇪', cat:'Sportive', r:'epique' },
+    { id:'porsche-cayman-gts', brand:'Porsche', model:'718 Cayman GTS 4.0', yr:'2020–', c:'🇩🇪', cat:'Sportive', r:'rare' },
     { id:'renault-clio-16s', brand:'Renault', model:'Clio 16S', yr:'1991–1996', c:'🇫🇷', cat:'Youngtimer', r:'rare' },
     { id:'renault-megane-trophy-r', brand:'Renault', model:'Mégane R.S. Trophy-R', yr:'2019', c:'🇫🇷', cat:'Sportive', r:'legendaire' },
     { id:'renault-alpine-a610', brand:'Alpine', model:'A610 Turbo', yr:'1991–1995', c:'🇫🇷', cat:'Youngtimer', r:'rare' },
@@ -4141,8 +4141,8 @@
     { id:'peugeot-306-rallye', brand:'Peugeot', model:'306 Rallye', yr:'1998–2001', c:'🇫🇷', cat:'Youngtimer', r:'legendaire' },
     { id:'peugeot-206-rc', brand:'Peugeot', model:'206 RC', yr:'2003–2006', c:'🇫🇷', cat:'Youngtimer', r:'rare' },
     { id:'citroen-ax-sport', brand:'Citroën', model:'AX Sport', yr:'1987–1988', c:'🇫🇷', cat:'Youngtimer', r:'legendaire' },
-    { id:'citroen-zx-16v', brand:'Citroën', model:'ZX 16V / Volcane', yr:'1992–1998', c:'🇫🇷', cat:'Youngtimer', r:'rare' },
-    { id:'honda-integra-dc5', brand:'Honda', model:'Integra Type R (DC5)', yr:'2001–2006', c:'🇯🇵', cat:'Youngtimer', r:'legendaire' },
+    { id:'citroen-zx-16v', brand:'Citroën', model:'ZX 16V / Volcane', yr:'1992–1998', c:'🇫🇷', cat:'Youngtimer', r:'peucommun' },
+    { id:'honda-integra-dc5', brand:'Honda', model:'Integra Type R (DC5)', yr:'2001–2006', c:'🇯🇵', cat:'Youngtimer', r:'epique' },
     { id:'nissan-silvia-s13', brand:'Nissan', model:'Silvia (S13)', yr:'1988–1994', c:'🇯🇵', cat:'Youngtimer', r:'rare' },
     { id:'nissan-silvia-s14', brand:'Nissan', model:'Silvia (S14)', yr:'1993–1998', c:'🇯🇵', cat:'Youngtimer', r:'rare' },
     { id:'toyota-supra-mk3', brand:'Toyota', model:'Supra (A70)', yr:'1986–1993', c:'🇯🇵', cat:'Youngtimer', r:'rare' },
@@ -4177,10 +4177,10 @@
     { id:'ds-4-moderne', brand:'DS', model:'DS 4', yr:'2010–', c:'🇫🇷', cat:'Berline', r:'commun' },
     { id:'opel-mokka', brand:'Opel', model:'Mokka', yr:'2012–', c:'🇩🇪', cat:'SUV', r:'commun' },
     { id:'opel-grandland', brand:'Opel', model:'Grandland', yr:'2017–', c:'🇩🇪', cat:'SUV', r:'commun' },
-    { id:'mini-countryman-jcw', brand:'Mini', model:'Countryman John Cooper Works', yr:'2017–', c:'🇬🇧', cat:'SUV', r:'rare' },
+    { id:'mini-countryman-jcw', brand:'Mini', model:'Countryman John Cooper Works', yr:'2017–', c:'🇬🇧', cat:'SUV', r:'peucommun' },
     { id:'mini-countryman', brand:'Mini', model:'Countryman', yr:'2010–', c:'🇬🇧', cat:'SUV', r:'commun' },
     { id:'mini-clubman', brand:'Mini', model:'Clubman', yr:'2007–2024', c:'🇬🇧', cat:'Break', r:'peucommun' },
-    { id:'mini-jcw', brand:'Mini', model:'John Cooper Works', yr:'2006–', c:'🇬🇧', cat:'Sportive', r:'rare' },
+    { id:'mini-jcw', brand:'Mini', model:'John Cooper Works', yr:'2006–', c:'🇬🇧', cat:'Sportive', r:'peucommun' },
     { id:'bmw-serie1', brand:'BMW', model:'Série 1', yr:'2004–', c:'🇩🇪', cat:'Compacte', r:'commun' },
     { id:'bmw-serie2', brand:'BMW', model:'Série 2', yr:'2014–', c:'🇩🇪', cat:'Coupé', r:'commun' },
     { id:'bmw-x1', brand:'BMW', model:'X1', yr:'2009–', c:'🇩🇪', cat:'SUV', r:'commun' },
@@ -4230,13 +4230,13 @@
     { id:'ford-transit', brand:'Ford', model:'Transit', yr:'1965–', c:'🇺🇸', cat:'Utilitaire', r:'commun' },
     { id:'ford-ranger', brand:'Ford', model:'Ranger', yr:'1998–', c:'🇺🇸', cat:'Pick-up', r:'commun' },
     { id:'ram-1500', brand:'Ram', model:'1500', yr:'2009–', c:'🇺🇸', cat:'Pick-up', r:'peucommun' },
-    { id:'porsche-911-gt3-r', brand:'Porsche', model:'911 GT3 R', yr:'2016–', c:'🇩🇪', cat:'Course', r:'epique' },
-    { id:'porsche-911-gt3-cup', brand:'Porsche', model:'911 GT3 Cup', yr:'1998–', c:'🇩🇪', cat:'Course', r:'rare' },
-    { id:'ferrari-296-gt3', brand:'Ferrari', model:'296 GT3', yr:'2023–', c:'🇮🇹', cat:'Course', r:'epique' },
-    { id:'mercedes-amg-gt3', brand:'Mercedes-AMG', model:'AMG GT3', yr:'2015–', c:'🇩🇪', cat:'Course', r:'epique' },
-    { id:'bmw-m4-gt3', brand:'BMW', model:'M4 GT3', yr:'2022–', c:'🇩🇪', cat:'Course', r:'epique' },
-    { id:'lambo-huracan-gt3', brand:'Lamborghini', model:'Huracán GT3', yr:'2015–', c:'🇮🇹', cat:'Course', r:'epique' },
-    { id:'alpine-a110-cup', brand:'Alpine', model:'A110 Cup / GT4', yr:'2018–', c:'🇫🇷', cat:'Course', r:'rare' },
+    { id:'porsche-911-gt3-r', brand:'Porsche', model:'911 GT3 R', yr:'2016–', c:'🇩🇪', cat:'Course', r:'legendaire' },
+    { id:'porsche-911-gt3-cup', brand:'Porsche', model:'911 GT3 Cup', yr:'1998–', c:'🇩🇪', cat:'Course', r:'epique' },
+    { id:'ferrari-296-gt3', brand:'Ferrari', model:'296 GT3', yr:'2023–', c:'🇮🇹', cat:'Course', r:'legendaire' },
+    { id:'mercedes-amg-gt3', brand:'Mercedes-AMG', model:'AMG GT3', yr:'2015–', c:'🇩🇪', cat:'Course', r:'legendaire' },
+    { id:'bmw-m4-gt3', brand:'BMW', model:'M4 GT3', yr:'2022–', c:'🇩🇪', cat:'Course', r:'legendaire' },
+    { id:'lambo-huracan-gt3', brand:'Lamborghini', model:'Huracán GT3', yr:'2015–', c:'🇮🇹', cat:'Course', r:'legendaire' },
+    { id:'alpine-a110-cup', brand:'Alpine', model:'A110 Cup / GT4', yr:'2018–', c:'🇫🇷', cat:'Course', r:'epique' },
   ];
 
   function etendreCatalogue() {
@@ -4266,6 +4266,81 @@
       }
       return n;
     } catch (e) { console.warn('[GMSpecs] extension du catalogue impossible', e); return 0; }
+  }
+
+  /* ======================================================================
+     RECLASSEMENT VERS « COURANT »
+     ----------------------------------------------------------------------
+     Le palier « Commun » regroupait aussi bien une Golf GTI qu'une 206 de
+     base : le repérage de la première n'avait pas plus de valeur que celui de
+     la seconde, alors que l'une se remarque et l'autre non.
+
+     Un sixième palier a donc été ajouté en bas. Reste à répartir : ce module
+     descend vers « Courant » ce qui relève du trafic quotidien, et laisse en
+     « Commun » ce qui garde un intérêt — versions sportives, coupés,
+     roadsters, et tout ce qui a plus de vingt ans.
+
+     Deux garde-fous :
+       · seules les entrées actuellement « commun » sont touchées ; les
+         paliers supérieurs ne bougent jamais ;
+       · les versions sportives sont reconnues par leur nom, pas par leur
+         puissance : une entrée générique couvre souvent une gamme entière,
+         de 75 ch à 300 ch.
+     ====================================================================== */
+
+  /* Carrosseries de grande diffusion : c'est le gros du parc, donc le gros
+     de ce qu'on croise sans y prêter attention. */
+  const CAT_COURANTES = ['Citadine', 'Berline', 'SUV', 'Utilitaire', 'Monospace',
+                         'Break', 'Compacte', 'Familiale', 'Pick-up', 'Crossover'];
+
+  /* Marqueurs de version sportive : leur présence dans le nom suffit à
+     maintenir l'entrée en « Commun ». */
+  const RE_SPORTIVE = /\b(GTI|GTD|GTE|GT|R\.?S\.?|RS|ST|Si|Type R|Cupra|N\b|VXR|OPC|AMG|M\d|S\d|Turbo|Sport|Nismo|Abarth|Cooper S|JCW|Trophy|Clubsport|Performance|Competition)\b/i;
+
+  /* Marques premium : leurs berlines et SUV restent « Commun ». Une Série 3
+     ne se croise pas avec la même fréquence qu'une Sandero, et surtout elle
+     ne se regarde pas pareil. Sans cette distinction, le palier « Commun »
+     se vidait presque entièrement — un palier vide ne sert à rien. */
+  const MARQUES_PREMIUM = ['BMW', 'Mercedes-Benz', 'Mercedes-AMG', 'Audi', 'Porsche', 'Volvo',
+    'Jaguar', 'Land Rover', 'Lexus', 'Genesis', 'Alfa Romeo', 'Mini', 'DS', 'Cupra',
+    'Maserati', 'Bentley', 'Rolls-Royce', 'Aston Martin', 'Tesla', 'Polestar', 'Saab', 'Lancia'];
+
+  function reclasserCourant() {
+    try {
+      if (typeof CARS === 'undefined' || !Array.isArray(CARS)) return 0;
+      /* On regarde l'année de FIN de production, pas de début : une Clio
+         « 1990– » est encore fabriquée aujourd'hui et reste banale, alors
+         qu'une « 1972–1996 » a disparu de la circulation et se remarque.
+         Le critère de début classait la première comme ancienne — l'inverse
+         exact de ce qu'on veut. */
+      const finProduction = (c) => {
+        const t = String(c.yr || '');
+        if (/[–-]\s*$/.test(t)) return 9999;              // encore produite
+        const ans = t.match(/\d{4}/g);
+        return ans ? +ans[ans.length - 1] : 0;
+      };
+      let n = 0;
+      for (const c of CARS) {
+        if (c.r !== 'commun') continue;                       // on ne touche que ce palier
+        if (!CAT_COURANTES.includes(c.cat)) continue;         // coupés, roadsters, classiques : on laisse
+        if (RE_SPORTIVE.test(c.model)) continue;              // version sportive identifiée
+        if (MARQUES_PREMIUM.includes(c.brand)) continue;      // premium : reste « commun »
+        if (finProduction(c) < 2010) continue;                // hors production depuis longtemps : ça se remarque
+        /* Le critère de puissance a été retiré : `chMax` renvoie le maximum
+           de TOUTES les générations, donc l'entrée générique « Clio » héritait
+           des 255 ch de la V6 et échappait au reclassement. Le nom du modèle
+           suffit à distinguer une version sportive — ce test faisait doublon
+           tout en produisant des faux négatifs sur les modèles les plus
+           banals du catalogue, exactement ceux qu'on visait. */
+        c.r = 'courant';
+        n++;
+      }
+      if (n) {
+        _pool = null; _collecsCache = null; _palmCache = null;
+        console.info(`[GMSpecs] ${n} modèle(s) reclassé(s) en « courant »`);
+      }
+      return n;
+    } catch (e) { console.warn('[GMSpecs] reclassement impossible', e); return 0; }
   }
 
   /* ======================================================================
@@ -7483,6 +7558,9 @@
      Tout le reste (CSS, greffons, observateurs) peut légitimement attendre
      le DOM ; le catalogue, non. */
   try { etendreCatalogue(); } catch (_) {}
+  /* Le reclassement suit immédiatement l'extension : les deux doivent être
+     faits avant que l'app ne construise ses index et ne calcule les scores. */
+  try { reclasserCourant(); } catch (_) {}
 
   if (document.readyState === 'loading')
     document.addEventListener('DOMContentLoaded', autoInstall);
@@ -7528,7 +7606,7 @@
     recadrer, recadrerTout, centreSujet, grefferCadrage, appliquerCadrage,
     grefferGarage, grefferVersion, grefferClasser, ouvrirClasseur, classerVers,
     verifierVersion, bandeauVersion,
-    etendreCatalogue, CATALOGUE_PLUS,
+    etendreCatalogue, CATALOGUE_PLUS, reclasserCourant,
     fabriquerRecadree, remplacerPhoto,
     VERSION: VERSION_MODULE,
 
