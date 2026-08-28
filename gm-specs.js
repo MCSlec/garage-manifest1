@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '19.2.0';
+  const VERSION_MODULE = '19.5.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -4350,6 +4350,171 @@
   }
 
   /* ======================================================================
+     SIGNALEMENT DES VOITURES NON CLASSÉES — AVEC CONSENTEMENT EXPLICITE
+     ----------------------------------------------------------------------
+     Quand une capture reste hors catalogue, l'admin ne le sait jamais : les
+     données restent sur le téléphone de la personne qui a capturé, sans
+     jamais remonter. Ce module comble ce trou, mais le fait dans les règles :
+
+     UN SEUL FLUX POUR DEUX SCÉNARIOS. Que l'IA échoue à reconnaître la
+     voiture ou que quelqu'un tape le nom à la main, le résultat est
+     identique : une capture avec un identifiant `custom:...`. On scanne
+     donc ce point de sortie commun, plutôt que d'essayer de distinguer les
+     deux chemins.
+
+     CONSENTEMENT — trois règles non négociables :
+       1. EXPLICITE ET NON GROUPÉ. Refuser ne bloque jamais l'enregistrement
+          local de la capture. Le partage est une option, jamais une
+          condition d'usage.
+       2. MINIMISÉ. Seuls la photo, le nom saisi et la date partent. Jamais
+          la note personnelle, jamais la position.
+       3. RÉVERSIBLE. Le choix se change à tout moment dans les Réglages,
+          aussi facilement qu'il a été donné.
+
+     RIEN N'EST ENVOYÉ SANS ACCORD PRÉALABLE — le scan ne s'exécute même pas
+     tant que le consentement n'est pas à `accepte`.
+     ====================================================================== */
+
+  /* Route /notify du Worker existant (ai-relay-worker.js), confirmée depuis
+     le tableau de bord Cloudflare le 27/08/2026. Modifiable via
+     GMSpecs.definirEndpointSignalement() pour un test ponctuel, sans
+     attendre un nouveau déploiement du module. */
+  let NOTIFY_ENDPOINT = 'https://silent-firefly-2620.cyril-lapopin.workers.dev/notify';
+
+  const PART = { db: null, consentement: 'inconnu' };  // 'inconnu' | 'accepte' | 'refuse'
+
+  function ouvrirPartage() {
+    return new Promise((res) => {
+      let f = false; const t = setTimeout(() => { if (!f) { f = true; res(null); } }, 2500);
+      try {
+        const rq = indexedDB.open('gm-partage', 1);
+        rq.onupgradeneeded = () => { const db = rq.result; if (!db.objectStoreNames.contains('etat')) db.createObjectStore('etat', { keyPath: 'id' }); };
+        rq.onsuccess = () => { if (f) return; f = true; clearTimeout(t); res(rq.result); };
+        rq.onerror   = () => { if (f) return; f = true; clearTimeout(t); res(null); };
+      } catch (_) { clearTimeout(t); res(null); }
+    });
+  }
+  const _partLire  = (k) => new Promise(r => { if (!PART.db) return r(null);
+    try { const q = PART.db.transaction('etat', 'readonly').objectStore('etat').get(k); q.onsuccess = () => r(q.result); q.onerror = () => r(null); } catch (_) { r(null); } });
+  const _partEcrire = (o) => { if (!PART.db) return; try { PART.db.transaction('etat', 'readwrite').objectStore('etat').put(o); } catch (_) {} };
+
+  async function chargerConsentement() {
+    PART.db = await ouvrirPartage();
+    const c = await _partLire('consentement');
+    PART.consentement = c ? c.valeur : 'inconnu';
+  }
+  function definirConsentement(v) {
+    PART.consentement = v;
+    _partEcrire({ id: 'consentement', valeur: v, quand: new Date().toISOString() });
+  }
+  const dejaEnvoye = (id) => _partLire('envoye:' + id);
+  const marquerEnvoye = (id) => _partEcrire({ id: 'envoye:' + id, quand: new Date().toISOString() });
+
+  /* --- Boîte de consentement --------------------------------------------
+     Déclenchée UNE FOIS, et seulement s'il existe déjà au moins une capture
+     non classée à signaler — jamais sur une app neuve sans rien à proposer,
+     ce qui serait une demande sans objet et donc peu compréhensible. */
+  function demanderConsentement(nbEnAttente) {
+    if (document.getElementById('gpt-ask')) return;
+    const el = document.createElement('div');
+    el.id = 'gpt-ask';
+    el.innerHTML = `<div class="gpt-box">
+      <b>Aider à compléter le catalogue ?</b>
+      <p>Tu as ${nbEnAttente} voiture${nbEnAttente > 1 ? 's' : ''} non classée${nbEnAttente > 1 ? 's' : ''}.
+      Si tu es d'accord, la <strong>photo</strong>, le <strong>nom saisi</strong> et la
+      <strong>date</strong> seront envoyés au créateur de l'app pour qu'il évalue si le
+      modèle mérite d'être ajouté au catalogue.</p>
+      <p class="gpt-min">Jamais ta position. Jamais tes notes personnelles. Rien n'est
+      ajouté au catalogue sans qu'il vérifie d'abord.</p>
+      <p class="gpt-min">Ton choix ne change rien à l'usage de l'app, et se modifie à
+      tout moment dans Réglages.</p>
+      <div class="gpt-ra">
+        <button class="btn" data-gpt="refuse">Non merci</button>
+        <button class="btn red" data-gpt="accepte">J'autorise</button>
+      </div></div>`;
+    el.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-gpt]'); if (!b) return;
+      definirConsentement(b.dataset.gpt);
+      el.remove();
+      if (b.dataset.gpt === 'accepte') scannerEtEnvoyer();
+    });
+    document.body.appendChild(el);
+  }
+
+  /* --- Préparation et envoi ---------------------------------------------- */
+
+  /** Réduit la photo avant envoi : ni la résolution ni le poids d'origine
+   *  ne sont nécessaires pour une simple évaluation. */
+  function compresserPourEnvoi(dataUrl) {
+    return new Promise((res) => {
+      const im = new Image();
+      im.onload = () => {
+        const L = Math.min(1000, im.naturalWidth || 1000);
+        const H = Math.round(L * (im.naturalHeight / im.naturalWidth || 0.75));
+        const c = document.createElement('canvas'); c.width = L; c.height = H;
+        c.getContext('2d').drawImage(im, 0, 0, L, H);
+        res(c.toDataURL('image/jpeg', 0.72));
+      };
+      im.onerror = () => res(dataUrl);
+      im.src = dataUrl;
+    });
+  }
+
+  async function envoyerSignalement(item) {
+    if (!NOTIFY_ENDPOINT) return false;
+    const photo = await compresserPourEnvoi(item.photos[0]);
+    const nom = nomDepuisId(item.carId);
+    const r = await fetch(NOTIFY_ENDPOINT, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nom, date: item.at || '', photo })   // ni position, ni note
+    });
+    return r.ok;
+  }
+
+  function nomDepuisId(id) {
+    if (typeof id !== 'string' || id.indexOf('custom:') !== 0) return id;
+    return id.slice(7).replace(/-[a-z0-9]{1,8}$/i, '').replace(/-/g, ' ').trim();
+  }
+
+  async function scannerEtEnvoyer() {
+    if (PART.consentement !== 'accepte') return;
+    try {
+      const db = await ouvrirGarage();
+      if (!db.objectStoreNames.contains('spots')) return;
+      const tous = await new Promise(r => {
+        const q = db.transaction('spots', 'readonly').objectStore('spots').getAll();
+        q.onsuccess = () => r(q.result || []); q.onerror = () => r([]);
+      });
+      for (const sp of tous) {
+        const id = sp.carId;
+        if (typeof id !== 'string' || id.indexOf('custom:') !== 0) continue;
+        if (!sp.photos || !sp.photos.length) continue;
+        if (await dejaEnvoye(id)) continue;
+        const ok = await envoyerSignalement(sp);
+        if (ok) marquerEnvoye(id);       // sinon : nouvelle tentative au prochain scan
+      }
+    } catch (e) { console.warn('[GMSpecs] signalement impossible', e); }
+  }
+
+  async function initSignalement() {
+    await chargerConsentement();
+    if (PART.consentement === 'accepte') { scannerEtEnvoyer(); return; }
+    if (PART.consentement === 'refuse') return;                 // pas de relance intempestive
+
+    // 'inconnu' : on ne demande que s'il y a réellement quelque chose à proposer.
+    try {
+      const db = await ouvrirGarage();
+      if (!db.objectStoreNames.contains('spots')) return;
+      const tous = await new Promise(r => {
+        const q = db.transaction('spots', 'readonly').objectStore('spots').getAll();
+        q.onsuccess = () => r(q.result || []); q.onerror = () => r([]);
+      });
+      const n = tous.filter(sp => typeof sp.carId === 'string' && sp.carId.indexOf('custom:') === 0 && sp.photos && sp.photos.length).length;
+      if (n > 0) demanderConsentement(n);
+    } catch (_) {}
+  }
+
+  /* ======================================================================
      COMPLÉMENT D'ARCHITECTURE
      ----------------------------------------------------------------------
      Filet de sécurité pour les entrées qu'aucune autre source ne décrit :
@@ -6045,10 +6210,30 @@
          <span class="gvr-v">v${esc(VERSION_MODULE)}</span>
        </div>
        <button class="btn" data-gvr="purge" style="width:100%;margin-top:12px">Forcer la mise à jour des modules</button>
+       <!-- suite : bloc partage juste après -->
        <button class="btn" data-gvr="rattacher" style="width:100%;margin-top:8px">Rattacher les voitures non classées</button>
+     </div>
+     <div class="section panel">
+       <div class="h2" style="margin-bottom:10px">Partage des non classées</div>
+       <p class="gvr-n" style="margin-top:0">Avec ton accord, les voitures non classées (photo,
+       nom saisi, date — jamais ta position ni tes notes) sont envoyées au créateur de l'app
+       pour l'aider à compléter le catalogue. Ça ne change rien à l'usage de l'app.</p>
+       <div class="gpt-etat" id="gpt-etat"></div>
+       <div class="gpt-chg">
+         <button class="btn" data-gvr="part-non">Ne pas partager</button>
+         <button class="btn red" data-gvr="part-oui">Partager</button>
+       </div>
        <p class="gvr-n">Si une correction ne semble pas appliquée, ce bouton efface la copie
        en cache des modules et recharge. Tes prises et tes photos ne sont pas touchées.</p>`;
     vue.appendChild(el);
+    majEtatPartage();
+  }
+
+  function majEtatPartage() {
+    const el = document.getElementById('gpt-etat');
+    if (!el) return;
+    const lib = { accepte: 'Partage activé ✓', refuse: 'Partage désactivé', inconnu: 'Pas encore demandé' }[PART.consentement];
+    el.textContent = lib;
   }
 
   function brancherVersion() {
@@ -6060,6 +6245,12 @@
          explicite garantit que la fonction est atteignable, et il dit ce
          qu'il a trouvé même quand il ne trouve rien — un silence laisse
          croire à une panne. */
+      if (b.dataset.gvr === 'part-oui' || b.dataset.gvr === 'part-non') {
+        definirConsentement(b.dataset.gvr === 'part-oui' ? 'accepte' : 'refuse');
+        majEtatPartage();
+        if (b.dataset.gvr === 'part-oui') scannerEtEnvoyer();
+        return;
+      }
       if (b.dataset.gvr === 'rattacher') {
         const txt0 = b.textContent;
         b.disabled = true; b.textContent = 'Recherche…';
@@ -7350,6 +7541,20 @@
   .gvr-v{ flex:none; padding:5px 10px; border-radius:999px; border:1px solid var(--line2);
     font:700 11px/1 var(--mono); color:var(--peucommun); }
   .gvr-n{ margin:10px 0 0; font:400 11px/1.5 var(--sans); color:var(--dim); }
+  .gpt-etat{ margin-top:12px; font:600 11.5px/1 var(--mono); color:var(--peucommun); }
+  .gpt-chg{ display:flex; gap:8px; margin-top:11px; }
+  .gpt-chg .btn{ flex:1; text-align:center; }
+
+  #gpt-ask{ position:fixed; inset:0; z-index:340; background:rgba(6,6,8,.82);
+    display:flex; align-items:flex-end; justify-content:center; }
+  .gpt-box{ width:100%; max-width:520px; padding:20px 18px calc(env(safe-area-inset-bottom) + 20px);
+    background:var(--panel); border:1px solid var(--line2); border-radius:16px 16px 0 0; }
+  .gpt-box b{ display:block; font:700 15px/1.3 var(--sans); }
+  .gpt-box p{ margin:11px 0 0; font:400 13px/1.55 var(--sans); color:var(--muted); }
+  .gpt-box p strong{ color:var(--fg); font-weight:600; }
+  .gpt-box p.gpt-min{ font-size:11.5px; color:var(--dim); }
+  .gpt-ra{ display:flex; gap:9px; margin-top:16px; }
+  .gpt-ra .btn{ flex:1; text-align:center; padding:12px; }
 
   .gcz-zoom{ display:flex; align-items:center; gap:10px; margin-bottom:11px; }
   .gcz-zb{ flex:none; width:36px; height:36px; border-radius:999px; border:1px solid rgba(255,255,255,.22);
@@ -7467,6 +7672,7 @@
     brancherMystere();
     brancherVersion();
     brancherGarage();
+    initSignalement();
     chargerMystere().then(() => { try { grefferMystere(); } catch (_) {} });
     /* Différé : on laisse l'app finir son propre démarrage avant d'ouvrir la base. */
     setTimeout(() => { try { proposerRattachements(); } catch (_) {} }, 2500);
@@ -7533,6 +7739,9 @@
     MOTEURS, famillesDe, COLLECS,
     recadrer, recadrerTout, centreSujet, grefferCadrage, appliquerCadrage,
     grefferGarage, grefferVersion, grefferClasser, ouvrirClasseur, classerVers,
+    initSignalement, scannerEtEnvoyer, definirConsentement,
+    definirEndpointSignalement: (u) => { NOTIFY_ENDPOINT = u || ''; },
+    get consentement() { return PART.consentement; },
     etendreCatalogue, CATALOGUE_PLUS, reclasserCourant,
     fabriquerRecadree, remplacerPhoto,
     VERSION: VERSION_MODULE,

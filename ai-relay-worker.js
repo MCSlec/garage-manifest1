@@ -32,10 +32,19 @@ const ANTHROPIC_VERSION = "2023-06-01";
 
 const PROMPT = `Tu identifies la marque et le modèle du véhicule visible sur cette photo.
 Réponds UNIQUEMENT avec un tableau JSON strict, sans texte autour, sans balises markdown.
-Format exact : [{"brand":"Peugeot","model":"306","confidence":0.85}]
+Format exact :
+[{"brand":"Porsche","model":"911","variant":"GT3 RS","confidence":0.85,"cues":"aileron fixe surélevé, ailes élargies, double sortie d'échappement centrale"}]
 - Jusqu'à 3 propositions maximum, triées par confiance décroissante (0 à 1).
-- "model" = le nom de modèle tel qu'il apparaît habituellement (ex: "306", "Golf GTI", "911").
+- "model" = le nom de modèle tel qu'il apparaît habituellement (ex: "306", "Golf", "911").
+- "variant" = la déclinaison précise SI elle est visuellement identifiable avec certitude
+  (ex: "GTI", "GT3 RS", "S line") — sinon laisse une chaîne vide "". Ne devine jamais une
+  déclinaison à partir de la seule couleur ou d'un autocollant : uniquement des éléments
+  de carrosserie ou de châssis visibles (ailes élargies, becquet, jantes spécifiques,
+  échappement, badge de coffre lisible).
+- "cues" = describe en une phrase courte les éléments visuels qui distinguent cette
+  déclinaison précise des autres versions du même modèle. Vide si aucune certitude.
 - Si aucun véhicule identifiable n'est visible sur la photo, réponds : []
+- Ne lis JAMAIS la plaque d'immatriculation et ne l'inclus dans aucun champ.
 - N'ajoute aucun commentaire, aucune explication : uniquement le tableau JSON.`;
 
 // Taille maximale acceptée pour une photo de signalement (base64, avant décodage).
@@ -134,6 +143,8 @@ async function identifier(request, env, origin) {
         .map((g) => ({
           brand: String(g.brand || "").slice(0, 60),
           model: String(g.model || "").slice(0, 80),
+          variant: String(g.variant || "").slice(0, 60),
+          cues: String(g.cues || "").slice(0, 200),
           confidence: Math.max(0, Math.min(1, Number(g.confidence) || 0.5)),
         }));
     }
