@@ -10,7 +10,13 @@
 //
 // Contrat identification (inchangé) :
 //   Requête  : POST /  { image: "data:image/jpeg;base64,...." }
-//   Réponse  : [{ brand, model, confidence }, ...]   (0 à 3 propositions, confidence 0-1)
+//   Réponse  : [{ brand, model, confidence, variant, cues }, ...]  (0 à 3, confidence 0-1)
+//
+//   CONTRAT À NE PAS CASSER : `model` contient TOUJOURS le nom complet, déclinaison
+//   comprise ("Golf GTI", pas "Golf"). C'est ce champ que l'app passe à matchCatalog.
+//   `variant` et `cues` sont des ajouts purement informatifs : une version antérieure
+//   du prompt les avait rendus exclusifs en sortant la déclinaison de `model`, ce qui
+//   a fait chuter le score de rapprochement et cassé la reconnaissance côté app.
 //
 // Contrat signalement (nouveau) :
 //   Requête  : POST /notify  { nom, date, photo }
@@ -33,16 +39,17 @@ const ANTHROPIC_VERSION = "2023-06-01";
 const PROMPT = `Tu identifies la marque et le modèle du véhicule visible sur cette photo.
 Réponds UNIQUEMENT avec un tableau JSON strict, sans texte autour, sans balises markdown.
 Format exact :
-[{"brand":"Porsche","model":"911","variant":"GT3 RS","confidence":0.85,"cues":"aileron fixe surélevé, ailes élargies, double sortie d'échappement centrale"}]
+[{"brand":"Porsche","model":"911 GT3 RS","variant":"GT3 RS","confidence":0.85,"cues":"aileron fixe surélevé, ailes élargies"}]
 - Jusqu'à 3 propositions maximum, triées par confiance décroissante (0 à 1).
-- "model" = le nom de modèle tel qu'il apparaît habituellement (ex: "306", "Golf", "911").
-- "variant" = la déclinaison précise SI elle est visuellement identifiable avec certitude
-  (ex: "GTI", "GT3 RS", "S line") — sinon laisse une chaîne vide "". Ne devine jamais une
+- "model" = le nom de modèle COMPLET tel qu'il apparaît habituellement, DÉCLINAISON
+  INCLUSE (ex: "306", "Golf GTI", "911 GT3 RS", "Cayman S"). C'est ce champ qui sert au
+  rapprochement avec le catalogue : il doit toujours être le plus complet possible.
+- "variant" = uniquement la déclinaison, répétée seule (ex: "GTI", "GT3 RS"), ou chaîne
+  vide "" si aucune déclinaison n'est identifiable avec certitude. Ne devine jamais une
   déclinaison à partir de la seule couleur ou d'un autocollant : uniquement des éléments
-  de carrosserie ou de châssis visibles (ailes élargies, becquet, jantes spécifiques,
-  échappement, badge de coffre lisible).
-- "cues" = describe en une phrase courte les éléments visuels qui distinguent cette
-  déclinaison précise des autres versions du même modèle. Vide si aucune certitude.
+  de carrosserie visibles (ailes élargies, becquet, jantes, échappement, badge lisible).
+- "cues" = en une phrase courte, les éléments visuels qui justifient la déclinaison.
+  Vide si aucune certitude.
 - Si aucun véhicule identifiable n'est visible sur la photo, réponds : []
 - Ne lis JAMAIS la plaque d'immatriculation et ne l'inclus dans aucun champ.
 - N'ajoute aucun commentaire, aucune explication : uniquement le tableau JSON.`;
