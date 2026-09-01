@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '19.5.0';
+  const VERSION_MODULE = '19.9.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -4375,11 +4375,13 @@
      tant que le consentement n'est pas à `accepte`.
      ====================================================================== */
 
-  /* Route /notify du Worker existant (ai-relay-worker.js), confirmée depuis
-     le tableau de bord Cloudflare le 27/08/2026. Modifiable via
-     GMSpecs.definirEndpointSignalement() pour un test ponctuel, sans
-     attendre un nouveau déploiement du module. */
-  let NOTIFY_ENDPOINT = 'https://silent-firefly-2620.cyril-lapopin.workers.dev/notify';
+  /* DÉSACTIVÉ le 31/08/2026 — la route /notify a été retirée du Worker
+     après avoir coïncidé avec des pannes de la reconnaissance photo. Le
+     code de signalement reste ci-dessous, éteint : tant que cette valeur
+     est vide, initSignalement() ne propose jamais rien à l'utilisateur et
+     scannerEtEnvoyer() ne peut faire aucun appel réseau. À reprendre sous
+     une autre forme plutôt qu'à réécrire de zéro. */
+  let NOTIFY_ENDPOINT = '';
 
   const PART = { db: null, consentement: 'inconnu' };  // 'inconnu' | 'accepte' | 'refuse'
 
@@ -5980,6 +5982,215 @@
   }
 
   /* ======================================================================
+     FLOUTAGE DE PLAQUE
+     ----------------------------------------------------------------------
+     Presque toutes les captures de ce projet montrent une plaque lisible.
+     Si une photo quitte un jour le téléphone — partage, carte de collection,
+     capture d'écran postée quelque part — cette plaque part avec elle, sans
+     que la personne photographiée n'ait jamais rien accepté. C'est le même
+     principe que la position ou la recherche par plaque, mais dans l'autre
+     sens : au lieu d'exposer une donnée, cet outil la retire.
+
+     Pixellisation plutôt que flou gaussien : le flou peut partiellement se
+     défaire par déconvolution sur une photo de bonne qualité, la
+     pixellisation détruit l'information de façon beaucoup plus radicale —
+     c'est la pratique standard pour une vraie occultation.
+
+     Réversible avant la fermeture de l'éditeur (un mauvais tracé se corrige),
+     mais permanent une fois validé — cohérent avec l'esprit de l'outil :
+     une plaque qu'on peut instantanément « dé-flouter » ne protège personne.
+     ====================================================================== */
+
+  function grefferFloutage() {
+    const hero = document.querySelector('#overlay .detail-hero');
+    if (!hero || hero.querySelector('.gfl-ouvrir')) return;
+    const img = hero.querySelector('img');
+    if (!img) return;
+    const src = img.currentSrc || img.src;
+    if (!src || src.indexOf('data:image') !== 0) return;
+
+    const b = document.createElement('button');
+    b.className = 'gfl-ouvrir';
+    b.type = 'button';
+    b.innerHTML = '<svg viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="8" rx="2"/><path d="M7 8v8M11 8v8M15 8v8"/></svg><span>Flouter la plaque</span>';
+    b.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const hv = document.querySelector('#overlay .detail-hero') || hero;
+      const iv = hv.querySelector('img') || img;
+      const sv = iv.currentSrc || iv.src;
+      if (!sv || sv.indexOf('data:image') !== 0) return;
+      ouvrirFloutage(hv, iv, sv);
+    });
+    hero.appendChild(b);
+  }
+
+  function ouvrirFloutage(hero, img, src) {
+    if (document.getElementById('gfl-full')) return;
+
+    const ov = document.createElement('div');
+    ov.id = 'gfl-full';
+    ov.innerHTML = `
+      <div class="gcz-top">
+        <button class="gcz-x" type="button" data-gfl="annul" aria-label="Annuler">✕</button>
+        <b>Flouter la plaque</b>
+        <button class="gcz-ok" type="button" data-gfl="ok" disabled>Valider</button>
+      </div>
+      <div class="gfl-scene">
+        <img alt="">
+        <canvas class="gfl-select"></canvas>
+      </div>
+      <div class="gcz-bas">
+        <span class="gcz-aide">Trace un rectangle sur la plaque, avec le doigt</span>
+      </div>`;
+    document.body.appendChild(ov);
+    document.body.style.overflow = 'hidden';
+
+    const grand = ov.querySelector('.gfl-scene img');
+    const cv = ov.querySelector('.gfl-select');
+    const scene = ov.querySelector('.gfl-scene');
+    const btnOk = ov.querySelector('[data-gfl="ok"]');
+    grand.src = src;
+
+    let rect = null;   // { x, y, w, h } en coordonnées ÉCRAN, dans le repère de la scène
+
+    function redessinerSelection() {
+      cv.width = scene.clientWidth; cv.height = scene.clientHeight;
+      const c = cv.getContext('2d');
+      c.clearRect(0, 0, cv.width, cv.height);
+      if (!rect) return;
+      c.strokeStyle = '#fff'; c.lineWidth = 2;
+      c.setLineDash([6, 4]);
+      c.strokeRect(rect.x, rect.y, rect.w, rect.h);
+      c.fillStyle = 'rgba(255,255,255,.18)';
+      c.fillRect(rect.x, rect.y, rect.w, rect.h);
+    }
+
+    let depart = null;
+    const position = (e) => {
+      const r = scene.getBoundingClientRect();
+      const pt = e.touches ? e.touches[0] : e;
+      return { x: pt.clientX - r.left, y: pt.clientY - r.top };
+    };
+    const debut = (e) => { depart = position(e); e.preventDefault(); };
+    const bouge = (e) => {
+      if (!depart) return;
+      const p = position(e);
+      rect = {
+        x: Math.min(depart.x, p.x), y: Math.min(depart.y, p.y),
+        w: Math.abs(p.x - depart.x), h: Math.abs(p.y - depart.y),
+      };
+      redessinerSelection();
+      btnOk.disabled = rect.w < 12 || rect.h < 8;
+      e.preventDefault();
+    };
+    const fin = () => { depart = null; };
+
+    scene.addEventListener('pointerdown', debut);
+    scene.addEventListener('pointermove', bouge);
+    ['pointerup', 'pointercancel'].forEach(t => scene.addEventListener(t, fin));
+    scene.addEventListener('touchstart', debut, { passive: false });
+    scene.addEventListener('touchmove', bouge, { passive: false });
+    scene.addEventListener('touchend', fin);
+
+    grand.addEventListener('load', redessinerSelection, { once: true });
+    if (grand.complete) redessinerSelection();
+    const onResize = () => redessinerSelection();
+    addEventListener('resize', onResize);
+
+    const fermer = () => {
+      removeEventListener('resize', onResize);
+      document.body.style.overflow = '';
+      ov.remove();
+    };
+
+    ov.addEventListener('click', async (e) => {
+      const b = e.target.closest('[data-gfl]'); if (!b) return;
+      e.stopPropagation();
+      if (b.dataset.gfl === 'annul') { fermer(); return; }
+
+      if (b.dataset.gfl === 'ok' && rect) {
+        b.disabled = true; b.textContent = 'Application…';
+        try {
+          /* Conversion des coordonnées écran vers les pixels réels de l'image :
+             la photo est affichée en `object-fit:contain` implicite dans la
+             scène (dimensions naturelles préservées, centrées), donc on calcule
+             le rapport d'échelle plutôt que de supposer un remplissage total. */
+          const rs = scene.getBoundingClientRect();
+          const ratioImg = grand.naturalWidth / grand.naturalHeight;
+          const ratioScene = rs.width / rs.height;
+          let afW, afH, decX, decY;
+          if (ratioImg > ratioScene) { afW = rs.width; afH = rs.width / ratioImg; decX = 0; decY = (rs.height - afH) / 2; }
+          else { afH = rs.height; afW = rs.height * ratioImg; decY = 0; decX = (rs.width - afW) / 2; }
+          const echelle = grand.naturalWidth / afW;
+
+          const px = Math.round((rect.x - decX) * echelle);
+          const py = Math.round((rect.y - decY) * echelle);
+          const pw = Math.round(rect.w * echelle);
+          const ph = Math.round(rect.h * echelle);
+
+          const neuve = await pixelliser(src, px, py, pw, ph);
+          const n = await remplacerPhoto(src, neuve);
+          if (n > 0) {
+            b.textContent = 'Plaque floutée ✓';
+            await new Promise(r => setTimeout(r, 400));
+            fermer();
+            try { location.reload(); } catch (_) {}
+            return;
+          }
+        } catch (err) { console.warn('[GMSpecs] floutage impossible', err); }
+        b.disabled = false; b.textContent = 'Valider';
+      }
+    });
+  }
+
+  /** Pixellise une zone rectangulaire de l'image, en préservant le reste. */
+  function pixelliser(src, x, y, w, h) {
+    return new Promise((res, rej) => {
+      const im = new Image();
+      im.onload = () => {
+        try {
+          const L = im.naturalWidth, H = im.naturalHeight;
+          x = Math.max(0, Math.min(L - 1, x)); y = Math.max(0, Math.min(H - 1, y));
+          w = Math.max(1, Math.min(L - x, w)); h = Math.max(1, Math.min(H - y, h));
+
+          const c = document.createElement('canvas'); c.width = L; c.height = H;
+          const g = c.getContext('2d');
+          g.drawImage(im, 0, 0);
+
+          /* Pixellisation. PREMIÈRE VERSION INSUFFISANTE, corrigée après
+             inspection visuelle directe du résultat : la formule fondée sur
+             `min(w,h)/12` donnait des blocs de 6 px sur une plaque de 50 px
+             de haut — assez fins pour qu'"AB-123-CD" reste quasiment lisible.
+             Une seule mesure de pixel isolée ne l'avait pas révélé ; il a
+             fallu regarder l'image entière pour voir l'échec.
+
+             Nouvelle règle : on vise un nombre FIXE de blocs sur le plus
+             GRAND côté (10), jamais moins de 8 px par bloc. Sur un
+             rectangle allongé comme une plaque, ça donne 2 à 3 blocs sur la
+             hauteur — largement assez pour détruire un caractère. Mieux vaut
+             une zone trop uniformément grise qu'une plaque encore devinable :
+             le but est la protection, pas l'esthétique. */
+          const CIBLE_BLOCS = 10;
+          const grandCote = Math.max(w, h);
+          const taille = Math.max(8, Math.round(grandCote / CIBLE_BLOCS));
+          const petit = document.createElement('canvas');
+          petit.width = Math.max(1, Math.round(w / taille));
+          petit.height = Math.max(1, Math.round(h / taille));
+          const pg = petit.getContext('2d');
+          pg.drawImage(c, x, y, w, h, 0, 0, petit.width, petit.height);
+
+          g.imageSmoothingEnabled = false;
+          g.drawImage(petit, 0, 0, petit.width, petit.height, x, y, w, h);
+
+          res(c.toDataURL('image/jpeg', 0.9));
+        } catch (e) { rej(e); }
+      };
+      im.onerror = () => rej(new Error('image illisible'));
+      im.src = src;
+    });
+  }
+
+  /* ======================================================================
      RECADRAGE MANUEL
      ----------------------------------------------------------------------
      La détection automatique se trompera parfois — un sujet très contrasté
@@ -6178,6 +6389,65 @@
       b.setAttribute('aria-expanded', ouvre);
       box.querySelector('.gst-c').textContent = ouvre ? '▲' : '▼';
       ecritPrefStats(ouvre);
+    });
+  }
+
+  /* ======================================================================
+     BANDEAU SPONSOR — IMAGE FIXE, PAS DE RÉSEAU PUBLICITAIRE
+     ----------------------------------------------------------------------
+     AdSense a été écarté délibérément : ses propres règles restreignent
+     l'affichage dans une app installée (mode standalone, sans barre
+     d'adresse) — exactement le mode d'usage principal de Garage Manifest.
+     Les retours de développeurs confirment des revenus nuls dans ce cas.
+
+     Solution retenue : un encart direct, vendu et rempli à la main, sans
+     script tiers. Une image, un lien, une mention de sponsor. Tant que
+     SPONSOR est vide, rien ne s'affiche — pas d'emplacement publicitaire
+     vide qui ferait mauvaise impression.
+
+     Format volontairement limité à l'image fixe : pas de vidéo, pas
+     d'animation, conformément à ce qui a été demandé. Le bandeau reste
+     discret, au-dessus de la barre d'onglets, jamais par-dessus le contenu.
+     ====================================================================== */
+
+  /* Rempli à la main pour chaque sponsor. Vide par défaut : le bandeau ne
+     s'affiche que si les trois champs sont renseignés. */
+  const SPONSOR = {
+    image: '',      // URL de l'image (format large recommandé : 640×120 environ)
+    lien: '',        // URL vers laquelle le clic renvoie
+    nom: '',         // nom du sponsor, pour l'attribut alt et la légende
+  };
+
+  const CLE_BANDEAU_FERME = 'gm-sponsor-ferme';
+
+  function bandeauSponsorFerme() {
+    try { return sessionStorage.getItem(CLE_BANDEAU_FERME) === '1'; } catch (_) { return false; }
+  }
+  function fermerBandeauSponsor() {
+    try { sessionStorage.setItem(CLE_BANDEAU_FERME, '1'); } catch (_) {}
+    const el = document.getElementById('gsp-bandeau');
+    if (el) el.remove();
+  }
+
+  function grefferBandeauSponsor() {
+    if (!SPONSOR.image || !SPONSOR.lien || !SPONSOR.nom) return;   // rien de configuré : rien à montrer
+    if (bandeauSponsorFerme()) return;
+    if (document.getElementById('gsp-bandeau')) return;
+
+    const el = document.createElement('div');
+    el.id = 'gsp-bandeau';
+    el.innerHTML = `
+      <a href="${esc(SPONSOR.lien)}" target="_blank" rel="noopener sponsored" aria-label="Publicité — ${esc(SPONSOR.nom)}">
+        <img src="${esc(SPONSOR.image)}" alt="${esc(SPONSOR.nom)}" loading="lazy">
+        <span class="gsp-tag">Publicité</span>
+      </a>
+      <button type="button" class="gsp-x" data-gsp="fermer" aria-label="Masquer la publicité">✕</button>`;
+    document.body.appendChild(el);
+  }
+
+  function brancherBandeauSponsor() {
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('[data-gsp="fermer"]')) { e.preventDefault(); e.stopPropagation(); fermerBandeauSponsor(); }
     });
   }
 
@@ -7535,6 +7805,18 @@
   .gcls-v{ margin:10px 2px; font:400 12px/1.5 var(--sans); color:var(--dim); }
   .gcls-n{ margin:12px 2px 0; font:400 11px/1.5 var(--sans); color:var(--dim); }
 
+  #gsp-bandeau{ position:fixed; left:8px; right:8px;
+    bottom:calc(var(--tabh,64px) + 8px + var(--sb,0px)); z-index:120;
+    background:var(--panel); border:1px solid var(--line2); border-radius:12px;
+    box-shadow:0 8px 24px rgba(0,0,0,.35); overflow:hidden; }
+  #gsp-bandeau a{ display:block; position:relative; text-decoration:none; }
+  #gsp-bandeau img{ display:block; width:100%; height:auto; max-height:88px; object-fit:cover; }
+  #gsp-bandeau .gsp-tag{ position:absolute; left:8px; top:8px; padding:3px 7px; border-radius:5px;
+    background:rgba(11,11,13,.72); color:rgba(255,255,255,.85); font:600 9px/1 var(--mono);
+    letter-spacing:.06em; text-transform:uppercase; }
+  #gsp-bandeau .gsp-x{ position:absolute; right:6px; top:6px; width:22px; height:22px; border-radius:50%;
+    border:0; background:rgba(11,11,13,.72); color:#fff; font-size:11px; line-height:1; cursor:pointer; }
+
   .gvr-l{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
   .gvr-l b{ display:block; font:600 13.5px/1.2 var(--sans); }
   .gvr-l small{ display:block; margin-top:4px; font:400 11.5px/1.4 var(--sans); color:var(--muted2); }
@@ -7570,6 +7852,21 @@
     border:3px solid var(--red2); box-shadow:0 2px 8px rgba(0,0,0,.5); }
   .gcz-zv{ flex:none; min-width:38px; text-align:right; font:700 12px/1 var(--mono); color:#fff;
     font-variant-numeric:tabular-nums; }
+  .gfl-ouvrir{ position:absolute; left:9px; bottom:9px; z-index:4; display:flex; align-items:center;
+    gap:6px; padding:7px 11px; border-radius:999px; border:1px solid rgba(255,255,255,.18);
+    background:rgba(11,11,13,.72); backdrop-filter:blur(6px); color:#fff;
+    font:600 11px/1 var(--sans); cursor:pointer; }
+  .gfl-ouvrir svg{ width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:2;
+    stroke-linecap:round; stroke-linejoin:round; }
+  .gfl-ouvrir:active{ transform:scale(.95); }
+
+  #gfl-full{ position:fixed; inset:0; z-index:300; background:#08080a;
+    display:flex; flex-direction:column; }
+  .gfl-scene{ position:relative; flex:1; overflow:hidden; background:#000;
+    display:flex; align-items:center; justify-content:center; touch-action:none; }
+  .gfl-scene img{ max-width:100%; max-height:100%; display:block; pointer-events:none; }
+  .gfl-scene canvas{ position:absolute; inset:0; width:100%; height:100%; cursor:crosshair; }
+
   .gcz-actions{ display:flex; gap:8px; justify-content:center; }
   .gcz-auto{ margin-top:11px; padding:10px 15px; border-radius:9px; border:1px solid rgba(255,255,255,.2);
     background:transparent; color:#fff; font:600 12px/1 var(--sans); cursor:pointer; }
@@ -7639,6 +7936,7 @@
       try { grefferMystere(); } catch (_) {}
       try { grefferVersion(); } catch (_) {}
       try { grefferGarage(); } catch (_) {}
+      try { grefferBandeauSponsor(); } catch (_) {}
       /* Passage initial sur TOUS les greffons. L'observateur ne se déclenche que
        sur une mutation ultérieure : si l'utilisateur arrive directement sur un
        onglet déjà rendu, aucune mutation ne suit et rien ne se greffe jamais.
@@ -7665,14 +7963,20 @@
       try { recadrerTout(); } catch (_) {}
       try { grefferCadrage(); } catch (_) {}
       try { grefferClasser(); } catch (_) {}
+      try { grefferFloutage(); } catch (_) {}
     }).observe(cible, { childList: true, subtree: true });
-    try { greffer(); recadrerTout(); grefferCadrage(); grefferClasser(); } catch (_) {}
+    try { greffer(); recadrerTout(); grefferCadrage(); grefferClasser(); grefferBandeauSponsor(); grefferFloutage(); } catch (_) {}
     chargerCadrages().then(() => { try { recadrerTout(); } catch (_) {} });
     console.info(`[GMSpecs] module v${VERSION_MODULE} chargé`);
     brancherMystere();
     brancherVersion();
     brancherGarage();
-    initSignalement();
+    brancherBandeauSponsor();
+    /* initSignalement() n'est plus appelé au démarrage : tant que
+       NOTIFY_ENDPOINT est vide, demander un consentement pour une
+       fonctionnalité qui ne peut rien envoyer serait trompeur. Le code
+       reste disponible (GMSpecs.initSignalement()) pour une reprise
+       manuelle une fois la nouvelle approche prête. */
     chargerMystere().then(() => { try { grefferMystere(); } catch (_) {} });
     /* Différé : on laisse l'app finir son propre démarrage avant d'ouvrir la base. */
     setTimeout(() => { try { proposerRattachements(); } catch (_) {} }, 2500);
@@ -7739,6 +8043,8 @@
     MOTEURS, famillesDe, COLLECS,
     recadrer, recadrerTout, centreSujet, grefferCadrage, appliquerCadrage,
     grefferGarage, grefferVersion, grefferClasser, ouvrirClasseur, classerVers,
+    grefferBandeauSponsor, definirSponsor: (o) => Object.assign(SPONSOR, o),
+    grefferFloutage, pixelliser,
     initSignalement, scannerEtEnvoyer, definirConsentement,
     definirEndpointSignalement: (u) => { NOTIFY_ENDPOINT = u || ''; },
     get consentement() { return PART.consentement; },
