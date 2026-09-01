@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '19.9.0';
+  const VERSION_MODULE = '19.10.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -6410,13 +6410,26 @@
      discret, au-dessus de la barre d'onglets, jamais par-dessus le contenu.
      ====================================================================== */
 
-  /* Rempli à la main pour chaque sponsor. Vide par défaut : le bandeau ne
-     s'affiche que si les trois champs sont renseignés. */
-  const SPONSOR = {
-    image: '',      // URL de l'image (format large recommandé : 640×120 environ)
-    lien: '',        // URL vers laquelle le clic renvoie
-    nom: '',         // nom du sponsor, pour l'attribut alt et la légende
+  /* Un sponsor par région, plus un par défaut. La clé est un code de langue
+     ('fr', 'de', 'en'...) ou de pays ('FR', 'DE'...) — au choix, selon ce que
+     l'app choisira comme signal de région le jour venu (langue sélectionnée
+     à l'installation, ou pays détecté côté Cloudflare sans donnée précise).
+     '_default' sert de repli quand aucune région ne correspond. Vide par
+     défaut partout : rien ne s'affiche tant que rien n'est configuré. */
+  const SPONSORS = {
+    _default: { image: '', lien: '', nom: '' },
+    // fr: { image: '...', lien: '...', nom: 'Auto5' },
+    // de: { image: '...', lien: '...', nom: '...' },
   };
+
+  /* Code de région courant. Laissé à 'fr' par défaut (cohérent avec l'app
+     actuelle) ; à brancher plus tard sur le choix de langue de l'utilisateur
+     ou sur `request.cf.country` côté Worker — jamais sur une position. */
+  let REGION_COURANTE = 'fr';
+
+  function sponsorPourRegion() {
+    return SPONSORS[REGION_COURANTE] || SPONSORS._default;
+  }
 
   const CLE_BANDEAU_FERME = 'gm-sponsor-ferme';
 
@@ -6430,15 +6443,16 @@
   }
 
   function grefferBandeauSponsor() {
-    if (!SPONSOR.image || !SPONSOR.lien || !SPONSOR.nom) return;   // rien de configuré : rien à montrer
+    const s = sponsorPourRegion();
+    if (!s.image || !s.lien || !s.nom) return;   // rien de configuré pour cette région : rien à montrer
     if (bandeauSponsorFerme()) return;
     if (document.getElementById('gsp-bandeau')) return;
 
     const el = document.createElement('div');
     el.id = 'gsp-bandeau';
     el.innerHTML = `
-      <a href="${esc(SPONSOR.lien)}" target="_blank" rel="noopener sponsored" aria-label="Publicité — ${esc(SPONSOR.nom)}">
-        <img src="${esc(SPONSOR.image)}" alt="${esc(SPONSOR.nom)}" loading="lazy">
+      <a href="${esc(s.lien)}" target="_blank" rel="noopener sponsored" aria-label="Publicité — ${esc(s.nom)}">
+        <img src="${esc(s.image)}" alt="${esc(s.nom)}" loading="lazy">
         <span class="gsp-tag">Publicité</span>
       </a>
       <button type="button" class="gsp-x" data-gsp="fermer" aria-label="Masquer la publicité">✕</button>`;
@@ -8043,7 +8057,11 @@
     MOTEURS, famillesDe, COLLECS,
     recadrer, recadrerTout, centreSujet, grefferCadrage, appliquerCadrage,
     grefferGarage, grefferVersion, grefferClasser, ouvrirClasseur, classerVers,
-    grefferBandeauSponsor, definirSponsor: (o) => Object.assign(SPONSOR, o),
+    grefferBandeauSponsor,
+    /** Configure le sponsor d'une région ('fr', 'de', '_default'...). */
+    definirSponsor: (region, o) => { SPONSORS[region] = { ...SPONSORS._default, ...o }; },
+    /** Change la région active (à brancher sur la langue choisie plus tard). */
+    definirRegion: (r) => { REGION_COURANTE = r; },
     grefferFloutage, pixelliser,
     initSignalement, scannerEtEnvoyer, definirConsentement,
     definirEndpointSignalement: (u) => { NOTIFY_ENDPOINT = u || ''; },
