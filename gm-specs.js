@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '19.10.0';
+  const VERSION_MODULE = '20.0.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -5982,6 +5982,87 @@
   }
 
   /* ======================================================================
+     SUPPRESSION D'UNE PHOTO UNIQUE
+     ----------------------------------------------------------------------
+     La corbeille de la fiche supprime la VOITURE entière du garage. Il
+     manquait le geste intermédiaire : retirer une seule photo ratée d'une
+     série, sans perdre la capture ni les autres clichés.
+
+     Le bouton est posé sur la photo affichée, pas sur les vignettes : c'est
+     la photo qu'on regarde qu'on veut supprimer, et ça évite de multiplier
+     de minuscules cibles tactiles sur la bande de vignettes.
+
+     GARDE-FOU : on refuse de supprimer la dernière photo. Sinon on
+     obtiendrait une capture sans aucune image — un état que le reste de
+     l'app ne sait pas afficher proprement. Pour ce cas, la corbeille
+     existante (supprimer la voiture) est le bon geste, et le message le dit.
+     ====================================================================== */
+
+  function grefferSuppressionPhoto() {
+    const hero = document.querySelector('#overlay .detail-hero');
+    if (!hero || hero.querySelector('.gsup-btn')) return;
+    const img = hero.querySelector('img');
+    if (!img) return;
+    const src = img.currentSrc || img.src;
+    if (!src || src.indexOf('data:image') !== 0) return;
+
+    const b = document.createElement('button');
+    b.className = 'gsup-btn';
+    b.type = 'button';
+    b.title = 'Supprimer cette photo';
+    b.innerHTML = '<svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>';
+    b.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const hv = document.querySelector('#overlay .detail-hero') || hero;
+      const iv = hv.querySelector('img') || img;
+      const sv = iv.currentSrc || iv.src;
+      if (!sv || sv.indexOf('data:image') !== 0) return;
+      await supprimerPhoto(sv, b);
+    });
+    hero.appendChild(b);
+  }
+
+  async function supprimerPhoto(src, bouton) {
+    try {
+      const db = await ouvrirGarage();
+      if (!db.objectStoreNames.contains('spots')) return;
+
+      const tous = await new Promise(r => {
+        const q = db.transaction('spots', 'readonly').objectStore('spots').getAll();
+        q.onsuccess = () => r(q.result || []); q.onerror = () => r([]);
+      });
+      const sp = tous.find(x => Array.isArray(x.photos) && x.photos.indexOf(src) >= 0);
+      if (!sp) { console.warn('[GMSpecs] photo introuvable en base'); return; }
+
+      if (sp.photos.length <= 1) {
+        /* Dernière photo : on ne laisse pas la capture sans image. On le dit
+           plutôt que de refuser en silence. */
+        const t0 = bouton.title;
+        bouton.title = 'Dernière photo — utilise la corbeille pour retirer la voiture';
+        bouton.classList.add('gsup-non');
+        setTimeout(() => { bouton.title = t0; bouton.classList.remove('gsup-non'); }, 2600);
+        return;
+      }
+
+      const i = sp.photos.indexOf(src);
+      sp.photos = sp.photos.filter(p => p !== src);
+      /* La couverture doit rester valide : si on supprime la photo de
+         couverture, ou une photo qui la précède, l'index glisse. */
+      const cover = typeof sp.cover === 'number' ? sp.cover : 0;
+      sp.cover = Math.max(0, Math.min(sp.photos.length - 1, i <= cover ? cover - 1 : cover));
+
+      await new Promise((res, rej) => {
+        const tx = db.transaction('spots', 'readwrite');
+        tx.objectStore('spots').put(sp);
+        tx.oncomplete = () => res();
+        tx.onerror = () => rej(tx.error);
+        tx.onabort = () => rej(new Error('annulée'));
+      });
+      location.reload();
+    } catch (e) { console.warn('[GMSpecs] suppression de photo impossible', e); }
+  }
+
+  /* ======================================================================
      FLOUTAGE DE PLAQUE
      ----------------------------------------------------------------------
      Presque toutes les captures de ce projet montrent une plaque lisible.
@@ -7049,15 +7130,23 @@
   function grefferClasser() {
     const sheet = document.querySelector('#overlay .sheet');
     if (!sheet || sheet.querySelector('.gcl-btn')) return;
-    const cible = idCustomOuvert();
-    if (!cible) return;
     const tete = sheet.querySelector('.info-head');
     if (!tete) return;
+
+    /* Deux cas, un seul outil. Non classé → « Associer ». Déjà classé →
+       « Changer de modèle », pour corriger une erreur d'identification.
+       Le sélecteur et la mécanique de déplacement sont identiques : seul
+       le libellé change, parce que l'intention de l'utilisateur diffère. */
+    const nonClasse = idCustomOuvert();
+    const h2 = sheet.querySelector('.info-head h2');
+    if (!nonClasse && !h2) return;
+    const cible = nonClasse || { nom: h2.textContent.trim() };
+    if (!cible.nom) return;
 
     const b = document.createElement('button');
     b.className = 'btn gcl-btn';
     b.type = 'button';
-    b.textContent = 'Associer à un modèle du catalogue';
+    b.textContent = nonClasse ? 'Associer à un modèle du catalogue' : 'Changer de modèle';
     b.addEventListener('click', (e) => { e.stopPropagation(); ouvrirClasseur(cible.nom); });
     tete.insertAdjacentElement('afterend', b);
   }
@@ -7083,6 +7172,17 @@
       const brut = norm(id.slice(7).replace(/-[a-z0-9]{1,8}$/i, '').replace(/-/g, ' '));
       if (brut === n || brut.includes(n) || n.includes(brut)) return { spot: sp, reg: null };
     }
+
+    /* Cas d'une capture DÉJÀ classée qu'on veut réattribuer : on la retrouve
+       via son entrée de catalogue plutôt que via le registre des customs.
+       C'est ce qui permet de corriger une erreur d'identification après coup
+       — « en fait c'était une 992, pas une 991 ». */
+    try {
+      if (typeof CARS !== 'undefined' && Array.isArray(CARS)) {
+        const c = CARS.find(x => norm(`${x.brand} ${x.model}`) === n || norm(x.model) === n);
+        if (c) { const sp = tous.find(x => x.carId === c.id); if (sp) return { spot: sp, reg: null }; }
+      }
+    } catch (_) {}
     return null;
   }
 
@@ -7866,6 +7966,15 @@
     border:3px solid var(--red2); box-shadow:0 2px 8px rgba(0,0,0,.5); }
   .gcz-zv{ flex:none; min-width:38px; text-align:right; font:700 12px/1 var(--mono); color:#fff;
     font-variant-numeric:tabular-nums; }
+  .gsup-btn{ position:absolute; right:9px; top:9px; z-index:4; width:34px; height:34px;
+    display:grid; place-items:center; border-radius:999px;
+    border:1px solid rgba(255,255,255,.18); background:rgba(11,11,13,.72);
+    backdrop-filter:blur(6px); color:#fff; cursor:pointer; }
+  .gsup-btn svg{ width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:2;
+    stroke-linecap:round; stroke-linejoin:round; }
+  .gsup-btn:active{ transform:scale(.94); }
+  .gsup-btn.gsup-non{ border-color:var(--red); color:var(--red); }
+
   .gfl-ouvrir{ position:absolute; left:9px; bottom:9px; z-index:4; display:flex; align-items:center;
     gap:6px; padding:7px 11px; border-radius:999px; border:1px solid rgba(255,255,255,.18);
     background:rgba(11,11,13,.72); backdrop-filter:blur(6px); color:#fff;
@@ -7978,8 +8087,9 @@
       try { grefferCadrage(); } catch (_) {}
       try { grefferClasser(); } catch (_) {}
       try { grefferFloutage(); } catch (_) {}
+      try { grefferSuppressionPhoto(); } catch (_) {}
     }).observe(cible, { childList: true, subtree: true });
-    try { greffer(); recadrerTout(); grefferCadrage(); grefferClasser(); grefferBandeauSponsor(); grefferFloutage(); } catch (_) {}
+    try { greffer(); recadrerTout(); grefferCadrage(); grefferClasser(); grefferBandeauSponsor(); grefferFloutage(); grefferSuppressionPhoto(); } catch (_) {}
     chargerCadrages().then(() => { try { recadrerTout(); } catch (_) {} });
     console.info(`[GMSpecs] module v${VERSION_MODULE} chargé`);
     brancherMystere();
@@ -8062,7 +8172,7 @@
     definirSponsor: (region, o) => { SPONSORS[region] = { ...SPONSORS._default, ...o }; },
     /** Change la région active (à brancher sur la langue choisie plus tard). */
     definirRegion: (r) => { REGION_COURANTE = r; },
-    grefferFloutage, pixelliser,
+    grefferFloutage, pixelliser, grefferSuppressionPhoto, supprimerPhoto,
     initSignalement, scannerEtEnvoyer, definirConsentement,
     definirEndpointSignalement: (u) => { NOTIFY_ENDPOINT = u || ''; },
     get consentement() { return PART.consentement; },
