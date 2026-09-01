@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.0.0';
+  const VERSION_MODULE = '20.1.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -399,6 +399,27 @@
      ====================================================================== */
 
   const GENS = {
+
+    /* ---- Opel Corsa, découpée par divergence RÉELLE de rareté ---------
+       Une seule carte mélangeait une A de 1982 (quasi disparue) et une F
+       encore en concession. Trois cartes seulement — pas cinq — parce que
+       C/D et E/F restent trop proches en fréquence de croisement pour
+       mériter chacune la leur : c'est la divergence de rareté qui tranche,
+       pas la génération en soi. */
+    'opel-corsa-a': [
+      ['A','1982–1993','4 cyl. 1.0–1.6','45–100 ch','La première Corsa. La version GSi 1.6 en est la seule déclinaison sportive.'],
+    ],
+    'opel-corsa-b': [
+      ['B','1993–2000','4 cyl.','45–109 ch','Plateforme partagée avec la Fiat Punto de première génération.'],
+    ],
+    'opel-corsa': [
+      ['C / D','2000–2014','essence et CDTi','60–150 ch',''],
+      ['E / F','2014–','essence, diesel, électrique','75–156 ch','La génération F passe sur plateforme Stellantis, jumelle de la Peugeot 208.'],
+    ],
+    'opel-corsa-opc': [
+      ['C OPC','2007–2009','4 cyl. 1.6 turbo','192 ch','Premier Corsa OPC, chassis Nürburgring.'],
+      ['D OPC','2011–2014','4 cyl. 1.6 turbo','192–210 ch','La Nürburgring Edition atteint 210 ch — la plus recherchée.'],
+    ],
 
     'porsche-911-gt2rs-clubsport': [
       ['991.2 Clubsport','2018–2019','flat-6 3.8 biturbo (GT2 RS)','700 ch','200 exemplaires dans le monde. Non homologuée route : freins acier au lieu de la céramique du modèle de route, pour respecter le règlement sportif. Arceau, baquet Recaro, harnais 6 points. Volant et écran repris de la 911 GT3 R.'],
@@ -896,12 +917,7 @@
       ['W220 / W221','1998–2013','V6, V8, V12 biturbo','204–630 ch','Suspension Airmatic puis Active Body Control.'],
       ['W222 / W223','2013–','6 en ligne, V8, V12, hybrides','286–630 ch','La W223 introduit les roues arrière directrices et les airbags arrière.'],
     ],
-    'opel-corsa': [
-      ['A','1982–1993','4 cyl. 1.0–1.6','45–100 ch','La GSi 1.6 est la version sportive.'],
-      ['B','1993–2000','4 cyl.','45–109 ch',''],
-      ['C / D','2000–2014','essence et CDTi','60–210 ch','La OPC de la génération D atteint 192 ch, puis 210 ch en Nürburgring Edition.'],
-      ['E / F','2014–','essence, diesel, électrique','75–156 ch','La génération F passe sur plateforme Stellantis, jumelle de la Peugeot 208.'],
-    ],
+
     'opel-kadett-gsi': [
       ['E GSi','1984–1991','4 cyl. 1.8–2.0, 8v et 16v','115–156 ch','La 2.0 16v de 1988 : 156 ch et 220 km/h, une des compactes les plus rapides de son temps.'],
     ],
@@ -4182,6 +4198,10 @@
     { id:'ds-3', brand:'DS', model:'DS 3', yr:'2009–', c:'🇫🇷', cat:'SUV', r:'commun' },
     { id:'ds-4-moderne', brand:'DS', model:'DS 4', yr:'2010–', c:'🇫🇷', cat:'Berline', r:'commun' },
     { id:'opel-mokka', brand:'Opel', model:'Mokka', yr:'2012–', c:'🇩🇪', cat:'SUV', r:'commun' },
+    { id:'opel-corsa', brand:'Opel', model:'Corsa', yr:'2000–', c:'🇩🇪', cat:'Citadine', r:'courant' },
+    { id:'opel-corsa-a', brand:'Opel', model:'Corsa A', yr:'1982–1993', c:'🇩🇪', cat:'Citadine', r:'rare' },
+    { id:'opel-corsa-b', brand:'Opel', model:'Corsa B', yr:'1993–2000', c:'🇩🇪', cat:'Citadine', r:'peucommun' },
+    { id:'opel-corsa-opc', brand:'Opel', model:'Corsa OPC', yr:'2007–2014', c:'🇩🇪', cat:'Sportive', r:'rare' },
     { id:'opel-grandland', brand:'Opel', model:'Grandland', yr:'2017–', c:'🇩🇪', cat:'SUV', r:'commun' },
     { id:'mini-countryman-jcw', brand:'Mini', model:'Countryman John Cooper Works', yr:'2017–', c:'🇬🇧', cat:'SUV', r:'peucommun' },
     { id:'mini-countryman', brand:'Mini', model:'Countryman', yr:'2010–', c:'🇬🇧', cat:'SUV', r:'commun' },
