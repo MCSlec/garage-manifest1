@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.32.0';
+  const VERSION_MODULE = '20.33.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -399,6 +399,69 @@
      ====================================================================== */
 
   const GENS = {
+
+    /* ---- Lot 2 étape 3 : Audi, Citroën, Chevrolet, Dacia ----------------- */
+    'audi-100': [
+      ['C1 – C4','1968–1994','4 et 5 cyl., turbo diesel','55–200 ch','La C3 (1982) fut la première berline au Cx aussi bas que 0,30 — une référence pour l\'époque.'],
+    ],
+    'audi-50': [
+      ['86','1974–1978','4 cyl. 1.1–1.3 atmo','50–60 ch','Base de la première Polo, vendue chez Volkswagen sous cette appellation dès 1975.'],
+    ],
+    'audi-80': [
+      ['B1 – B4','1972–1996','4 et 5 cyl. essence et diesel','55–174 ch','La S2 (B4) reprend le 5 cylindres turbo quattro de la Sport Quattro.'],
+    ],
+    'audi-a7': [
+      ['4G','2010–2018','TFSI, TDI, hybride','204–560 ch','La RS7 en est la déclinaison la plus poussée.'],
+      ['4K','2018–','TFSI, TDI, hybride rechargeable','204–630 ch','Silhouette Sportback à hayon, sans équivalent A6 en carrosserie.'],
+    ],
+    'audi-a8': [
+      ['D2 – D5','1994–','V6, V8, W12, TDI','174–500 ch','La D2 de 1994 est la première berline de série avec caisse tout aluminium (structure ASF).'],
+    ],
+    'audi-ttrs': [
+      ['8J / 8S','2009–','5 en ligne 2.5 turbo','340–400 ch','Le cinq-cylindres Audi Sport, identique en architecture à celui de la RS3.'],
+    ],
+    'citroen-c1': [
+      ['I / II','2005–2014','3 cyl. 1.0 atmo','68 ch','Sœur triplée de la Peugeot 107 et Toyota Aygo, assemblées sur la même chaîne en République tchèque.'],
+    ],
+    'citroen-c2': [
+      ['I','2003–2009','4 cyl. essence et diesel','61–125 ch','La VTS et VTR reprennent le bloc 1.6 16v de la 206 RC.'],
+    ],
+    'citroen-c15': [
+      ['I','1984–2005','4 cyl. essence et diesel','45–58 ch','Dérivée de la Visa, restée en production vingt ans pour les artisans.'],
+    ],
+    'citroen-c3-pluriel': [
+      ['I','2003–2010','4 cyl. essence','61–110 ch','Toit qui se transforme en cabriolet puis en pick-up à ciel ouvert, sans équivalent sur le marché.'],
+    ],
+    'citroen-dyane': [
+      ['I','1967–1983','2 cyl. à plat','26–35 ch','Dérivée de la 2CV, pensée pour lui succéder — elle ne l\'a jamais vraiment remplacée dans le cœur du public.'],
+    ],
+    'citroen-visa': [
+      ['I / II','1978–1988','2 et 4 cyl.','36–105 ch','La Visa GTI reprend le bloc 1.6 de la Peugeot 205 GTI.'],
+    ],
+    'citroen-xsara-picasso': [
+      ['I','1999–2010','4 cyl. essence et HDi','75–110 ch','Voiture de l\'Année... non obtenue, mais l\'un des monospaces compacts les plus vendus de sa décennie en France.'],
+    ],
+    'chevrolet-belair': [
+      ['1955–1957','1955–1957','V8 4.3–4.6 atmo','162–283 ch','La « Tri-Five », icône absolue du style américain des années 50.'],
+    ],
+    'chevrolet-impala-64': [
+      ['1964','1964','V8 5.4–6.7 atmo','195–425 ch','La SS 409 en est la version la plus recherchée.'],
+    ],
+    'chevrolet-monte-carlo': [
+      ['1970–2007','1970–2007','V6 et V8','105–250 ch','Longtemps le porte-étendard de Chevrolet en NASCAR.'],
+    ],
+    'chevrolet-tahoe': [
+      ['1992–','1992–','V8 5.3–6.2 atmo','255–420 ch','SUV grand format quasi exclusif au marché nord-américain.'],
+    ],
+    'cadillac-escalade': [
+      ['1999–','1999–','V8 6.0–6.2 atmo','345–682 ch','La V-Series à 682 ch est le SUV grand format le plus puissant du marché.'],
+    ],
+    'dacia-1300': [
+      ['1969–2004','1969–2004','4 cyl. 1.3–1.4 atmo (base Renault 12)','54–83 ch','Produite 35 ans quasiment sans changement — une des plus longues carrières automobiles jamais tenues.'],
+    ],
+    'dacia-logan': [
+      ['I – III','2004–','essence, diesel, GPL','55–100 ch','Conçue pour un budget serré, elle a créé le segment low-cost en Europe.'],
+    ],
 
     /* ---- Premier lot de comblement — étape 3, cluster Alfa Romeo -------- */
     'alfa-145': [
