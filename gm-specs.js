@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.17.0';
+  const VERSION_MODULE = '20.32.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -399,6 +399,87 @@
      ====================================================================== */
 
   const GENS = {
+
+    /* ---- Premier lot de comblement — étape 3, cluster Alfa Romeo -------- */
+    'alfa-145': [
+      ['930','1994–2001','4 cyl. Twin Spark, V6 Busso, JTD diesel','103–150 ch','Dessin anguleux signé Fiat Centro Stile. La Cloverleaf reprend le V6 2.0 de la 155.'],
+    ],
+    'alfa-155': [
+      ['167','1992–1997','4 cyl. Twin Spark, V6 Busso, JTD','103–190 ch','La Q4 (Q4 = quattroruote motrici) à transmission intégrale a dominé le DTM en 1993, provoquant son interdiction de compétition l\'année suivante.'],
+    ],
+    'alfa-159': [
+      ['939','2005–2011','4 cyl. Twin Spark, JTDm, V6 24v','140–260 ch','Plateforme GM Epsilon partagée avec l\'Opel Vectra. La Q4 reprend la transmission intégrale de la 156 GTA.'],
+    ],
+    'alfa-166': [
+      ['936','1998–2007','V6 Busso, 5 cyl. JTD','140–226 ch','Berline amirale d\'Alfa Romeo, jamais remplacée directement.'],
+    ],
+    'alfa-brera': [
+      ['939','2005–2010','4 cyl. Twin Spark, V6 24v, JTDm','140–260 ch','Design de Giorgetto Giugiaro, dérivé du concept-car du même nom.'],
+    ],
+    'alfa-gt': [
+      ['937','2003–2010','4 cyl. Twin Spark, V6 24v, JTD','150–240 ch','Coupé dérivé de la plateforme 156, dessiné par Bertone.'],
+    ],
+    'alfa-sprint-gt': [
+      ['105','1963–1976','4 cyl. twin cam atmo','106–132 ch','La Giulia Sprint GT, dessinée par Giorgetto Giugiaro chez Bertone à 25 ans à peine.'],
+    ],
+    'alfa-spider-916': [
+      ['916','1995–2006','4 cyl. Twin Spark, V6 Busso','120–220 ch','Même plateforme que le coupé GTV. La dernière Spider au V6 Busso.'],
+    ],
+    'alfa-tonale': [
+      ['a05x','2022–','4 cyl. turbo, hybride léger, hybride rechargeable','130–280 ch','Premier Alfa Romeo hybride rechargeable. Nom repris d\'un col alpin italien, comme la tradition de la marque.'],
+    ],
+
+    /* ---- Petites séries anglaises et autrichiennes ultralégères --------- */
+    'caterham-seven': [
+      ['Entrée de gamme','1973–','3 cyl. Suzuki à 4 cyl. Ford/Duratec atmo','84–210 ch','Toujours dérivée de la Lotus Seven originale de 1957. Aucune assistance électronique.'],
+      ['420 / 620R','2013–','4 cyl. Duratec atmo et compressé','210–310 ch','Le 620R, compressé, reste l\'une des voitures de série au rapport poids/puissance le plus extrême du marché.'],
+    ],
+    'ariel-atom': [
+      ['Atom 3 / 3.5','2000–2021','4 cyl. Honda atmo et turbo','245–350 ch','Aucune carrosserie : le châssis tubulaire est entièrement à nu.'],
+      ['Atom 500 V8','2011–2013','V8 3.0 atmo (deux moteurs de moto V-twin accouplés)','475–500 ch','25 exemplaires seulement. Zéro à 100 km/h en 2,3 s, plus rapide qu\'une Bugatti Veyron de l\'époque à l\'accélération.'],
+      ['Atom 4','2021–','4 cyl. turbo (Civic Type R)','320 ch','Environ 595 kg.'],
+    ],
+    'ktm-xbow': [
+      ['X-Bow','2008–','4 cyl. 2.0 turbo (Audi)','241–304 ch','Monocoque en carbone, moins de 800 kg. Le X-Bow R ajoute un bloc dérivé de l\'Audi S3.'],
+      ['X-Bow GT / GT-XR','2013–','4 cyl. 2.0 turbo','286–600 ch','Carrosserie fermée, pare-brise — la version homologuée route la plus civilisée de la gamme.'],
+    ],
+    'bac-mono': [
+      ['Mono','2011–','4 cyl. 2.3 atmo (Ford Duratec, préparation Cosworth)','≈ 305 ch','Monoplace homologuée route, poids plume autour de 555 kg. Assemblée à la main à Liverpool.'],
+    ],
+    'radical-sr3': [
+      ['SR3','2001–','4 cyl. Ford ou Suzuki atmo','185–260 ch','Conçue d\'abord pour le circuit ; la RS a été rendue homologuée route par petites touches.'],
+    ],
+
+    /* ---- Lamera et Mitjet : voitures de course monotype françaises ------
+       Vérifiées via recherche avant écriture — aucun chiffre deviné. */
+    'lamera-cup': [
+      ['Lamera','2012–','5 en ligne 2.3 turbo','environ 300 ch','Châssis tubulaire, carrosserie type silhouette en polyester. Ni ABS ni antipatinage — seule la direction est assistée. Pneus route (Continental SportContact 5), pas de slicks : pensée pour l\'endurance à coût maîtrisé.'],
+    ],
+    'mitjet-2l': [
+      ['2L atmosphérique','2012–2025','4 cyl. 2.0 16v atmo (Renault F4R)','220–230 ch','750 kg, boîte séquentielle SADEV 6 rapports, propulsion. Aucune assistance électronique — le pilotage y est jugé aussi formateur qu\'exigeant.'],
+      ['2L Turbo','2026–','4 cyl. 2.0 turbo (Horse Powertrain, coentreprise Renault-Geely)','245 ch','Succède au bloc atmosphérique après plus d\'une décennie. Bridée depuis plus de 280 ch réels pour préserver la fiabilité.'],
+    ],
+    'mitjet-supertourisme': [
+      ['Supertourisme','2014–','V6 atmo','330 ch','Labellisée Championnat de France Supertourisme FFSA dès 2015.'],
+    ],
+    'mitjet-offroad': [
+      ['Offroad','2015–','V8 6.2 atmo (Chevrolet LS3)','485 ch','Version tout-terrain de la Mitjet, engagée dès sa première année sur le rallye du Gers-Armagnac et la Baja Aragón.'],
+    ],
+
+    /* ---- Voitures signalées comme reconnues par l'IA mais absentes ------- */
+    'cadillac-lyriq': [
+      ['RWD','2022–','moteur électrique arrière, batterie 102 kWh','340 ch','Premier VE dédié de Cadillac, plateforme Ultium partagée avec GM.'],
+      ['AWD Sport / V','2022–','deux moteurs électriques, batterie 102 kWh','500 ch','Écran OLED incurvé de 33 pouces, conduite mains libres Super Cruise.'],
+    ],
+    'morgan-44': [
+      ['4/4 (moderne)','1936–','4 cyl. Ford Sigma / Duratec atmo','108–154 ch','Le modèle Morgan produit sans interruption depuis le plus longtemps au monde. Châssis en frêne massif, comme toujours.'],
+    ],
+    'morgan-plusfour': [
+      ['Plus Four (BMW)','2020–','4 cyl. BMW B48 2.0 turbo','255 ch','Remplace le moteur Ford par un bloc BMW. Structure en aluminium collé, carrosserie toujours en frêne.'],
+    ],
+    'ford-f150-shelby': [
+      ['Shelby F-150','2017–','V8 5.0 Coyote à compresseur (préparation Shelby American)','755 ch','Conversion officielle Shelby American sur base de F-150 de série, pas une Raptor. Kit compresseur, freins et suspension Shelby.'],
+    ],
 
     /* ---- Opel Corsa, découpée par divergence RÉELLE de rareté ---------
        Une seule carte mélangeait une A de 1982 (quasi disparue) et une F
@@ -3363,22 +3444,30 @@
 
     /* ---- États-Unis --------------------------------------------------- */
     'ford-mustang': [
-      { c:'1re gén.', a:'1964–1973', m:[
-        ['6 cyl. / V8 289','6 en ligne 2.8–3.3 / V8 4.7','101–271 ch','propulsion · manuelle 3/4 / auto','Un million d\'exemplaires en dix-huit mois.'],
-      ]},
+      /* La 1re génération (1964-1973) est retirée d'ici : elle fait doublon
+         avec 'ford-mustang-classic', qui la couvre en bien plus de détail. */
       { c:'Fox', a:'1979–1993', m:[
-        ['5.0 GT','V8 4.9 (302)','225–228 ch','propulsion · manuelle 5','Plateforme légère : la base historique de toute la scène drag américaine.'],
         ['SVO','4 cyl. 2.3 turbo','175–205 ch','propulsion · manuelle 5','Une Mustang à 4 cylindres turbo et freins à disques aux quatre roues. Commercialement un échec, techniquement en avance.'],
       ]},
-      { c:'S197', a:'2005–2014', m:[
-        ['GT 4.6 / 5.0','V8 4.6 puis Coyote 5.0','300–420 ch','propulsion · manuelle 5/6','Le Coyote 5.0 de 2011 relance la lignée.'],
-      ]},
       { c:'S550', a:'2015–2023', m:[
-        ['EcoBoost','4 cyl. 2.3 turbo','290–330 ch','propulsion · manuelle 6 / auto 10',''],
-        ['GT 5.0','V8 Coyote 5.0 atmo','421–460 ch','propulsion · manuelle 6 / auto 10','Première Mustang à essieu arrière indépendant, et première vendue officiellement en Europe.'],
+        ['EcoBoost','4 cyl. 2.3 turbo','290–330 ch','propulsion · manuelle 6 / auto 10','Première Mustang vendue officiellement en Europe.'],
       ]},
       { c:'S650', a:'2024–', m:[
-        ['EcoBoost / GT','4 cyl. 2.3 turbo / V8 5.0','315–500 ch','propulsion · manuelle 6 / auto 10','Dark Horse à 500 ch, avec boîte manuelle Tremec.'],
+        ['EcoBoost','4 cyl. 2.3 turbo','315 ch','propulsion · manuelle 6 / auto 10',''],
+      ]},
+    ],
+    'ford-mustang-gt': [
+      { c:'Fox GT', a:'1979–1993', m:[
+        ['5.0 GT','V8 4.9 (302)','225–228 ch','propulsion · manuelle 5','Plateforme légère : la base historique de toute la scène drag américaine.'],
+      ]},
+      { c:'S197 GT', a:'2005–2014', m:[
+        ['GT 4.6 / 5.0','V8 4.6 puis Coyote 5.0','300–420 ch','propulsion · manuelle 5/6','Le Coyote 5.0 de 2011 relance la lignée.'],
+      ]},
+      { c:'S550 GT', a:'2015–2023', m:[
+        ['GT 5.0','V8 Coyote 5.0 atmo','421–460 ch','propulsion · manuelle 6 / auto 10','Première Mustang à essieu arrière indépendant.'],
+      ]},
+      { c:'S650 GT', a:'2024–', m:[
+        ['GT / Dark Horse','V8 5.0 Coyote atmo','486–500 ch','propulsion · manuelle 6 / auto 10','Dark Horse à 500 ch, avec boîte manuelle Tremec.'],
       ]},
     ],
     'ford-mustang-shelby': [
@@ -4305,7 +4394,6 @@
     { id:'mini-cooper-s', brand:'Mini', model:'Cooper S', yr:'2001–', c:'🇬🇧', cat:'Sportive', r:'commun' },
     { id:'jaguar-ftype-r', brand:'Jaguar', model:'F-Type R / SVR', yr:'2013–', c:'🇬🇧', cat:'Sportive', r:'rare' },
 
-    { id:'audi-s1-quattro', brand:'Audi', model:'S1 Sportback', yr:'2014–2018', c:'🇩🇪', cat:'Sportive', r:'peucommun' },
     { id:'audi-s4', brand:'Audi', model:'S4', yr:'1997–', c:'🇩🇪', cat:'Sportive', r:'peucommun' },
     { id:'audi-s5', brand:'Audi', model:'S5', yr:'2007–', c:'🇩🇪', cat:'Sportive', r:'peucommun' },
     { id:'audi-s6', brand:'Audi', model:'S6', yr:'1994–', c:'🇩🇪', cat:'Berline', r:'rare' },
@@ -4316,6 +4404,19 @@
     { id:'audi-rs2-avant-b4', brand:'Audi', model:'RS2 Avant', yr:'1994–1996', c:'🇩🇪', cat:'Youngtimer', r:'legendaire' },
     { id:'audi-r8-v12-tdi', brand:'Audi', model:'R8 V12 TDI (concept)', yr:'2008–2009', c:'🇩🇪', cat:'Concept', r:'legendaire' },
     { id:'porsche-911-gt2rs-clubsport', brand:'Porsche', model:'911 GT2 RS Clubsport', yr:'2018–2019', c:'🇩🇪', cat:'Piste', r:'legendaire' },
+    { id:'caterham-seven', brand:'Caterham', model:'Seven', yr:'1973–', c:'🇬🇧', cat:'Sportive', r:'epique' },
+    { id:'ariel-atom', brand:'Ariel', model:'Atom', yr:'2000–', c:'🇬🇧', cat:'Sportive', r:'epique' },
+    { id:'ktm-xbow', brand:'KTM', model:'X-Bow', yr:'2008–', c:'🇦🇹', cat:'Sportive', r:'epique' },
+    { id:'bac-mono', brand:'BAC', model:'Mono', yr:'2011–', c:'🇬🇧', cat:'Sportive', r:'legendaire' },
+    { id:'radical-sr3', brand:'Radical', model:'SR3', yr:'2001–', c:'🇬🇧', cat:'Course', r:'epique' },
+    { id:'lamera-cup', brand:'Lamera', model:'Cup', yr:'2012–', c:'🇫🇷', cat:'Course', r:'legendaire' },
+    { id:'mitjet-2l', brand:'Mitjet', model:'2L', yr:'2012–', c:'🇫🇷', cat:'Course', r:'legendaire' },
+    { id:'mitjet-supertourisme', brand:'Mitjet', model:'Supertourisme', yr:'2014–', c:'🇫🇷', cat:'Course', r:'legendaire' },
+    { id:'mitjet-offroad', brand:'Mitjet', model:'Offroad', yr:'2015–', c:'🇫🇷', cat:'Course', r:'legendaire' },
+    { id:'cadillac-lyriq', brand:'Cadillac', model:'Lyriq', yr:'2022–', c:'🇺🇸', cat:'SUV', r:'peucommun' },
+    { id:'morgan-44', brand:'Morgan', model:'4/4', yr:'1936–', c:'🇬🇧', cat:'Roadster', r:'rare' },
+    { id:'morgan-plusfour', brand:'Morgan', model:'Plus Four', yr:'2020–', c:'🇬🇧', cat:'Roadster', r:'rare' },
+    { id:'ford-f150-shelby', brand:'Shelby', model:'F-150', yr:'2017–', c:'🇺🇸', cat:'Pick-up', r:'epique' },
     { id:'holden-commodore-hsv', brand:'HSV', model:'Commodore GTS', yr:'2013–2017', c:'🇦🇺', cat:'Sportive', r:'legendaire' },
     { id:'porsche-cayenne-turbo', brand:'Porsche', model:'Cayenne Turbo / Turbo GT', yr:'2002–', c:'🇩🇪', cat:'SUV', r:'rare' },
     { id:'tvr-speed12', brand:'TVR', model:'Cerbera Speed 12', yr:'1997–2000', c:'🇬🇧', cat:'Hypercar', r:'legendaire' },
@@ -4388,7 +4489,6 @@
     { id:'toyota-supra-mk3', brand:'Toyota', model:'Supra (A70)', yr:'1986–1993', c:'🇯🇵', cat:'Youngtimer', r:'rare' },
     { id:'subaru-impreza-blob', brand:'Subaru', model:'Impreza WRX STI (GD)', yr:'2000–2007', c:'🇯🇵', cat:'Youngtimer', r:'rare' },
     { id:'mazda-rx7-fb', brand:'Mazda', model:'RX-7 (SA/FB)', yr:'1978–1985', c:'🇯🇵', cat:'Classique', r:'rare' },
-    { id:'renault-clio-rs16-c', brand:'Renault', model:'Clio R.S. 16 (concept)', yr:'2016', c:'🇫🇷', cat:'Sportive', r:'legendaire' },
     { id:'renault-rafale', brand:'Renault', model:'Rafale', yr:'2023–', c:'🇫🇷', cat:'SUV', r:'peucommun' },
     { id:'renault-austral', brand:'Renault', model:'Austral', yr:'2022–', c:'🇫🇷', cat:'SUV', r:'commun' },
     { id:'renault-arkana', brand:'Renault', model:'Arkana', yr:'2019–', c:'🇫🇷', cat:'SUV', r:'commun' },
@@ -4773,6 +4873,7 @@
 
   const CORRECTIFS_RARETE = {
     'ram-1500': 'rare',   // 500 000/an mais quasi exclusif à l'Amérique du Nord
+    'ford-f150': 'rare',  // le plus vendu des USA, mais quasi absent ailleurs — même logique que le Ram
   };
 
   function appliquerCorrectifsRarete() {
@@ -4793,6 +4894,138 @@
       if (absents.length) console.warn('[GMSpecs] correctifs de rareté ignorés (id introuvable) :', absents);
       return n;
     } catch (e) { console.warn('[GMSpecs] application des correctifs de rareté impossible', e); return 0; }
+  }
+
+  /* ======================================================================
+     RETOUR SUR LA FICHE APRÈS RECHARGEMENT
+     ----------------------------------------------------------------------
+     Le rechargement complet de la page reste nécessaire après une écriture
+     directe en IndexedDB : l'app garde son état (state.spots) en mémoire
+     depuis son démarrage, et cet état est privé — enfermé dans sa propre
+     fonction, gm-specs.js n'y a jamais accès. Le relire est le seul moyen
+     fiable de refléter les nouvelles données.
+
+     Mais recharger renvoyait systématiquement à l'accueil, quelle que soit
+     la fiche ouverte au moment de l'action — un vrai défaut d'usage signalé
+     directement. La correction ne contourne pas l'architecture de l'app :
+     elle exploite ce qui existe déjà. Chaque clic sur une voiture y est
+     délégué via un attribut `data-car="id"` intercepté par un unique
+     écouteur global (visible dans le code source de l'app). Il suffit donc
+     de mémoriser l'identifiant avant de recharger, puis, une fois l'app
+     revenue, de simuler un clic sur un élément portant cet attribut — l'app
+     rouvre alors la fiche elle-même, avec ses propres données fraîches.
+     ====================================================================== */
+
+  const CLE_RETOUR_FICHE = 'gm-retour-fiche';
+
+  /** Recharge la page en mémorisant la fiche à rouvrir. `carId` peut être
+   *  omis : dans ce cas on retombe sur l'accueil, comme avant — c'est le
+   *  comportement voulu pour les actions groupées, qui ne concernent pas
+   *  une seule voiture précise. */
+  function rechargerSurFiche(carId) {
+    try {
+      if (carId) sessionStorage.setItem(CLE_RETOUR_FICHE, carId);
+      else sessionStorage.removeItem(CLE_RETOUR_FICHE);
+    } catch (_) {}
+    location.reload();
+  }
+
+  /** Retrouve l'identifiant de la voiture concernée par une photo, à partir
+   *  de sa donnée brute — utile dans les flux (cadrage, floutage) qui ne
+   *  gardent pas eux-mêmes de référence à la fiche ouverte. */
+  async function idDepuisPhoto(src) {
+    try {
+      const db = await ouvrirGarage();
+      if (!db.objectStoreNames.contains('spots')) return null;
+      const tous = await new Promise(r => {
+        const q = db.transaction('spots', 'readonly').objectStore('spots').getAll();
+        q.onsuccess = () => r(q.result || []); q.onerror = () => r([]);
+      });
+      const sp = tous.find(x => Array.isArray(x.photos) && x.photos.indexOf(src) >= 0);
+      return sp ? sp.carId : null;
+    } catch (_) { return null; }
+  }
+
+  /** À appeler une fois au démarrage. Si une fiche était ouverte avant un
+   *  rechargement déclenché par ce module, on y retourne — en simulant le
+   *  geste que ferait l'utilisateur, jamais en touchant l'état interne de
+   *  l'app. Un délai d'attente court, jusqu'à ce que la barre d'onglets soit
+   *  présente : avant ça, rien n'existe encore pour intercepter le clic. */
+  function retournerSurFiche() {
+    let carId, tab;
+    try {
+      carId = sessionStorage.getItem(CLE_RETOUR_FICHE);
+      sessionStorage.removeItem(CLE_RETOUR_FICHE);
+      tab = sessionStorage.getItem('gm-retour-tab');
+      sessionStorage.removeItem('gm-retour-tab');
+    } catch (_) { return; }
+    if (!carId && !tab) return;
+
+    /* Même mécanisme pour les deux cas : simuler le geste que ferait
+       l'utilisateur (clic sur un onglet, clic sur une voiture), jamais
+       toucher l'état interne de l'app directement. */
+    let tentatives = 0;
+    const essayer = () => {
+      tentatives++;
+      if (document.querySelector('[data-tab]')) {
+        const clic = (attr, val) => {
+          const tmp = document.createElement('div');
+          tmp.setAttribute(attr, val);
+          tmp.style.cssText = 'position:fixed;left:-9999px;width:1px;height:1px;';
+          document.body.appendChild(tmp);
+          tmp.click();
+          tmp.remove();
+        };
+        if (tab) clic('data-tab', tab);
+        if (carId) clic('data-car', carId);
+        return;
+      }
+      if (tentatives < 40) setTimeout(essayer, 100);   // jusqu'à 4 s d'attente
+    };
+    essayer();
+  }
+
+  /* ======================================================================
+     SUPPRESSION DE DOUBLONS DU CATALOGUE D'ORIGINE
+     ----------------------------------------------------------------------
+     Découvert lors du balayage systématique de rareté, voiture par voiture :
+     'audi-s1' et 'audi-s1-sportback' sont exactement la même voiture, sous
+     deux identifiants — même années, même moteur, même puissance, noms
+     inversés. Un pur doublon dans le catalogue d'origine, jamais un ajout
+     de ce module.
+
+     Comme pour les correctifs de rareté, on ne touche jamais index.html :
+     on filtre à la volée, au moment où l'app lit CARS. Réversible en
+     vidant la liste ci-dessous.
+     ====================================================================== */
+
+  const DOUBLONS_A_RETIRER = [
+    'audi-s1-sportback',   // doublon exact de 'audi-s1' — mêmes specs, noms inversés
+    'bmw-serie-1',         // doublon de 'bmw-serie1', sans fiche technique
+    'bmw-serie-3',         // doublon de 'bmw-serie3', sans fiche technique
+    'bmw-serie-5',         // doublon de 'bmw-serie5', sans fiche technique
+    'fiat-500-2007',       // doublon de 'fiat-500', sans fiche technique
+    'land-rover-evoque',    // doublon de 'landrover-evoque', sans fiche technique
+    'land-rover-discovery', // doublon de 'landrover-discovery', sans fiche technique
+    'simca-1000-rallye2',   // doublon de 'simca-1000', sans fiche technique
+  ];
+
+  function retirerDoublons() {
+    try {
+      if (typeof CARS === 'undefined' || !Array.isArray(CARS)) return 0;
+      let n = 0;
+      for (const id of DOUBLONS_A_RETIRER) {
+        const i = CARS.findIndex(c => c && c.id === id);
+        if (i === -1) continue;
+        CARS.splice(i, 1);
+        n++;
+      }
+      if (n) {
+        _pool = null; _collecsCache = null; _palmCache = null;
+        console.info(`[GMSpecs] ${n} doublon(s) retiré(s) du catalogue`);
+      }
+      return n;
+    } catch (e) { console.warn('[GMSpecs] retrait de doublon impossible', e); return 0; }
   }
 
   /* ======================================================================
@@ -5022,7 +5255,6 @@
     'volvo-amazon':'4 cyl. atmo propulsion',
     'saab-93':'4 cyl. turbo traction',
     'polestar-1':'4 cyl. compressé et turbo hybride rechargeable monocoque carbone',
-    'morgan-plusfour':'4 cyl. BMW 2.0 turbo propulsion châssis bois',
     'morgan-plus-8':'V8 Rover atmo propulsion châssis bois',
     'lotus-elan':'4 cyl. 1.6 atmo propulsion phares escamotables',
     'lotus-europa':'4 cyl. atmo moteur central',
@@ -5061,7 +5293,6 @@
     'alpine-a610':'V6 PRV 3.0 turbo moteur arrière propulsion 250 ch',
     'renault-alpine-a610':'V6 PRV 3.0 turbo moteur arrière propulsion 250 ch phares escamotables',
     'audi-rs2-avant-b4':'5 en ligne 2.2 turbo quattro 315 ch break',
-    'audi-s1-quattro':'4 cyl. 2.0 TFSI quattro 231 ch',
     'audi-s7':'V8 4.0 TFSI biturbo et V6 TDI quattro 344–450 ch',
     'bmw-m5-touring':'V8 et 6 en ligne atmo puis biturbo propulsion 340–727 ch break',
     'citroen-ax-sport':'4 cyl. 1.4 double carburateur traction 95 ch homologation',
@@ -5077,7 +5308,6 @@
     'porsche-911-gt3-touring':'flat-6 4.0 atmo moteur arrière manuelle 6 500–510 ch',
     'porsche-cayman-gts':'flat-6 4.0 atmo moteur central 400 ch',
     'renault-clio-16s':'4 cyl. 1.8 16v atmo traction 137–140 ch',
-    'renault-clio-rs16-c':'4 cyl. 2.0 turbo Mégane RS traction 275 ch prototype',
     'renault-megane-trophy-r':'4 cyl. 1.8 turbo traction 300 ch record du Nürburgring',
     'toyota-supra-mk3':'6 en ligne 7M-GTE et 1JZ-GTE turbo propulsion 232–280 ch',
     'vw-golf-gtd':'4 cyl. 2.0 TDI traction 150–200 ch',
@@ -6337,7 +6567,7 @@
         tx.onerror = () => rej(tx.error);
         tx.onabort = () => rej(new Error('annulée'));
       });
-      location.reload();
+      rechargerSurFiche(sp.carId);
     } catch (e) { console.warn('[GMSpecs] suppression de photo impossible', e); }
   }
 
@@ -6494,7 +6724,8 @@
             b.textContent = 'Plaque floutée ✓';
             await new Promise(r => setTimeout(r, 400));
             fermer();
-            try { location.reload(); } catch (_) {}
+            const cid = await idDepuisPhoto(neuve);
+            rechargerSurFiche(cid);
             return;
           }
         } catch (err) { console.warn('[GMSpecs] floutage impossible', err); }
@@ -6930,6 +7161,7 @@
         await reg?.update();
       } catch (_) {}
       b.textContent = 'Rechargement…';
+      try { sessionStorage.setItem('gm-retour-tab', 'settings'); } catch (_) {}
       setTimeout(() => location.reload(), 350);
     });
   }
@@ -7280,7 +7512,9 @@
           if (orig) {
             await remplacerPhoto(src, orig);
             oublierCadrage(emp);
-            fermer(); location.reload(); return;
+            fermer();
+            rechargerSurFiche(await idDepuisPhoto(orig));
+            return;
           }
         } catch (_) {}
         b.disabled = false; b.textContent = "Photo d'origine";
@@ -7299,8 +7533,7 @@
             b.textContent = 'Photo recadrée ✓';
             await new Promise(rs => setTimeout(rs, 450));
             fermer();
-            try { location.reload(); } catch (_) {}
-            setTimeout(() => { try { location.href = location.href; } catch (_) {} }, 150);
+            rechargerSurFiche(await idDepuisPhoto(neuve));
             return;
           }
           console.warn('[GMSpecs] photo introuvable en base — repli sur l\'affichage. '
@@ -7521,7 +7754,7 @@
         return;
       }
       ov.remove();
-      location.reload();
+      rechargerSurFiche(b.dataset.id);
     });
   }
 
@@ -7810,7 +8043,7 @@
         b.textContent = 'Association…';
         try { await appliquerRattachements([p]); } catch (_) {}
         bloc.remove();
-        if (!el.querySelector('.gmr-li')) { el.remove(); location.reload(); }
+        if (!el.querySelector('.gmr-li')) { el.remove(); rechargerSurFiche(p.cible.id); }
       }
     });
     document.body.appendChild(el);
@@ -8374,6 +8607,7 @@
     brancherMystere();
     brancherVersion();
     brancherGarage();
+    try { retournerSurFiche(); } catch (_) {}
     brancherBandeauSponsor();
     /* initSignalement() n'est plus appelé au démarrage : tant que
        NOTIFY_ENDPOINT est vide, demander un consentement pour une
@@ -8407,6 +8641,9 @@
      la règle automatique — exactement ce qui vient de se produire avec le
      Ram 1500 avant l'ajout de ce module. */
   try { appliquerCorrectifsRarete(); } catch (_) {}
+  /* Après les correctifs de rareté : on ne veut pas recalculer un doublon
+     qu'on s'apprête à retirer de toute façon. */
+  try { retirerDoublons(); } catch (_) {}
 
   if (document.readyState === 'loading')
     document.addEventListener('DOMContentLoaded', autoInstall);
@@ -8458,6 +8695,8 @@
     definirRegion: (r) => { REGION_COURANTE = r; },
     grefferFloutage, pixelliser, grefferSuppressionPhoto, supprimerPhoto,
     appliquerCorrectifsRarete, CORRECTIFS_RARETE,
+    retirerDoublons, DOUBLONS_A_RETIRER,
+    rechargerSurFiche, retournerSurFiche, idDepuisPhoto,
     initSignalement, scannerEtEnvoyer, definirConsentement,
     definirEndpointSignalement: (u) => { NOTIFY_ENDPOINT = u || ''; },
     get consentement() { return PART.consentement; },
