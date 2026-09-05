@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.33.0';
+  const VERSION_MODULE = '20.59.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -78,6 +78,542 @@
      ====================================================================== */
 
   const SPECS = {
+
+    'mg-4': { nom:'MG MG4', an:[2022], pays:'Chine',
+      ch:435, nm:600, kg:1800, cyl:0, arch:'moteurs électriques', adm:'électrique', pos:'arrière / intégrale', tx:'propulsion / intégrale', bv:'A1',
+      note:"Compacte électrique à propulsion, rare à ce prix. La XPower à deux moteurs et 435 ch abat le 0-100 en 3,8 s, défiant des sportives bien plus chères." },
+    'suzuki-vitara': { nom:'Suzuki Vitara', an:[1988], pays:'Japon',
+      ch:140, nm:220, kg:1200, cyl:1.4, arch:'4 cyl. / hybride', adm:'turbo', pos:'avant', tx:'traction / AllGrip', bv:'M6 / A6',
+      note:"Le petit 4x4 qui a démocratisé le loisir tout-terrain accessible dans les années 90. Les premières générations à châssis séparé sont recherchées par les amateurs de franchissement." },
+
+    /* ===== LOT 8c (dernières fiches légitimes) =========================== */
+    'mg-zs': { nom:'MG ZS', an:[2017], pays:'Chine',
+      ch:177, nm:275, kg:1300, cyl:1.3, arch:'3 cyl. / électrique', adm:'turbo', pos:'avant', tx:'traction', bv:'A6',
+      note:"SUV urbain à petit prix de la marque MG, désormais propriété du groupe chinois SAIC. La version électrique ZS EV a été l\'une des premières à démocratiser le SUV électrique abordable en Europe." },
+    'byd-atto3': { nom:'BYD Atto 3', an:[2022], pays:'Chine',
+      ch:204, nm:310, kg:1750, cyl:0, arch:'moteur électrique', adm:'électrique', pos:'avant', tx:'traction', bv:'A1',
+      note:"Fer de lance de l\'arrivée de BYD en Europe. Sa batterie « Blade » à cellules lames, très sûre, est la spécialité du premier constructeur mondial de véhicules électrifiés." },
+
+    /* ===== LOT 8b (sportives allemandes + SUV/électriques modernes) ======= */
+    'audi-s6': { nom:'Audi S6', an:[1994], pays:'Allemagne',
+      ch:450, nm:600, kg:1900, cyl:2.9, arch:'V6 puis V8 / TDI', adm:'biturbo', pos:'avant', tx:'quattro', bv:'A8',
+      note:"La lignée S6 a connu le mythique V10 (dérivé du V8 de Lamborghini) sur la génération C6. Berline et Avant, l\'anti-M5 discrète par excellence." },
+    'audi-s8': { nom:'Audi S8', an:[1996], pays:'Allemagne',
+      ch:571, nm:800, kg:2000, cyl:4.0, arch:'V8', adm:'biturbo', pos:'avant', tx:'quattro', bv:'A8',
+      note:"La S8 D2 (V8) est rendue célèbre par le film « Ronin » et ses poursuites dans Paris. Limousine capable d\'accélérations de supercar, en toute discrétion." },
+    'audi-sq5': { nom:'Audi SQ5', an:[2013], pays:'Allemagne',
+      ch:354, nm:700, kg:2000, cyl:3.0, arch:'V6', adm:'turbo / TDI', pos:'avant', tx:'quattro', bv:'A8',
+      note:"SUV sportif au V6. La version TDI a inauguré un compresseur électrique alimenté par un réseau 48 volts pour supprimer le temps de réponse du turbo." },
+    'bmw-m135i': { nom:'BMW M135i / M140i', an:[2012], pays:'Allemagne',
+      ch:340, nm:500, kg:1450, cyl:3.0, arch:'6 en ligne', adm:'turbo', pos:'avant', tx:'propulsion / intégrale', bv:'A8',
+      note:"La dernière compacte BMW à 6 cylindres en ligne et propulsion (F20/F21). Recherchée aujourd\'hui car la génération suivante est passée à la traction et au 4 cylindres." },
+    'bmw-m235i': { nom:'BMW M235i / M240i', an:[2014], pays:'Allemagne',
+      ch:374, nm:500, kg:1500, cyl:3.0, arch:'6 en ligne', adm:'turbo', pos:'avant', tx:'propulsion / intégrale', bv:'A8',
+      note:"Coupé compact au 6 cylindres turbo. Format ramassé, propulsion disponible : l\'esprit de la BMW 2002 des années 70 remis au goût du jour." },
+    'bmw-335i': { nom:'BMW 335i (N54/N55)', an:[2006,2015], pays:'Allemagne',
+      ch:340, nm:450, kg:1560, cyl:3.0, arch:'6 en ligne', adm:'turbo', pos:'avant', tx:'propulsion / intégrale', bv:'A8',
+      note:"Le N54 fut le premier 6 cylindres turbo BMW de l\'ère moderne, réputé pour son énorme potentiel de préparation : plus de 400 ch avec une simple reprogrammation." },
+    'bmw-m340i': { nom:'BMW M340i', an:[2019], pays:'Allemagne',
+      ch:387, nm:500, kg:1670, cyl:3.0, arch:'6 en ligne', adm:'turbo + mild hybrid', pos:'avant', tx:'propulsion / intégrale', bv:'A8',
+      note:"Le sommet de la Série 3 hors M3. Le six en ligne B58, hybridé léger, est considéré comme l\'un des meilleurs moteurs actuels, fiable et souple." },
+    'bmw-130i': { nom:'BMW 130i', an:[2005,2011], pays:'Allemagne',
+      ch:265, nm:315, kg:1450, cyl:3.0, arch:'6 en ligne', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M6',
+      note:"Une compacte à 6 cylindres atmosphérique et propulsion : une recette rare et disparue. Le N52 est l\'un des derniers grands atmosphériques BMW." },
+    'vw-golf-gtd': { nom:'Volkswagen Golf GTD', an:[1982], pays:'Allemagne',
+      ch:200, nm:400, kg:1400, cyl:2.0, arch:'4 cyl. TDI', adm:'turbo', pos:'avant', tx:'traction', bv:'M6 / DSG',
+      note:"La GTI du diesel : les performances d\'une sportive avec la sobriété d\'un TDI. Née en 1982, elle a créé le créneau des compactes diesel sportives." },
+    'vw-golf-g60': { nom:'Volkswagen Golf G60 / Rallye', an:[1988,1991], pays:'Allemagne',
+      ch:160, nm:225, kg:1200, cyl:1.8, arch:'4 en ligne compressé', adm:'compresseur G-Lader', pos:'avant', tx:'syncro', bv:'M5',
+      prod:5000,
+      note:"Le compresseur « G-Lader » en spirale, unique à VW. La Rallye G60, à transmission intégrale syncro et ailes élargies, était une homologation pour le rallye. Rare et cotée." },
+    'honda-integra-dc5': { nom:'Honda Integra Type R (DC5)', an:[2001,2006], pays:'Japon',
+      ch:220, nm:206, kg:1180, cyl:2.0, arch:'4 en ligne VTEC', adm:'atmo', pos:'avant', tx:'traction', bv:'M6',
+      note:"Le K20A hurle jusqu\'à 8 400 tr/min. Boîte manuelle à la course parmi les plus précises jamais montées. Souvent citée comme la meilleure traction sportive des années 2000." },
+    'renault-kadjar': { nom:'Renault Kadjar', an:[2015,2022], pays:'France',
+      ch:160, nm:260, kg:1400, cyl:1.3, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction / intégrale', bv:'M6 / EDC',
+      note:"SUV compact cousin du Nissan Qashqai, avec lequel il partage sa plateforme. Grand succès commercial pour Renault sur le segment le plus disputé du marché." },
+    'dacia-bigster': { nom:'Dacia Bigster', an:[2025], pays:'Roumanie',
+      ch:155, nm:250, kg:1450, cyl:1.8, arch:'4 cyl. hybride', adm:'atmo + électrique', pos:'avant', tx:'traction / intégrale', bv:'A',
+      note:"Le plus grand Dacia jamais produit : un SUV familial spacieux au prix caractéristique de la marque. La stratégie low-cost appliquée au segment C." },
+    'peugeot-boxer': { nom:'Peugeot Boxer', an:[1994], pays:'France',
+      ch:180, nm:400, kg:2000, cyl:2.2, arch:'4 cyl. diesel, électrique', adm:'turbo', pos:'avant', tx:'traction', bv:'M6',
+      note:"Grand fourgon né du partenariat PSA-Fiat (Sevel), jumeau du Citroën Jumper et du Fiat Ducato. Base courante de camping-cars." },
+    'citroen-c3-aircross': { nom:'Citroën C3 Aircross', an:[2017], pays:'France',
+      ch:130, nm:230, kg:1200, cyl:1.2, arch:'3 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M6 / A6',
+      note:"Petit SUV modulable, aux nombreuses touches de personnalisation colorée. La 2e génération s\'agrandit et propose sept places, rare dans ce segment." },
+    'ds-4-moderne': { nom:'DS 4', an:[2021], pays:'France',
+      ch:225, nm:360, kg:1500, cyl:1.6, arch:'4 cyl. hybride', adm:'turbo + électrique', pos:'avant', tx:'traction', bv:'A8',
+      note:"Compacte premium à la présentation soignée, suspension à caméra scrutant la route. La marque DS revendique un luxe « à la française »." },
+    'opel-mokka': { nom:'Opel Mokka', an:[2012], pays:'Allemagne',
+      ch:156, nm:260, kg:1300, cyl:1.2, arch:'3 cyl. / électrique', adm:'turbo', pos:'avant', tx:'traction', bv:'M6 / A8',
+      note:"SUV urbain. La 2e génération inaugure le nouveau visage « Vizor » d\'Opel, une face avant en bandeau noir unifié, déclinée sur toute la gamme." },
+    'opel-grandland': { nom:'Opel Grandland', an:[2017], pays:'Allemagne',
+      ch:300, nm:520, kg:1600, cyl:1.6, arch:'4 cyl. hybride', adm:'turbo + électrique', pos:'avant', tx:'traction / intégrale', bv:'A8',
+      note:"SUV familial partageant sa base avec le Peugeot 3008. La version hybride rechargeable Hybrid4 dépasse les 300 ch cumulés." },
+    'mini-clubman': { nom:'Mini Clubman', an:[2007,2024], pays:'Royaume-Uni',
+      ch:306, nm:450, kg:1500, cyl:2.0, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction / ALL4', bv:'A8',
+      note:"Le break de la gamme Mini, reconnaissable à ses portes arrière « à la française » façon fourgonnette. La JCW ALL4 dépasse les 300 ch." },
+    'bmw-i4': { nom:'BMW i4', an:[2021], pays:'Allemagne',
+      ch:544, nm:795, kg:2125, cyl:0, arch:'moteurs électriques', adm:'électrique', pos:'avant / arrière', tx:'propulsion / intégrale', bv:'A1',
+      note:"Berline électrique dérivée de la Série 4 Gran Coupé. La version M50 est la première voiture badgée M entièrement électrique de l\'histoire." },
+    'bmw-ix': { nom:'BMW iX', an:[2021], pays:'Allemagne',
+      ch:619, nm:1100, kg:2585, cyl:0, arch:'moteurs électriques', adm:'électrique', pos:'avant / arrière', tx:'intégrale', bv:'A1',
+      note:"SUV électrique vitrine technologique de BMW : structure carbone-aluminium, calandre fermée abritant les capteurs, matériaux durables à bord. La M60 dépasse les 600 ch." },
+    'audi-q8': { nom:'Audi Q8', an:[2018], pays:'Allemagne',
+      ch:600, nm:800, kg:2200, cyl:4.0, arch:'V6 / V8', adm:'turbo', pos:'avant', tx:'quattro', bv:'A8',
+      note:"Le SUV-coupé haut de gamme d\'Audi. La RS Q8 partage sa base avec le Lamborghini Urus et a détenu le record des SUV au Nürburgring." },
+    'vw-id4': { nom:'Volkswagen ID.4 / ID.5', an:[2020], pays:'Allemagne',
+      ch:340, nm:545, kg:2100, cyl:0, arch:'moteurs électriques', adm:'électrique', pos:'arrière / intégrale', bv:'A1',
+      note:"Le SUV électrique de grande diffusion de VW, élu Voiture Mondiale de l\'Année 2021. Pierre angulaire de la stratégie électrique du groupe sur plateforme MEB." },
+    'vw-transporter': { nom:'Volkswagen Transporter', an:[2015], pays:'Allemagne',
+      ch:204, nm:450, kg:2000, cyl:2.0, arch:'4 cyl. diesel', adm:'turbo', pos:'avant', tx:'traction / 4Motion', bv:'DSG',
+      note:"Héritier direct du Combi, la gamme T moderne (T5/T6/T7). Le California, version camping aménagée d\'usine, est une référence du van de loisir." },
+    'vw-touran': { nom:'Volkswagen Touran', an:[2003], pays:'Allemagne',
+      ch:190, nm:400, kg:1500, cyl:2.0, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'DSG',
+      note:"Monospace compact sept places sur base de Golf. Modularité soignée, best-seller familial discret mais durable de la gamme VW." },
+    'cupra-terramar': { nom:'Cupra Terramar', an:[2024], pays:'Espagne',
+      ch:272, nm:400, kg:1700, cyl:1.5, arch:'4 cyl. hybride', adm:'turbo + électrique', pos:'avant', tx:'traction / intégrale', bv:'DSG',
+      note:"SUV compact de Cupra, nommé d\'après l\'ancien circuit espagnol de Terramar. Positionnement sportif face aux SUV premium allemands." },
+    'toyota-bz4x': { nom:'Toyota bZ4X', an:[2022], pays:'Japon',
+      ch:218, nm:337, kg:2000, cyl:0, arch:'moteurs électriques', adm:'électrique', pos:'avant / intégrale', bv:'A1',
+      note:"Premier SUV 100 % électrique dédié de Toyota. « bZ » pour « beyond Zero ». Développé avec Subaru, qui en propose une version jumelle, le Solterra." },
+    'toyota-proace': { nom:'Toyota Proace', an:[2013], pays:'Japon',
+      ch:180, nm:400, kg:1800, cyl:2.0, arch:'4 cyl. diesel, électrique', adm:'turbo', pos:'avant', tx:'traction', bv:'A8',
+      note:"Fourgon Toyota issu du partenariat avec Stellantis : jumeau des Peugeot Expert, Citroën Jumpy et Opel Vivaro. La version Verso transporte jusqu\'à neuf personnes." },
+    'nissan-ariya': { nom:'Nissan Ariya', an:[2022], pays:'Japon',
+      ch:394, nm:600, kg:2200, cyl:0, arch:'moteurs électriques', adm:'électrique', pos:'avant / intégrale', bv:'A1',
+      note:"SUV coupé électrique au design intérieur épuré d\'inspiration japonaise (« ma », l\'espace vide). La transmission intégrale e-4ORCE gère finement le couple des deux essieux." },
+    'mazda-cx5': { nom:'Mazda CX-5', an:[2012], pays:'Japon',
+      ch:194, nm:420, kg:1600, cyl:2.5, arch:'4 cyl. SkyActiv', adm:'atmo / diesel', pos:'avant', tx:'traction / intégrale', bv:'A6',
+      note:"Best-seller mondial de Mazda. Le langage stylistique « Kodo » (l\'âme du mouvement) et la philosophie SkyActiv d\'optimisation mécanique y sont pleinement exprimés." },
+    'mazda-cx60': { nom:'Mazda CX-60', an:[2022], pays:'Japon',
+      ch:327, nm:500, kg:2000, cyl:3.3, arch:'6 en ligne', adm:'turbo diesel / hybride', pos:'avant', tx:'propulsion / intégrale', bv:'A8',
+      note:"À contre-courant, Mazda lance un six-cylindres en ligne et une propulsion premium à l\'heure du tout-électrique et du downsizing. Le diesel 3.3 vise une efficience record." },
+    'kia-niro': { nom:'Kia Niro', an:[2016], pays:'Corée du Sud',
+      ch:204, nm:265, kg:1500, cyl:1.6, arch:'4 cyl. hybride / électrique', adm:'atmo + électrique', pos:'avant', tx:'traction', bv:'DCT',
+      note:"Décliné en hybride, hybride rechargeable et 100 % électrique sur une même carrosserie, cas rare. Un couteau suisse de l\'électrification pour tous les usages." },
+    'jeep-compass': { nom:'Jeep Compass', an:[2006], pays:'États-Unis',
+      ch:240, nm:520, kg:1600, cyl:1.3, arch:'4 cyl. hybride', adm:'turbo + électrique', pos:'avant', tx:'traction / 4x4', bv:'A6',
+      note:"SUV compact portant les codes Jeep (calandre à sept fentes) sur une base de grande diffusion. La version 4xe hybride rechargeable conserve des capacités tout-terrain." },
+    'ford-kuga': { nom:'Ford Kuga', an:[2008], pays:'États-Unis',
+      ch:225, nm:400, kg:1600, cyl:2.5, arch:'4 cyl. hybride', adm:'atmo + électrique', pos:'avant', tx:'traction / intégrale', bv:'A8',
+      note:"Équivalent européen de l\'Escape américain. La version hybride rechargeable a été l\'une des plus vendues d\'Europe sur son segment." },
+    'ford-ranger': { nom:'Ford Ranger', an:[1998], pays:'États-Unis',
+      ch:292, nm:583, kg:2200, cyl:3.0, arch:'4 cyl. diesel, V6', adm:'turbo', pos:'avant', tx:'propulsion / 4x4', bv:'A10',
+      note:"Le pick-up le plus vendu d\'Europe. La version Raptor, à V6 essence biturbo et suspensions de course, transforme l\'utilitaire en engin de franchissement rapide." },
+
+    /* ===== LOT 8a (utilitaires, classiques, monde) ======================= */
+    'ds-7': { nom:'DS 7', an:[2017], pays:'France',
+      ch:300, nm:520, kg:1660, cyl:1.6, arch:'4 cyl. hybride', adm:'turbo + électrique', pos:'avant', tx:'intégrale', bv:'A8',
+      note:"Premier modèle de DS comme marque autonome. La E-Tense 4x4 300 fut la voiture officielle du président Macron pour son investiture en 2017." },
+    'porsche-911-cup': { nom:'Porsche 911 GT3 Cup', an:[1998], pays:'Allemagne',
+      ch:510, nm:470, kg:1260, cyl:4.0, arch:'flat-6', adm:'atmo', pos:'arrière', tx:'propulsion', bv:'séquentielle 6',
+      note:"La voiture de course de série la plus produite au monde. Base des championnats monotypes Carrera Cup et Supercup depuis 1990. Non homologuée route." },
+    'citroen-berlingo': { nom:'Citroën Berlingo', an:[1996], pays:'France',
+      ch:130, nm:300, kg:1400, cyl:1.5, arch:'4 cyl. essence, diesel, électrique', adm:'turbo', pos:'avant', tx:'traction', bv:'M6 / A8',
+      note:"Pionnier du « ludospace » avec le Renault Kangoo : le fourgon devenu familial. Deux fois élu Van of the Year. Un immense succès commercial européen." },
+    'renault-kangoo': { nom:'Renault Kangoo', an:[1997], pays:'France',
+      ch:131, nm:270, kg:1400, cyl:1.3, arch:'4 cyl. essence, diesel, électrique', adm:'turbo', pos:'avant', tx:'traction', bv:'M6 / A',
+      note:"Co-inventeur du ludospace. Le Kangoo Z.E. fut l\'un des tout premiers utilitaires électriques de grande série (2011)." },
+    'ford-transit': { nom:'Ford Transit', an:[1965], pays:'États-Unis',
+      ch:185, nm:415, kg:2000, cyl:2.0, arch:'4 cyl. diesel, électrique', adm:'turbo', pos:'avant', tx:'traction / propulsion', bv:'M6 / A',
+      note:"« Le Transit » est presque devenu un nom commun pour désigner un fourgon. Longtemps si prisé des malfaiteurs que la police britannique le qualifiait de véhicule de braquage préféré." },
+    'peugeot-partner': { nom:'Peugeot Partner', an:[1996], pays:'France',
+      ch:130, nm:300, kg:1400, cyl:1.5, arch:'4 cyl. essence, diesel, électrique', adm:'turbo', pos:'avant', tx:'traction', bv:'M6 / A8',
+      note:"Jumeau du Citroën Berlingo, décliné en Rifter côté ludospace. Colonne vertébrale du parc utilitaire des artisans français." },
+    'citroen-type-h': { nom:'Citroën Type H', an:[1947,1981], pays:'France',
+      ch:58, nm:110, kg:1500, cyl:1.9, arch:'4 en ligne', adm:'atmo', pos:'avant', tx:'traction', bv:'M3',
+      note:"La tôle ondulée de sa carrosserie, inspirée des avions Junkers, assure rigidité et légèreté. Le fourgon des food-trucks et des commerçants, devenu icône vintage." },
+    'renault-trafic': { nom:'Renault Trafic', an:[1980], pays:'France',
+      ch:170, nm:380, kg:1900, cyl:2.0, arch:'4 cyl. diesel', adm:'turbo', pos:'avant', tx:'traction', bv:'M6',
+      note:"Fourgon polyvalent, partagé un temps avec Opel (Vivaro) et Nissan (Primastar/NV300). Base de nombreux vans aménagés." },
+    'simca-aronde': { nom:'Simca Aronde', an:[1951,1964], pays:'France',
+      ch:57, nm:90, kg:900, cyl:1.3, arch:'4 en ligne', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M4',
+      note:"Première voiture conçue entièrement par Simca. « Aronde » signifie hirondelle en ancien français, d\'où le logo. Un pilier de la motorisation française des années 50." },
+    'talbot-samba': { nom:'Talbot Samba', an:[1981,1986], pays:'France',
+      ch:80, nm:110, kg:795, cyl:1.4, arch:'4 en ligne', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
+      note:"Dernière voiture badgée Talbot. La Samba Rallye, homologuée pour la compétition, est aujourd\'hui la plus recherchée. Le cabriolet était signé Pininfarina." },
+    'panhard-24': { nom:'Panhard 24', an:[1963,1967], pays:'France',
+      ch:60, nm:85, kg:830, cyl:0.85, arch:'bicylindre à plat', adm:'atmo', pos:'avant', tx:'traction', bv:'M4',
+      note:"Le chant du cygne de Panhard, plus vieille marque automobile du monde. Coupé au style avant-gardiste, propulsé par un simple bicylindre refroidi par air, étonnamment performant." },
+    'mercedes-vito': { nom:'Mercedes-Benz Vito', an:[1996], pays:'Allemagne',
+      ch:239, nm:500, kg:2100, cyl:2.0, arch:'4 cyl. diesel, électrique', adm:'turbo', pos:'avant / propulsion', tx:'propulsion / intégrale', bv:'A9',
+      note:"Fourgon medium, décliné en Classe V pour le transport de personnes haut de gamme. La version électrique eVito cible les flottes urbaines." },
+    'mercedes-sprinter': { nom:'Mercedes-Benz Sprinter', an:[1995], pays:'Allemagne',
+      ch:190, nm:440, kg:2500, cyl:2.0, arch:'4 cyl. diesel, électrique', adm:'turbo', pos:'avant', tx:'propulsion / intégrale', bv:'A9',
+      note:"La référence du grand fourgon, base reine des camping-cars et des vans aménagés « vanlife » dans le monde entier. Le premier à recevoir l\'ESP de série." },
+    'morgan-plus-8': { nom:'Morgan Plus 8', an:[1968,2018], pays:'Royaume-Uni',
+      ch:367, nm:490, kg:1100, cyl:4.8, arch:'V8 Rover puis BMW', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M6',
+      note:"Un V8 dans un châssis à ossature en frêne, comme au premier jour. Cinquante ans de production. Sensations brutes et sonorité inimitable, à des années-lumière du confort moderne." },
+    'citroen-ami-2020': { nom:'Citroën Ami', an:[2020], pays:'France',
+      ch:8,  kg:485, cyl:0, arch:'moteur électrique', adm:'électrique', pos:'avant', tx:'traction', bv:'A1',
+      note:"Quadricycle électrique accessible dès 14 ans en France, sans permis. Portes symétriques inversées gauche/droite pour réduire les coûts : une porte s\'ouvre à l\'avant, l\'autre à l\'arrière." },
+    'rover-75': { nom:'Rover 75', an:[1998,2005], pays:'Royaume-Uni',
+      ch:260, nm:400, kg:1500, cyl:4.6, arch:'4 cyl., V6, V8', adm:'atmo / turbo', pos:'avant / propulsion', tx:'traction / propulsion', bv:'M5 / A5',
+      note:"Style néo-rétro britannique très soigné, développée sous l\'ère BMW. La MG ZT 260, à V8 Mustang et propulsion, en est la variante sportive improbable." },
+    'isuzu-117': { nom:'Isuzu 117 Coupé', an:[1968,1981], pays:'Japon',
+      ch:130, nm:160, kg:1050, cyl:1.8, arch:'4 en ligne', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M5',
+      note:"Coupé élégant dessiné par Giugiaro, l\'un des premiers japonais à moteur à double arbre à cames en tête et injection. Les premiers exemplaires étaient assemblés à la main." },
+    'hindustan-ambassador': { nom:'Hindustan Ambassador', an:[1958,2014], pays:'Inde',
+      ch:75, nm:110, kg:1200, cyl:1.5, arch:'4 en ligne', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M4',
+      note:"Copie de la Morris Oxford britannique, produite quasi inchangée pendant 56 ans. « Le roi des routes indiennes » : voiture officielle, taxi de Calcutta, symbole national de l\'Inde." },
+    'holden-monaro': { nom:'Holden Monaro', an:[1968,2005], pays:'Australie',
+      ch:340, nm:465, kg:1680, cyl:5.7, arch:'V8', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M6',
+      note:"Coupé musclé australien, exporté aux États-Unis en Pontiac GTO et au Royaume-Uni en Vauxhall Monaro. Le muscle car des antipodes." },
+    'lada-2101': { nom:'Lada 2101 « Jigouli »', an:[1970,1988], pays:'URSS',
+      ch:64, nm:87, kg:955, cyl:1.2, arch:'4 en ligne', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M4',
+      note:"Dérivée de la Fiat 124 sous licence, mais renforcée pour les routes et le climat soviétiques (acier plus épais, garde au sol relevée). Des millions d\'exemplaires ont motorisé le bloc de l\'Est." },
+    'uaz-452': { nom:'UAZ 452 « Bukhanka »', an:[1965], pays:'URSS',
+      ch:112, nm:198, kg:1720, cyl:2.7, arch:'4 en ligne', adm:'atmo', pos:'avant', tx:'intégrale', bv:'M4/M5',
+      note:"« Bukhanka » signifie « miche de pain » en russe, pour sa forme. Fourgon 4x4 quasi inchangé depuis 1965, increvable, encore produit aujourd\'hui. Ambulance et véhicule militaire par excellence." },
+    'rwb-911': { nom:'RWB 911 (Rauh-Welt Begriff)', an:[2005], pays:'Japon',
+      ch:400, nm:420, kg:1200, cyl:3.6, arch:'flat-6', adm:'atmo / turbo', pos:'arrière', tx:'propulsion', bv:'M6',
+      note:"Préparation culte d\'Akira Nakai : ailes élargies rivetées à la main, une seule personne réalisant chaque voiture sur place, où qu\'elle soit dans le monde. Chaque RWB est unique et nommée." },
+
+    /* ===== LOT 7 (premium moderne, sportives, électriques) =============== */
+    'aston-db12': { nom:'Aston Martin DB12', an:[2023], pays:'Royaume-Uni',
+      ch:680, nm:800, kg:1685, cyl:4.0, arch:'V8 AMG', adm:'biturbo', pos:'avant', tx:'propulsion', bv:'A8',
+      note:"Présentée comme la première « Super Tourer ». Le V8 4.0 vient d\'AMG mais est retravaillé par Aston. Héritière directe de la lignée DB, du nom de David Brown." },
+    'aston-dbx': { nom:'Aston Martin DBX', an:[2020], pays:'Royaume-Uni',
+      ch:707, nm:900, kg:2245, cyl:4.0, arch:'V8 AMG', adm:'biturbo', pos:'avant', tx:'intégrale', bv:'A9',
+      note:"Premier SUV d\'Aston Martin, vital pour la survie financière de la marque. La version 707 fut le SUV de série le plus puissant du monde à sa sortie." },
+    'bmw-serie2': { nom:'BMW Série 2', an:[2014], pays:'Allemagne',
+      ch:460, nm:550, kg:1550, cyl:3.0, arch:'4 et 6 cyl.', adm:'turbo', pos:'avant', tx:'propulsion / intégrale', bv:'A8',
+      note:"Le coupé Série 2 reste fidèle à la propulsion et au 6 cylindres, à contre-courant. La M2 est saluée comme l\'une des BMW M les plus attachantes de l\'ère moderne." },
+    'bmw-x3': { nom:'BMW X3', an:[2003], pays:'Allemagne',
+      ch:510, nm:600, kg:1900, cyl:3.0, arch:'4 et 6 cyl.', adm:'turbo', pos:'avant', tx:'intégrale', bv:'A8',
+      note:"SUV compact premium. La version X3 M et son 6 cylindres S58 amènent des performances de sportive dans une carrosserie familiale." },
+    'mercedes-cla': { nom:'Mercedes-Benz CLA', an:[2013], pays:'Allemagne',
+      ch:421, nm:500, kg:1550, cyl:2.0, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction / intégrale', bv:'A8',
+      note:"« Coupé quatre portes » compact, au Cx parmi les plus bas du marché (0,22 à son lancement). La CLA 45 S et son 4 cylindres de plus de 420 ch." },
+    'mercedes-glc': { nom:'Mercedes-Benz GLC', an:[2015], pays:'Allemagne',
+      ch:680, nm:1020, kg:2100, cyl:2.0, arch:'4 cyl. hybride', adm:'turbo + électrique', pos:'avant', tx:'intégrale', bv:'A9',
+      note:"SUV compact best-seller de Mercedes. La GLC 63 S E Performance combine un 4 cylindres et l\'hybridation issue de la F1 pour dépasser les 670 ch." },
+    'mg-mgb': { nom:'MG MGB', an:[1962,1980], pays:'Royaume-Uni',
+      ch:95, nm:150, kg:920, cyl:1.8, arch:'4 en ligne', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M4',
+      note:"L\'un des roadsters les plus produits de l\'histoire, plus d\'un demi-million d\'exemplaires. Symbole du plaisir de conduire abordable à l\'anglaise. La MGB GT V8 est la plus rare." },
+    'cupra-born': { nom:'Cupra Born', an:[2021], pays:'Espagne',
+      ch:326, kg:1700, cyl:0, arch:'moteur électrique', adm:'électrique', pos:'arrière', tx:'propulsion', bv:'A1',
+      note:"La compacte électrique sportive de Cupra, cousine de la VW ID.3 mais au châssis affûté. La VZ pousse la puissance au-delà de 320 ch." },
+    'skoda-kodiaq': { nom:'Škoda Kodiaq', an:[2016], pays:'Tchéquie',
+      ch:245, nm:370, kg:1600, cyl:2.0, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction / intégrale', bv:'A7',
+      note:"Grand SUV sept places au rapport prix/habitabilité redoutable. La version RS a un temps détenu le record des SUV sept places au Nürburgring." },
+    'skoda-enyaq': { nom:'Škoda Enyaq', an:[2020], pays:'Tchéquie',
+      ch:340, nm:545, kg:2100, cyl:0, arch:'moteurs électriques', adm:'électrique', pos:'arrière / intégrale', bv:'A1',
+      note:"Premier SUV électrique dédié de Škoda, sur plateforme MEB. La calandre « Crystal Face » rétroéclairée est une option signature." },
+    'volvo-amazon': { nom:'Volvo Amazon', an:[1956,1970], pays:'Suède',
+      ch:115, nm:150, kg:1100, cyl:1.8, arch:'4 en ligne', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M4',
+      note:"Première voiture au monde à proposer la ceinture de sécurité à trois points de série (1959), invention Volvo offerte gratuitement à toute l\'industrie. Un exemplaire a dépassé 5 millions de km." },
+    'saab-93': { nom:'Saab 9-3', an:[1998,2014], pays:'Suède',
+      ch:280, nm:400, kg:1500, cyl:2.8, arch:'4 cyl. et V6', adm:'turbo', pos:'avant', tx:'traction / intégrale', bv:'M6',
+      note:"Héritière de la tradition turbo Saab née de l\'aéronautique. Contacteur de démarrage entre les sièges, comme sur toutes les Saab. La Viggen porte le nom d\'un avion de chasse suédois." },
+    'polestar-1': { nom:'Polestar 1', an:[2019,2021], pays:'Suède',
+      ch:609, nm:1000, kg:2350, cyl:2.0, arch:'4 cyl. hybride', adm:'compresseur + turbo + él.', pos:'avant', tx:'intégrale', bv:'A8',
+      prod:1500,
+      note:"Grand coupé hybride rechargeable à carrosserie carbone, produit à seulement 1500 exemplaires. Vitrine technologique lançant Polestar comme marque à part entière." },
+    'honda-jazz': { nom:'Honda Jazz', an:[2001], pays:'Japon',
+      ch:122, nm:145, kg:1180, cyl:1.5, arch:'4 cyl. hybride', adm:'atmo + électrique', pos:'avant', tx:'traction', bv:'e-CVT',
+      note:"Réputée pour son habitabilité record grâce aux « Magic Seats » : réservoir sous les sièges avant permettant de relever les assises arrière comme dans un cinéma." },
+    'daihatsu-copen': { nom:'Daihatsu Copen', an:[2002], pays:'Japon',
+      ch:68, nm:92, kg:850, cyl:0.66, arch:'3 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M5',
+      note:"Minuscule roadster « kei car » à toit rigide électrique escamotable. Malgré sa cylindrée limitée à 660 cm³ par la loi japonaise, un vrai petit cabriolet plein de charme." },
+    'hyundai-kona': { nom:'Hyundai Kona', an:[2017], pays:'Corée du Sud',
+      ch:280, nm:392, kg:1500, cyl:2.0, arch:'4 cyl. / électrique', adm:'turbo', pos:'avant', tx:'traction / intégrale', bv:'A8',
+      note:"SUV urbain décliné en version N à près de 280 ch, l\'une des rares à jouer la carte sportive dans ce segment. La version électrique offre une autonomie remarquable." },
+    'chrysler-300c': { nom:'Chrysler 300C', an:[2004,2023], pays:'États-Unis',
+      ch:431, nm:569, kg:1900, cyl:6.4, arch:'V8 HEMI', adm:'atmo', pos:'avant', tx:'propulsion', bv:'A8',
+      note:"Grande berline au style « gangster » assumé, calandre imposante. La 300 SRT8 embarque le V8 HEMI 6.4. Beaucoup partagent leur base avec la Mercedes Classe E (ère DaimlerChrysler)." },
+    'mercury-cougar-67': { nom:'Mercury Cougar (1967)', an:[1967,1970], pays:'États-Unis',
+      ch:335, nm:590, kg:1450, cyl:6.4, arch:'V8', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M4 / A3',
+      note:"Version cossue et allongée de la Mustang, avec phares escamotables cachés derrière une calandre pleine. La XR-7 GT est la plus recherchée des amateurs." },
+
+    /* ===== LOT 6 (curiosités françaises, roadsters, sans-permis) ========== */
+    'ligier-js2': { nom:'Ligier JS2', an:[1971,1975], pays:'France',
+      ch:195, nm:245, kg:960, cyl:2.7, arch:'V6 Maserati', adm:'atmo', pos:'central', tx:'propulsion', bv:'M5',
+      note:"La seule vraie GT de route de Ligier, avant que la marque ne se tourne vers la F1 puis les voiturettes. Moteur V6 Maserati, 2e aux 24 Heures du Mans 1975." },
+    'ligier-js50': { nom:'Ligier JS50', an:[2014], pays:'France',
+      ch:8, nm:18, kg:350, cyl:0.5, arch:'bicylindre diesel', adm:'atmo', pos:'avant', tx:'traction', bv:'variateur',
+      note:"Voiturette sans permis, accessible dès 14 ans en France. Son style s\'inspire directement des berlines : la marque de F1 devenue reine du quadricycle léger." },
+    'donkervoort-f22': { nom:'Donkervoort F22', an:[2022], pays:'Pays-Bas',
+      ch:500, nm:640, kg:750, cyl:2.5, arch:'5 en ligne Audi', adm:'turbo', pos:'avant', tx:'propulsion', bv:'M5',
+      note:"Barquette néerlandaise dérivée de la philosophie Lotus Seven, mais extrême : le cinq-cylindres Audi dans moins de 750 kg. Encaisse plus de 2 g en virage, un record pour une routière." },
+    'wiesmann-gt': { nom:'Wiesmann GT MF5', an:[2009,2014], pays:'Allemagne',
+      ch:555, nm:680, kg:1395, cyl:5.0, arch:'V10 BMW', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M6',
+      note:"Artisan allemand au logo en forme de lézard (le gecko qui « colle » à la route). Le V10 de la BMW M5 E60 dans une carrosserie néo-rétro faite main." },
+    'puma-gte': { nom:'Puma GTE', an:[1967,1985], pays:'Brésil',
+      ch:75, nm:110, kg:750, cyl:1.6, arch:'flat-4 VW', adm:'atmo', pos:'arrière', tx:'propulsion', bv:'M4',
+      note:"Petit coupé brésilien en fibre de verre sur base mécanique Volkswagen (Coccinelle/Karmann). Fierté nationale, exporté dans le monde entier depuis São Paulo." },
+    'opel-speedster': { nom:'Opel Speedster', an:[2000,2005], pays:'Allemagne',
+      ch:200, nm:250, kg:930, cyl:2.2, arch:'4 en ligne', adm:'atmo / turbo', pos:'central', tx:'propulsion', bv:'M5',
+      note:"Barquette légère construite par Lotus sur base d\'Elise, badgée Opel (et Vauxhall VX220 au Royaume-Uni). Un rapport poids/puissance redoutable pour un prix contenu." },
+    'fiat-barchetta': { nom:'Fiat Barchetta', an:[1995,2005], pays:'Italie',
+      ch:130, nm:164, kg:1060, cyl:1.8, arch:'4 en ligne', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
+      note:"Roadster à traction avant, cas rare. Uniquement produite en conduite à gauche, ce qui l\'a privée du marché britannique. Poignées de porte affleurantes, détail de style soigné." },
+    'fiat-x19': { nom:'Fiat X1/9', an:[1972,1989], pays:'Italie',
+      ch:85, nm:118, kg:920, cyl:1.5, arch:'4 en ligne', adm:'atmo', pos:'central', tx:'propulsion', bv:'M5',
+      note:"Petite targa à moteur central dessinée par Bertone, accessible au plus grand nombre. Toit rigide amovible se rangeant dans le coffre avant. Un concept de supercar miniature." },
+    'renault-fuego': { nom:'Renault Fuego', an:[1980,1986], pays:'France',
+      ch:132, nm:199, kg:1180, cyl:1.6, arch:'4 en ligne', adm:'turbo', pos:'avant', tx:'traction', bv:'M5',
+      note:"Premier véhicule au monde à recevoir une clé à télécommande de verrouillage centralisé (1982). Coupé au bandeau latéral caractéristique, très populaire en Amérique du Sud." },
+    'renault-avantime': { nom:'Renault Avantime', an:[2001,2003], pays:'France',
+      ch:210, nm:300, kg:1750, cyl:3.0, arch:'V6', adm:'atmo', pos:'avant', tx:'traction', bv:'M6 / A5',
+      note:"Coupé-monospace, catégorie inventée puis aussitôt disparue. Double porte à double charnière, immense toit vitré. Échec commercial devenu objet culte pour son audace." },
+    'renault-4': { nom:'Renault 4 (4L)', an:[1961,1994], pays:'France',
+      ch:34, nm:57, kg:600, cyl:0.85, arch:'4 en ligne', adm:'atmo', pos:'avant', tx:'traction', bv:'M4',
+      note:"Plus de 8 millions d\'exemplaires en 33 ans. Première traction avant de grande série chez Renault, hayon, suspension à barres de torsion à empattement inégal gauche-droite." },
+    'renault-twizy': { nom:'Renault Twizy', an:[2012,2024], pays:'France',
+      ch:17, nm:57, kg:475, cyl:0, arch:'moteur électrique', adm:'électrique', pos:'arrière', tx:'propulsion', bv:'A1',
+      note:"Quadricycle électrique urbain à deux places en tandem. Portes en élytre optionnelles et sans vitres d\'origine. Un ovni de la mobilité, adopté par les flottes urbaines." },
+    'renault-estafette': { nom:'Renault Estafette', an:[1959,1980], pays:'France',
+      ch:48, nm:90, kg:1150, cyl:1.1, arch:'4 en ligne', adm:'atmo', pos:'avant', tx:'traction', bv:'M4',
+      note:"Premier utilitaire Renault à traction avant, pour un plancher plat et bas. Fourgon emblématique des commerçants, pompiers et gendarmes français des Trente Glorieuses." },
+    'citroen-traction': { nom:'Citroën Traction Avant', an:[1934,1957], pays:'France',
+      ch:77, nm:117, kg:1025, cyl:1.9, arch:'4 en ligne', adm:'atmo', pos:'avant', tx:'traction', bv:'M3',
+      note:"Révolutionnaire : traction avant, monocoque et freins hydrauliques dès 1934, une combinaison en avance de vingt ans. La 15-Six et son 6 cylindres. Icône de la Résistance et du cinéma français." },
+    'citroen-mehari': { nom:'Citroën Méhari', an:[1968,1988], pays:'France',
+      ch:29, nm:39, kg:570, cyl:0.6, arch:'2 cyl. à plat', adm:'atmo', pos:'avant', tx:'traction', bv:'M4',
+      note:"Carrosserie en plastique ABS teinté dans la masse, insensible aux rayures et à la rouille. Loisirs, plage, armée : polyvalence totale sur base de 2CV/Dyane. La 4x4 est très rare." },
+    'citroen-gs': { nom:'Citroën GS / GSA', an:[1970,1986], pays:'France',
+      ch:65, nm:100, kg:900, cyl:1.3, arch:'flat-4', adm:'atmo', pos:'avant', tx:'traction', bv:'M4 / semi-auto',
+      note:"Voiture de l\'Année 1971. Suspension hydropneumatique sur une berline de moyenne gamme, luxe technologique inédit à ce prix. La GS Birotor, à moteur Wankel, est une rareté absolue." },
+
+    /* ===== LOT 5 (JDM, Lancia, Rolls-Royce, Jaguar) ====================== */
+    'subaru-impreza-gc8': { nom:'Subaru Impreza WRX (GC8)', an:[1992,2000], pays:'Japon',
+      ch:280, nm:363, kg:1235, cyl:2.0, arch:'flat-4', adm:'turbo', pos:'avant', tx:'intégrale', bv:'M5',
+      note:"La base des triples titres mondiaux WRC de Subaru (1995-1997) avec McRae, Burns et Solberg. Le flat-4 turbo et sa sonorité « boxer rumble » sont devenus cultes. La 22B est le graal." },
+    'subaru-impreza-blob': { nom:'Subaru Impreza WRX STI (GD)', an:[2000,2007], pays:'Japon',
+      ch:280, nm:392, kg:1470, cyl:2.0, arch:'flat-4', adm:'turbo', pos:'avant', tx:'intégrale', bv:'M6',
+      note:"La génération aux phares ronds « bug-eye » puis « blob-eye ». Le différentiel central pilotable (DCCD) permet de régler la répartition du couple. Rivale jurée de la Lancer Evo." },
+    'subaru-legacy': { nom:'Subaru Legacy', an:[1989], pays:'Japon',
+      ch:265, nm:350, kg:1450, cyl:2.5, arch:'flat-4 / flat-6', adm:'turbo / atmo', pos:'avant', tx:'intégrale', bv:'M6 / A',
+      note:"En 1989, une Legacy a couvert 100 000 km à plus de 223 km/h de moyenne, un record d\'endurance FIA. La transmission intégrale symétrique est la signature de la marque." },
+    'subaru-forester': { nom:'Subaru Forester', an:[1997], pays:'Japon',
+      ch:241, nm:350, kg:1450, cyl:2.0, arch:'flat-4', adm:'turbo / atmo', pos:'avant', tx:'intégrale', bv:'M / CVT',
+      note:"Break surélevé avant l\'heure. La version 2.0 XT turbo, discrète, offrait des performances de sportive dans une carrosserie de baroudeur familial." },
+    'mitsubishi-eclipse': { nom:'Mitsubishi Eclipse', an:[1989,2012], pays:'Japon',
+      ch:265, nm:353, kg:1400, cyl:2.0, arch:'4 en ligne', adm:'turbo', pos:'avant', tx:'traction / intégrale', bv:'M5',
+      note:"Rendue célèbre par le premier film « Fast and Furious » (l\'Eclipse verte de Brian). Les deux premières générations turbo intégrales sont les plus recherchées." },
+    'lancia-beta-montecarlo': { nom:'Lancia Beta Montecarlo', an:[1975,1981], pays:'Italie',
+      ch:120, nm:143, kg:1040, cyl:2.0, arch:'4 en ligne', adm:'atmo', pos:'central', tx:'propulsion', bv:'M5',
+      note:"Petit coupé à moteur central dessiné par Pininfarina. Sa version course, la 037, deviendra la dernière propulsion à remporter le titre mondial des rallyes en 1983." },
+    'lancia-flaminia': { nom:'Lancia Flaminia', an:[1957,1970], pays:'Italie',
+      ch:152, nm:220, kg:1500, cyl:2.8, arch:'V6', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M4',
+      note:"Le summum du luxe Lancia. Les versions présidentielles italiennes servent encore lors des cérémonies officielles. Carrosseries signées Pininfarina, Touring et Zagato." },
+    'rr-phantom': { nom:'Rolls-Royce Phantom', an:[2003], pays:'Royaume-Uni',
+      ch:571, nm:900, kg:2560, cyl:6.75, arch:'V12', adm:'biturbo', pos:'avant', tx:'propulsion', bv:'A8',
+      note:"Le vaisseau amiral. Portes arrière antagonistes, ciel de toit étoilé à fibres optiques, bouchons de roues qui gardent le logo RR toujours à l\'endroit. Le silence à bord est une référence absolue." },
+    'rr-ghost': { nom:'Rolls-Royce Ghost', an:[2009], pays:'Royaume-Uni',
+      ch:571, nm:850, kg:2490, cyl:6.75, arch:'V12', adm:'biturbo', pos:'avant', tx:'propulsion', bv:'A8',
+      note:"La Rolls « d\'entrée de gamme », plus discrète, souvent conduite par son propriétaire. Suspension « Planar » qui scanne la route pour anticiper les défauts avant même de les atteindre." },
+    'rr-cullinan': { nom:'Rolls-Royce Cullinan', an:[2018], pays:'Royaume-Uni',
+      ch:600, nm:900, kg:2660, cyl:6.75, arch:'V12', adm:'biturbo', pos:'avant', tx:'intégrale', bv:'A8',
+      note:"Le premier SUV de Rolls-Royce, nommé d\'après le plus gros diamant brut jamais découvert. Hayon « Viewing Suite » : deux sièges en cuir se déploient dans le coffre ouvert." },
+    'rr-spectre': { nom:'Rolls-Royce Spectre', an:[2023], pays:'Royaume-Uni',
+      ch:585, nm:900, kg:2890, cyl:0, arch:'deux moteurs électriques', adm:'électrique', pos:'avant/arrière', tx:'intégrale', bv:'A1',
+      note:"La première Rolls-Royce 100 % électrique. Le silence électrique correspond enfin à l\'idéal que la marque poursuivait depuis toujours. Le coupé le plus lourd jamais produit par la firme." },
+    'rr-silvershadow': { nom:'Rolls-Royce Silver Shadow', an:[1965,1980], pays:'Royaume-Uni',
+      ch:200, kg:2100, cyl:6.75, arch:'V8', adm:'atmo', pos:'avant', tx:'propulsion', bv:'A3',
+      flou:['ch'],
+      note:"Première Rolls à structure monocoque et freins à disques (sous licence Citroën). Puissance jamais communiquée officiellement, décrite comme « suffisante » par la marque." },
+    'jaguar-mk2': { nom:'Jaguar Mk2', an:[1959,1967], pays:'Royaume-Uni',
+      ch:220, nm:325, kg:1500, cyl:3.8, arch:'6 en ligne', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M4',
+      note:"La berline sportive des années 60, aussi appréciée des gangsters que de la police britannique — d\'où son surnom des deux côtés de la loi. Le 3.8 était la voiture 4 portes la plus rapide de son temps." },
+    'jaguar-xj': { nom:'Jaguar XJ', an:[1968,2019], pays:'Royaume-Uni',
+      ch:575, nm:700, kg:1800, cyl:5.0, arch:'6 en ligne, V8, V12', adm:'atmo / compresseur', pos:'avant', tx:'propulsion', bv:'A8',
+      note:"La grande berline Jaguar sur cinq décennies. La XJ220, qui en reprend le nom, fut la voiture de série la plus rapide du monde en 1992. Structure aluminium sur les dernières générations." },
+    'gumpert-apollo': { nom:'Gumpert Apollo', an:[2005,2012], pays:'Allemagne',
+      ch:700, nm:860, kg:1200, cyl:4.2, arch:'V8 Audi', adm:'biturbo', pos:'central', tx:'propulsion', bv:'M6',
+      note:"Conçue pour pouvoir rouler à l\'envers dans un tunnel à grande vitesse, tant son appui aérodynamique est élevé. Détentrice d\'un temps record sur le circuit de l\'émission Top Gear." },
+
+    /* ===== LOT 4 (Porsche classiques + hypercars) ======================== */
+    'porsche-914': { nom:'Porsche 914', an:[1969,1976], pays:'Allemagne',
+      ch:100, nm:157, kg:940, cyl:2.0, arch:'flat-4 / flat-6', adm:'atmo', pos:'central', tx:'propulsion', bv:'M5',
+      note:"Développée avec Volkswagen, longtemps snobée comme « pas une vraie Porsche ». Sa position moteur central en fait pourtant l\'une des Porsche les plus équilibrées. La 914/6 est très recherchée." },
+    'porsche-924': { nom:'Porsche 924', an:[1976,1988], pays:'Allemagne',
+      ch:150, nm:203, kg:1080, cyl:2.0, arch:'4 en ligne', adm:'atmo / turbo', pos:'avant', tx:'propulsion', bv:'M5',
+      note:"Première Porsche à moteur avant et refroidissement liquide. Conçue à l\'origine pour Volkswagen. Répartition des masses idéale grâce à la boîte accolée à l\'essieu arrière (transaxle)." },
+    'porsche-928': { nom:'Porsche 928', an:[1977,1995], pays:'Allemagne',
+      ch:350, nm:500, kg:1600, cyl:5.4, arch:'V8', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M5 / A4',
+      note:"Conçue pour remplacer la 911… ce qu\'elle n\'a jamais réussi. Seule Porsche à V8 avant. Voiture de l\'Année 1978, unique sportive à avoir remporté ce titre. Architecture transaxle." },
+    'porsche-944': { nom:'Porsche 944', an:[1982,1991], pays:'Allemagne',
+      ch:250, nm:350, kg:1280, cyl:2.5, arch:'4 en ligne', adm:'atmo / turbo', pos:'avant', tx:'propulsion', bv:'M5',
+      note:"Évolution de la 924 avec un 4 cylindres maison, en réalité un demi-V8 de 928. La Turbo est redoutable. Longtemps la Porsche la plus vendue de l\'histoire avant la 911 moderne." },
+    'porsche-968': { nom:'Porsche 968', an:[1992,1995], pays:'Allemagne',
+      ch:305, nm:350, kg:1370, cyl:3.0, arch:'4 en ligne', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M6',
+      note:"Ultime évolution de la lignée transaxle 924/944. La Club Sport, allégée, est aujourd\'hui la plus cotée. Son 3.0 est l\'un des plus gros 4 cylindres de série de son époque." },
+    'porsche-911-r': { nom:'Porsche 911 R (991)', an:[2016], pays:'Allemagne',
+      ch:500, nm:460, kg:1370, cyl:4.0, arch:'flat-6', adm:'atmo', pos:'arrière', tx:'propulsion', bv:'M6',
+      prod:991, flou:['prod'],
+      note:"Le moteur de la GT3 RS, mais avec une boîte manuelle et sans aileron : une 911 puriste. 991 exemplaires (clin d\'œil au code interne 991). Sa cote a explosé dès sa sortie, revendue au double." },
+    'mazda-rx7-fb': { nom:'Mazda RX-7 (SA/FB)', an:[1978,1985], pays:'Japon',
+      ch:165, nm:166, kg:1065, cyl:1.1, arch:'birotor Wankel', adm:'atmo / turbo', pos:'avant', tx:'propulsion', bv:'M5',
+      note:"Première génération de la RX-7. Phares escamotables, moteur rotatif compact permettant un centre de gravité très bas. A démocratisé le rotatif sportif dans le monde entier." },
+    'nissan-silvia-s13': { nom:'Nissan Silvia (S13)', an:[1988,1994], pays:'Japon',
+      ch:205, nm:264, kg:1200, cyl:2.0, arch:'4 en ligne', adm:'turbo', pos:'avant', tx:'propulsion', bv:'M5',
+      note:"Icône absolue du drift. Le moteur SR20DET et la propulsion en ont fait la base la plus populaire de la discipline. Connue aussi en 180SX et 240SX selon les marchés." },
+    'nissan-silvia-s14': { nom:'Nissan Silvia (S14)', an:[1993,1998], pays:'Japon',
+      ch:220, nm:274, kg:1230, cyl:2.0, arch:'4 en ligne', adm:'turbo', pos:'avant', tx:'propulsion', bv:'M5',
+      note:"Version élargie et affinée de la S13. Le SR20DET gagne un turbo à roulement à billes. Reine des circuits de drift japonais des années 90, toujours recherchée aujourd\'hui." },
+    'mclaren-765lt': { nom:'McLaren 765LT', an:[2020,2021], pays:'Royaume-Uni',
+      ch:765, nm:800, kg:1339, cyl:4.0, arch:'V8', adm:'biturbo', pos:'central', tx:'propulsion', bv:'A7',
+      prod:765,
+      note:"« LT » pour Longtail : empattement rallongé, allègement extrême (80 kg de moins que la 720S), échappement titane quadruple. 765 exemplaires, tous vendus avant présentation." },
+    'mclaren-gt': { nom:'McLaren GT', an:[2019], pays:'Royaume-Uni',
+      ch:620, nm:630, kg:1530, cyl:4.0, arch:'V8', adm:'biturbo', pos:'central', tx:'propulsion', bv:'A7',
+      note:"La McLaren de « grand tourisme » : un coffre arrière au-dessus du moteur, chauffé mais utilisable, chose rare sur une supercar à moteur central. Suspension assouplie pour le confort." },
+    'mclaren-w1': { nom:'McLaren W1', an:[2025], pays:'Royaume-Uni',
+      ch:1275, nm:1340, kg:1399, cyl:4.0, arch:'V8 hybride', adm:'biturbo + électrique', pos:'central', tx:'propulsion', bv:'A8',
+      prod:399,
+      note:"L\'héritière de la F1 et de la P1. Aérodynamique active extrême inspirée de la F1, avec un mode « race » qui abaisse et durcit radicalement la voiture. 399 exemplaires." },
+    'koenigsegg-cc8s': { nom:'Koenigsegg CC8S', an:[2002,2004], pays:'Suède',
+      ch:655, nm:750, kg:1275, cyl:4.7, arch:'V8', adm:'compresseur', pos:'central', tx:'propulsion', bv:'M6',
+      prod:6, flou:['prod'],
+      note:"La toute première Koenigsegg de série. Entrée au Guinness comme voiture de série la plus puissante de son temps. Portes à ouverture dièdre synchrone, signature de la marque. 6 exemplaires." },
+    'koenigsegg-cc850': { nom:'Koenigsegg CC850', an:[2023], pays:'Suède',
+      ch:1385, nm:1385, kg:1385, cyl:5.0, arch:'V8', adm:'biturbo', pos:'central', tx:'propulsion', bv:'Engage Shift System',
+      prod:70,
+      note:"Hommage à la CC8S pour les 20 ans de la marque. Sa boîte « Engage Shift System » se transforme d\'une manuelle 6 vitesses à une automatique par simple sélection : un tour de force mécanique inédit." },
+    'pagani-utopia': { nom:'Pagani Utopia', an:[2022], pays:'Italie',
+      ch:864, nm:1100, kg:1280, cyl:6.0, arch:'V12 AMG', adm:'biturbo', pos:'central', tx:'propulsion', bv:'M7 / A7',
+      prod:99,
+      note:"Troisième création de Horacio Pagani, après la Zonda et la Huayra. À contre-courant, elle propose une vraie boîte manuelle à levier exposé, œuvre d\'orfèvrerie. V12 AMG sur mesure." },
+
+    /* ===== LOT 3 (Honda–Mercedes) ======================================== */
+    'lambo-diablo': { nom:'Lamborghini Diablo', an:[1990,2001], pays:'Italie',
+      ch:595, nm:620, kg:1625, cyl:6.0, arch:'V12', adm:'atmo', pos:'central', tx:'propulsion / intégrale', bv:'M5',
+      note:"Dernière Lamborghini développée sous l\'ère Chrysler, dessinée par Gandini puis adoucie. La GT et la VT 6.0 clôturent la lignée. Vitesse dépassant 325 km/h, un record à sa sortie." },
+    'lambo-revuelto': { nom:'Lamborghini Revuelto', an:[2023], pays:'Italie',
+      ch:1015, nm:725, kg:1772, cyl:6.5, arch:'V12 hybride', adm:'atmo + électrique', pos:'central', tx:'intégrale', bv:'A8',
+      note:"Première Lamborghini V12 hybride rechargeable. Trois moteurs électriques épaulent le V12 atmosphérique. Nom d\'un célèbre taureau de combat, fidèle à la tradition de la marque." },
+    'maserati-bora': { nom:'Maserati Bora', an:[1971,1978], pays:'Italie',
+      ch:310, nm:441, kg:1620, cyl:4.9, arch:'V8', adm:'atmo', pos:'central', tx:'propulsion', bv:'M5',
+      note:"Première Maserati à moteur central. Dessinée par Giugiaro. Système hydraulique Citroën (Maserati appartenait alors à Citroën) pour le siège, les pédales et les phares escamotables." },
+    'maserati-quattroporte': { nom:'Maserati Quattroporte', an:[1963], pays:'Italie',
+      ch:530, nm:710, kg:1900, cyl:3.8, arch:'V6 / V8', adm:'biturbo', pos:'avant', tx:'propulsion', bv:'A8',
+      note:"« Quatre portes » en italien : la berline de sport par excellence. Les V8 sont construits par Ferrari à Maranello. Sonorité réputée parmi les plus belles du segment." },
+    'matra-530': { nom:'Matra 530', an:[1967,1973], pays:'France',
+      ch:75, nm:123, kg:855, cyl:1.7, arch:'V4 Ford', adm:'atmo', pos:'central', tx:'propulsion', bv:'M4',
+      note:"Rare voiture de route à moteur central des années 60, avec toit en T amovible et phares escamotables. Nommée d\'après un missile Matra." },
+    'matra-bagheera': { nom:'Matra Bagheera', an:[1973,1980], pays:'France',
+      ch:90, nm:120, kg:930, cyl:1.4, arch:'4 en ligne Simca', adm:'atmo', pos:'central', tx:'propulsion', bv:'M4',
+      note:"Curiosité française : trois places de front, moteur central, carrosserie polyester. La Courrèges est une série spéciale au look futuriste très années 70." },
+    'matra-rancho': { nom:'Matra Rancho', an:[1977,1984], pays:'France',
+      ch:80, nm:118, kg:1150, cyl:1.4, arch:'4 en ligne Simca', adm:'atmo', pos:'avant', tx:'traction', bv:'M4',
+      note:"Ancêtre spirituel du crossover : allure de 4x4 baroudeur… mais deux roues motrices seulement. Carrosserie arrière en plastique sur base de Simca 1100 pick-up." },
+    'mazda-cosmo': { nom:'Mazda Cosmo', an:[1967,1972], pays:'Japon',
+      ch:128, nm:140, kg:940, cyl:1.0, arch:'birotor Wankel', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M5',
+      note:"L\'une des toutes premières voitures de série à moteur rotatif Wankel. Vitrine technologique de Mazda, produite à la main en très petite série. Aujourd\'hui extrêmement rare." },
+    'mazda-rx3': { nom:'Mazda RX-3', an:[1971,1978], pays:'Japon',
+      ch:110, nm:135, kg:920, cyl:1.1, arch:'birotor Wankel', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M5',
+      note:"Sportive rotative légère, redoutable en course : elle a mis fin à la série de victoires des Nissan Skyline GT-R au Japon dans les années 70." },
+    'mercedes-slr': { nom:'Mercedes-Benz SLR McLaren', an:[2003,2010], pays:'Allemagne',
+      ch:626, nm:780, kg:1768, cyl:5.4, arch:'V8', adm:'compresseur', pos:'avant', tx:'propulsion', bv:'A5',
+      prod:2157,
+      note:"Fruit de la collaboration Mercedes-McLaren en pleine ère F1 commune. Portes papillon, museau très long façon Flèche d\'Argent, échappements latéraux. Freins carbone-céramique." },
+    'mercedes-amg-gtbs': { nom:'Mercedes-AMG GT Black Series', an:[2020,2021], pays:'Allemagne',
+      ch:730, nm:800, kg:1615, cyl:4.0, arch:'V8', adm:'biturbo', pos:'avant', tx:'propulsion', bv:'A7',
+      note:"Premier V8 AMG à vilebrequin plat, pour monter plus haut en régime. Aileron arrière massif réglable. A détenu le record du tour au Nürburgring pour une voiture de série." },
+    'honda-nsx-nc1': { nom:'Honda NSX (NC1)', an:[2016,2022], pays:'Japon',
+      ch:581, nm:646, kg:1725, cyl:3.5, arch:'V6 hybride', adm:'biturbo + 3 él.', pos:'central', tx:'intégrale', bv:'A9',
+      note:"La seconde NSX : hybride à trois moteurs électriques, dont deux à l\'avant pour le vectorisation du couple. Construite à la main dans une usine dédiée en Ohio." },
+    'honda-integra-type-r': { nom:'Honda Integra Type R (DC2/DC5)', an:[1995,2006], pays:'Japon',
+      ch:220, nm:206, kg:1170, cyl:2.0, arch:'4 en ligne VTEC', adm:'atmo', pos:'avant', tx:'traction', bv:'M6',
+      note:"Souvent citée comme la meilleure traction de tous les temps par la presse spécialisée. Moteur VTEC hurlant jusqu\'à 8 400 tr/min, différentiel à glissement limité, allègement drastique." },
+    'lotus-emira': { nom:'Lotus Emira', an:[2021], pays:'Royaume-Uni',
+      ch:400, nm:430, kg:1405, cyl:3.5, arch:'V6 compressé / 4 cyl. AMG', adm:'compresseur / turbo', pos:'central', tx:'propulsion', bv:'M6 / A8',
+      note:"La dernière Lotus 100 % thermique : un adieu au moteur à combustion avant le tout-électrique. Le V6 est le compressé Toyota, le 4 cylindres vient d\'AMG." },
+    'lotus-europa': { nom:'Lotus Europa', an:[1966,1975], pays:'Royaume-Uni',
+      ch:126, nm:150, kg:660, cyl:1.6, arch:'4 en ligne', adm:'atmo', pos:'central', tx:'propulsion', bv:'M5',
+      note:"L\'une des premières routières à moteur central de série. Fidèle à la devise de Colin Chapman : légèreté extrême. Le montant arrière épais lui donne une visibilité… particulière." },
+    'mclaren-artura': { nom:'McLaren Artura', an:[2021], pays:'Royaume-Uni',
+      ch:700, nm:720, kg:1498, cyl:3.0, arch:'V6 hybride', adm:'biturbo + électrique', pos:'central', tx:'propulsion', bv:'A8',
+      note:"Première McLaren de série à V6 hybride rechargeable, sur une toute nouvelle architecture carbone. Peut rouler quelques kilomètres en électrique pur, silencieusement." },
+
+    /* ===== LOT 2 (Audi–Iso) ============================================== */
+    'audi-a5': { nom:'Audi A5', an:[2007], pays:'Allemagne',
+      ch:265, nm:350, kg:1520, cyl:2.0, arch:'4 cyl. et V6', adm:'turbo', pos:'avant', tx:'traction / quattro', bv:'S tronic',
+      note:"Le coupé A5 originel, dessiné par Walter de\'Silva, est régulièrement cité par ses propres designers comme l\'une des plus belles Audi modernes." },
+    'bentley-bentayga': { nom:'Bentley Bentayga', an:[2015], pays:'Royaume-Uni',
+      ch:550, nm:770, kg:2440, cyl:4.0, arch:'V8 / W12', adm:'biturbo', pos:'avant', tx:'intégrale', bv:'A8',
+      note:"Le premier SUV de Bentley. À son lancement, la version W12 était le SUV de série le plus rapide du monde. Option horloge de bord Breitling à remontage automatique à plus de 150 000 €." },
+    'bentley-flying-spur': { nom:'Bentley Flying Spur', an:[2005], pays:'Royaume-Uni',
+      ch:635, nm:900, kg:2440, cyl:6.0, arch:'W12', adm:'biturbo', pos:'avant', tx:'intégrale', bv:'A8',
+      note:"La berline de la gamme, dérivée de la Continental. Le W12 6.0 est en réalité deux V6 fusionnés à angle étroit, une architecture unique au groupe Volkswagen." },
+    'bentley-mulsanne': { nom:'Bentley Mulsanne', an:[2010,2020], pays:'Royaume-Uni',
+      ch:512, nm:1020, kg:2685, cyl:6.75, arch:'V8', adm:'biturbo', pos:'avant', tx:'propulsion', bv:'A8',
+      note:"Nommée d\'après la ligne droite des 24 Heures du Mans. Son V8 6¾ litres descend d\'un bloc de 1959, perpétué et modernisé pendant plus de 60 ans." },
+    'bugatti-tourbillon': { nom:'Bugatti Tourbillon', an:[2026], pays:'France',
+      ch:1800, nm:900, kg:1995, cyl:8.3, arch:'V16 hybride', adm:'atmo + électrique', pos:'central', tx:'intégrale', bv:'A8',
+      prod:250, flou:['kg'],
+      note:"Remplaçante de la Chiron. V16 atmosphérique de 8,3 L signé Cosworth, épaulé par trois moteurs électriques. Tableau de bord en horlogerie mécanique véritable, réalisé par des maîtres horlogers suisses." },
+    'chevrolet-corvette-c1': { nom:'Chevrolet Corvette (C1)', an:[1953,1962], pays:'États-Unis',
+      ch:360, nm:475, kg:1380, cyl:5.4, arch:'6 en ligne puis V8 327', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M3/M4',
+      note:"La toute première Corvette. Première voiture américaine de grande série à carrosserie en fibre de verre. Le V8 arrive en 1955 et scelle la légende." },
+    'detomaso-mangusta': { nom:'De Tomaso Mangusta', an:[1967,1971], pays:'Italie',
+      ch:306, nm:388, kg:1450, cyl:4.7, arch:'V8 Ford', adm:'atmo', pos:'central', tx:'propulsion', bv:'M5',
+      prod:401,
+      note:"« Mangouste » en italien : l\'animal qui tue le cobra, allusion à la rupture de De Tomaso avec Carroll Shelby. Capot moteur en deux volets vitrés, spectaculaire. Dessin de Giugiaro." },
+    'delahaye-135': { nom:'Delahaye 135', an:[1935,1954], pays:'France',
+      ch:160, kg:1200, cyl:3.6, arch:'6 en ligne', adm:'atmo', pos:'avant', tx:'propulsion', bv:'Cotal',
+      flou:['ch'],
+      note:"Sommet de l\'élégance automobile française d\'avant-guerre. Carrossée par Figoni & Falaschi, Chapron ou Saoutchik, chaque exemplaire est unique. Victorieuse au Mans 1938." },
+    'ferrari-400': { nom:'Ferrari 400 / 412', an:[1976,1989], pays:'Italie',
+      ch:340, nm:471, kg:1810, cyl:4.8, arch:'V12', adm:'atmo', pos:'avant', tx:'propulsion', bv:'A3 / M5',
+      note:"Première Ferrari à proposer une boîte automatique (une General Motors à trois rapports). Grande GT quatre places longtemps mal-aimée, aujourd\'hui redécouverte." },
+    'ferrari-ff': { nom:'Ferrari FF / GTC4Lusso', an:[2011,2020], pays:'Italie',
+      ch:690, nm:697, kg:1790, cyl:6.3, arch:'V12', adm:'atmo', pos:'avant', tx:'intégrale', bv:'A7',
+      note:"La première Ferrari à transmission intégrale, via un système breveté à deux boîtes distinctes. Carrosserie break de chasse (shooting brake), quatre vraies places." },
+    'ferrari-purosangue': { nom:'Ferrari Purosangue', an:[2022], pays:'Italie',
+      ch:725, nm:716, kg:2033, cyl:6.5, arch:'V12', adm:'atmo', pos:'central-avant', tx:'intégrale', bv:'A8',
+      note:"Le premier « SUV » Ferrari — que la marque refuse d\'appeler ainsi. Portes arrière antagonistes à ouverture inversée. V12 atmo à contre-courant de l\'époque du downsizing." },
+    'iso-grifo': { nom:'Iso Grifo', an:[1965,1974], pays:'Italie',
+      ch:365, nm:460, kg:1400, cyl:5.4, arch:'V8 Chevrolet/Ford', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M4/M5',
+      note:"GT italienne à moteur V8 américain : le raffinement de Bertone (dessin Giugiaro) avec la fiabilité et la puissance d\'un big-block Corvette. La 7 litres dépassait les 280 km/h." },
+
+    /* ===== ENRICHISSEMENT NIVEAU PASSION — LOT 1 (A–Bentley) ============= */
+    'alfa-33-stradale-og': { nom:'Alfa Romeo 33 Stradale', an:[1967,1969], pays:'Italie',
+      ch:230, nm:206, kg:700, cyl:2.0, arch:'V8', adm:'atmo', pos:'central', tx:'propulsion', bv:'M6',
+      prod:18, son:'V8 hurlant jusqu\'à 10 000 tr/min', flou:['prod'],
+      note:"Dérivée de la barquette de course Tipo 33. Seulement 18 exemplaires routiers, dessinés par Franco Scaglione. L\'une des plus belles voitures jamais construites, et l\'une des plus chères aux enchères." },
+    'alfa-montreal': { nom:'Alfa Romeo Montreal', an:[1970,1977], pays:'Italie',
+      ch:200, nm:235, kg:1270, cyl:2.6, arch:'V8', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M5',
+      prod:3925,
+      note:"Présentée à l\'Expo 67 de Montréal, d\'où son nom. Son V8 2.6 est dérivé de celui de la Tipo 33 de course. Les volets mobiles sur les phares sont sa signature." },
+    'alfa-sz': { nom:'Alfa Romeo SZ', an:[1989,1991], pays:'Italie',
+      ch:210, nm:245, kg:1260, cyl:3.0, arch:'V6 Busso', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M5',
+      prod:1036, surnom:'Il Mostro',
+      note:"Surnommée « le Monstre » pour son style anguleux radical, signé Zagato sur ordinateur. Carrosserie en matériau composite Modar. Tenue de route exceptionnelle malgré son allure." },
+    'alfa-duetto': { nom:'Alfa Romeo Spider « Duetto »', an:[1966,1993], pays:'Italie',
+      ch:109, nm:137, kg:990, cyl:1.6, arch:'4 en ligne bialbero', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M5',
+      note:"Rendue immortelle par le film « Le Lauréat » avec Dustin Hoffman en 1967. Sa poupe « ronde » (osso di seppia) est la plus recherchée. Produite près de 30 ans." },
+    'aston-db7': { nom:'Aston Martin DB7', an:[1994,2004], pays:'Royaume-Uni',
+      ch:335, nm:489, kg:1650, cyl:3.2, arch:'6 en ligne compressé puis V12', adm:'compresseur / atmo', pos:'avant', tx:'propulsion', bv:'M5',
+      prod:7000,
+      note:"La DB7 a sauvé Aston Martin de la faillite : plus produite que toutes les Aston précédentes réunies. La Vantage inaugure le V12 6.0. Dessinée par Ian Callum." },
+    'aston-dbs': { nom:'Aston Martin DBS', an:[2007,2012], pays:'Royaume-Uni',
+      ch:517, nm:570, kg:1695, cyl:5.9, arch:'V12', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M6',
+      note:"L\'Aston de James Bond dans « Casino Royale » et « Quantum of Solace ». Le tonneau spectaculaire de Casino Royale reste un record du monde de cascade homologué." },
+    'aston-vanquish': { nom:'Aston Martin Vanquish', an:[2001,2018], pays:'Royaume-Uni',
+      ch:568, nm:630, kg:1739, cyl:5.9, arch:'V12', adm:'atmo', pos:'avant', tx:'propulsion', bv:'A8',
+      note:"La première Vanquish (2001) est l\'Aston de James Bond dans « Meurs un autre jour ». Châssis en aluminium et fibre de carbone, une avancée majeure pour la marque." },
+    'aston-one77': { nom:'Aston Martin One-77', an:[2009,2012], pays:'Royaume-Uni',
+      ch:750, nm:750, kg:1630, cyl:7.3, arch:'V12', adm:'atmo', pos:'avant', tx:'propulsion', bv:'A6',
+      prod:77, flou:['prod'],
+      note:"77 exemplaires, comme son nom l\'indique. Le plus gros V12 atmosphérique jamais monté dans une routière (7,3 L). Monocoque carbone, carrosserie aluminium façonnée main." },
+    'austin-healey-3000': { nom:'Austin-Healey 3000', an:[1959,1967], pays:'Royaume-Uni',
+      ch:124, nm:230, kg:1150, cyl:2.9, arch:'6 en ligne', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M4',
+      note:"Surnommée « the Big Healey ». Redoutable en rallye dans les années 60 malgré sa garde au sol quasi nulle. Icône du roadster britannique musclé." },
+    'bmw-850csi': { nom:'BMW 850CSi', an:[1992,1996], pays:'Allemagne',
+      ch:375, nm:550, kg:1865, cyl:5.6, arch:'V12', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M6',
+      prod:1510,
+      note:"La E31 fut la première voiture de série au monde avec un V12 accouplé à une boîte manuelle six rapports. Portes sans encadrement et phares escamotables. La CSi est la version sport affûtée par BMW M." },
+    'bmw-m8': { nom:'BMW M8 Competition', an:[2019], pays:'Allemagne',
+      ch:625, nm:750, kg:1885, cyl:4.4, arch:'V8', adm:'biturbo', pos:'avant', tx:'intégrale', bv:'A8',
+      note:"Le sommet de la gamme BMW. Dérivée de la M8 GTE qui a couru au Mans. Mode 2WD débrayable pour transformer l\'intégrale en pure propulsion." },
+    'bentley-blower': { nom:'Bentley 4½ Litre « Blower »', an:[1929,1931], pays:'Royaume-Uni',
+      ch:240, kg:1625, cyl:4.4, arch:'4 en ligne compressé', adm:'compresseur Roots', pos:'avant', tx:'propulsion', bv:'M4',
+      prod:55, flou:['ch','prod'],
+      note:"Le compresseur monté devant la calandre est sa signature. Contre l\'avis de W.O. Bentley lui-même, qui détestait la suralimentation. Icône des 24 Heures du Mans, aujourd\'hui rééditée à l\'identique." },
 
     /* ---- Groupe B et rallye ------------------------------------------ */
     'audi-sport-quattro-s1': { nom:'Audi Sport quattro S1 E2', an:[1985,1986], pays:'Allemagne',
@@ -400,6 +936,455 @@
 
   const GENS = {
 
+    'fiat-cinquecento': [
+      ['1991–1998','1991–1998','2 et 4 cyl. 0.7–1.1','31–54 ch','Produite en Pologne, elle a motorisé l\'Europe de l\'Est post-communiste. La Sporting 1.1 est la version recherchée.'],
+    ],
+    'fiat-seicento': [
+      ['1998–2010','1998–2010','4 cyl. 0.9–1.1','39–54 ch','Remplaçante de la Cinquecento. La Schumacher Edition célébrait le pilote alors chez Ferrari.'],
+    ],
+    'fiat-ritmo': [
+      ['1978–1988','1978–1988','4 cyl. 1.1–2.0','60–130 ch','Sa pub montrait des robots l\'assemblant : « construite par des robots ». L\'Abarth 130 TC est la sportive culte.'],
+    ],
+    'ford-explorer': [
+      ['1990–','1990–','V6, V8, EcoBoost turbo, électrique','160–450 ch','L\'un des SUV qui a lancé la mode du genre aux États-Unis dans les années 90.'],
+    ],
+    'ford-falcon-xb': [
+      ['1973–1976','1973–1976','6 en ligne et V8','~200–300 ch','La XB GT Coupé noire est devenue l\'« Interceptor » de Mad Max, l\'une des voitures de cinéma les plus célèbres.'],
+    ],
+    'landrover-rr-sport': [
+      ['2005–','2005–','V6, V8 compressé, hybride, SV','249–635 ch','La version SV/SVR à V8 compressé transforme le grand SUV en engin de piste.'],
+    ],
+    'landrover-defender-classic': [
+      ['Series / Defender 90-110','1948–2016','4 et 6 cyl. essence et diesel, V8','52–185 ch','Descendant direct du Land Rover Series de 1948. Son profil n\'a quasiment pas changé en près de 70 ans.'],
+    ],
+    'liberty-walk-lb': [
+      ['LB-Works','2010–','selon base (Lamborghini, Ferrari, GT-R…)','variable','Préparateur japonais culte : kits carrosserie à ailes élargies rivetées, look « widebody » extrême. Chaque voiture est unique.'],
+    ],
+    'mg-4': [
+      ['2022–','2022–','moteur électrique','170–435 ch','La XPower à deux moteurs et 435 ch en fait l\'une des compactes électriques les plus puissantes à prix contenu.'],
+    ],
+    'novitec-n-largo': [
+      ['N-Largo','2010–','selon base Ferrari/Lamborghini, retravaillée','jusqu\'à 1000+ ch','Préparateur allemand officiel. Les N-Largo sont des séries limitées à carrosserie élargie et puissance rehaussée.'],
+    ],
+    'polestar-2': [
+      ['2020–','2020–','moteurs électriques','224–476 ch','Marque née de Volvo. La 2 fut l\'une des premières rivales crédibles de la Tesla Model 3 en Europe.'],
+    ],
+    'porsche-356': [
+      ['1948–1965','1948–1965','flat-4 1.1–2.0 refroidi par air, moteur arrière','40–130 ch','La toute première Porsche de série. La 356 Carrera reçoit le moteur Fuhrmann à quatre arbres à cames.'],
+    ],
+    'porsche-718-cayman': [
+      ['982','2016–','flat-4 turbo, flat-6 atmo (GTS 4.0/GT4)','300–420 ch','Le retour du flat-6 atmosphérique sur la GTS 4.0 a réconcilié les puristes après le passage au flat-4 turbo.'],
+    ],
+    'rivian-r1t': [
+      ['2021–','2021–','quatre moteurs électriques','600–850 ch','Premier pick-up électrique arrivé sur le marché. Un « tunnel » de rangement traverse la caisse derrière la cabine.'],
+    ],
+    'seat-arona': [
+      ['2017–','2017–','3 et 4 cyl. essence, CNG','90–150 ch','Petit SUV urbain dérivé de l\'Ibiza, best-seller de SEAT.'],
+    ],
+    'skoda-octavia': [
+      ['1996–','1996–','4 cyl. essence, diesel, RS','75–265 ch','La RS combine espace familial et mécanique de Golf GTI. Le break RS est un favori discret des connaisseurs.'],
+    ],
+    'skoda-superb': [
+      ['2001–','2001–','4 cyl., V6, diesel, hybride','105–280 ch','Habitabilité arrière de référence, digne d\'une limousine, à prix contenu. Le coffre « TwinDoor » de la 2e génération.'],
+    ],
+    'suzuki-swift': [
+      ['2004–','2004–','3 et 4 cyl. essence, hybride','90–140 ch','La Swift Sport, légère et vive, est une des GTI modernes les plus abordables et attachantes.'],
+    ],
+    'tesla-cybertruck': [
+      ['2023–','2023–','moteurs électriques, 48 V','~600–845 ch','Carrosserie en acier inoxydable non peint, pliée à froid. Sa vitre « incassable » brisée lors de la présentation est restée célèbre.'],
+    ],
+    'toyota-camry': [
+      ['1982–','1982–','4 cyl., V6, hybride','95–305 ch','L\'une des berlines les plus vendues au monde, réputée pour sa fiabilité quasi légendaire.'],
+    ],
+    'toyota-crown': [
+      ['1955–','1955–','6 cyl., V8, hybride','105–345 ch','Plus ancienne plaque Toyota encore produite. Longtemps la voiture des taxis et de la police japonaise.'],
+    ],
+    'vw-181': [
+      ['1969–1983','1969–1983','flat-4 1.5–1.6 refroidi par air','44–48 ch','« Trekker » ou « Thing ». Véhicule utilitaire léger dérivé de la Coccinelle, d\'inspiration militaire.'],
+    ],
+    'vw-arteon': [
+      ['2017–2023','2017–2023','4 cyl. TSI et TDI','150–320 ch','Fastback élégant, haut de gamme de VW. La R à 320 ch et transmission intégrale.'],
+    ],
+    'vw-caddy': [
+      ['1979–','1979–','4 cyl. essence et diesel','60–122 ch','Utilitaire et ludospace dérivé de la Golf puis de plateformes dédiées.'],
+    ],
+    'vw-coccinelle': [
+      ['1938–2003','1938–2003','flat-4 refroidi par air, moteur arrière','25–50 ch','Plus de 21 millions d\'exemplaires : l\'une des voitures les plus produites de l\'histoire, sur un même concept pendant 65 ans.'],
+    ],
+    'vw-combi': [
+      ['T1 / T2','1950–1979','flat-4 refroidi par air, moteur arrière','25–50 ch','Le van symbole du mouvement hippie et de la contre-culture des années 60-70. Le « Bulli » adoré des collectionneurs.'],
+    ],
+    'vw-new-beetle': [
+      ['1997–2019','1997–2019','4 cyl. essence et diesel','75–220 ch','Réinterprétation moderne de la Coccinelle, avec un vase à fleur sur la planche de bord en clin d\'œil.'],
+    ],
+    'vw-polo': [
+      ['1975–','1975–','3 et 4 cyl. essence et diesel, GTI','40–207 ch','La GTI perpétue l\'esprit de la Golf GTI dans un format plus compact.'],
+    ],
+    'vw-sharan': [
+      ['1995–2022','1995–2022','4 cyl. essence et TDI','90–220 ch','Grand monospace, jumeau du SEAT Alhambra et du Ford Galaxy de première génération.'],
+    ],
+    'vw-touareg': [
+      ['2002–','2002–','V6, V8, V10 TDI, W12, hybride','174–462 ch','Le V10 TDI de 313 ch pouvait tracter 3,5 tonnes ; une démo l\'a montré remorquant un Boeing 747.'],
+    ],
+    'vw-t3': [
+      ['1979–1992','1979–1992','flat-4 air puis eau, diesel','50–112 ch','Dernier Combi à moteur arrière. Les versions Syncro 4x4 et Westfalia camping sont très prisées.'],
+    ],
+    'vw-t4': [
+      ['1990–2003','1990–2003','4 et 5 cyl., VR6','61–204 ch','Premier Transporter à moteur avant. Le VR6 en fait un van étonnamment rapide.'],
+    ],
+    'volvo-xc40': [
+      ['2017–','2017–','3 et 4 cyl., électrique','129–408 ch','Premier SUV compact de Volvo. Voiture de l\'Année européenne 2018.'],
+    ],
+    'volvo-xc60': [
+      ['2008–','2008–','4 cyl., hybride rechargeable, diesel','163–455 ch','SUV le plus vendu de Volvo. La Polestar Engineered pousse l\'hybride rechargeable au-delà de 400 ch.'],
+    ],
+    'xpeng-p7': [
+      ['2020–','2020–','moteurs électriques','267–586 ch','Berline électrique chinoise sportive, dotée de portes papillon sur la version Wing.'],
+    ],
+    'zeekr-001': [
+      ['2021–','2021–','moteurs électriques, 800 V','272–1265 ch','Le break-coupé électrique premium chinois. La version FR à 1265 ch abat le 0-100 en moins de 2,1 s.'],
+    ],
+
+    'mercedes-190': [
+      ['W201','1982–1993','4 et 6 cyl., diesel','72–235 ch','La « Baby-Benz ». La 190 E 2.5-16 Evolution II, préparée avec Cosworth, est née pour le DTM.'],
+    ],
+    'mercedes-pagode': [
+      ['W113','1963–1971','6 en ligne 2.3–2.8 injection','150–170 ch','Son toit rigide au galbe concave lui a valu le surnom de « Pagode ». Icône du style Mercedes des années 60.'],
+    ],
+    'mercedes-classe-c': [
+      ['W202 – W206','1993–','4 et 6 cyl., V8 AMG, diesel, hybride','122–680 ch','Berline compacte premium. Les versions C 63 AMG couvrent du V8 atmo au V8 biturbo puis au 4 cyl. hybride.'],
+    ],
+    'mercedes-cls': [
+      ['C219 – C257','2004–2023','V6, V8, 6 en ligne, diesel','204–612 ch','Inventeur du « coupé quatre portes », concept très copié depuis.'],
+    ],
+    'mercedes-unimog': [
+      ['1948–','1948–','4 et 6 cyl. diesel','25–299 ch','Véhicule tout-terrain utilitaire extrême, capable de rouler sur des pentes et des terrains inaccessibles à tout autre camion.'],
+    ],
+    'mercedes-w123': [
+      ['W123','1976–1986','4 et 6 cyl. essence et diesel','55–185 ch','Réputée quasi indestructible : beaucoup dépassent le million de kilomètres, notamment les taxis diesel.'],
+    ],
+    'mercedes-w124': [
+      ['W124','1984–1997','4 et 6 cyl., diesel','72–326 ch','La 500 E, assemblée par Porsche à Zuffenhausen, cache un V8 sous une carrosserie discrète.'],
+    ],
+    'maserati-levante': [
+      ['2016–','2016–','V6, V8 (Ferrari), diesel','250–590 ch','Premier SUV de Maserati. La Trofeo reçoit le V8 3.8 d\'origine Ferrari.'],
+    ],
+    'opel-ascona': [
+      ['A – C','1970–1988','4 cyl. essence et diesel','60–150 ch','L\'Ascona 400 fut championne du monde des rallyes 1982 avec Walter Röhrl.'],
+    ],
+    'opel-astra': [
+      ['F – L','1991–','4 cyl. essence, diesel, hybride, électrique','60–304 ch','L\'OPC/GSi reprend le 2.0 turbo poussé. Rivale directe de la Golf.'],
+    ],
+    'opel-tigra': [
+      ['A / B','1994–2009','4 cyl. essence','65–125 ch','Petit coupé (A) puis coupé-cabriolet à toit rigide (B), sur base de Corsa.'],
+    ],
+    'opel-zafira': [
+      ['A – C','1999–2019','4 cyl. essence, diesel, CNG','101–192 ch','Monospace compact pionnier du système de sièges escamotables Flex7.'],
+    ],
+    'mitsubishi-pajero': [
+      ['1982–2021','1982–2021','4 cyl. et V6 essence, diesel','84–250 ch','Douze victoires au Dakar, record absolu de l\'épreuve. Grand 4x4 à châssis échelle.'],
+    ],
+    'mitsubishi-delica': [
+      ['1968–','1968–','4 cyl. essence et diesel, 4x4','64–190 ch','Van tout-terrain à quatre roues motrices, culte auprès des amateurs d\'aventure et de van life.'],
+    ],
+    'nissan-patrol': [
+      ['1951–','1951–','6 en ligne, V6, V8','95–400 ch','Grand 4x4 increvable, rival historique du Toyota Land Cruiser.'],
+    ],
+    'nissan-primera': [
+      ['P10 – P12','1990–2007','4 cyl. essence et diesel','75–140 ch','La P10 a marqué les esprits en Championnat britannique des voitures de tourisme (BTCC).'],
+    ],
+    'nissan-cube': [
+      ['1998–2019','1998–2019','4 cyl. essence','98–122 ch','Style cubique assumé, lunette arrière asymétrique enveloppante. Culte au Japon.'],
+    ],
+    'nissan-z': [
+      ['RZ34','2022–','V6 3.0 biturbo','405 ch','Héritière directe de la lignée des Fairlady Z / 350Z / 370Z. Boîte manuelle toujours proposée.'],
+    ],
+
+    'peugeot-104': [
+      ['1972–1988','1972–1988','4 cyl. 0.9–1.4','45–72 ch','La plus petite quatre-portes d\'Europe à sa sortie. Base des Citroën LN/LNA et Talbot Samba.'],
+    ],
+    'peugeot-203': [
+      ['1948–1960','1948–1960','4 cyl. 1.3 atmo','42–50 ch','Première Peugeot d\'après-guerre, monocoque, produite à plus d\'un demi-million d\'exemplaires.'],
+    ],
+    'peugeot-204': [
+      ['1965–1976','1965–1976','4 cyl. essence et diesel','53–65 ch','Première Peugeot à traction avant. Voiture la plus vendue en France de 1969 à 1971.'],
+    ],
+    'peugeot-304': [
+      ['1969–1980','1969–1980','4 cyl. 1.3 atmo','65–75 ch','Dérivée de la 204 avec un dessin de Pininfarina rallongé.'],
+    ],
+    'peugeot-305': [
+      ['1977–1989','1977–1989','4 cyl. essence et diesel','58–105 ch','Berline familiale, sœur de la Talbot Solara sur certains marchés.'],
+    ],
+    'peugeot-402': [
+      ['1935–1942','1935–1942','4 cyl. 2.0 atmo','55–63 ch','Style aérodynamique « fuseau Sochaux », phares intégrés derrière la calandre.'],
+    ],
+    'peugeot-404': [
+      ['1960–1975','1960–1975','4 cyl. essence, diesel, injection','54–96 ch','Dessin Pininfarina. Grande carrière en Afrique, réputée increvable. Victoires au rallye de l\'Est africain.'],
+    ],
+    'peugeot-406': [
+      ['1995–2004','1995–2004','4 cyl., V6, HDi','90–210 ch','Le coupé 406, dessiné par Pininfarina, reste l\'un des plus beaux coupés français des années 90.'],
+    ],
+    'peugeot-407': [
+      ['2004–2011','2004–2011','4 cyl., V6 essence et HDi','109–241 ch','Calandre à large gueule béante, style marquant de la décennie. Le coupé reçoit un V6 diesel bi-turbo.'],
+    ],
+    'peugeot-504-coupe': [
+      ['1969–1983','1969–1983','4 cyl. et V6 PRV','97–144 ch','Coupé et cabriolet dessinés par Pininfarina, sommet du raffinement Peugeot de l\'époque.'],
+    ],
+    'peugeot-604': [
+      ['1975–1986','1975–1986','V6 PRV essence et turbodiesel','80–144 ch','Berline haut de gamme, première française à recevoir un turbodiesel.'],
+    ],
+    'peugeot-605': [
+      ['1989–1999','1989–1999','4 cyl., V6, turbodiesel','109–200 ch','Grande berline dessinée avec Pininfarina, jumelle technique de la Citroën XM.'],
+    ],
+    'peugeot-607': [
+      ['1999–2010','1999–2010','4 cyl., V6 essence et HDi','136–210 ch','Dernière grande berline classique de Peugeot avant l\'abandon du segment.'],
+    ],
+    'peugeot-207': [
+      ['2006–2014','2006–2014','4 cyl. essence et HDi','68–175 ch','La RC/GTi reprend le 1.6 THP turbo développé avec BMW.'],
+    ],
+    'peugeot-1007': [
+      ['2005–2009','2005–2009','4 cyl. essence et HDi','68–110 ch','Portes latérales coulissantes électriques, cas unique sur une citadine. Commercialement un échec.'],
+    ],
+    'peugeot-806': [
+      ['1994–2002','1994–2002','4 cyl. essence et HDi','110–136 ch','Monospace né du projet commun PSA-Fiat (Eurovans), avec Citroën Evasion, Fiat Ulysse et Lancia Zeta.'],
+    ],
+    'peugeot-j7': [
+      ['1965–1980','1965–1980','4 cyl. essence et diesel','48–68 ch','Fourgon au style arrondi caractéristique, omniprésent dans la France des années 70.'],
+    ],
+    'renault-4cv': [
+      ['1947–1961','1947–1961','4 cyl. 0.75 arrière','17–21 ch','La première française produite à plus d\'un million d\'exemplaires. Surnommée « la motte de beurre ».'],
+    ],
+    'renault-dauphine': [
+      ['1956–1967','1956–1967','4 cyl. 0.85 arrière','27–55 ch','Deux millions d\'exemplaires. La Gordini et l\'Ondine en sont les versions recherchées.'],
+    ],
+    'renault-6': [
+      ['1968–1986','1968–1986','4 cyl. 0.85–1.1','34–47 ch','Berline bicorps polyvalente, entre 4L et 16.'],
+    ],
+    'renault-14': [
+      ['1976–1983','1976–1983','4 cyl. 1.2–1.4 (moteur Douvrin PSA)','57–72 ch','Sa pub la comparant à une poire lui a durablement collé à la peau, au détriment des ventes.'],
+    ],
+    'renault-16': [
+      ['1965–1980','1965–1980','4 cyl. 1.5–1.6','55–93 ch','Voiture de l\'Année 1966. Pionnière du hayon sur une berline haut de gamme.'],
+    ],
+    'renault-18': [
+      ['1978–1989','1978–1989','4 cyl. essence, diesel, turbo','48–125 ch','La Turbo est l\'une des premières berlines familiales turbocompressées de grande série.'],
+    ],
+    'renault-20-30': [
+      ['1975–1984','1975–1984','4 cyl. et V6 PRV','90–142 ch','Haut de gamme Renault. La 30 inaugure le V6 PRV développé avec Peugeot et Volvo.'],
+    ],
+    'renault-safrane': [
+      ['1992–2000','1992–2000','4 cyl., V6, turbodiesel','107–268 ch','La Biturbo Baccara, préparée par Hartge, dépasse les 260 ch — rare et confidentielle.'],
+    ],
+    'renault-master': [
+      ['1980–','1980–','4 cyl. diesel, électrique','90–180 ch','Grand utilitaire, l\'un des fourgons les plus vendus d\'Europe.'],
+    ],
+    'renault-rodeo': [
+      ['1970–1987','1970–1987','4 cyl. 0.85–1.1','34–47 ch','Loisirs tout-chemin à carrosserie plastique, sur base de 4L puis 6.'],
+    ],
+
+    'maserati-3200gt': [
+      ['1998–2002','1998–2002','V8 3.2 biturbo, moteur avant','370 ch','Feux arrière en boomerang à LED, une première mondiale. Dessin de Giugiaro.'],
+    ],
+    'maserati-ghibli': [
+      ['I / II','1967–1998','V8 4.7–4.9 et V6 biturbo','255–335 ch','La Ghibli originale (1967) est un grand coupé Ghia à moteur V8 avant.'],
+    ],
+    'maserati-ghibli-m157': [
+      ['M157','2013–2024','V6 3.0 biturbo, V8, diesel','250–580 ch','Berline sport, la Trofeo à V8 dépasse les 570 ch.'],
+    ],
+    'maserati-grecale': [
+      ['2022–','2022–','4 cyl. mild hybrid, V6 Nettuno, électrique','300–530 ch','SUV intermédiaire. La Trofeo reprend le V6 Nettuno de la MC20.'],
+    ],
+    'jaguar-fpace': [
+      ['2016–','2016–','4 et 6 cyl., V8 compressé','163–575 ch','Premier SUV de Jaguar. La SVR à V8 5.0 compressé dépasse les 550 ch.'],
+    ],
+    'lexus-rx': [
+      ['1998–','1998–','V6, hybride, hybride rechargeable','204–371 ch','Pionnier du SUV premium hybride. Best-seller mondial de Lexus.'],
+    ],
+    'lotus-seven': [
+      ['1957–1972','1957–1972','4 cyl. Ford et Cosworth atmo','40–126 ch','Conçue par Colin Chapman selon sa devise « simplify, then add lightness ». Base de toutes les Caterham.'],
+    ],
+    'lucid-air': [
+      ['2021–','2021–','moteurs électriques, 900 V','480–1234 ch','La Sapphire à trois moteurs dépasse les 1200 ch. Autonomie parmi les plus élevées du marché.'],
+    ],
+    'lincoln-continental-61': [
+      ['1961–1969','1961–1969','V8 7.0 atmo','300–345 ch','Portes arrière à ouverture inversée (« suicide doors »). La limousine présidentielle de Kennedy en 1963.'],
+    ],
+    'lincoln-town-car': [
+      ['1981–2011','1981–2011','V8 4.6–5.0 atmo','150–239 ch','La grande berline de luxe américaine par excellence, reine des limousines d\'aéroport.'],
+    ],
+    'lancia-ypsilon': [
+      ['1995–','1995–','4 cyl. essence, hybride, électrique','60–156 ch','Citadine chic, longtemps le seul modèle maintenant Lancia en vie sur le marché.'],
+    ],
+    'hyundai-pony': [
+      ['1975–1990','1975–1990','4 cyl. Mitsubishi atmo','55–72 ch','Première voiture coréenne de conception maison. Dessinée par Giugiaro, elle a lancé l\'industrie automobile du pays.'],
+    ],
+    'hyundai-santa-fe': [
+      ['2000–','2000–','4 et 6 cyl. essence, diesel, hybride','145–265 ch','Premier SUV de Hyundai, devenu un pilier de la gamme.'],
+    ],
+    'kia-picanto': [
+      ['2004–','2004–','3 et 4 cyl. essence','62–100 ch','Citadine d\'entrée de gamme, la GT-Line turbo apporte une touche sportive.'],
+    ],
+    'kia-ev9': [
+      ['2023–','2023–','moteurs électriques, 800 V','204–384 ch','Grand SUV électrique sept places. Charge très rapide grâce à l\'architecture 800 volts.'],
+    ],
+    'hongqi-h9': [
+      ['2020–','2020–','4 cyl. turbo et V6','245–381 ch','Berline de prestige chinoise. Hongqi (« drapeau rouge ») est la marque des limousines officielles de l\'État chinois.'],
+    ],
+
+    'ford-f150': [
+      ['1975–','1975–','6 en ligne, V6, V8, EcoBoost turbo, Lightning électrique','122–580 ch','Le véhicule le plus vendu aux États-Unis depuis plus de quarante ans, quasi absent hors Amérique du Nord.'],
+    ],
+    'ferrari-roma': [
+      ['2020–','2020–','V8 3.9 biturbo, moteur avant','620 ch','Style « nouvelle dolce vita » épuré, hommage aux GT Ferrari des années 60.'],
+    ],
+    'ferrari-portofino': [
+      ['2017–','2017–','V8 3.9 biturbo, moteur avant','600–620 ch','Cabriolet à toit rigide escamotable, remplaçante de la California T.'],
+    ],
+    'ferrari-mondial': [
+      ['1980–1993','1980–1993','V8 3.0–3.4 atmo, moteur central','214–300 ch','Seule Ferrari quatre places à moteur V8 central. Longtemps la Ferrari la plus accessible.'],
+    ],
+    'fiat-panda': [
+      ['1980–','1980–','2 et 4 cyl. essence, diesel, hybride','30–86 ch','Dessinée par Giugiaro comme une « pièce à vivre » sur roues. Voiture de l\'Année 2004 pour la 2e génération.'],
+    ],
+    'fiat-panda-4x4': [
+      ['1983–','1983–','4 cyl. essence et diesel, transmission intégrale','34–86 ch','La plus petite 4x4 du marché à son lancement. Culte auprès des amateurs de montagne.'],
+    ],
+    'fiat-uno': [
+      ['1983–1995','1983–1995','4 cyl. FIRE essence et diesel','45–118 ch','Voiture de l\'Année 1984. La Turbo i.e. est la version chaude recherchée.'],
+    ],
+    'fiat-127': [
+      ['1971–1987','1971–1987','4 cyl. 0.9–1.3','45–75 ch','Voiture de l\'Année 1972. Pionnière de la traction avant transversale sur le segment populaire.'],
+    ],
+    'fiat-128': [
+      ['1969–1985','1969–1985','4 cyl. 1.1–1.3','55–75 ch','Voiture de l\'Année 1970. Son architecture traction avant transversale a inspiré toute l\'industrie.'],
+    ],
+    'fiat-tipo': [
+      ['1988–1995 / 2015–','1988–','4 cyl. essence et diesel','58–125 ch','Voiture de l\'Année 1989. Nom relancé en 2015 sur une compacte à petit prix.'],
+    ],
+    'fiat-500-classic': [
+      ['Nuova 500','1957–1975','2 cyl. 0.5–0.6 refroidi par air','13–23 ch','La voiture qui a motorisé l\'Italie de l\'après-guerre. Plus de 3,8 millions d\'exemplaires.'],
+    ],
+    'fiat-topolino-500a': [
+      ['500 « Topolino »','1936–1955','4 cyl. 0.6 atmo','13–16 ch','L\'une des plus petites voitures de série au monde à sa sortie. « Topolino » = Mickey en italien.'],
+    ],
+    'fiat-124-spider': [
+      ['1966–1985 / 2016–2020','1966–','4 cyl. atmo puis 1.4 turbo','90–170 ch','Le roadster Pininfarina des années 60, ressuscité en 2016 sur base de Mazda MX-5.'],
+    ],
+    'fiat-ducato': [
+      ['1981–','1981–','4 cyl. diesel, électrique','110–180 ch','L\'un des utilitaires les plus vendus d\'Europe, base de la majorité des camping-cars du continent.'],
+    ],
+    'ford-bronco': [
+      ['1966–1996 / 2021–','1966–','6 en ligne et V8, EcoBoost turbo','170–418 ch','Grand 4x4 tout-terrain, relancé en 2021 face au Jeep Wrangler.'],
+    ],
+    'ford-gran-torino': [
+      ['1972–1976','1972–1976','V8 4.9–7.0 atmo','137–248 ch','Rendue célèbre par la série Starsky et Hutch, puis par le film de Clint Eastwood.'],
+    ],
+
+    'chevrolet-suburban': [
+      ['1935–','1935–','V8 essence, Duramax diesel','290–420 ch','Le nom de modèle le plus ancien encore en production dans l\'automobile. SUV pleine grandeur, huit à neuf places.'],
+    ],
+    'chevrolet-c10': [
+      ['1960–1987','1960–1987','6 en ligne et V8','140–255 ch','Pick-up devenu une base culte de la scène custom et lowrider américaine.'],
+    ],
+    'chevrolet-k5-blazer': [
+      ['1969–1994','1969–1994','6 en ligne et V8','155–210 ch','Grand 4x4 à toit amovible, ancêtre du Tahoe.'],
+    ],
+    'chevrolet-camaro-classic': [
+      ['1re gén.','1966–1969','6 en ligne et V8 4.1–7.0','140–375 ch','La réponse de Chevrolet à la Mustang. Le SS 396 et les COPO 427 sont les plus recherchés.'],
+    ],
+    'chrysler-pt-cruiser': [
+      ['2000–2010','2000–2010','4 cyl. essence et turbo','141–223 ch','Style néo-rétro inspiré des années 30. La GT turbo dépasse les 220 ch.'],
+    ],
+    'citroen-ami6': [
+      ['1961–1978','1961–1978','2 cyl. à plat 0.6','22–35 ch','Sa lunette arrière inversée est l\'un des partis pris de style les plus audacieux de son époque.'],
+    ],
+    'citroen-c4-cactus': [
+      ['2014–2020','2014–2020','3 et 4 cyl. essence et BlueHDi','75–110 ch','Les « Airbump » sur les portières, coussins d\'air protecteurs, sont sa signature visuelle.'],
+    ],
+    'abarth-500e': [
+      ['2023–','2023–','moteur électrique','155 ch','Première Abarth 100 % électrique. Un générateur de son reproduit le bruit de l\'échappement thermique.'],
+    ],
+    'alpine-a110-og': [
+      ['Berlinette','1961–1977','4 cyl. Renault, moteur arrière','51–140 ch','Reine du rallye : championne du monde des constructeurs 1973. Coque polyester sur châssis poutre.'],
+    ],
+    'alpine-a110-r': [
+      ['2022–','2022–','4 cyl. 1.8 turbo, moteur central','300 ch','Version circuit de l\'A110 moderne : jantes carbone, capot allégé, environ 34 kg de moins que la S.'],
+    ],
+    'alfa-33-stradale': [
+      ['2023','2023','V6 2.9 biturbo, moteur central','620 ch','33 exemplaires, tous vendus avant la présentation. Hommage à la 33 Stradale de 1967. Aussi déclinée en version électrique.'],
+    ],
+    'bmw-serie7': [
+      ['E23 – G70','1977–','6 et 8 cyl., V12, hybride, électrique','184–660 ch','La berline amirale BMW. La i7 en est la déclinaison 100 % électrique.'],
+    ],
+    'bmw-neue-klasse': [
+      ['1500/1600/1800/2000','1962–1972','4 cyl. atmo','75–130 ch','La gamme qui a sauvé BMW de la faillite et défini l\'ADN sportif de la marque.'],
+    ],
+    'byd-dolphin': [
+      ['2021–','2021–','moteur électrique','95–204 ch','Compacte électrique du premier constructeur mondial de véhicules électrifiés. Batterie Blade lame maison.'],
+    ],
+
+    'ferrari-f50': [
+      ['1995–1997','1995–1997','V12 4.7 atmo dérivé de la F1, moteur central','520 ch','349 exemplaires. Le V12 est boulonné directement au châssis carbone, comme sur une monoplace — vibrations comprises.'],
+    ],
+    'ferrari-dino': [
+      ['246 GT/GTS','1969–1974','V6 2.4 atmo, moteur central','195 ch','Vendue sous la marque Dino, sans écusson Ferrari, en hommage au fils d\'Enzo. Aujourd\'hui pleinement reconnue comme une Ferrari.'],
+    ],
+    'ferrari-california': [
+      ['2008–2017','2008–2017','V8 4.3 puis 3.9 turbo, moteur avant','460–560 ch','Première Ferrari à toit rigide escamotable et première à moteur V8 avant.'],
+    ],
+    'ferrari-f355': [
+      ['1994–1999','1994–1999','V8 3.5 atmo 40 soupapes, moteur central','380 ch','Cinq soupapes par cylindre. Considérée comme l\'une des plus belles Ferrari V8 jamais dessinées.'],
+    ],
+    'bugatti-type35': [
+      ['1924–1930','1924–1930','8 cyl. en ligne 2.0–2.3 atmo','90–140 ch','La voiture de course la plus victorieuse de l\'histoire : plus de mille victoires. Roues en aluminium coulé, une première.'],
+    ],
+    'alfa-33': [
+      ['905','1983–1994','4 cyl. à plat (boxer) atmo','79–137 ch','Héritière de l\'Alfasud, elle conserve son moteur boxer. La version 4x4 Permanent 4 est recherchée.'],
+    ],
+    'alfa-164': [
+      ['164','1987–1998','4 cyl. Twin Spark, V6 Busso, TD','117–232 ch','Dessinée par Pininfarina. Le V6 Busso 3.0 24v est l\'un des plus mélodieux de sa génération.'],
+    ],
+    'amc-pacer': [
+      ['1975–1980','1975–1980','6 cyl. en ligne 3.8–4.2 atmo','90–120 ch','« Le bocal à poissons » : immense surface vitrée, portes asymétriques. Devenue culte grâce au film Wayne\'s World.'],
+    ],
+    'audi-a2': [
+      ['8Z','1999–2005','3 et 4 cyl. essence et TDI','61–110 ch','Carrosserie tout aluminium. La version 3L consommait officiellement 3 litres aux 100 km — un record pour l\'époque.'],
+    ],
+    'bmw-z8': [
+      ['E52','1999–2003','V8 4.9 atmo (S62 de la M5)','400 ch','Design néo-rétro inspiré de la 507. Apparue dans le James Bond « Le monde ne suffit pas ».'],
+    ],
+    'bmw-i3': [
+      ['I01','2013–2022','électrique, prolongateur d\'autonomie en option','170–184 ch','Cellule passagers en carbone sur une voiture de grande série, une première mondiale.'],
+    ],
+    'bmw-x6': [
+      ['E71 – G06','2008–','6 et 8 cyl. turbo, diesel','258–625 ch','Inventrice du segment SUV-coupé, très copiée depuis. Le X6 M dépasse les 600 ch.'],
+    ],
+    'chevrolet-el-camino': [
+      ['1959–1987','1959–1987','6 cyl. et V8','120–450 ch','Mi-berline mi-pick-up. La version SS 454 embarque l\'un des plus gros V8 jamais montés dans un utilitaire léger.'],
+    ],
+    'chevrolet-silverado': [
+      ['1999–','1999–','V6, V8, Duramax diesel','285–420 ch','Pick-up grand format, l\'un des véhicules les plus vendus aux États-Unis, quasi absent ailleurs.'],
+    ],
+
+    'detomaso-pantera': [
+      ['1971–1993','1971–1993','V8 Ford 5.8–5.9 atmo, moteur central','330–350 ch','Ligne signée Tom Tjaarda chez Ghia. Vendue un temps dans les concessions Lincoln-Mercury aux États-Unis.'],
+    ],
+    'ds-3': [
+      ['2015–','2015–','3 et 4 cyl. turbo, électrique','82–208 ch','Née Citroën DS3 en 2009, passée sous marque DS à part entière en 2015. La version Performance à 208 ch.'],
+    ],
+    'fiat-126': [
+      ['1972–2000','1972–2000','2 cyl. 0.6–0.7 refroidi par air','23–26 ch','Remplaçante de la 500. Produite massivement en Pologne, où elle reste une icône populaire.'],
+    ],
+    'fiat-multipla': [
+      ['1998–2010','1998–2010','4 cyl. essence, JTD, méthane','95–115 ch','Six vraies places sur deux rangs. Son style clivant lui a valu une place dans une exposition du MoMA de New York.'],
+    ],
+    'ford-capri': [
+      ['1969–1986','1969–1986','4 et 6 cyl., V6 atmo','54–160 ch','« La voiture que vous vous êtes toujours promise » : le coupé populaire européen des années 70.'],
+    ],
+    'ford-gt40': [
+      ['1964–1969','1964–1969','V8 4.7–7.0 atmo, moteur central','335–485 ch','Quatre victoires consécutives aux 24 Heures du Mans (1966-1969), née de la volonté de Ford de battre Ferrari.'],
+    ],
+
     /* ---- Lot 2 étape 3 : Audi, Citroën, Chevrolet, Dacia ----------------- */
     'audi-100': [
       ['C1 – C4','1968–1994','4 et 5 cyl., turbo diesel','55–200 ch','La C3 (1982) fut la première berline au Cx aussi bas que 0,30 — une référence pour l\'époque.'],
@@ -457,7 +1442,7 @@
       ['1999–','1999–','V8 6.0–6.2 atmo','345–682 ch','La V-Series à 682 ch est le SUV grand format le plus puissant du marché.'],
     ],
     'dacia-1300': [
-      ['1969–2004','1969–2004','4 cyl. 1.3–1.4 atmo (base Renault 12)','54–83 ch','Produite 35 ans quasiment sans changement — une des plus longues carrières automobiles jamais tenues.'],
+      ['1969–2004','1969–2004','4 cyl. 1.3–1.4 atmo (base Renault 12)','54–83 ch','Copie sous licence de la Renault 12. La lignée (1300 puis 1310/1410) a tenu plus de trente ans en Roumanie.'],
     ],
     'dacia-logan': [
       ['I – III','2004–','essence, diesel, GPL','55–100 ch','Conçue pour un budget serré, elle a créé le segment low-cost en Europe.'],
@@ -557,7 +1542,7 @@
       ['B','1993–2000','4 cyl.','45–109 ch','Plateforme partagée avec la Fiat Punto de première génération.'],
     ],
     'opel-corsa': [
-      ['C / D','2000–2014','essence et CDTi','60–150 ch',''],
+      ['C / D','2000–2014','essence et CDTi','60–150 ch','Générations de grande diffusion, omniprésentes sur les routes européennes.'],
       ['E / F','2014–','essence, diesel, électrique','75–156 ch','La génération F passe sur plateforme Stellantis, jumelle de la Peugeot 208.'],
     ],
     'opel-corsa-opc': [
@@ -577,21 +1562,21 @@
       ['718 (982)','2016–','flat-4 2.0 turbo','300 ch','Le passage au flat-4 turbo a fait scandale chez les puristes.'],
     ],
     'porsche-cayman-s': [
-      ['987 S','2005–2012','flat-6 3.4 atmo','295–320 ch',''],
-      ['981 S','2012–2016','flat-6 3.4 atmo','325 ch',''],
+      ['987 S','2005–2012','flat-6 3.4 atmo','295–320 ch','Premier Cayman S : le coupé fermé, plus rigide que le Boxster dont il dérive.'],
+      ['981 S','2012–2016','flat-6 3.4 atmo','325 ch','Direction électromécanique et empattement allongé pour plus de stabilité.'],
       ['981 GTS','2014–2016','flat-6 3.4 atmo','340 ch','30 mm plus bas, PASM et échappement sport de série. La 981 la plus recherchée après la GT4.'],
-      ['718 S / GTS 2.5','2016–2020','flat-4 2.5 turbo','350–365 ch',''],
+      ['718 S / GTS 2.5','2016–2020','flat-4 2.5 turbo','350–365 ch','Le passage au flat-4 turbo, plus puissant mais moins mélodieux, a déçu une partie des fidèles.'],
       ['718 GTS 4.0','2020–','flat-6 4.0 atmo','400 ch','Le retour du six cylindres atmosphérique après la fronde des clients.'],
     ],
     'porsche-boxster': [
       ['986','1996–2004','flat-6 2.5 / 2.7 atmo','204–240 ch','Le roadster qui a sauvé Porsche financièrement.'],
-      ['987 / 981','2004–2016','flat-6 2.7 / 2.9 atmo','245–265 ch',''],
-      ['718 (982)','2016–','flat-4 2.0 turbo','300 ch',''],
+      ['987 / 981','2004–2016','flat-6 2.7 / 2.9 atmo','245–265 ch','La 981 gagne un châssis nettement plus rigide et une direction électromécanique.'],
+      ['718 (982)','2016–','flat-4 2.0 turbo','300 ch','Retour au nom « 718 » en hommage aux barquettes de course des années 50.'],
     ],
     'porsche-boxster-s': [
-      ['986 S','1999–2004','flat-6 3.2 atmo','252–264 ch',''],
+      ['986 S','1999–2004','flat-6 3.2 atmo','252–264 ch','La version musclée du roadster qui a sauvé Porsche dans les années 90.'],
       ['987 / 981 S','2004–2016','flat-6 3.2 / 3.4 atmo','280–330 ch','La 981 GTS monte à 330 ch.'],
-      ['718 S / GTS 4.0','2016–','flat-4 2.5 turbo puis flat-6 4.0 atmo','350–400 ch',''],
+      ['718 S / GTS 4.0','2016–','flat-4 2.5 turbo puis flat-6 4.0 atmo','350–400 ch','La GTS 4.0 ramène le six cylindres atmosphérique tant réclamé par les clients.'],
     ],
     'porsche-boxster-spyder': [
       ['987 Spyder','2010–2012','flat-6 3.4 atmo','320 ch','80 kg de moins, capote manuelle rudimentaire, poignées de portes remplacées par des sangles.'],
@@ -604,23 +1589,23 @@
       ['718 GT4 RS','2021–','flat-6 4.0 atmo (911 GT3)','500 ch','Admissions derrière les oreilles du conducteur. 9 000 tr/min.'],
     ],
     'porsche-911-carrera-s': [
-      ['996 / 997 S','1997–2012','flat-6 3.4 à 3.8 atmo','300–408 ch',''],
-      ['991 S','2011–2019','flat-6 3.8 atmo puis 3.0 biturbo','400–450 ch',''],
-      ['992 S','2019–','flat-6 3.0 biturbo','450–480 ch',''],
+      ['996 / 997 S','1997–2012','flat-6 3.4 à 3.8 atmo','300–408 ch','La 996 marque le passage controversé au refroidissement liquide et aux phares « œufs au plat ».'],
+      ['991 S','2011–2019','flat-6 3.8 atmo puis 3.0 biturbo','400–450 ch','Le passage au turbo en 2015 (991.2) a fait débat chez les puristes de l\'atmosphérique.'],
+      ['992 S','2019–','flat-6 3.0 biturbo','450–480 ch','Carrosserie à voies larges pour toutes les versions, hommage aux 911 anciennes.'],
     ],
     'porsche-911-gts': [
       ['997 GTS','2010–2012','flat-6 3.8 atmo','408 ch','Carrosserie large de Carrera 4, moteur de Carrera S poussé.'],
-      ['991 GTS','2014–2019','flat-6 3.8 atmo puis 3.0 biturbo','430–450 ch',''],
+      ['991 GTS','2014–2019','flat-6 3.8 atmo puis 3.0 biturbo','430–450 ch','La GTS, compromis idéal entre Carrera S et GT3, équipements sport de série.'],
       ['992 GTS','2021–','flat-6 3.0 biturbo puis 3.6 hybride','480–541 ch','La 992.2 GTS de 2024 inaugure un turbo à assistance électrique.'],
     ],
     'porsche-911-targa': [
       ['Classique','1967–1993','flat-6 air','130–250 ch','L\'arceau inox est né d\'une crainte d\'interdiction des cabriolets aux États-Unis.'],
-      ['993 – 997','1995–2012','flat-6','272–408 ch','Toit vitré coulissant, sans arceau.'],
+      ['993–997','1995–2012','flat-6','272–408 ch','Toit vitré coulissant, sans arceau.'],
       ['991 / 992','2014–','flat-6 3.0 à 4.0','370–480 ch','Retour de l\'arceau, avec une capote entièrement automatisée.'],
     ],
     'porsche-macan-gts': [
       ['95B GTS / Turbo','2014–2024','V6 3.0 / 3.6 biturbo','360–440 ch','Châssis abaissé, freins agrandis. Le SUV le plus dynamique du segment selon la presse.'],
-      ['Électrique Turbo','2024–','deux moteurs, 800 V','639 ch',''],
+      ['Électrique Turbo','2024–','deux moteurs, 800 V','639 ch','Premier Macan électrique sur plateforme PPE, réseau 800 volts pour la charge rapide.'],
     ],
     'porsche-panamera-turbo': [
       ['970 / 971','2009–2023','V8 4.0 à 4.8 biturbo, hybride','500–700 ch','La Turbo S E-Hybrid 971 atteint 700 ch.'],
@@ -637,7 +1622,7 @@
     ],
     'mercedes-e53': [
       ['W213','2018–2023','6 en ligne 3.0 turbo + compresseur électrique 48 V','435–457 ch','Le compresseur électrique comble le temps de réponse du turbo.'],
-      ['W214','2024–','4 cyl. 2.0 hybride rechargeable','585 ch',''],
+      ['W214','2024–','4 cyl. 2.0 hybride rechargeable','585 ch','L\'E 53 AMG hybride combine un 6 en ligne et l\'électrique pour un couple colossal.'],
     ],
     'mercedes-g63': [
       ['W463 (2012)','2012–2018','V8 5.5 biturbo','544–571 ch','Trois blocages de différentiels conservés malgré la puissance.'],
@@ -645,7 +1630,7 @@
     ],
     'bmw-m2-cs': [
       ['F87 CS','2020','S55 3.0 biturbo','450 ch','Capot et toit carbone, amortisseurs réglables. 2 200 exemplaires.'],
-      ['G87 CS','2025–','S58 3.0 biturbo','530 ch',''],
+      ['G87 CS','2025–','S58 3.0 biturbo','530 ch','La M2 la plus radicale, allégée et poussée, sommet de la dernière compacte M.'],
     ],
     'bmw-m4-csl': [
       ['G82 CSL','2022–','S58 3.0 biturbo','550 ch','100 kg de moins, 2 places, 1 000 exemplaires. Record du tour au Nürburgring pour une BMW de série.'],
@@ -682,7 +1667,7 @@
     ],
     'mini-cooper-s': [
       ['R53','2002–2006','1.6 à compresseur','163–170 ch','Le sifflement du compresseur : la préférée des amateurs.'],
-      ['R56 / F56','2006–','1.6 puis 2.0 turbo','175–192 ch',''],
+      ['R56 / F56','2006–','1.6 puis 2.0 turbo','175–192 ch','Passage au turbo (co-développé avec PSA puis BMW), plus coupleux que le compresseur d\'origine.'],
     ],
     'ford-fiesta-st-moderne': [
       ['Mk6 / Mk7','2005–2017','2.0 atmo puis 1.6 EcoBoost','150–200 ch','Le châssis de la Mk7 est unanimement salué.'],
@@ -709,7 +1694,7 @@
     ],
     'renault-captur': [
       ['I','2013–2019','TCe essence, dCi diesel','90–150 ch','Le plus vendu des petits SUV en Europe pendant plusieurs années.'],
-      ['II','2019–','TCe, E-Tech hybride rechargeable puis full hybrid','90–160 ch',''],
+      ['II','2019–','TCe, E-Tech hybride rechargeable puis full hybrid','90–160 ch','Banquette arrière coulissante offrant une modularité rare dans le segment.'],
     ],
     'renault-5-etech': [
       ['R5 E-Tech','2024–','moteur électrique, batteries 40 et 52 kWh','120–150 ch','Voiture de l\'Année 2025. Réinterprétation de la R5 de 1972, sur plateforme AmpR Small.'],
@@ -731,11 +1716,11 @@
     ],
 
     'peugeot-2008': [
-      ['I','2013–2019','PureTech, BlueHDi','82–130 ch',''],
+      ['I','2013–2019','PureTech, BlueHDi','82–130 ch','Première génération, plus proche d\'un break surélevé que d\'un vrai SUV.'],
       ['II','2019–','PureTech, BlueHDi, e-2008','100–156 ch','Voiture de l\'Année 2020 pour la version électrique.'],
     ],
     'peugeot-5008': [
-      ['I (monospace)','2009–2017','THP, HDi','120–165 ch',''],
+      ['I (monospace)','2009–2017','THP, HDi','120–165 ch','La première génération était un monospace sept places, avant la bascule vers le SUV.'],
       ['II / III (SUV)','2017–','PureTech, BlueHDi, hybride','130–320 ch','Passage du monospace au SUV 7 places.'],
     ],
     'peugeot-408': [
@@ -743,7 +1728,7 @@
     ],
     'citroen-c5-aircross': [
       ['I','2018–2024','PureTech, BlueHDi, hybride rechargeable','130–225 ch','Suspension à butées hydrauliques progressives, héritière de l\'hydropneumatique.'],
-      ['II','2025–','hybride et électrique','145–230 ch',''],
+      ['II','2025–','hybride et électrique','145–230 ch','Conserve la suspension à butées hydrauliques progressives, marque de fabrique Citroën.'],
     ],
     'citroen-ami': [
       ['Ami','2020–','moteur électrique 6 kW','8 ch','Quadricycle léger accessible dès 14 ans en France. 75 km/h maximum, portes symétriques inversées pour réduire les coûts.'],
@@ -756,13 +1741,13 @@
     ],
     'mini-countryman': [
       ['R60','2010–2016','essence et diesel, ALL4 en option','90–218 ch','Première Mini à quatre roues motrices et à cinq portes.'],
-      ['F60','2017–2023','essence, diesel, hybride rechargeable','102–306 ch',''],
+      ['F60','2017–2023','essence, diesel, hybride rechargeable','102–306 ch','Deuxième Countryman, nettement agrandi, première à proposer l\'hybride rechargeable.'],
       ['U25','2024–','essence et électrique','170–313 ch','Produite en Allemagne, une première pour un Countryman.'],
     ],
     'mini-jcw': [
-      ['R53 / R56','2006–2013','1.6 compressé puis turbo','210–218 ch',''],
-      ['F56','2014–2023','2.0 turbo','231 ch',''],
-      ['F66','2024–','2.0 turbo','231 ch',''],
+      ['R53 / R56','2006–2013','1.6 compressé puis turbo','210–218 ch','La R53 à compresseur, avec son sifflement caractéristique, est la préférée des amateurs.'],
+      ['F56','2014–2023','2.0 turbo','231 ch','Passage au 2.0 turbo BMW, plus puissante mais plus lourde que les premières JCW.'],
+      ['F66','2024–','2.0 turbo','231 ch','La dernière JCW thermique avant l\'électrification de la gamme.'],
     ],
     'mini-jcw-gp': [
       ['GP1 (R53)','2006','1.6 à compresseur','218 ch','2 000 exemplaires numérotés, sièges baquets, sans banquette arrière.'],
@@ -786,9 +1771,9 @@
       ['M140i (F20)','2017–2019','B58 3.0 turbo','340 ch','Le dernier grand 6 en ligne compact avant l\'arrêt de la propulsion chez BMW compact.'],
     ],
     'bmw-x1': [
-      ['E84','2009–2015','4 et 6 cyl.','143–306 ch',''],
+      ['E84','2009–2015','4 et 6 cyl.','143–306 ch','La première génération, à propulsion, existe même en 6 cylindres dans la X1 35i.'],
       ['F48','2015–2022','3 et 4 cyl., hybride','116–306 ch','Passage à la traction et à la plateforme UKL.'],
-      ['U11','2022–','3 et 4 cyl., iX1 électrique','136–313 ch',''],
+      ['U11','2022–','3 et 4 cyl., iX1 électrique','136–313 ch','Première génération déclinée en version 100 % électrique, l\'iX1.'],
     ],
     'mercedes-gle': [
       ['W163 / W164 (ML)','1997–2011','V6, V8, diesel','163–510 ch','Appelé Classe M jusqu\'en 2015. Le ML 63 AMG et son V8 6.2 atmo.'],
@@ -798,11 +1783,11 @@
     'mercedes-classe-e': [
       ['W124','1984–1995','4, 5, 6 cyl. et V8','75–326 ch','La 500 E, assemblée par Porsche à Zuffenhausen.'],
       ['W210 / W211','1995–2009','4 cyl. à V8','95–514 ch','Les phares à quatre yeux de la W210.'],
-      ['W212 / W213','2009–2023','4 cyl. à V8, hybrides','136–612 ch',''],
-      ['W214','2023–','4 et 6 cyl. hybridés','197–381 ch',''],
+      ['W212 / W213','2009–2023','4 cyl. à V8, hybrides','136–612 ch','La E63 AMG S et son V8 biturbo, l\'une des berlines les plus rapides de son temps.'],
+      ['W214','2023–','4 et 6 cyl. hybridés','197–381 ch','Écran passager dédié et intelligence embarquée poussée, vitrine techno de Mercedes.'],
     ],
     'audi-q3': [
-      ['8U','2011–2018','TFSI et TDI','140–184 ch',''],
+      ['8U','2011–2018','TFSI et TDI','140–184 ch','Premier Q3, dérivé de la plateforme de la Golf/A3.'],
       ['F3','2018–','TFSI, TDI, hybride','150–190 ch','Version Sportback à toit fuyant.'],
     ],
     'audi-rsq3': [
@@ -814,7 +1799,7 @@
     ],
     'vw-t-roc': [
       ['I','2017–2025','TSI et TDI','95–300 ch','La version R à 300 ch reprend la mécanique de la Golf R.'],
-      ['II','2025–','TSI mild hybrid et hybride','116–204 ch',''],
+      ['II','2025–','TSI mild hybrid et hybride','116–204 ch','Deuxième génération, montée en gamme face aux SUV premium.'],
     ],
     'vw-id3': [
       ['1re gén.','2019–','moteur électrique arrière, batteries 45 à 79 kWh','145–326 ch','Première VW sur plateforme MEB. La GTX à 326 ch en 2024.'],
@@ -822,7 +1807,7 @@
 
     'toyota-chr': [
       ['I','2016–2023','1.2 turbo, 1.8 et 2.0 hybride','116–184 ch','Design très clivant, poignées arrière dissimulées.'],
-      ['II','2023–','1.8 et 2.0 hybride, hybride rechargeable','140–223 ch',''],
+      ['II','2023–','1.8 et 2.0 hybride, hybride rechargeable','140–223 ch','Style encore plus tranché que la première, avec des feux arrière reliés par un bandeau lumineux.'],
     ],
     'toyota-aygo': [
       ['I / II','2005–2021','1.0 trois cylindres','68–72 ch','Développée avec PSA — jumelle des Peugeot 107/108 et Citroën C1.'],
@@ -830,7 +1815,7 @@
     ],
     'nissan-juke': [
       ['F15','2010–2019','essence et diesel','94–115 ch','Design en rupture qui a créé le segment du SUV-coupé compact.'],
-      ['F16','2019–','1.0 turbo, hybride','114–143 ch',''],
+      ['F16','2019–','1.0 turbo, hybride','114–143 ch','Deuxième génération assagie côté style, plus consensuelle que la première.'],
     ],
     'nissan-juke-nismo': [
       ['F15 Nismo RS','2014–2019','4 cyl. 1.6 turbo','218 ch','Version la plus poussée du Juke, restée peu diffusée hors marché japonais.'],
@@ -918,7 +1903,7 @@
       ['EG / EK VTi','1991–2000','B16A2 1.6 16v VTEC atmo','160–170 ch','Plus de 100 ch au litre en atmosphérique, sur une compacte de grande série.'],
     ],
     'honda-crv': [
-      ['RD / RE','1995–2012','2.0–2.4 essence, i-CTDi','128–190 ch',''],
+      ['RD / RE','1995–2012','2.0–2.4 essence, i-CTDi','128–190 ch','Pionnier du SUV compact confortable, avec sa roue de secours sur le hayon d\'origine.'],
       ['RM / RW / RS','2012–','essence, hybride e:HEV','120–184 ch','Le CR-V hybride devient la version principale en Europe.'],
     ],
     'nissan-qashqai': [
@@ -938,7 +1923,7 @@
       ['ZE1','2017–','électrique, batterie 40–62 kWh','150–217 ch','Pédale e-Pedal permettant de conduire d\'un seul pied.'],
     ],
     'mazda-3': [
-      ['BK / BL','2003–2013','1.6–2.0, MZR-CD','105–150 ch',''],
+      ['BK / BL','2003–2013','1.6–2.0, MZR-CD','105–150 ch','Compacte au comportement routier salué, base de la version sportive MPS (fiche dédiée).'],
       ['BM / BP','2013–','SkyActiv-G, SkyActiv-X','100–186 ch','Le SkyActiv-X : allumage par compression sur un moteur essence, une première mondiale en série.'],
     ],
     'mazda-3-mps': [
@@ -955,7 +1940,7 @@
     'kia-sportage': [
       ['2e gén.','2004–2010','essence et CRDi','110–175 ch','Passage au monocoque et au format crossover.'],
       ['3e / 4e gén.','2010–2021','essence, diesel, hybride léger','114–240 ch','Design signé Peter Schreyer, ancien styliste d\'Audi.'],
-      ['5e gén.','2021–','essence, hybride, hybride rechargeable','132–265 ch',''],
+      ['5e gén.','2021–','essence, hybride, hybride rechargeable','132–265 ch','Design avant très audacieux, avec une signature lumineuse en boomerang.'],
     ],
     'volvo-xc90': [
       ['I','2002–2014','5 et 6 cyl., V8 Yamaha','163–315 ch','Premier SUV Volvo. Le V8 4.4 est fourni par Yamaha.'],
@@ -972,7 +1957,7 @@
     ],
     'landrover-evoque': [
       ['L538','2011–2018','Si4 essence, eD4/TD4 diesel','150–300 ch','Dessiné d\'après le concept LRX. Le cabriolet reste une curiosité.'],
-      ['L551','2018–','Ingenium, hybride rechargeable','150–309 ch',''],
+      ['L551','2018–','Ingenium, hybride rechargeable','150–309 ch','Poignées de porte affleurantes qui sortent à l\'approche, détail de style signature.'],
     ],
     'jeep-cherokee-xj': [
       ['XJ','1984–2001','4 cyl. et 6 en ligne 4.0','86–193 ch','Première structure monocoque sur un 4x4 : l\'acte de naissance du SUV moderne. Le 4.0 est réputé inusable.'],
@@ -989,12 +1974,12 @@
     ],
     'porsche-panamera': [
       ['970','2009–2016','V6, V8, hybride, diesel','250–420 ch','Première berline Porsche depuis la 989 abandonnée.'],
-      ['971','2016–2023','V6, V8, hybrides rechargeables','330–460 ch',''],
-      ['972','2023–','V6, V8, hybrides','353–470 ch',''],
+      ['971','2016–2023','V6, V8, hybrides rechargeables','330–460 ch','Ligne de toit abaissée et affinée, qui corrige la silhouette lourdement critiquée de la première génération.'],
+      ['972','2023–','V6, V8, hybrides','353–470 ch','Suspension active hydraulique inédite, capable de contrer le roulis en virage.'],
     ],
     'porsche-taycan': [
       ['J1','2019–','deux moteurs, réseau 800 V','408–571 ch','Première électrique Porsche. Boîte à deux rapports sur l\'essieu arrière, unique dans l\'électrique.'],
-      ['J1 restylée','2024–','deux moteurs, 800 V','408–612 ch',''],
+      ['J1 restylée','2024–','deux moteurs, 800 V','408–612 ch','Restylage profond gagnant en autonomie et en puissance de charge.'],
     ],
     'tesla-model3': [
       ['Model 3','2017–','un ou deux moteurs','283–513 ch','La voiture électrique la plus vendue au monde pendant plusieurs années.'],
@@ -1017,13 +2002,13 @@
       ['Cooper / Cooper S','1961–2000','1.0–1.3','55–78 ch','Trois victoires au rallye de Monte-Carlo, 1964, 1965 et 1967.'],
     ],
     'vw-up': [
-      ['up!','2011–2023','3 cyl. 1.0, e-up!','60–75 ch',''],
+      ['up!','2011–2023','3 cyl. 1.0, e-up!','60–75 ch','Citadine minimaliste bien née, jumelle des Škoda Citigo et SEAT Mii.'],
     ],
     'vw-up-gti-mk': [
       ['up! GTI','2018–2023','4 cyl. 1.0 turbo TSI','115 ch','Reprend délibérément le rapport poids/puissance de la Golf GTI Mk1. Production limitée en Europe.'],
     ],
     'citroen-c4': [
-      ['I','2004–2010','essence et HDi','75–110 ch',''],
+      ['I','2004–2010','essence et HDi','75–110 ch','Sa pub avec un robot transformer dansant est restée dans les mémoires.'],
       ['II / Cactus','2010–2020','THP, BlueHDi','90–120 ch','Le C4 Cactus et ses Airbumps.'],
       ['III / ë-C4','2020–','PureTech, BlueHDi, électrique','100–156 ch','Silhouette de berline surélevée, entre compacte et SUV.'],
     ],
@@ -1032,11 +2017,11 @@
     ],
     'seat-ibiza': [
       ['021A / 6K','1984–2002','essence et diesel','45–100 ch','Les premières générations sont dessinées par Giugiaro, avec une mécanique System Porsche.'],
-      ['6L / 6J','2002–2017','TSI et TDI','60–105 ch',''],
+      ['6L / 6J','2002–2017','TSI et TDI','60–105 ch','Générations de grande diffusion, cousines de la Polo sous la peau.'],
       ['6F','2017–','TSI et TDI','75–115 ch','Première du groupe sur plateforme MQB A0.'],
     ],
     'seat-ibiza-cupra': [
-      ['6L Cupra','2002–2008','4 cyl. 1.8 turbo 20v','156–180 ch',''],
+      ['6L Cupra','2002–2008','4 cyl. 1.8 turbo 20v','156–180 ch','La sportive d\'accès du groupe VW à l\'époque, à prix contenu.'],
       ['6J Cupra / Bocanegra','2009–2015','4 cyl. 1.4 TSI double suralimentation','180–192 ch','La Bocanegra ajoute un becquet et un bandeau noir mat sur le capot.'],
     ],
 
@@ -1064,12 +2049,12 @@
     ],
     'vw-tiguan': [
       ['I','2007–2016','TSI et TDI','110–210 ch','Le premier SUV compact du groupe sur plateforme Golf.'],
-      ['II','2016–2023','TSI, TDI, eHybrid','115–190 ch',''],
-      ['III','2023–','TSI, eHybrid','130–204 ch',''],
+      ['II','2016–2023','TSI, TDI, eHybrid','115–190 ch','Best-seller mondial de VW sur la période, décliné en version 7 places Allspace.'],
+      ['III','2023–','TSI, eHybrid','130–204 ch','Molette cristal rétroéclairée sur la console, nouveauté de la troisième génération.'],
     ],
     'vw-tiguan-r': [
       ['II R','2021–2023','4 cyl. 2.0 turbo, 4Motion','320 ch','Reprend le moteur de la Golf R dans un SUV compact.'],
-      ['III R','2024–','4 cyl. 2.0 turbo, 4Motion','272 ch',''],
+      ['III R','2024–','4 cyl. 2.0 turbo, 4Motion','272 ch','Nouvelle génération du SUV R, mécanique partagée avec la Golf R.'],
     ],
     'vw-scirocco': [
       ['I','1974–1981','4 cyl. 1.1–1.7','50–110 ch','Dessinée par Giugiaro, sortie avant la Golf dont elle partage la base.'],
@@ -1082,25 +2067,25 @@
     'audi-a4': [
       ['B5','1994–2001','4 et 6 cyl., TDI','90–265 ch','Première Audi à s\'appeler A4. La S4 B5 et son V6 biturbo lance la lignée sportive.'],
       ['B6 / B7','2000–2008','4, 6 et 8 cyl.','101–420 ch','Le cabriolet remplace le coupé.'],
-      ['B8','2007–2015','TFSI et TDI','120–450 ch',''],
-      ['B9','2015–','TFSI, TDI, hybridation légère','122–450 ch',''],
+      ['B8','2007–2015','TFSI et TDI','120–450 ch','La RS4 B8 et son V8 4.2 atmosphérique hurlant, aujourd\'hui recherchée.'],
+      ['B9','2015–','TFSI, TDI, hybridation légère','122–450 ch','Cockpit tout-numérique « Virtual Cockpit », une référence de sa génération.'],
     ],
     'audi-a6': [
       ['C4','1994–1997','4, 5 et 6 cyl.','90–290 ch','Anciennement Audi 100. Le S6 Plus à V8 4.2 clôt la génération.'],
       ['C5','1997–2004','4, 6 et 8 cyl., TDI','110–450 ch','Ligne fastback très remarquée à sa sortie.'],
-      ['C6 / C7','2004–2018','TFSI, TDI, V10','136–605 ch',''],
-      ['C8','2018–','TFSI, TDI, hybridation 48 V','204–630 ch',''],
+      ['C6 / C7','2004–2018','TFSI, TDI, V10','136–605 ch','La RS6 C6 et son V10 biturbo dérivé de Lamborghini : 580 ch dans un break familial.'],
+      ['C8','2018–','TFSI, TDI, hybridation 48 V','204–630 ch','La RS6 Avant devient enfin disponible aux États-Unis, un succès inattendu.'],
     ],
     'audi-q5': [
       ['8R','2008–2017','TFSI et TDI','143–354 ch','Le SUV le plus vendu de la marque.'],
-      ['FY','2017–','TFSI, TDI, hybride rechargeable','163–367 ch',''],
+      ['FY','2017–','TFSI, TDI, hybride rechargeable','163–367 ch','La SQ5 sportive et sa version diesel à compresseur électrique 48 V.'],
     ],
     'audi-q7': [
       ['4L','2005–2015','V6 et V8, TDI jusqu\'au V12','233–500 ch','Le V12 TDI de 500 ch et 1 000 Nm : un cas unique dans l\'automobile de série.'],
       ['4M','2015–','V6 TFSI et TDI, hybride','231–507 ch','Structure allégée de plus de 300 kg.'],
     ],
     'audi-a1': [
-      ['8X','2010–2018','TFSI et TDI','86–192 ch',''],
+      ['8X','2010–2018','TFSI et TDI','86–192 ch','Première A1, la plus petite Audi, sur base de Polo mais nettement plus premium.'],
       ['GB','2018–','TFSI','95–116 ch','Les fentes sur le capot rendent hommage à la Sport quattro.'],
     ],
     'audi-s1': [
@@ -1108,7 +2093,7 @@
     ],
     'bmw-x3': [
       ['E83','2003–2010','6 cyl. essence et diesel','150–286 ch','Produit par Magna Steyr en Autriche.'],
-      ['F25','2010–2017','4 et 6 cyl. turbo','143–381 ch',''],
+      ['F25','2010–2017','4 et 6 cyl. turbo','143–381 ch','Deuxième X3, la première réellement aboutie et vendue en masse.'],
       ['G01','2017–','4 et 6 cyl., hybride','150–510 ch','La X3 M Competition à 510 ch.'],
     ],
     'bmw-z3': [
@@ -1130,9 +2115,9 @@
     ],
     'ford-focus': [
       ['Mk1','1998–2004','4 cyl. Zetec et TDdi','75–130 ch','Design « New Edge » et suspension arrière Control Blade : le meilleur châssis du segment.'],
-      ['Mk2','2004–2011','4 cyl.','80–145 ch',''],
-      ['Mk3','2011–2018','EcoBoost et TDCi','85–150 ch',''],
-      ['Mk4','2018–','EcoBoost 3 cyl., EcoBlue','100–155 ch',''],
+      ['Mk2','2004–2011','4 cyl.','80–145 ch','La ST et la RS de cette génération relancent la réputation sportive de la Focus.'],
+      ['Mk3','2011–2018','EcoBoost et TDCi','85–150 ch','Première Focus mondiale, vendue à l\'identique sur tous les continents.'],
+      ['Mk4','2018–','EcoBoost 3 cyl., EcoBlue','100–155 ch','Le trois-cylindres 1.0 EcoBoost peut désactiver un cylindre pour économiser du carburant.'],
     ],
     'ford-focus-rs': [
       ['Mk1 RS','2002–2003','4 cyl. 2.0 turbo (Cosworth)','215 ch','Voies élargies, différentiel Quaife. 4 501 exemplaires, tous en jaune Imperial.'],
@@ -1140,8 +2125,8 @@
       ['Mk3 RS','2016–2018','4 cyl. 2.3 EcoBoost','350 ch','Première Focus RS à transmission intégrale et mode Drift.'],
     ],
     'ford-fiesta': [
-      ['Mk1 – Mk3','1976–1995','4 cyl. 0.9–1.6','40–75 ch',''],
-      ['Mk4 – Mk6','1995–2008','Zetec et TDCi','50–100 ch',''],
+      ['Mk1 – Mk3','1976–1995','4 cyl. 0.9–1.6','40–75 ch','La première Ford à traction avant, conçue sous le nom de code « Bobcat » supervisé par Henry Ford II.'],
+      ['Mk4 – Mk6','1995–2008','Zetec et TDCi','50–100 ch','Longtemps la voiture la plus vendue au Royaume-Uni, tous modèles confondus.'],
       ['Mk7 / Mk8','2008–2023','EcoBoost 1.0–1.6','60–125 ch','Le 1.0 EcoBoost a été élu moteur international de l\'année trois fois de suite.'],
     ],
     'ford-fiesta-xr2i': [
@@ -1153,7 +2138,7 @@
       ['I','1993–1999','4 cyl. 1.1–1.4, TD','54–75 ch','Voiture de l\'Année 1995.'],
     ],
     'fiat-punto': [
-      ['II','1999–2010','4 cyl., JTD','60–80 ch',''],
+      ['II','1999–2010','4 cyl., JTD','60–80 ch','Le diesel JTD common-rail, technologie Fiat pionnière, équipe cette génération.'],
       ['Grande Punto / Evo','2005–2018','essence et MultiJet','65–95 ch','Fin de carrière européenne en 2018.'],
     ],
     'fiat-punto-gt': [
@@ -1183,7 +2168,7 @@
       ['III','2023–','hybride, e-3008','136–320 ch','Silhouette de SUV coupé, plateforme STLA Medium.'],
     ],
     'renault-laguna': [
-      ['I','1993–2000','essence et dCi, V6','75–190 ch',''],
+      ['I','1993–2000','essence et dCi, V6','75–190 ch','Voiture de l\'Année 1994. Berline familiale au hayon pratique.'],
       ['II','2000–2007','essence, dCi, V6 3.0','100–210 ch','Première voiture à obtenir cinq étoiles EuroNCAP, en 2001. Carte mains libres, une nouveauté.'],
       ['III','2007–2015','TCe et dCi','110–240 ch','Le coupé GT et ses roues arrière directrices 4Control.'],
     ],
@@ -1384,7 +2369,7 @@
       ]},
     ],
     'lotus-72': [
-      { c:'72 – 72E', a:'1970–1975', m:[
+      { c:'72–72E', a:'1970–1975', m:[
         ['Châssis 72','Ford Cosworth DFV 3.0 V8 atmo','440–465 ch','propulsion · manuelle 5','Radiateurs latéraux, freins inboard, forme en coin : elle a défini l\'architecture de la F1 moderne. Titres Rindt 1970 et Fittipaldi 1972.'],
       ]},
     ],
@@ -1720,7 +2705,7 @@
         ['RS 1.8T','4 cyl. 1.8 turbo 20v','180 ch','traction · manuelle 5','La Golf GTI IV en version break, à moitié prix.'],
       ]},
       { c:'1Z / 5E / NX', a:'2005–', m:[
-        ['RS TSI','4 cyl. 2.0 turbo','200–265 ch','traction · manuelle 6 / DSG',''],
+        ['RS TSI','4 cyl. 2.0 turbo','200–265 ch','traction · manuelle 6 / DSG','Le break RS, familial et sportif à la fois, favori discret des connaisseurs.'],
         ['RS TDI','4 cyl. 2.0 turbodiesel','170–184 ch','traction ou intégrale · manuelle 6 / DSG','Le break rapide et sobre : une spécialité tchèque sans vrai équivalent.'],
       ]},
     ],
@@ -1737,7 +2722,7 @@
     'hyundai-i30n': [
       { c:'PD', a:'2017–', m:[
         ['i30 N','4 cyl. 2.0 turbo','250–275 ch','traction, différentiel autobloquant électronique · manuelle 6 / DCT 8','Développée par Albert Biermann, ancien patron de BMW M. Échappement à valves et système de double débrayage.'],
-        ['i30 N Fastback','4 cyl. 2.0 turbo','275 ch','traction · manuelle 6 / DCT 8',''],
+        ['i30 N Fastback','4 cyl. 2.0 turbo','275 ch','traction · manuelle 6 / DCT 8','Développée sous la houlette d\'Albert Biermann, ex-patron de BMW M. Un coup d\'essai magistral.'],
       ]},
     ],
     'hyundai-i20n': [
@@ -1752,7 +2737,7 @@
     ],
     'kia-stinger': [
       { c:'CK', a:'2017–2023', m:[
-        ['2.0 T-GDi','4 cyl. 2.0 turbo','247 ch','propulsion ou intégrale · auto 8',''],
+        ['2.0 T-GDi','4 cyl. 2.0 turbo','247 ch','propulsion ou intégrale · auto 8','Le grand coupé 4 portes coréen qui a surpris tout le monde par ses qualités dynamiques.'],
         ['GT 3.3 T-GDi','V6 3.3 biturbo','370 ch','propulsion ou intégrale · auto 8','Châssis mis au point au Nürburgring par l\'équipe d\'Albert Biermann. Une berline coréenne à propulsion : une anomalie assumée.'],
       ]},
     ],
@@ -1763,7 +2748,7 @@
     ],
     'genesis-g70': [
       { c:'IK', a:'2017–', m:[
-        ['2.0T / 2.2D','4 cyl. turbo essence et diesel','197–252 ch','propulsion ou intégrale · auto 8',''],
+        ['2.0T / 2.2D','4 cyl. turbo essence et diesel','197–252 ch','propulsion ou intégrale · auto 8','Première Genesis vendue en Europe, ambition premium assumée face aux Allemandes.'],
         ['3.3T','V6 3.3 biturbo','370 ch','propulsion ou intégrale · auto 8','Plateforme partagée avec la Kia Stinger. Le G70 Shooting Brake est conçu spécifiquement pour l\'Europe.'],
       ]},
     ],
@@ -1824,10 +2809,10 @@
     ],
     'seat-leon': [
       { c:'1M / 1P', a:'1999–2012', m:[
-        ['Essence / TDI','4 cyl.','75–150 ch','traction · manuelle 5/6',''],
+        ['Essence / TDI','4 cyl.','75–150 ch','traction · manuelle 5/6','La 1M partage sa plateforme avec la Golf IV et l\'Audi A3, dessin signé Giugiaro.'],
       ]},
       { c:'5F / KL', a:'2012–', m:[
-        ['TSI / TDI / e-Hybrid','4 cyl., hybride rechargeable','86–150 ch','traction · manuelle 6 / DSG',''],
+        ['TSI / TDI / e-Hybrid','4 cyl., hybride rechargeable','86–150 ch','traction · manuelle 6 / DSG','Signature lumineuse arrière pleine largeur sur la dernière génération.'],
       ]},
     ],
     'seat-leon-cupra': [
@@ -1867,7 +2852,7 @@
     'chevrolet-corvette-c7': [
       { c:'C7', a:'2014–2019', m:[
         ['Stingray (LT1)','V8 6.2 atmo à injection directe','466–470 ch','propulsion transaxle · manuelle 7 / auto 8','Boîte manuelle à 7 rapports avec double débrayage automatique.'],
-        ['Z06 (LT4)','V8 6.2 à compresseur','659 ch','propulsion · manuelle 7 / auto 8',''],
+        ['Z06 (LT4)','V8 6.2 à compresseur','659 ch','propulsion · manuelle 7 / auto 8','Dernière Corvette à moteur avant, avant la révolution du moteur central de la C8.'],
         ['ZR1 (LT5)','V8 6.2 à compresseur','765 ch','propulsion · manuelle 7 / auto 8','La Corvette à moteur avant la plus puissante de l\'histoire.'],
       ]},
     ],
@@ -1881,7 +2866,7 @@
     ],
     'chevrolet-camaro': [
       { c:'1re gén.', a:'1966–1969', m:[
-        ['327 / 350','V8 5.4–5.7 atmo','210–300 ch','propulsion · manuelle 3/4 / auto',''],
+        ['327 / 350','V8 5.4–5.7 atmo','210–300 ch','propulsion · manuelle 3/4 / auto','La première Camaro, réponse directe de Chevrolet à la Mustang en 1966.'],
       ]},
       { c:'3e / 4e gén.', a:'1982–2002', m:[
         ['IROC-Z / Z28','V8 5.0–5.7 atmo','190–275 ch','propulsion · manuelle 5 / auto','Le LT1 de 1993, dérivé de la Corvette, relance le modèle.'],
@@ -1911,14 +2896,14 @@
         ['GTS','V8… non : V10 8.0 atmo','450 ch','propulsion · manuelle 6','Coupé à double bossage de toit. Sa version GTS-R gagne aux 24 Heures du Mans en catégorie GT.'],
       ]},
       { c:'ZB / VX', a:'2003–2017', m:[
-        ['SRT-10','V10 8.3 atmo','500–510 ch','propulsion · manuelle 6',''],
+        ['SRT-10','V10 8.3 atmo','500–510 ch','propulsion · manuelle 6','Un V10 de camion dans un roadster brut : ni ABS ni assistance à l\'origine. Sauvage.'],
         ['ACR','V10 8.4 atmo','600–645 ch','propulsion · manuelle 6','Aéro extrême : plus de 800 kg d\'appui. A détenu treize records de circuits américains.'],
       ]},
     ],
     'dodge-challenger': [
       { c:'LC / LA', a:'2008–2023', m:[
-        ['SXT / GT','V6 3.6 atmo','305 ch','propulsion · auto 8',''],
-        ['R/T','V8 5.7 HEMI atmo','372–375 ch','propulsion · manuelle 6 / auto 8',''],
+        ['SXT / GT','V6 3.6 atmo','305 ch','propulsion · auto 8','La seule Challenger moderne disponible en transmission intégrale (GT AWD).'],
+        ['R/T','V8 5.7 HEMI atmo','372–375 ch','propulsion · manuelle 6 / auto 8','Le V8 HEMI et son bruit caractéristique, cœur de la gamme depuis 2008.'],
         ['SRT 392 / Scat Pack','V8 6.4 HEMI atmo','485 ch','propulsion · manuelle 6 / auto 8','Le dernier grand V8 atmosphérique américain de grande diffusion.'],
       ]},
     ],
@@ -1966,7 +2951,7 @@
     ],
     'plymouth-barracuda': [
       { c:'E-body', a:'1970–1974', m:[
-        ['340 / 383 Cuda','V8 5.6–6.3 atmo','275–335 ch','propulsion · manuelle 4 / auto',''],
+        ['340 / 383 Cuda','V8 5.6–6.3 atmo','275–335 ch','propulsion · manuelle 4 / auto','La Hemi Cuda de 1971 est l\'une des muscle cars les plus chères aux enchères aujourd\'hui.'],
         ['426 HEMI Cuda','V8 7.0 hémisphérique','425 ch','propulsion · manuelle 4 / auto','Le cabriolet HEMI 1971 : quelques exemplaires seulement, parmi les voitures américaines les plus chères aux enchères.'],
       ]},
     ],
@@ -2026,7 +3011,7 @@
 
     'peugeot-205': [
       { c:'Phase 1', a:'1983–1987', m:[
-        ['Essence 1.0 – 1.6','4 cyl. 954 – 1580 cm³','45–90 ch','traction · manuelle 4/5','Dessinée en interne, pas par Pininfarina contrairement à la légende tenace.'],
+        ['Essence 1.0–1.6','4 cyl. 954–1580 cm³','45–90 ch','traction · manuelle 4/5','Dessinée en interne, pas par Pininfarina contrairement à la légende tenace.'],
         ['Diesel 1.8 / 1.9','4 cyl. XUD turbodiesel ou atmo','60–78 ch','traction · manuelle 5','Le XUD, l\'un des diesels les plus increvables jamais produits.'],
         ['GTI 1.6','4 cyl. 1.6 injection','105–115 ch','traction · manuelle 5','850 kg. Train arrière à bras tirés, célèbre pour son comportement en levé de pied.'],
       ]},
@@ -2038,7 +3023,7 @@
     ],
     'peugeot-206': [
       { c:'206', a:'1998–2012', m:[
-        ['Essence 1.1 – 1.6','4 cyl. TU et EW','60–110 ch','traction · manuelle 5','Près de dix millions d\'exemplaires : la Peugeot la plus vendue de l\'histoire.'],
+        ['Essence 1.1–1.6','4 cyl. TU et EW','60–110 ch','traction · manuelle 5','Près de dix millions d\'exemplaires : la Peugeot la plus vendue de l\'histoire.'],
         ['HDi','4 cyl. 1.4–2.0 turbodiesel à rampe commune','68–110 ch','traction · manuelle 5','L\'injection à rampe commune arrive sur le segment.'],
         ['S16','4 cyl. 2.0 16v atmo','136 ch','traction · manuelle 5','Héritière directe de la 306 S16 en format réduit.'],
         ['RC / GT','4 cyl. 2.0 16v atmo','177 ch','traction · manuelle 5','Le 2.0 le plus poussé de PSA. Freins et châssis spécifiques.'],
@@ -2057,7 +3042,7 @@
     ],
     'peugeot-405': [
       { c:'405', a:'1987–1997', m:[
-        ['Essence 1.4 – 2.0','4 cyl. XU','65–125 ch','traction · manuelle 5','Voiture de l\'Année 1988.'],
+        ['Essence 1.4–2.0','4 cyl. XU','65–125 ch','traction · manuelle 5','Voiture de l\'Année 1988.'],
         ['Mi16','4 cyl. XU9J4 1.9 16v atmo','160 ch','traction · manuelle 5','La berline sportive du lion, châssis salué par toute la presse de l\'époque.'],
         ['T16','4 cyl. 2.0 16v turbo','200 ch','intégrale · manuelle 5','1 061 exemplaires. Sa cousine de course a gagné Pikes Peak avec Ari Vatanen.'],
       ]},
@@ -2065,14 +3050,14 @@
     'peugeot-406-coupe': [
       { c:'Coupé', a:'1997–2004', m:[
         ['2.0 16v','4 cyl. 2.0 16v atmo','135 ch','traction · manuelle 5','Dessinée et assemblée chez Pininfarina, à Turin.'],
-        ['2.2 16v','4 cyl. 2.2 16v atmo','158 ch','traction · manuelle 5',''],
+        ['2.2 16v','4 cyl. 2.2 16v atmo','158 ch','traction · manuelle 5','Le coupé 406, dessiné par Pininfarina, souvent cité parmi les plus beaux coupés français.'],
         ['3.0 V6','V6 PRV / ES9 3.0 24v atmo','194–210 ch','traction · manuelle 6 / auto 4','Le V6 24 soupapes : la version que les collectionneurs recherchent.'],
       ]},
     ],
     'peugeot-106': [
       { c:'Phase 1', a:'1991–1996', m:[
-        ['1.0 – 1.4','4 cyl. TU','45–75 ch','traction · manuelle 5',''],
-        ['XSi 1.4 / 1.6','4 cyl. TU 1.4–1.6','95–103 ch','traction · manuelle 5',''],
+        ['1.0–1.4','4 cyl. TU','45–75 ch','traction · manuelle 5','La petite Peugeot des années 90, base des versions sportives Rallye et GTI.'],
+        ['XSi 1.4 / 1.6','4 cyl. TU 1.4–1.6','95–103 ch','traction · manuelle 5','La sportive d\'accès, avant la GTI 16v : légère et vive.'],
         ['Rallye 1.3','4 cyl. 1.3 carburateurs','100 ch','traction · manuelle 5','825 kg, sans équipement. L\'héritière directe de la 205 Rallye.'],
       ]},
       { c:'Phase 2', a:'1996–2003', m:[
@@ -2092,7 +3077,7 @@
     ],
     'peugeot-508': [
       { c:'I', a:'2010–2018', m:[
-        ['THP / HDi','4 cyl. essence turbo et diesel','115–204 ch','traction · manuelle 6 / auto',''],
+        ['THP / HDi','4 cyl. essence turbo et diesel','115–204 ch','traction · manuelle 6 / auto','Première 508, née de la fusion des lignées 407 et 607.'],
         ['RXH / GT HYbrid4','2.0 HDi + moteur électrique arrière','200 ch cumulés','intégrale par l\'essieu arrière électrique · robotisée 6','Premier diesel hybride rechargeable au monde. Le pont arrière n\'est relié qu\'électriquement.'],
       ]},
       { c:'II', a:'2018–', m:[
@@ -2107,7 +3092,7 @@
 
     'citroen-cx': [
       { c:'Série 1', a:'1974–1985', m:[
-        ['2.0 – 2.5 essence','4 cyl.','102–138 ch','traction · manuelle 5','Direction DIRAVI à rappel asservi : le volant revient seul au point milieu.'],
+        ['2.0–2.5 essence','4 cyl.','102–138 ch','traction · manuelle 5','Direction DIRAVI à rappel asservi : le volant revient seul au point milieu.'],
         ['GTi Turbo','4 cyl. 2.5 turbo','168 ch','traction · manuelle 5','220 km/h. Une des berlines les plus rapides de son temps.'],
       ]},
       { c:'Série 2', a:'1985–1991', m:[
@@ -2116,14 +3101,14 @@
     ],
     'citroen-xantia': [
       { c:'Xantia', a:'1992–2003', m:[
-        ['Essence 1.6 – 2.0','4 cyl.','88–150 ch','traction hydractive · manuelle 5','Suspension Hydractive II à gestion électronique.'],
-        ['3.0 V6','V6 3.0 24v atmo','190–194 ch','traction · manuelle 5 / auto',''],
+        ['Essence 1.6–2.0','4 cyl.','88–150 ch','traction hydractive · manuelle 5','Suspension Hydractive II à gestion électronique.'],
+        ['3.0 V6','V6 3.0 24v atmo','190–194 ch','traction · manuelle 5 / auto','La Xantia Activa et son système anti-roulis actif, imbattable sur le test de l\'élan.'],
         ['Activa','4 cyl. 2.0 turbo / V6 3.0','150–190 ch','traction, anti-roulis actif SC.CAR · manuelle 5','Son record au test de l\'élan a tenu tête aux supercars pendant vingt ans. Aucune voiture de série ne l\'a battue avant 2019.'],
       ]},
     ],
     'citroen-ax': [
       { c:'AX', a:'1986–1998', m:[
-        ['1.0 – 1.4','4 cyl. TU','45–75 ch','traction · manuelle 4/5','640 kg dans les versions de base : un record de légèreté pour l\'époque.'],
+        ['1.0–1.4','4 cyl. TU','45–75 ch','traction · manuelle 4/5','640 kg dans les versions de base : un record de légèreté pour l\'époque.'],
         ['GT / GTi','4 cyl. 1.4 carburateur puis injection','85–100 ch','traction · manuelle 5','Environ 720 kg : elle consommait moins qu\'elle ne pesait, disaient les essayeurs.'],
       ]},
     ],
@@ -2134,22 +3119,22 @@
     ],
     'citroen-zx': [
       { c:'ZX', a:'1991–1998', m:[
-        ['Essence 1.1 – 2.0','4 cyl. TU et XU','60–155 ch','traction, train arrière autodirectionnel · manuelle 5','Le train arrière autodirectionnel, hérité de la 306 : le meilleur châssis du segment à sa sortie.'],
-        ['16V / Volcane','4 cyl. 2.0 16v atmo','155 ch','traction · manuelle 5',''],
+        ['Essence 1.1–2.0','4 cyl. TU et XU','60–155 ch','traction, train arrière autodirectionnel · manuelle 5','Le train arrière autodirectionnel, hérité de la 306 : le meilleur châssis du segment à sa sortie.'],
+        ['16V / Volcane','4 cyl. 2.0 16v atmo','155 ch','traction · manuelle 5','La ZX 16V, une compacte sportive sous-estimée au très bon châssis.'],
       ]},
     ],
 
     'renault-5': [
       { c:'R5 (1re gén.)', a:'1972–1985', m:[
-        ['0.85 – 1.4','4 cyl. Cléon-Fonte','36–64 ch','traction · manuelle 4/5','Pare-chocs en polyester, une première. Cinq millions et demi d\'exemplaires.'],
+        ['0.85–1.4','4 cyl. Cléon-Fonte','36–64 ch','traction · manuelle 4/5','Pare-chocs en polyester, une première. Cinq millions et demi d\'exemplaires.'],
         ['Alpine / Gordini','4 cyl. 1.4 carburateur double corps','93 ch','traction · manuelle 5','Nommée Gordini au Royaume-Uni, Alpine appartenant déjà à Chrysler là-bas.'],
         ['Alpine Turbo','4 cyl. 1.4 turbo','110 ch','traction · manuelle 5','L\'une des premières petites turbo de série en Europe.'],
       ]},
       { c:'Super 5', a:'1984–1996', m:[
-        ['1.0 – 1.7','4 cyl. Cléon et Energy','42–95 ch','traction · manuelle 4/5','Dessinée par Marcello Gandini.'],
+        ['1.0–1.7','4 cyl. Cléon et Energy','42–95 ch','traction · manuelle 4/5','Dessinée par Marcello Gandini.'],
       ]},
     ],
-    'renault-super5-gtturbo': [
+    'renault-super5-gt': [
       { c:'GT Turbo', a:'1985–1991', m:[
         ['Phase 1','4 cyl. 1.4 turbo à carburateur','115 ch','traction · manuelle 5','850 kg. Réputée capricieuse : chaleur moteur et carburateur font mauvais ménage — beaucoup n\'ont pas survécu.'],
         ['Phase 2','4 cyl. 1.4 turbo à intercooler','120 ch','traction · manuelle 5','Refroidissement revu. Nettement plus fiable et aujourd\'hui plus cotée.'],
@@ -2157,7 +3142,7 @@
     ],
     'renault-19': [
       { c:'Phase 1', a:'1988–1992', m:[
-        ['1.2 – 1.8 / diesel','4 cyl. Energy et F8Q','54–95 ch','traction · manuelle 5','Le premier vrai succès qualitatif de Renault, aérodynamique travaillée avec Giugiaro.'],
+        ['1.2–1.8 / diesel','4 cyl. Energy et F8Q','54–95 ch','traction · manuelle 5','Le premier vrai succès qualitatif de Renault, aérodynamique travaillée avec Giugiaro.'],
         ['16S','4 cyl. F7P 1.8 16v atmo','137 ch','traction · manuelle 5','Le F7P : le bloc qui donnera naissance à la Clio Williams.'],
       ]},
       { c:'Phase 2', a:'1992–1996', m:[
@@ -2178,26 +3163,26 @@
     ],
     'renault-megane': [
       { c:'I', a:'1995–2002', m:[
-        ['1.4 – 2.0','4 cyl.','70–150 ch','traction · manuelle 5','Déclinée en berline, coupé, cabriolet, break et monospace Scénic.'],
-        ['Coupé 2.0 16v','4 cyl. F7R 2.0 16v atmo','147–150 ch','traction · manuelle 5',''],
+        ['1.4–2.0','4 cyl.','70–150 ch','traction · manuelle 5','Déclinée en berline, coupé, cabriolet, break et monospace Scénic.'],
+        ['Coupé 2.0 16v','4 cyl. F7R 2.0 16v atmo','147–150 ch','traction · manuelle 5','Le moteur F7R, partagé avec la Clio Williams, dans la carrosserie coupé.'],
       ]},
       { c:'II', a:'2002–2009', m:[
-        ['1.4 – 2.0 / dCi','4 cyl.','82–165 ch','traction · manuelle 5/6','Voiture de l\'Année 2003. Poupe très clivante.'],
+        ['1.4–2.0 / dCi','4 cyl.','82–165 ch','traction · manuelle 5/6','Voiture de l\'Année 2003. Poupe très clivante.'],
       ]},
       { c:'III / IV', a:'2008–2022', m:[
-        ['TCe / dCi','4 cyl. turbo essence et diesel','90–205 ch','traction · manuelle 6 / EDC',''],
+        ['TCe / dCi','4 cyl. turbo essence et diesel','90–205 ch','traction · manuelle 6 / EDC','La lignée dont dérive la R.S., référence des tractions sportives (voir fiche dédiée).'],
       ]},
     ],
     'matra-murena': [
       { c:'Murena', a:'1980–1983', m:[
         ['1.6','4 cyl. 1.6 atmo','92 ch','moteur central · manuelle 5','Trois places de front, comme la Bagheera. Première voiture de série à caisse entièrement galvanisée.'],
-        ['2.2','4 cyl. 2.2 atmo','118 ch','moteur central · manuelle 5',''],
+        ['2.2','4 cyl. 2.2 atmo','118 ch','moteur central · manuelle 5','Trois places de front et moteur central : la Murena, dernière Matra sportive.'],
         ['2.2 Préparation 142','4 cyl. 2.2 triple carburateur','142 ch','moteur central · manuelle 5','480 kits vendus. La plus rapide et la plus rare des Murena.'],
       ]},
     ],
     'simca-1000': [
       { c:'Rallye', a:'1970–1978', m:[
-        ['Rallye 1','4 cyl. 1.3 carburateur double corps','82 ch','propulsion, moteur arrière · manuelle 4',''],
+        ['Rallye 1','4 cyl. 1.3 carburateur double corps','82 ch','propulsion, moteur arrière · manuelle 4','Petite bombe à moteur arrière, reine des rallyes populaires des années 70.'],
         ['Rallye 2','4 cyl. 1.3 double carburateur','103 ch','propulsion, moteur arrière · manuelle 4','La propulsion populaire française, reine des courses de côte amateurs.'],
         ['Rallye 3','4 cyl. 1.3 préparé','103 ch','propulsion · manuelle 4','1 000 exemplaires d\'homologation. Compte-tours central et jantes spécifiques.'],
       ]},
@@ -2208,11 +3193,11 @@
 
     'peugeot-306': [
       { c:'Phase 1', a:'1993–1997', m:[
-        ['1.4 – 1.8','4 cyl. essence et diesel','75–110 ch','traction · manuelle 5','Le châssis, dérivé de la 405, est resté une référence de sa décennie.'],
+        ['1.4–1.8','4 cyl. essence et diesel','75–110 ch','traction · manuelle 5','Le châssis, dérivé de la 405, est resté une référence de sa décennie.'],
         ['S16','XU10J4 2.0 16v atmo','155 ch','traction · manuelle 5','Freins à disques aux quatre roues, voies élargies.'],
       ]},
       { c:'Phase 2 / 3', a:'1997–2002', m:[
-        ['1.4 – 1.8','4 cyl. essence et diesel','75–110 ch','traction · manuelle 5',''],
+        ['1.4–1.8','4 cyl. essence et diesel','75–110 ch','traction · manuelle 5','Le châssis de la 306, dérivé de la 405, reste une référence de rigueur de sa décennie.'],
       ]},
     ],
     'peugeot-309': [
@@ -2223,13 +3208,13 @@
     ],
     'peugeot-rcz': [
       { c:'RCZ', a:'2010–2015', m:[
-        ['1.6 THP','EP6 1.6 turbo','156–200 ch','traction · manuelle 6 / auto',''],
+        ['1.6 THP','EP6 1.6 turbo','156–200 ch','traction · manuelle 6 / auto','Le coupé RCZ, aux arches de toit en double bulle, seul vrai coupé Peugeot moderne.'],
         ['RCZ R','EP6 1.6 turbo, vilebrequin et bielles renforcés','270 ch','traction · manuelle 6, différentiel Torsen','170 ch/L : record de puissance spécifique pour un moteur de série à sa sortie. Signée Peugeot Sport.'],
       ]},
     ],
     'peugeot-208': [
       { c:'A9 (I)', a:'2012–2019', m:[
-        ['1.0 – 1.6','3 et 4 cyl. essence et BlueHDi','68–120 ch','traction · manuelle 5/6',''],
+        ['1.0–1.6','3 et 4 cyl. essence et BlueHDi','68–120 ch','traction · manuelle 5/6','Première 208, poste de conduite i-Cockpit à petit volant et instrumentation surélevée.'],
       ]},
       { c:'P21 (II)', a:'2019–', m:[
         ['PureTech / e-208','3 cyl. turbo / électrique','75–156 ch','traction · manuelle 6 / auto 8','Première Peugeot déclinée en électrique dès le lancement.'],
@@ -2241,8 +3226,8 @@
     ],
     'peugeot-308': [
       { c:'T7', a:'2007–2013', m:[
-        ['1.6 THP / HDi','4 cyl. turbo essence et diesel','95–200 ch','traction · manuelle 5/6 / auto',''],
-        ['GTi 200','EP6DTS 1.6 THP','200 ch','traction · manuelle 6',''],
+        ['1.6 THP / HDi','4 cyl. turbo essence et diesel','95–200 ch','traction · manuelle 5/6 / auto','Première 308, plus sage que sa remplaçante au style affirmé.'],
+        ['GTi 200','EP6DTS 1.6 THP','200 ch','traction · manuelle 6','Renaissance du label GTi chez Peugeot, avec le 1.6 THP co-développé avec BMW.'],
       ]},
       { c:'T9', a:'2013–2021', m:[
         ['PureTech / BlueHDi','3 et 4 cyl. turbo','82–180 ch','traction · manuelle 6 / EAT8','Voiture de l\'Année 2014.'],
@@ -2255,7 +3240,7 @@
 
     'citroen-2cv': [
       { c:'A / AZ', a:'1948–1970', m:[
-        ['375 – 425 cm³','bicylindre à plat refroidi par air','9–21 ch','traction · manuelle 4 à commande au tableau de bord','Cahier des charges d\'origine : transporter deux paysans et cinquante kilos de pommes de terre à travers un champ labouré sans casser un œuf.'],
+        ['375–425 cm³','bicylindre à plat refroidi par air','9–21 ch','traction · manuelle 4 à commande au tableau de bord','Cahier des charges d\'origine : transporter deux paysans et cinquante kilos de pommes de terre à travers un champ labouré sans casser un œuf.'],
       ]},
       { c:'AZAM / Spécial', a:'1970–1990', m:[
         ['2CV4 / 2CV6','bicylindre 435–602 cm³ air','24–29 ch','traction · manuelle 4','Suspension à bras oscillants interconnectés avant-arrière.'],
@@ -2273,7 +3258,7 @@
     ],
     'citroen-bx': [
       { c:'BX', a:'1982–1994', m:[
-        ['1.1 – 1.9','4 cyl. essence et diesel','55–125 ch','traction, hydropneumatique · manuelle 4/5','Carrosserie dessinée par Bertone, capot et hayon en matériaux composites.'],
+        ['1.1–1.9','4 cyl. essence et diesel','55–125 ch','traction, hydropneumatique · manuelle 4/5','Carrosserie dessinée par Bertone, capot et hayon en matériaux composites.'],
         ['GTI 16 soupapes','XU9J4 1.9 16v atmo','155–160 ch','traction · manuelle 5','Le châssis hydropneumatique associé à un 16 soupapes : une combinaison unique.'],
         ['4TC','4 cyl. 2.1 turbo','200 ch','intégrale · manuelle 5','Homologation Groupe B. Un échec sportif complet : 86 exemplaires, dont beaucoup rachetés et détruits par Citroën.'],
       ]},
@@ -2286,7 +3271,7 @@
     ],
     'citroen-xsara': [
       { c:'Phase 1 / 2 / 3', a:'1997–2006', m:[
-        ['VTR','1.8 16v atmo','110 ch','traction · manuelle 5',''],
+        ['VTR','1.8 16v atmo','110 ch','traction · manuelle 5','La Xsara VTS de rallye a porté Citroën vers ses premiers titres WRC avec Loeb.'],
         ['VTS','XU10J4RS 2.0 16v atmo','163–167 ch','traction · manuelle 5','Mécanique de 306 GTI-6, sans la boîte 6 rapports.'],
       ]},
     ],
@@ -2299,10 +3284,10 @@
 
     'renault-clio': [
       { c:'Clio I', a:'1990–1998', m:[
-        ['1.1 – 1.9 D','4 cyl. essence et diesel','48–95 ch','traction · manuelle 5','Voiture de l\'Année 1991.'],
+        ['1.1–1.9 D','4 cyl. essence et diesel','48–95 ch','traction · manuelle 5','Voiture de l\'Année 1991.'],
       ]},
       { c:'Clio II', a:'1998–2012', m:[
-        ['1.2 – 1.6','4 cyl. essence et dCi','58–110 ch','traction · manuelle 5','La Clio la plus vendue : produite jusqu\'en 2012 sous le nom Clio Campus.'],
+        ['1.2–1.6','4 cyl. essence et dCi','58–110 ch','traction · manuelle 5','La Clio la plus vendue : produite jusqu\'en 2012 sous le nom Clio Campus.'],
       ]},
       { c:'Clio III / IV / V', a:'2005–', m:[
         ['essence, dCi, E-Tech','3 et 4 cyl., hybride','65–145 ch','traction · manuelle 5/6 / EDC / multimode','La Clio III est la première Clio 5 étoiles EuroNCAP.'],
@@ -2327,7 +3312,7 @@
         ['1.2','4 cyl. 1.2 atmo','55–75 ch','traction · manuelle 5 / Easy','Une seule carrosserie, une seule motorisation au lancement : un pari commercial total. Banquette arrière coulissante.'],
       ]},
       { c:'II', a:'2007–2014', m:[
-        ['1.2 / 1.6','4 cyl. essence et dCi','60–105 ch','traction · manuelle 5',''],
+        ['1.2 / 1.6','4 cyl. essence et dCi','60–105 ch','traction · manuelle 5','La deuxième Twingo perd les yeux ronds attachants de la première.'],
       ]},
       { c:'III', a:'2014–2024', m:[
         ['SCe / TCe','3 cyl. atmo et turbo','70–110 ch','moteur arrière, propulsion · manuelle 5 / EDC','Retour au moteur arrière et à la propulsion, quarante ans après la R8. Développée avec Smart.'],
@@ -2340,10 +3325,10 @@
     ],
     'renault-espace': [
       { c:'I / II', a:'1984–1996', m:[
-        ['2.0 – 2.8 V6','4 cyl. et V6 PRV','103–150 ch','traction · manuelle 5','Carrosserie polyester sur châssis galvanisé, assemblée par Matra. Le monospace européen est né ici.'],
+        ['2.0–2.8 V6','4 cyl. et V6 PRV','103–150 ch','traction · manuelle 5','Carrosserie polyester sur châssis galvanisé, assemblée par Matra. Le monospace européen est né ici.'],
       ]},
       { c:'III / IV', a:'1996–2015', m:[
-        ['2.0 – 3.5 V6','4 cyl. et V6, essence et dCi','115–245 ch','traction · manuelle 6 / auto','La production passe de Matra à Renault en 2002.'],
+        ['2.0–3.5 V6','4 cyl. et V6, essence et dCi','115–245 ch','traction · manuelle 6 / auto','La production passe de Matra à Renault en 2002.'],
       ]},
       { c:'V / VI', a:'2015–', m:[
         ['TCe / Blue dCi / E-Tech','4 cyl. turbo, hybride','131–200 ch','traction, roues arrière directrices · EDC','Abandon du monospace au profit d\'une silhouette de grand SUV en 2023.'],
@@ -2395,7 +3380,7 @@
     'jaguar-ftype': [
       { c:'X152', a:'2013–2024', m:[
         ['4 cyl. / V6','2.0 turbo / V6 3.0 compressé','300–400 ch','propulsion ou intégrale · auto 8','Le V6 compressé et son échappement à valves : l\'une des sonorités les plus démonstratives du marché.'],
-        ['R / R-Dynamic','V8 5.0 compressé','550–575 ch','propulsion ou intégrale · auto 8',''],
+        ['R / R-Dynamic','V8 5.0 compressé','550–575 ch','propulsion ou intégrale · auto 8','L\'échappement à valves de la F-Type R : l\'une des sonorités les plus théâtrales du marché.'],
         ['SVR','V8 5.0 compressé','575 ch','intégrale · auto 8','Échappement titane, 322 km/h.'],
         ['Project 7 / Project 8','V8 5.0 compressé','575–600 ch','propulsion ou intégrale · auto 8','La Project 8, 300 exemplaires, a détenu le record des berlines au Nürburgring.'],
       ]},
@@ -2403,7 +3388,7 @@
     'jaguar-xk': [
       { c:'X100 (XK8)', a:'1996–2005', m:[
         ['XK8','AJ-V8 4.0–4.2 atmo','294–304 ch','propulsion · auto 5/6','Premier V8 de l\'histoire de Jaguar.'],
-        ['XKR','AJ-V8 4.0–4.2 compressé','370–406 ch','propulsion · auto 5/6',''],
+        ['XKR','AJ-V8 4.0–4.2 compressé','370–406 ch','propulsion · auto 5/6','Grand coupé GT, apparu dans James Bond « Meurs un autre jour » côté méchants.'],
       ]},
       { c:'X150', a:'2006–2014', m:[
         ['XK','AJ-V8 4.2–5.0 atmo','298–385 ch','propulsion · auto 6','Structure tout aluminium rivetée-collée.'],
@@ -2416,7 +3401,7 @@
         ['3.6 / 4.0 six cylindres','AJ6 3.6–4.0 atmo','223–241 ch','propulsion · manuelle 5 / auto','L\'option raisonnable, aujourd\'hui la plus facile à entretenir.'],
       ]},
       { c:'Facelift', a:'1991–1996', m:[
-        ['6.0 V12','V12 6.0 atmo','308 ch','propulsion · auto 4',''],
+        ['6.0 V12','V12 6.0 atmo','308 ch','propulsion · auto 4','La XJS a longtemps porté le seul V12 de grande série de l\'industrie, sur plus de 20 ans.'],
         ['XJR-S (TWR)','V12 6.0 préparé par TWR','333 ch','propulsion · auto 3','Préparée par Tom Walkinshaw Racing, l\'écurie victorieuse au Mans en 1988.'],
       ]},
     ],
@@ -2448,9 +3433,9 @@
     'aston-vantage': [
       { c:'VH (V8 Vantage)', a:'2005–2017', m:[
         ['V8 4.3','V8 4.3 atmo','385 ch','propulsion transaxle · manuelle 6 / Sportshift','Boîte accolée au pont arrière, répartition proche de 50/50.'],
-        ['V8 4.7 / S / GT','V8 4.7 atmo','420–436 ch','propulsion · manuelle 6 / Sportshift II',''],
+        ['V8 4.7 / S / GT','V8 4.7 atmo','420–436 ch','propulsion · manuelle 6 / Sportshift II','Le grondement du V8 atmo Aston, avant le passage au biturbo AMG.'],
         ['V12 Vantage','V12 5.9 atmo','517 ch','propulsion · manuelle 6','Le plus gros moteur maison dans la plus petite carrosserie : un exercice assumé de démesure.'],
-        ['V12 Vantage S','V12 5.9 atmo','573 ch','propulsion · Sportshift III / manuelle 7',''],
+        ['V12 Vantage S','V12 5.9 atmo','573 ch','propulsion · Sportshift III / manuelle 7','Le plus gros moteur maison dans la plus petite carrosserie : démesure assumée.'],
       ]},
       { c:'AM6 (2018+)', a:'2018–', m:[
         ['V8','V8 4.0 biturbo (AMG)','510–535 ch','propulsion · auto 8 / manuelle 7','Moteur fourni par Mercedes-AMG, différentiel électronique arrière.'],
@@ -2502,7 +3487,7 @@
         ['Exige','Rover K-Series 1.8 atmo','177–192 ch','propulsion · manuelle 5','Version fermée de l\'Elise, à aileron fixe. 604 exemplaires.'],
       ]},
       { c:'S2', a:'2004–2011', m:[
-        ['Exige S','Toyota 2ZZ 1.8 à compresseur','218–260 ch','propulsion · manuelle 6',''],
+        ['Exige S','Toyota 2ZZ 1.8 à compresseur','218–260 ch','propulsion · manuelle 6','La version fermée et plus radicale de l\'Elise, orientée circuit.'],
       ]},
       { c:'S3', a:'2012–2021', m:[
         ['Exige S / Sport 350','Toyota 2GR 3.5 V6 compressé','345–350 ch','propulsion · manuelle 6','Le V6 compressé dans moins de 1 200 kg.'],
@@ -2512,7 +3497,7 @@
     'lotus-esprit': [
       { c:'S1 – S3', a:'1976–1987', m:[
         ['2.0 / 2.2','4 cyl. 2.0–2.2 atmo','160–172 ch','propulsion · manuelle 5','Dessinée par Giugiaro. La sous-marine de James Bond.'],
-        ['Turbo','4 cyl. 2.2 turbo','210 ch','propulsion · manuelle 5',''],
+        ['Turbo','4 cyl. 2.2 turbo','210 ch','propulsion · manuelle 5','L\'Esprit de James Bond qui se transforme en sous-marin dans « L\'Espion qui m\'aimait ».'],
       ]},
       { c:'X180 / S4', a:'1987–1996', m:[
         ['Turbo SE','4 cyl. 2.2 turbo','264 ch','propulsion · manuelle 5','Carrosserie redessinée par Peter Stevens, futur styliste de la McLaren F1.'],
@@ -2530,7 +3515,7 @@
     'tvr-cerbera': [
       { c:'Cerbera', a:'1996–2006', m:[
         ['4.2 / 4.5 AJP V8','V8 AJP 4.2–4.5 atmo maison','350–420 ch','propulsion · manuelle 5','Premier moteur conçu par TVR. Vilebrequin plat, son inimitable.'],
-        ['Speed Six 4.0','6 en ligne 4.0 atmo maison','350–360 ch','propulsion · manuelle 5',''],
+        ['Speed Six 4.0','6 en ligne 4.0 atmo maison','350–360 ch','propulsion · manuelle 5','Le six en ligne conçu par TVR, alternative plus souple au V8 maison.'],
       ]},
     ],
     'tvr-speed12': [
@@ -2593,7 +3578,7 @@
         ['Superleggera','V10 5.0 atmo','530 ch','intégrale · e-gear','70 kg de moins grâce au carbone.'],
       ]},
       { c:'LP560', a:'2008–2013', m:[
-        ['LP560-4','V10 5.2 atmo à injection directe','560 ch','intégrale · manuelle 6 / e-gear',''],
+        ['LP560-4','V10 5.2 atmo à injection directe','560 ch','intégrale · manuelle 6 / e-gear','La Gallardo est la Lamborghini la plus vendue de l\'histoire, celle qui a assaini les finances.'],
         ['LP570-4 Superleggera / Performante','V10 5.2 atmo','570 ch','intégrale · e-gear','1 340 kg à sec.'],
         ['LP550-2','V10 5.2 atmo','550 ch','propulsion · manuelle 6 / e-gear','Version propulsion, aujourd\'hui la plus recherchée par les puristes.'],
       ]},
@@ -2610,7 +3595,7 @@
         ['LP750-4 SV','V12 6.5 atmo','750 ch','intégrale · ISR 7','50 kg de moins, aéro active. 600 exemplaires.'],
       ]},
       { c:'S / SVJ / Ultimae', a:'2017–2022', m:[
-        ['S','V12 6.5 atmo','740 ch','intégrale, roues arrière directrices · ISR 7',''],
+        ['S','V12 6.5 atmo','740 ch','intégrale, roues arrière directrices · ISR 7','L\'Aventador et son V12 atmosphérique, un des derniers du genre, aux portes en élytre.'],
         ['SVJ','V12 6.5 atmo','770 ch','intégrale · ISR 7','Aéro active ALA 2.0. Record du tour au Nürburgring pour une voiture de série en 2018.'],
         ['Ultimae','V12 6.5 atmo','780 ch','intégrale · ISR 7','600 exemplaires. Fin d\'un V12 atmosphérique sans hybridation, après onze ans.'],
       ]},
@@ -2673,7 +3658,7 @@
         ['1.6 Supercharger','4A-GZE 1.6 à compresseur','145–150 ch','moteur central · manuelle 5','Japon et États-Unis principalement.'],
       ]},
       { c:'SW20', a:'1989–1999', m:[
-        ['2.0 atmo','3S-GE 2.0 16v','156–180 ch','moteur central · manuelle 5',''],
+        ['2.0 atmo','3S-GE 2.0 16v','156–180 ch','moteur central · manuelle 5','La MR2, seule sportive à moteur central de grande série japonaise abordable de son temps.'],
         ['2.0 Turbo (GT / Turbo)','3S-GTE 2.0 turbo','225–245 ch','moteur central · manuelle 5','Comportement réputé piégeux sur les premières séries, corrigé au fil des révisions.'],
       ]},
       { c:'W30 (MR-S)', a:'1999–2007', m:[
@@ -2718,11 +3703,11 @@
         ['IS300','2JZ-GE 3.0 · 6 en ligne atmo','215 ch','propulsion · manuelle 5 / auto','Le bloc de la Supra en version atmosphérique.'],
       ]},
       { c:'XE20', a:'2005–2013', m:[
-        ['IS250 / IS350','V6 2.5–3.5 atmo','208–306 ch','propulsion · auto 6',''],
+        ['IS250 / IS350','V6 2.5–3.5 atmo','208–306 ch','propulsion · auto 6','Style plus agressif, l\'alternative japonaise fiable à la Série 3.'],
         ['IS-F','2UR-GSE 5.0 · V8 atmo','423 ch','propulsion · auto 8','Le premier modèle « F » de Lexus. Échappement à quatre sorties superposées.'],
       ]},
       { c:'XE30', a:'2013–', m:[
-        ['IS300h / IS350','4 cyl. hybride / V6 3.5 atmo','223–318 ch','propulsion · CVT ou auto 8',''],
+        ['IS300h / IS350','4 cyl. hybride / V6 3.5 atmo','223–318 ch','propulsion · CVT ou auto 8','La version hybride, rare sur une berline sportive à propulsion.'],
       ]},
     ],
     'lexus-rcf': [
@@ -2742,7 +3727,7 @@
     'nissan-skyline-r33': [
       { c:'BCNR33', a:'1995–1998', m:[
         ['GT-R','RB26DETT 2.6 biturbo','280 ch','intégrale ATTESA E-TS Pro · manuelle 5','Première voiture de série sous les 8 minutes au Nürburgring (1996).'],
-        ['GT-R V-Spec','RB26DETT 2.6 biturbo','280 ch','intégrale ATTESA E-TS Pro · manuelle 5',''],
+        ['GT-R V-Spec','RB26DETT 2.6 biturbo','280 ch','intégrale ATTESA E-TS Pro · manuelle 5','Le mythique RB26 bridé à 280 ch par le gentlemen\'s agreement japonais, mais capable de bien plus.'],
         ['400R (Nismo)','RBX-GT2 2.8 biturbo','400 ch','intégrale · manuelle 5','44 exemplaires. La plus rare et la plus chère de toutes les Skyline.'],
       ]},
     ],
@@ -2759,7 +3744,7 @@
         ['GT-R','VR38DETT 3.8 V6 biturbo','480–485 ch','intégrale ATTESA E-TS · DCT 6 transaxle','Chaque moteur est assemblé à la main par un seul takumi, dont le nom est apposé sur une plaque.'],
       ]},
       { c:'R35 phase 2', a:'2011–2016', m:[
-        ['GT-R','VR38DETT 3.8 biturbo','530–550 ch','intégrale · DCT 6',''],
+        ['GT-R','VR38DETT 3.8 biturbo','530–550 ch','intégrale · DCT 6','« Godzilla » : chaque moteur est assemblé à la main par un unique artisan, dont la plaque figure dessus.'],
         ['GT-R Nismo','VR38DETT 3.8 biturbo','600 ch','intégrale · DCT 6','Turbos issus du GT3, aérodynamique carbone.'],
       ]},
       { c:'R35 phase 3', a:'2017–', m:[
@@ -2769,7 +3754,7 @@
     ],
     'nissan-300zx': [
       { c:'Z32', a:'1989–2000', m:[
-        ['3.0 atmo','VG30DE 3.0 V6 atmo','222 ch','propulsion · manuelle 5 / auto',''],
+        ['3.0 atmo','VG30DE 3.0 V6 atmo','222 ch','propulsion · manuelle 5 / auto','La 300ZX, GT japonaise des années 90 au style intemporel, aussi en version twin-turbo.'],
         ['3.0 Twin Turbo','VG30DETT 3.0 V6 biturbo','280 ch (Japon) / 300 ch (export)','propulsion · manuelle 5','Roues arrière directrices Super HICAS. Design resté remarquablement moderne.'],
       ]},
     ],
@@ -2787,7 +3772,7 @@
     ],
     'nissan-silvia-s15': [
       { c:'S15', a:'1999–2002', m:[
-        ['Spec-S','SR20DE 2.0 atmo','165 ch','propulsion · manuelle 5/6',''],
+        ['Spec-S','SR20DE 2.0 atmo','165 ch','propulsion · manuelle 5/6','La S15, dernière Silvia, sommet de la lignée pour les amateurs de drift et de tuning.'],
         ['Spec-R','SR20DET 2.0 turbo','250 ch','propulsion · manuelle 6, autobloquant hélicoïdal','La dernière Silvia. Icône absolue du drift japonais.'],
       ]},
     ],
@@ -2822,7 +3807,7 @@
     ],
     'mazda-rx7-fc': [
       { c:'FC3S', a:'1986–1992', m:[
-        ['13B atmo','13B birotor 1.3 atmo','146–160 ch','propulsion · manuelle 5',''],
+        ['13B atmo','13B birotor 1.3 atmo','146–160 ch','propulsion · manuelle 5','La FC, deuxième RX-7, moteur rotatif, également proposée en version turbo.'],
         ['Turbo II','13B-T birotor turbo','185–205 ch','propulsion · manuelle 5','Suspension arrière multibras et système de correction de train.'],
       ]},
     ],
@@ -2839,7 +3824,7 @@
     ],
     'mazda-rx8': [
       { c:'SE3P', a:'2003–2012', m:[
-        ['Renesis 192','13B-MSP birotor atmo','192 ch','propulsion · manuelle 5 / auto',''],
+        ['Renesis 192','13B-MSP birotor atmo','192 ch','propulsion · manuelle 5 / auto','Quatre portes à ouverture antagoniste, sans montant central : une berline rotative unique.'],
         ['Renesis 231','13B-MSP birotor atmo','231 ch','propulsion · manuelle 6','9 000 tr/min. Portes arrière antagonistes et quatre vraies places : un rotatif familial.'],
       ]},
     ],
@@ -2848,12 +3833,12 @@
         ['BRZ','FA20 2.0 flat-4 atmo','200 ch','propulsion · manuelle 6 / auto 6','Jumelle de la GT86, avec un réglage de châssis légèrement plus neutre.'],
       ]},
       { c:'ZD8', a:'2021–', m:[
-        ['BRZ','FA24 2.4 flat-4 atmo','234 ch','propulsion · manuelle 6 / auto 6',''],
+        ['BRZ','FA24 2.4 flat-4 atmo','234 ch','propulsion · manuelle 6 / auto 6','Jumelle de la Toyota GR86, née d\'un partenariat Subaru-Toyota. Propulsion légère et abordable.'],
       ]},
     ],
     'mitsubishi-3000gt': [
       { c:'Z16A', a:'1990–2001', m:[
-        ['3000GT / GTO','6G72 3.0 V6 24v atmo','222 ch','traction ou intégrale · manuelle 5',''],
+        ['3000GT / GTO','6G72 3.0 V6 24v atmo','222 ch','traction ou intégrale · manuelle 5','Bardée de technologie : quatre roues directrices, aéro active, intégrale. La version VR-4 dépasse 280 ch.'],
         ['Twin Turbo (VR-4)','6G72 3.0 V6 biturbo','286 ch','intégrale, 4 roues directrices · manuelle 5/6','Aérodynamique active avant et arrière, échappement à géométrie variable : une vitrine technologique de 1990.'],
       ]},
     ],
@@ -2867,7 +3852,7 @@
         ['Swift Sport','M16A 1.6 atmo','125 ch','traction · manuelle 5','Environ 1 050 kg. Châssis salué bien au-delà de son prix.'],
       ]},
       { c:'ZC32S', a:'2011–2016', m:[
-        ['Swift Sport','M16A 1.6 atmo','136 ch','traction · manuelle 6',''],
+        ['Swift Sport','M16A 1.6 atmo','136 ch','traction · manuelle 6','L\'une des GTI modernes les plus légères et attachantes, à prix contenu.'],
       ]},
       { c:'ZC33S', a:'2017–', m:[
         ['Swift Sport','K14C 1.4 Boosterjet turbo','140 ch','traction · manuelle 6','970 kg : la plus légère de sa catégorie, le couple en hausse compense la puissance modeste.'],
@@ -2883,7 +3868,7 @@
         ['LJ / SJ 410 / Samurai','2 et 4 cyl. 0.5–1.3','25–70 ch','4x4 enclenchable, châssis échelle · manuelle 4/5','Le 4x4 miniature qui passe là où les gros restent bloqués.'],
       ]},
       { c:'JB23 / JB43', a:'1998–2018', m:[
-        ['Jimny','1.3 atmo / 0.66 turbo (Japon)','64–85 ch','4x4 enclenchable · manuelle 5 / auto 4',''],
+        ['Jimny','1.3 atmo / 0.66 turbo (Japon)','64–85 ch','4x4 enclenchable · manuelle 5 / auto 4','Minuscule mais vrai 4x4 à châssis échelle et boîte de transfert : des capacités de franchissement bluffantes.'],
       ]},
       { c:'JB64 / JB74', a:'2018–', m:[
         ['Jimny','K15B 1.5 atmo','102 ch','4x4 enclenchable, réducteur, ponts rigides · manuelle 5 / auto 4','Retour au style anguleux. Retiré du marché européen en 2020 pour cause de normes CO2, puis revenu en version utilitaire.'],
@@ -2929,7 +3914,7 @@
     ],
     'ford-fiesta-st': [
       { c:'Mk6', a:'2005–2008', m:[
-        ['Fiesta ST150','Duratec 2.0 atmo','150 ch','traction · manuelle 5',''],
+        ['Fiesta ST150','Duratec 2.0 atmo','150 ch','traction · manuelle 5','Première Fiesta ST moderne, atmosphérique, avant l\'ère du turbo trois cylindres.'],
       ]},
       { c:'Mk7', a:'2013–2017', m:[
         ['Fiesta ST','EcoBoost 1.6 turbo','182 ch (200 en surpression)','traction · manuelle 6','Châssis unanimement salué : l\'essieu arrière volontairement peu rigide autorise le lever de roue.'],
@@ -2962,7 +3947,7 @@
         ['260 / 289 V8','V8 4.3–4.7','164–271 ch','propulsion · manuelle 3/4 · auto 3','La GT 289 « K-Code » à 271 ch est la plus recherchée.'],
         ['Shelby GT350','V8 4.7 préparé','306 ch','propulsion · manuelle 4','562 exemplaires en 1965. Homologuée en catégorie B-Production.'],
       ]},
-      { c:'1967 – 1970', a:'1967–1970', m:[
+      { c:'1967–1970', a:'1967–1970', m:[
         ['390 / 428 Cobra Jet','V8 6.4–7.0','325–335 ch (sous-évalués)','propulsion · manuelle 4 · auto 3','La 428 Cobra Jet était officiellement annoncée à 335 ch, largement en dessous de la réalité, pour raisons d\'assurance.'],
         ['Boss 302','V8 4.9 atmo','290 ch','propulsion · manuelle 4','Homologation Trans-Am.'],
         ['Boss 429','V8 7.0 hémisphérique','375 ch','propulsion · manuelle 4','Construite pour homologuer le moteur en NASCAR. 859 exemplaires.'],
@@ -2996,7 +3981,7 @@
     ],
     'alfa-gtv-916': [
       { c:'916', a:'1995–2005', m:[
-        ['2.0 Twin Spark','4 cyl. 2.0 16v atmo','150–165 ch','traction · manuelle 5',''],
+        ['2.0 Twin Spark','4 cyl. 2.0 16v atmo','150–165 ch','traction · manuelle 5','Le coupé GTV, dessiné par Pininfarina, l\'une des plus belles Alfa des années 90.'],
         ['2.0 V6 Turbo','V6 2.0 turbo','200–202 ch','traction · manuelle 5','Version fiscalement optimisée pour l\'Italie, aujourd\'hui rarissime.'],
         ['3.0 / 3.2 V6 Busso','V6 3.0–3.2 24v atmo','218–240 ch','traction · manuelle 6','Le coin de style Pininfarina et le chant du Busso : la combinaison la plus recherchée.'],
       ]},
@@ -3017,7 +4002,7 @@
 
     'lancia-delta': [
       { c:'HF Turbo / 4WD', a:'1983–1987', m:[
-        ['HF Turbo','4 cyl. 1.6 turbo','130–140 ch','traction · manuelle 5',''],
+        ['HF Turbo','4 cyl. 1.6 turbo','130–140 ch','traction · manuelle 5','La Delta civile, dont dérive la mythique Integrale, six fois championne du monde des rallyes.'],
         ['HF 4WD','4 cyl. 2.0 turbo 8v','165 ch','intégrale, différentiel central Ferguson · manuelle 5','Le point de départ : elle remporte le championnat du monde des rallyes dès 1987.'],
       ]},
       { c:'Integrale 8v / 16v', a:'1987–1991', m:[
@@ -3040,7 +4025,7 @@
     'fiat-coupe': [
       { c:'175', a:'1993–2000', m:[
         ['2.0 16v','4 cyl. 2.0 16v atmo','139 ch','traction · manuelle 5','Carrosserie dessinée par Chris Bangle, intérieur par Pininfarina.'],
-        ['2.0 16v Turbo','4 cyl. 2.0 16v turbo','190 ch','traction · manuelle 5',''],
+        ['2.0 16v Turbo','4 cyl. 2.0 16v turbo','190 ch','traction · manuelle 5','Coupé au dessin extérieur de Pininfarina et intérieur signé... du même. Le 20V Turbo dépasse 220 ch.'],
         ['2.0 20v Turbo','5 en ligne 2.0 20v turbo','220 ch','traction · manuelle 5/6, autobloquant Viscodrive','Le coupé le plus rapide de sa catégorie à sa sortie. La série limitée Plus est la plus recherchée.'],
       ]},
     ],
@@ -3052,7 +4037,7 @@
     ],
     'opel-astra-opc': [
       { c:'G', a:'2002–2004', m:[
-        ['Astra OPC','2.0 turbo','200 ch','traction · manuelle 5',''],
+        ['Astra OPC','2.0 turbo','200 ch','traction · manuelle 5','OPC = Opel Performance Center, l\'équivalent maison de la division M ou AMG.'],
       ]},
       { c:'H', a:'2005–2010', m:[
         ['Astra OPC','2.0 turbo','240 ch','traction · manuelle 6','Nürburgring Edition à châssis renforcé.'],
@@ -3065,14 +4050,14 @@
       { c:'A', a:'1989–1997', m:[
         ['2.0 8v / 16v','4 cyl. 2.0 atmo','115–150 ch','traction · manuelle 5','Cx de 0,26 : le coefficient de traînée le plus bas d\'une voiture de série à sa sortie.'],
         ['Turbo 4x4','4 cyl. 2.0 16v turbo','204 ch','intégrale · manuelle 6','Boîte à 6 rapports, une rareté pour l\'époque.'],
-        ['2.5 V6','V6 2.5 24v atmo','170 ch','traction · manuelle 5',''],
+        ['2.5 V6','V6 2.5 24v atmo','170 ch','traction · manuelle 5','La Calibra, coupé au Cx record de 0,26, l\'un des plus aérodynamiques de son époque.'],
       ]},
     ],
 
     'mercedes-190e': [
       { c:'W201 16 soupapes', a:'1983–1993', m:[
         ['2.3-16','4 cyl. 2.3 16v, culasse Cosworth','185 ch','propulsion · manuelle 5 (dogleg)','Culasse développée par Cosworth. Records d\'endurance à Nardò en 1983.'],
-        ['2.5-16','4 cyl. 2.5 16v Cosworth','195 ch','propulsion · manuelle 5 / auto',''],
+        ['2.5-16','4 cyl. 2.5 16v Cosworth','195 ch','propulsion · manuelle 5 / auto','La 190E 2.5-16 Evo, née pour le DTM, culasse Cosworth. La rivale directe de la M3 E30.'],
         ['2.5-16 Evolution I','4 cyl. 2.5 16v','195 ch','propulsion · manuelle 5','502 exemplaires d\'homologation DTM.'],
         ['2.5-16 Evolution II','4 cyl. 2.5 16v','235 ch','propulsion · manuelle 5','Aileron géant dessiné en soufflerie. 502 exemplaires. L\'une des Mercedes modernes les plus cotées.'],
       ]},
@@ -3094,8 +4079,8 @@
         ['SLK 32 AMG','V6 3.2 à compresseur','354 ch','propulsion · auto 5','Assemblée à la main par AMG, 263 km/h.'],
       ]},
       { c:'R171', a:'2004–2011', m:[
-        ['200 K / 350','4 cyl. compressé / V6 3.5 atmo','163–305 ch','propulsion · manuelle 6 / 7G-Tronic',''],
-        ['SLK 55 AMG','V8 5.4 atmo','360 ch','propulsion · 7G-Tronic',''],
+        ['200 K / 350','4 cyl. compressé / V6 3.5 atmo','163–305 ch','propulsion · manuelle 6 / 7G-Tronic','Roadster à toit rigide escamotable, système de chauffe-nuque « Airscarf » en option.'],
+        ['SLK 55 AMG','V8 5.4 atmo','360 ch','propulsion · 7G-Tronic','Un V8 atmo dans un petit roadster : une recette improbable et jouissive.'],
       ]},
       { c:'R172', a:'2011–2020', m:[
         ['200 / 250 / 350','4 cyl. turbo / V6 3.5','184–306 ch','propulsion · manuelle 6 / 7G-Tronic','Renommée SLC en 2016.'],
@@ -3111,15 +4096,15 @@
         ['230 GE / 280 GE','4 et 6 cyl. essence','102–156 ch','4x4 · manuelle 4/5','Le 280 GE remporte le Paris-Dakar 1983.'],
       ]},
       { c:'W463', a:'1990–2018', m:[
-        ['G 300 / G 350 CDI','6 cyl. diesel, puis V6 3.0 CDI','177–245 ch','4x4 permanent, trois blocages · auto 5/7',''],
-        ['G 500','V8 5.0 puis 5.5 atmo','296–388 ch','4x4 · auto 5/7',''],
+        ['G 300 / G 350 CDI','6 cyl. diesel, puis V6 3.0 CDI','177–245 ch','4x4 permanent, trois blocages · auto 5/7','Les trois blocages de différentiel, rares, expliquent ses capacités de franchissement légendaires.'],
+        ['G 500','V8 5.0 puis 5.5 atmo','296–388 ch','4x4 · auto 5/7','Le V8 atmosphérique et son claquement de portes façon coffre-fort : une signature du G.'],
         ['G 55 AMG','V8 5.4 à compresseur','354–507 ch','4x4 · auto 5/7','Le compresseur dans un châssis à essieux rigides de 1979 : une aberration mécanique assumée.'],
         ['G 63 AMG','V8 5.5 biturbo','544–571 ch','4x4 · auto 7','La version 463 Edition et ses sorties latérales.'],
         ['G 65 AMG','V12 6.0 biturbo','630 ch','4x4 · auto 7','Seul G à V12. Production confidentielle.'],
       ]},
       { c:'W463A', a:'2018–', m:[
         ['G 400 d','6 en ligne 3.0 diesel','330 ch','4x4 · auto 9','Passage à la suspension avant indépendante — l\'arrière reste à essieu rigide.'],
-        ['G 500','V8 4.0 biturbo','422 ch','4x4 · auto 9',''],
+        ['G 500','V8 4.0 biturbo','422 ch','4x4 · auto 9','La refonte de 2018 modernise tout sauf la silhouette, quasi inchangée depuis 1979.'],
         ['G 63 AMG','V8 4.0 biturbo','585–635 ch','4x4 · auto 9','La 4x4² surélevée à portiques et amortisseurs doubles.'],
       ]},
     ],
@@ -3132,7 +4117,7 @@
         ['230 / 250 / 280 SL','6 en ligne 2.3–2.8 injection','150–170 ch','propulsion · manuelle 4 / auto','Le toit rigide concave, dit « pagode », donne son surnom au modèle.'],
       ]},
       { c:'R107', a:'1971–1989', m:[
-        ['280 – 560 SL','6 en ligne et V8 2.8–5.6','185–245 ch','propulsion · manuelle / auto','Dix-huit ans de carrière : la plus longue de la lignée.'],
+        ['280–560 SL','6 en ligne et V8 2.8–5.6','185–245 ch','propulsion · manuelle / auto','Dix-huit ans de carrière : la plus longue de la lignée.'],
       ]},
       { c:'R129', a:'1989–2001', m:[
         ['SL 280 – SL 600','6 en ligne, V8, V12 2.8–6.0','193–394 ch','propulsion · auto','Arceau de sécurité escamotable automatiquement en cas de retournement.'],
@@ -3140,7 +4125,7 @@
       ]},
       { c:'R230 / R231', a:'2001–2020', m:[
         ['SL 350 – SL 600','V6, V8, V12','245–517 ch','propulsion · auto 5/7','Toit rigide escamotable de série.'],
-        ['SL 63 / SL 65 AMG','V8 6.2 atmo puis 5.5 biturbo / V12 6.0 biturbo','518–670 ch','propulsion · MCT 7',''],
+        ['SL 63 / SL 65 AMG','V8 6.2 atmo puis 5.5 biturbo / V12 6.0 biturbo','518–670 ch','propulsion · MCT 7','Le grand roadster GT de Mercedes, dont les versions AMG dépassent les 650 ch en V12.'],
       ]},
       { c:'R232', a:'2021–', m:[
         ['SL 43 / SL 55 / SL 63','4 cyl. 2.0 turbo à assistance électrique / V8 4.0 biturbo','381–585 ch','propulsion ou 4Matic+ · MCT 9','Retour de la capote en toile et des places arrière d\'appoint. Développée par AMG.'],
@@ -3149,7 +4134,7 @@
     'mercedes-sls': [
       { c:'C197', a:'2010–2014', m:[
         ['SLS AMG','M159 6.2 · V8 atmo','571 ch','propulsion · DCT 7 en transaxle','Portes papillon en hommage à la 300 SL. Premier modèle intégralement conçu par AMG.'],
-        ['SLS GT','M159 6.2 · V8 atmo','591 ch','propulsion · DCT 7',''],
+        ['SLS GT','M159 6.2 · V8 atmo','591 ch','propulsion · DCT 7','Les portes papillon en hommage à la 300 SL Gullwing de 1954. Dernière AMG entièrement conçue en interne.'],
         ['SLS Black Series','M159 6.2 · V8 atmo','631 ch','propulsion · DCT 7','8 000 tr/min, allégée de 70 kg.'],
         ['SLS Electric Drive','4 moteurs électriques','751 ch','intégrale','Une roue, un moteur. 1 000 Nm. La plus rare des SLS.'],
       ]},
@@ -3184,7 +4169,7 @@
         ['A 45 AMG','M133 2.0 turbo','360–381 ch','4Matic · DCT 7','Le 4 cylindres turbo de série le plus puissant au monde à son lancement.'],
       ]},
       { c:'W177 A35 / A45', a:'2018–', m:[
-        ['A 35','2.0 turbo','306 ch','4Matic · DCT 7',''],
+        ['A 35','2.0 turbo','306 ch','4Matic · DCT 7','L\'AMG d\'accès, mécanique proche de la Golf R mais châssis raffermi façon AMG.'],
         ['A 45 S','2.0 turbo','421 ch','4Matic+ · DCT 8','Toujours le record du 4 cylindres de série le plus puissant.'],
       ]},
     ],
@@ -3192,15 +4177,15 @@
     /* ================= LOT 3 — Alfa Romeo ============================== */
     'alfa-giulia': [
       { c:'Type 952', a:'2015–', m:[
-        ['2.0 Turbo','4 cyl. 2.0 turbo','200–280 ch','propulsion ou Q4 · auto 8 ZF',''],
-        ['2.2 JTDm','4 cyl. 2.2 diesel','136–210 ch','propulsion ou Q4 · auto 8',''],
+        ['2.0 Turbo','4 cyl. 2.0 turbo','200–280 ch','propulsion ou Q4 · auto 8 ZF','Le retour d\'Alfa Romeo à la propulsion et à une vraie berline sportive en 2015.'],
+        ['2.2 JTDm','4 cyl. 2.2 diesel','136–210 ch','propulsion ou Q4 · auto 8','Bloc diesel tout aluminium, rare, pour alléger le train avant.'],
         ['Veloce','4 cyl. 2.0 turbo','280 ch','Q4 · auto 8','Différentiel arrière autobloquant.'],
       ]},
     ],
     'alfa-giulietta': [
       { c:'Type 940', a:'2010–2020', m:[
-        ['1.4 MultiAir','4 cyl. 1.4 turbo','120–170 ch','traction · manuelle 6 / TCT 6',''],
-        ['JTDm','4 cyl. 1.6–2.0 diesel','105–175 ch','traction · manuelle 6 / TCT 6',''],
+        ['1.4 MultiAir','4 cyl. 1.4 turbo','120–170 ch','traction · manuelle 6 / TCT 6','Le système MultiAir de calage variable des soupapes, innovation Fiat, équipe ce moteur.'],
+        ['JTDm','4 cyl. 1.6–2.0 diesel','105–175 ch','traction · manuelle 6 / TCT 6','Nommée d\'après la Giulietta de 1954, première Alfa de grande diffusion de l\'après-guerre.'],
       ]},
     ],
     'alfa-giulietta-qv': [
@@ -3217,8 +4202,8 @@
     ],
     'alfa-156': [
       { c:'Type 932', a:'1997–2007', m:[
-        ['Twin Spark 1.6 – 2.0','4 cyl. atmo double allumage','120–165 ch','traction · manuelle 5 / Selespeed','Voiture de l\'Année 1998. Poignées arrière dissimulées dans le montant.'],
-        ['V6 2.5','V6 Busso 2.5 atmo','190 ch','traction · manuelle 5/6',''],
+        ['Twin Spark 1.6–2.0','4 cyl. atmo double allumage','120–165 ch','traction · manuelle 5 / Selespeed','Voiture de l\'Année 1998. Poignées arrière dissimulées dans le montant.'],
+        ['V6 2.5','V6 Busso 2.5 atmo','190 ch','traction · manuelle 5/6','Le V6 Busso, souvent cité comme l\'un des plus beaux moteurs jamais construits, visuellement et sonorement.'],
       ]},
     ],
     'alfa-156-gta': [
@@ -3234,14 +4219,14 @@
     ],
     'alfa-stelvio': [
       { c:'Type 949', a:'2016–', m:[
-        ['2.0 Turbo / 2.2 JTDm','4 cyl. essence et diesel','160–280 ch','propulsion ou Q4 · auto 8',''],
+        ['2.0 Turbo / 2.2 JTDm','4 cyl. essence et diesel','160–280 ch','propulsion ou Q4 · auto 8','Premier SUV d\'Alfa, partageant sa base et son brio de conduite avec la berline Giulia.'],
         ['Quadrifoglio','V6 2.9 biturbo','510 ch','Q4 · auto 8','Record des SUV au Nürburgring en 2017 (7:51).'],
       ]},
     ],
     'alfa-mito': [
       { c:'Type 955', a:'2008–2018', m:[
         ['1.4 MultiAir','4 cyl. 1.4 turbo','105–170 ch','traction · manuelle 6 / TCT 6','Le système MultiAir de commande hydraulique des soupapes, développé par Fiat.'],
-        ['Quadrifoglio Verde','1.4 MultiAir turbo','170 ch','traction · manuelle 6 / TCT 6',''],
+        ['Quadrifoglio Verde','1.4 MultiAir turbo','170 ch','traction · manuelle 6 / TCT 6','La petite MiTo sportive, seule Alfa moderne sur base de Fiat Punto.'],
       ]},
     ],
 
@@ -3262,7 +4247,7 @@
     /* ---- Porsche en format détaillé (le modèle où les phases comptent le plus) ---- */
     'porsche-911': [
       { c:'901 / série G', a:'1963–1989', m:[
-        ['2.0 – 2.4','flat-6 air, carburateurs puis injection','130–190 ch','propulsion · manuelle 5','Les 2.7 RS de 1973, 210 ch pour 960 kg, sont le sommet de la période.'],
+        ['2.0–2.4','flat-6 air, carburateurs puis injection','130–190 ch','propulsion · manuelle 5','Les 2.7 RS de 1973, 210 ch pour 960 kg, sont le sommet de la période.'],
         ['3.0 SC','flat-6 3.0 air','180–204 ch','propulsion · manuelle 5','La 911 la plus fiable de la série G.'],
         ['3.2 Carrera','flat-6 3.2 air','207–231 ch','propulsion · manuelle 5 (G50 dès 1987)','La boîte G50 de 1987 est un critère de prix décisif à l\'achat.'],
       ]},
@@ -3273,7 +4258,7 @@
       ]},
       { c:'993', a:'1994–1998', m:[
         ['Carrera','flat-6 3.6–3.8 air','272–285 ch','propulsion ou intégrale · manuelle 6','Nouvel essieu arrière multibras : la fin du comportement piégeux.'],
-        ['Carrera RS','flat-6 3.8 air','300 ch','propulsion · manuelle 6',''],
+        ['Carrera RS','flat-6 3.8 air','300 ch','propulsion · manuelle 6','La dernière RS refroidie par air, aujourd\'hui une pièce de collection très cotée.'],
         ['Turbo / Turbo S','flat-6 3.6 biturbo air','408–450 ch','intégrale · manuelle 6','Première 911 Turbo biturbo et intégrale. La dernière refroidie par air.'],
         ['GT2','flat-6 3.6 biturbo air','430–450 ch','propulsion · manuelle 6','Ailes rivetées, propulsion pure : la plus recherchée de toutes les 993.'],
       ]},
@@ -3281,25 +4266,25 @@
         ['Carrera 3.4','flat-6 3.4 refroidi par eau','300 ch','propulsion ou intégrale · manuelle 6 / Tiptronic','Passage au refroidissement liquide. Phares « œufs au plat », longtemps décriés.'],
         ['Turbo 3.6','flat-6 3.6 biturbo','420 ch','intégrale · manuelle 6','Bloc Mezger dérivé de la GT1 de course, réputé indestructible.'],
         ['GT3','flat-6 3.6 Mezger atmo','360 ch','propulsion · manuelle 6','Vilebrequin issu de la 962 du Mans.'],
-        ['GT2','flat-6 3.6 biturbo','462 ch','propulsion · manuelle 6',''],
+        ['GT2','flat-6 3.6 biturbo','462 ch','propulsion · manuelle 6','La première GT2 refroidie par eau, réputée pour son caractère brutal.'],
       ]},
       { c:'996.2', a:'2002–2005', m:[
         ['Carrera 3.6','flat-6 3.6','320 ch','propulsion ou intégrale · manuelle 6 / Tiptronic','Restylage : phares de Turbo, moteur agrandi.'],
-        ['Turbo / Turbo S','flat-6 3.6 biturbo','420–450 ch','intégrale · manuelle 6',''],
+        ['Turbo / Turbo S','flat-6 3.6 biturbo','420–450 ch','intégrale · manuelle 6','Le bloc Mezger de la 996 Turbo, dérivé de la course, est l\'un des plus fiables de l\'histoire Porsche.'],
         ['GT3 / GT3 RS','flat-6 3.6 Mezger atmo','381 ch','propulsion · manuelle 6','La RS, 682 exemplaires, en blanc à bandes rouges ou bleues.'],
-        ['GT2','flat-6 3.6 biturbo','483 ch','propulsion · manuelle 6',''],
+        ['GT2','flat-6 3.6 biturbo','483 ch','propulsion · manuelle 6','Propulsion pure et près de 500 ch : une réputation de voiture piégeuse assumée.'],
       ]},
       { c:'997.1', a:'2004–2008', m:[
         ['Carrera 3.6','flat-6 3.6','325 ch','propulsion ou intégrale · manuelle 6 / Tiptronic','Retour des phares ronds.'],
         ['Carrera S 3.8','flat-6 3.8','355 ch','propulsion ou intégrale · manuelle 6','Amortissement piloté PASM de série.'],
         ['Turbo','flat-6 3.6 biturbo Mezger, géométrie variable','480 ch','intégrale · manuelle 6 / Tiptronic','Première turbine à géométrie variable sur un moteur essence de série.'],
-        ['GT3 / GT3 RS','flat-6 3.6 Mezger atmo','415 ch','propulsion · manuelle 6',''],
-        ['GT2','flat-6 3.6 biturbo','530 ch','propulsion · manuelle 6',''],
+        ['GT3 / GT3 RS','flat-6 3.6 Mezger atmo','415 ch','propulsion · manuelle 6','Le moteur Mezger à carter sec, indissociable des GT3 les plus recherchées.'],
+        ['GT2','flat-6 3.6 biturbo','530 ch','propulsion · manuelle 6','Dernière GT2 avant l\'arrivée de l\'appellation GT2 RS.'],
       ]},
       { c:'997.2', a:'2008–2012', m:[
         ['Carrera / Carrera S','flat-6 3.6–3.8 à injection directe','345–385 ch','propulsion ou intégrale · manuelle 6 / PDK 7','Nouveaux blocs DFI : les défauts d\'arbre intermédiaire de la 996 disparaissent. Arrivée de la PDK.'],
-        ['Turbo / Turbo S','flat-6 3.8 biturbo','500–530 ch','intégrale · manuelle 6 / PDK 7',''],
-        ['GT3 / GT3 RS','flat-6 3.8 Mezger atmo','435–450 ch','propulsion · manuelle 6',''],
+        ['Turbo / Turbo S','flat-6 3.8 biturbo','500–530 ch','intégrale · manuelle 6 / PDK 7','Injection directe et PDK : la Turbo devient une arme d\'une facilité déconcertante.'],
+        ['GT3 / GT3 RS','flat-6 3.8 Mezger atmo','435–450 ch','propulsion · manuelle 6','Les dernières GT3 à moteur Mezger et boîte manuelle, très prisées pour cela.'],
         ['GT3 RS 4.0','flat-6 4.0 Mezger atmo','500 ch','propulsion · manuelle 6','600 exemplaires. Le dernier moteur Mezger. Aujourd\'hui la 997 la plus cotée.'],
         ['GT2 RS','flat-6 3.6 biturbo','620 ch','propulsion · manuelle 6','500 exemplaires, 1 370 kg. Surnommée « la veuve moderne ».'],
       ]},
@@ -3311,9 +4296,9 @@
       ]},
       { c:'991.2', a:'2015–2019', m:[
         ['Carrera / S / GTS','flat-6 3.0 biturbo','370–450 ch','propulsion ou intégrale · manuelle 7 / PDK 7','Le turbo se généralise à toute la gamme Carrera : la rupture la plus contestée de l\'histoire du modèle.'],
-        ['Turbo / Turbo S','flat-6 3.8 biturbo','540–580 ch','intégrale · PDK 7',''],
+        ['Turbo / Turbo S','flat-6 3.8 biturbo','540–580 ch','intégrale · PDK 7','Aérodynamique active : becquet avant et aileron arrière déployables.'],
         ['GT3 / GT3 Touring','flat-6 4.0 atmo','500 ch','propulsion · manuelle 6 / PDK 7','Retour de la boîte manuelle. La Touring supprime l\'aileron.'],
-        ['GT3 RS','flat-6 4.0 atmo','520 ch','propulsion · PDK 7',''],
+        ['GT3 RS','flat-6 4.0 atmo','520 ch','propulsion · PDK 7','Prises d\'air NACA sur le capot pour refroidir les freins sans nuire à l\'aéro.'],
         ['911 R','flat-6 4.0 atmo','500 ch','propulsion · manuelle 6','991 exemplaires, sans aileron, boîte manuelle uniquement. Cotes devenues déraisonnables dès la première année.'],
         ['GT2 RS','flat-6 3.8 biturbo','700 ch','propulsion · PDK 7','La 911 de route la plus puissante jamais produite.'],
       ]},
@@ -3328,22 +4313,22 @@
     'porsche-718-boxster': [
       { c:'986', a:'1996–2004', m:[
         ['Boxster 2.5 / 2.7','flat-6 atmo','204–228 ch','propulsion · manuelle 5/6 / Tiptronic','Le roadster qui a sauvé Porsche financièrement.'],
-        ['Boxster S 3.2','flat-6 3.2 atmo','252–264 ch','propulsion · manuelle 6',''],
+        ['Boxster S 3.2','flat-6 3.2 atmo','252–264 ch','propulsion · manuelle 6','La version S qui a établi le Boxster comme une vraie sportive, pas un simple roadster d\'accès.'],
       ]},
       { c:'987', a:'2004–2012', m:[
-        ['Boxster / Cayman 2.7 – 2.9','flat-6 atmo','240–265 ch','propulsion · manuelle 5/6 / PDK 7',''],
-        ['S 3.4','flat-6 3.4 atmo','295–320 ch','propulsion · manuelle 6 / PDK 7',''],
+        ['Boxster / Cayman 2.7–2.9','flat-6 atmo','240–265 ch','propulsion · manuelle 5/6 / PDK 7','L\'arrivée du coupé Cayman en 2005 complète la gamme à moteur central.'],
+        ['S 3.4','flat-6 3.4 atmo','295–320 ch','propulsion · manuelle 6 / PDK 7','La cavalerie qui rapproche dangereusement le Boxster S des performances de la 911.'],
         ['Cayman R / Boxster Spyder','flat-6 3.4 atmo','320–330 ch','propulsion · manuelle 6','Allégées de 55 kg, sans climatisation ni autoradio de série.'],
       ]},
       { c:'981', a:'2012–2016', m:[
-        ['Boxster / Cayman','flat-6 2.7 atmo','265 ch','propulsion · manuelle 6 / PDK 7',''],
-        ['S / GTS','flat-6 3.4 atmo','315–340 ch','propulsion · manuelle 6 / PDK 7',''],
+        ['Boxster / Cayman','flat-6 2.7 atmo','265 ch','propulsion · manuelle 6 / PDK 7','La 981 gagne en rigidité et adopte une direction électromécanique.'],
+        ['S / GTS','flat-6 3.4 atmo','315–340 ch','propulsion · manuelle 6 / PDK 7','La GTS 981, dernier cri du flat-6 atmo avant le passage au turbo.'],
         ['Cayman GT4 / Boxster Spyder','flat-6 3.8 atmo (de la 911 Carrera S)','375 ch','propulsion · manuelle 6','Le premier GT4 : moteur et freins de 911, boîte manuelle imposée.'],
       ]},
       { c:'718 (982)', a:'2016–', m:[
         ['718 / 718 S','flat-4 2.0–2.5 turbo','300–365 ch','propulsion · manuelle 6 / PDK 7','Le passage au flat-4 turbo a fait scandale : couple en hausse, son en effondrement.'],
         ['GTS 4.0','flat-6 4.0 atmo','400 ch','propulsion · manuelle 6 / PDK 7','Le retour du six cylindres atmosphérique après la fronde des clients.'],
-        ['GT4 / Spyder','flat-6 4.0 atmo','420 ch','propulsion · manuelle 6 / PDK 7',''],
+        ['GT4 / Spyder','flat-6 4.0 atmo','420 ch','propulsion · manuelle 6 / PDK 7','Le retour d\'un vrai flat-6 haut de gamme dans la gamme 718.'],
         ['GT4 RS','flat-6 4.0 atmo (de la 911 GT3)','500 ch','propulsion · PDK 7','Admissions placées derrière les oreilles du conducteur. 9 000 tr/min.'],
       ]},
     ],
@@ -3355,7 +4340,7 @@
         ['R.S. 182','2.0 16v atmo','182 ch','traction · manuelle 5','Double sortie d\'échappement centrale. Version Trophy à amortisseurs Sachs, 550 exemplaires.'],
       ]},
       { c:'Clio III', a:'2006–2012', m:[
-        ['R.S. 197','2.0 16v atmo','197 ch','traction · manuelle 6',''],
+        ['R.S. 197','2.0 16v atmo','197 ch','traction · manuelle 6','La Clio III R.S., dernier moteur atmosphérique de la lignée avant le passage au turbo.'],
         ['R.S. 203 / Gordini','2.0 16v atmo','203 ch','traction · manuelle 6','La dernière Clio R.S. atmosphérique et à boîte manuelle.'],
       ]},
       { c:'Clio IV', a:'2013–2019', m:[
@@ -3386,7 +4371,7 @@
         ['1.8','4 cyl. 1.8 injection','112 ch','traction · manuelle 5','Couple en hausse, plus utilisable au quotidien.'],
       ]},
       { c:'Mk2', a:'1984–1991', m:[
-        ['8 soupapes','4 cyl. 1.8','112 ch','traction · manuelle 5',''],
+        ['8 soupapes','4 cyl. 1.8','112 ch','traction · manuelle 5','La Mk2 grandit et gagne en confort tout en gardant l\'esprit GTI.'],
         ['16 soupapes','4 cyl. 1.8 16v','139 ch','traction · manuelle 5','La 16S, la plus recherchée de la Mk2.'],
         ['G60 (Rallye / Limited)','4 cyl. 1.8 à compresseur G-Lader','160 ch','traction ou syncro · manuelle 5','La Rallye G60, 5 000 exemplaires, ailes élargies et phares carrés.'],
       ]},
@@ -3398,16 +4383,16 @@
       ]},
       { c:'Mk5', a:'2004–2009', m:[
         ['2.0 TFSI','4 cyl. 2.0 turbo','200 ch','traction · manuelle 6 / DSG 6','Le retour en grâce, unanimement salué. Essieu arrière multibras.'],
-        ['Edition 30 / Pirelli','4 cyl. 2.0 turbo','230 ch','traction · manuelle 6 / DSG 6',''],
+        ['Edition 30 / Pirelli','4 cyl. 2.0 turbo','230 ch','traction · manuelle 6 / DSG 6','Séries spéciales célébrant les 30 ans de la GTI, jantes et déco spécifiques.'],
       ]},
       { c:'Mk6', a:'2009–2013', m:[
-        ['2.0 TSI','4 cyl. 2.0 turbo','210 ch','traction · manuelle 6 / DSG 6',''],
+        ['2.0 TSI','4 cyl. 2.0 turbo','210 ch','traction · manuelle 6 / DSG 6','Nouveau bloc EA888, plus efficient, base de toute la gamme sportive du groupe.'],
         ['Edition 35','4 cyl. 2.0 turbo','235 ch','traction · manuelle 6 / DSG 6','Différentiel à glissement limité électronique XDS.'],
       ]},
       { c:'Mk7', a:'2013–2020', m:[
         ['GTI / Performance','4 cyl. 2.0 turbo','220–245 ch','traction · manuelle 6 / DSG 6','La Performance reçoit un différentiel autobloquant mécanique VAQ.'],
         ['Clubsport / Clubsport S','4 cyl. 2.0 turbo','265–310 ch','traction · manuelle 6 / DSG 6','La Clubsport S, 2 places et 400 exemplaires, a repris le record des tractions au Nürburgring en 2016.'],
-        ['TCR','4 cyl. 2.0 turbo','290 ch','traction · DSG 7',''],
+        ['TCR','4 cyl. 2.0 turbo','290 ch','traction · DSG 7','Version routière inspirée de la Golf GTI de course du championnat TCR.'],
       ]},
       { c:'Mk8', a:'2020–', m:[
         ['GTI','4 cyl. 2.0 turbo','245 ch','traction · manuelle 6 / DSG 7','Commandes tactiles très critiquées, partiellement corrigées en 2024.'],
@@ -3422,7 +4407,7 @@
         ['Golf R','4 cyl. 2.0 turbo','270 ch','4Motion · manuelle 6 / DSG 6','Le 4 cylindres remplace le VR6 : plus efficace, moins émouvant.'],
       ]},
       { c:'Mk7', a:'2013–2020', m:[
-        ['Golf R','4 cyl. 2.0 turbo','300–310 ch','4Motion · manuelle 6 / DSG 7',''],
+        ['Golf R','4 cyl. 2.0 turbo','300–310 ch','4Motion · manuelle 6 / DSG 7','Le sommet de la gamme Golf : transmission intégrale et discrétion, l\'anti-GTI voyante.'],
       ]},
       { c:'Mk8', a:'2020–', m:[
         ['Golf R','4 cyl. 2.0 turbo','320 ch','4Motion avec répartition active arrière · DSG 7','Mode drift assumé, une première chez Volkswagen.'],
@@ -3463,7 +4448,7 @@
         ['VI Tommi Mäkinen','4G63T 2.0 turbo','280 ch','intégrale AYC · manuelle 5','Turbo à roue titane, suspensions abaissées. La plus recherchée de toute la lignée.'],
       ]},
       { c:'VII à IX', a:'2001–2007', m:[
-        ['Evo VII / VIII','4G63T 2.0 turbo','280 ch','intégrale, différentiel central actif ACD · manuelle 5/6',''],
+        ['Evo VII / VIII','4G63T 2.0 turbo','280 ch','intégrale, différentiel central actif ACD · manuelle 5/6','La rivale jurée de la Subaru Impreza WRX STI, forgée par la même guerre en rallye.'],
         ['Evo IX','4G63T 2.0 turbo MIVEC','280–290 ch','intégrale ACD + AYC · manuelle 6','Distribution variable MIVEC : le dernier et le meilleur des 4G63.'],
       ]},
       { c:'X', a:'2007–2016', m:[
@@ -3516,7 +4501,7 @@
         ['EcoBoost','4 cyl. 2.3 turbo','290–330 ch','propulsion · manuelle 6 / auto 10','Première Mustang vendue officiellement en Europe.'],
       ]},
       { c:'S650', a:'2024–', m:[
-        ['EcoBoost','4 cyl. 2.3 turbo','315 ch','propulsion · manuelle 6 / auto 10',''],
+        ['EcoBoost','4 cyl. 2.3 turbo','315 ch','propulsion · manuelle 6 / auto 10','Un quatre-cylindres turbo dans une Mustang : hérésie pour les puristes, pragmatisme pour l\'Europe.'],
       ]},
     ],
     'ford-mustang-gt': [
@@ -3542,7 +4527,7 @@
       ]},
       { c:'Shelby S550', a:'2015–2020', m:[
         ['GT350','V8 5.2 atmo à vilebrequin plat','533 ch','propulsion · manuelle 6','8 250 tr/min : un V8 américain qui hurle comme un V8 de Ferrari.'],
-        ['GT500','V8 5.2 suralimenté','770 ch','propulsion · DCT 7',''],
+        ['GT500','V8 5.2 suralimenté','770 ch','propulsion · DCT 7','La Mustang de série la plus puissante de l\'histoire, compresseur Eaton logé dans le V.'],
       ]},
       { c:'GTD', a:'2024–', m:[
         ['GTD','V8 5.2 suralimenté','815 ch','propulsion · transaxle DCT 8','Homologuée route, suspension à poussoirs, vise le record du Nürburgring.'],
@@ -3560,7 +4545,7 @@
     /* ---- Royaume-Uni -------------------------------------------------- */
     'mini-cooper': [
       { c:'R50 / R53', a:'2001–2006', m:[
-        ['Cooper','4 cyl. 1.6 atmo','90–116 ch','traction · manuelle 5',''],
+        ['Cooper','4 cyl. 1.6 atmo','90–116 ch','traction · manuelle 5','La renaissance de la Mini sous BMW en 2001, hommage moderne à l\'originale de 1959.'],
         ['Cooper S','4 cyl. 1.6 à compresseur','163–170 ch','traction · manuelle 6','Le compresseur volumétrique : sifflement caractéristique, la préférée des amateurs.'],
         ['John Cooper Works','4 cyl. 1.6 compressé','200–210 ch','traction · manuelle 6','Kit initialement vendu en accessoire, puis intégré à la gamme.'],
       ]},
@@ -3569,21 +4554,21 @@
         ['John Cooper Works','4 cyl. 1.6 turbo','211–218 ch','traction · manuelle 6','La GP2, 2 places et 2 000 exemplaires.'],
       ]},
       { c:'F56', a:'2014–2023', m:[
-        ['Cooper / Cooper S','3 et 4 cyl. turbo (blocs BMW)','136–192 ch','traction · manuelle 6 / auto',''],
+        ['Cooper / Cooper S','3 et 4 cyl. turbo (blocs BMW)','136–192 ch','traction · manuelle 6 / auto','Passage aux moteurs turbo BMW, la Mini grandit à chaque génération.'],
         ['John Cooper Works','4 cyl. 2.0 turbo','231–306 ch','traction · manuelle 6 / auto 8','La GP3, 306 ch, 2 places, arches carbone. 3 000 exemplaires.'],
       ]},
     ],
     'lotus-elise': [
       { c:'S1', a:'1996–2001', m:[
         ['Elise 1.8','K-Series Rover 1.8 atmo','118 ch','propulsion · manuelle 5','725 kg. Châssis en profilés d\'aluminium collés, une première mondiale.'],
-        ['111S / Sport 190','K-Series 1.8 VVC','143–190 ch','propulsion · manuelle 5',''],
+        ['111S / Sport 190','K-Series 1.8 VVC','143–190 ch','propulsion · manuelle 5','Le calage variable VVC du moteur Rover pousse la puissance sans turbo.'],
       ]},
       { c:'S2', a:'2001–2010', m:[
         ['Elise 111R','Toyota 2ZZ 1.8 atmo','189 ch','propulsion · manuelle 6','Passage aux moteurs Toyota : gain net en fiabilité, perte de caractère selon les puristes.'],
-        ['Elise SC','Toyota 2ZZ 1.8 à compresseur','218–243 ch','propulsion · manuelle 6',''],
+        ['Elise SC','Toyota 2ZZ 1.8 à compresseur','218–243 ch','propulsion · manuelle 6','Compresseur ajouté au bloc Toyota : le compromis puissance/fiabilité idéal de la S2.'],
       ]},
       { c:'S3', a:'2010–2021', m:[
-        ['Elise Sport / S','Toyota 1.6 et 1.8 (compressé sur la S)','136–220 ch','propulsion · manuelle 6',''],
+        ['Elise Sport / S','Toyota 1.6 et 1.8 (compressé sur la S)','136–220 ch','propulsion · manuelle 6','Ultime génération, produite jusqu\'en 2021 avant le passage de Lotus à l\'électrique.'],
         ['Sprint 220 / Cup 250','Toyota 1.8 compressé','220–250 ch','propulsion · manuelle 6','La Sprint 220 descend sous les 800 kg.'],
       ]},
     ],
@@ -3610,11 +4595,11 @@
         ['2.0 TFSI','4 cyl. 2.0 turbo','265 ch','quattro · manuelle 6 / S tronic 6','Apparition de la carrosserie Sportback en 2008.'],
       ]},
       { c:'8V', a:'2013–2020', m:[
-        ['2.0 TFSI','4 cyl. 2.0 turbo','300 ch','quattro · S tronic 6/7',''],
+        ['2.0 TFSI','4 cyl. 2.0 turbo','300 ch','quattro · S tronic 6/7','La S3 8V, compacte discrète mais redoutablement efficace grâce au quattro.'],
         ['2.0 TFSI (2016+)','4 cyl. 2.0 turbo','310 ch','quattro · S tronic 7','Restylage : filtre à particules et puissance revue.'],
       ]},
       { c:'8Y', a:'2020–', m:[
-        ['2.0 TFSI','4 cyl. 2.0 turbo','310 ch','quattro · S tronic 7',''],
+        ['2.0 TFSI','4 cyl. 2.0 turbo','310 ch','quattro · S tronic 7','Filtre à particules et gain de puissance sur le restylage de la S3.'],
         ['2.0 TFSI (2024+)','4 cyl. 2.0 turbo','333 ch','quattro · S tronic 7','Reçoit le différentiel à répartition active de la RS3.'],
       ]},
     ],
@@ -3701,7 +4686,7 @@
         ['4.0 TFSI','V8 4.0 biturbo','560–605 ch','quattro · tiptronic 8','Silhouette Sportback : la RS6 en robe de coupé 4 portes.'],
       ]},
       { c:'C8', a:'2019–', m:[
-        ['4.0 TFSI','V8 4.0 biturbo, 48 V','600 ch','quattro · tiptronic 8',''],
+        ['4.0 TFSI','V8 4.0 biturbo, 48 V','600 ch','quattro · tiptronic 8','La RS7 Sportback, break-coupé de 600 ch capable de plus de 300 km/h en option.'],
         ['Performance','V8 4.0 biturbo','630 ch','quattro · tiptronic 8','Allégée de 8 kg, échappement moins filtré.'],
       ]},
     ],
@@ -3711,8 +4696,8 @@
         ['3.2 V6','VR6 3.2 atmo','250 ch','quattro · DSG 6','Première voiture au monde livrée avec une boîte à double embrayage (2003).'],
       ]},
       { c:'8J', a:'2006–2014', m:[
-        ['2.0 TFSI','4 cyl. 2.0 turbo','200–211 ch','traction ou quattro · S tronic 6',''],
-        ['3.2 V6 / TTS','VR6 3.2 atmo / 2.0 TFSI','250 / 272 ch','quattro · S tronic 6',''],
+        ['2.0 TFSI','4 cyl. 2.0 turbo','200–211 ch','traction ou quattro · S tronic 6','La deuxième TT, plus mûre, base des versions TTS et TT RS.'],
+        ['3.2 V6 / TTS','VR6 3.2 atmo / 2.0 TFSI','250 / 272 ch','quattro · S tronic 6','La TTS turbo remplace peu à peu le VR6 atmosphérique, plus lourd.'],
         ['TT RS','5 en ligne 2.5 turbo','340–360 ch','quattro · manuelle 6 / S tronic 7','Le retour du 5 cylindres Audi après vingt ans d\'absence.'],
       ]},
       { c:'8S', a:'2014–2023', m:[
@@ -3733,7 +4718,7 @@
       ]},
       { c:'Type 4S', a:'2015–2024', m:[
         ['V10','V10 5.2 atmo','540–570 ch','quattro · S tronic 7','Le V8 disparaît : la R8 devient exclusivement V10.'],
-        ['V10 Plus / Performance','V10 5.2 atmo','610–620 ch','quattro · S tronic 7',''],
+        ['V10 Plus / Performance','V10 5.2 atmo','610–620 ch','quattro · S tronic 7','Le V10 atmosphérique partagé avec la Lamborghini Huracán, l\'un des derniers du genre.'],
         ['V10 RWD','V10 5.2 atmo','540–570 ch','propulsion · S tronic 7','Version propulsion, produite en série limitée puis intégrée à la gamme.'],
       ]},
     ],
@@ -3747,7 +4732,7 @@
       ]},
       { c:'G87', a:'2023–', m:[
         ['M2','S58 3.0 biturbo','460–480 ch','propulsion · manuelle 6 / Steptronic 8','Dernière M à proposer une boîte manuelle sur un châssis compact.'],
-        ['M2 CS','S58 3.0 biturbo','530 ch','propulsion · Steptronic 8',''],
+        ['M2 CS','S58 3.0 biturbo','530 ch','propulsion · Steptronic 8','La plus radicale des M2, souvent citée comme la BMW M la plus fun de l\'ère moderne.'],
       ]},
     ],
     'bmw-m3': [
@@ -3769,14 +4754,14 @@
       ]},
       { c:'F80', a:'2014–2018', m:[
         ['M3','S55 3.0 biturbo','431 ch','propulsion · manuelle 6 / DKG 7','Berline uniquement : le coupé devient M4.'],
-        ['Competition','S55 3.0 biturbo','450 ch','propulsion · manuelle 6 / DKG 7',''],
+        ['Competition','S55 3.0 biturbo','450 ch','propulsion · manuelle 6 / DKG 7','Trains roulants durcis, différentiel actif recalibré, sonorité libérée.'],
         ['CS','S55 3.0 biturbo','460 ch','propulsion · DKG 7','1 200 exemplaires.'],
       ]},
       { c:'G80', a:'2021–', m:[
         ['M3','S58 3.0 biturbo','480 ch','propulsion · manuelle 6','La seule à conserver la boîte manuelle.'],
-        ['Competition','S58 3.0 biturbo','510 ch','propulsion · Steptronic 8',''],
+        ['Competition','S58 3.0 biturbo','510 ch','propulsion · Steptronic 8','La version la plus vendue, uniquement en boîte automatique.'],
         ['Competition xDrive','S58 3.0 biturbo','510–530 ch','intégrale débrayable · Steptronic 8','Première M3 à transmission intégrale, et première M3 Touring de l\'histoire.'],
-        ['CS','S58 3.0 biturbo','550 ch','intégrale · Steptronic 8',''],
+        ['CS','S58 3.0 biturbo','550 ch','intégrale · Steptronic 8','La M3 CS, allégée et poussée, entre la Competition et la CSL de piste.'],
       ]},
     ],
     'bmw-m5': [
@@ -3784,7 +4769,7 @@
         ['M5','M88/S38 3.5 · 6 en ligne atmo','286 ch','propulsion · manuelle 5','Le moteur de la M1 dans une berline familiale, assemblée à la main.'],
       ]},
       { c:'E34', a:'1988–1995', m:[
-        ['3.6','S38B36 · 6 en ligne atmo','315 ch','propulsion · manuelle 5',''],
+        ['3.6','S38B36 · 6 en ligne atmo','315 ch','propulsion · manuelle 5','La M5 E34, dernière assemblée en partie à la main, disponible en break Touring.'],
         ['3.8','S38B38 · 6 en ligne atmo','340 ch','propulsion · manuelle 6','Dernière M5 montée à la main. Version Touring disponible.'],
       ]},
       { c:'E39', a:'1998–2003', m:[
@@ -3799,7 +4784,7 @@
       ]},
       { c:'F90', a:'2017–2023', m:[
         ['M5','S63 4.4 · V8 biturbo','600 ch','intégrale M xDrive débrayable · Steptronic 8','Première M5 intégrale — avec un mode propulsion pure.'],
-        ['Competition','S63 4.4 · V8 biturbo','625 ch','intégrale débrayable · Steptronic 8',''],
+        ['Competition','S63 4.4 · V8 biturbo','625 ch','intégrale débrayable · Steptronic 8','Le mode 2WD transforme la M5 intégrale en pure propulsion pour les amateurs de glisse.'],
         ['CS','S63 4.4 · V8 biturbo','635 ch','intégrale débrayable · Steptronic 8','Allégée de 70 kg, 4 places. La M5 la plus aboutie de la génération.'],
       ]},
       { c:'G90', a:'2024–', m:[
@@ -3808,15 +4793,15 @@
     ],
     'bmw-m4': [
       { c:'F82 / F83', a:'2014–2020', m:[
-        ['M4','S55 3.0 biturbo','431 ch','propulsion · manuelle 6 / DKG 7',''],
-        ['Competition','S55 3.0 biturbo','450 ch','propulsion · manuelle 6 / DKG 7',''],
+        ['M4','S55 3.0 biturbo','431 ch','propulsion · manuelle 6 / DKG 7','Première M4 : la M3 coupé devient M4 en 2014. Six en ligne biturbo après le V8 de la génération précédente.'],
+        ['Competition','S55 3.0 biturbo','450 ch','propulsion · manuelle 6 / DKG 7','Trains roulants durcis et sonorité libérée par rapport à la M4 standard.'],
         ['GTS','S55 3.0 biturbo, injection d\'eau','500 ch','propulsion · DKG 7','700 exemplaires. Première voiture de série à injection d\'eau.'],
-        ['CS','S55 3.0 biturbo','460 ch','propulsion · DKG 7',''],
+        ['CS','S55 3.0 biturbo','460 ch','propulsion · DKG 7','Série spéciale allégée, capot et éléments en carbone. Compromis idéal entre M4 et GTS pour beaucoup.'],
       ]},
       { c:'G82 / G83', a:'2021–', m:[
-        ['M4','S58 3.0 biturbo','480 ch','propulsion · manuelle 6',''],
-        ['Competition','S58 3.0 biturbo','510 ch','propulsion · Steptronic 8',''],
-        ['Competition xDrive','S58 3.0 biturbo','510–530 ch','intégrale débrayable · Steptronic 8',''],
+        ['M4','S58 3.0 biturbo','480 ch','propulsion · manuelle 6','Nouveau moteur S58 et l\'immense calandre verticale qui a divisé les fans.'],
+        ['Competition','S58 3.0 biturbo','510 ch','propulsion · Steptronic 8','La M4 Competition de la génération G82, uniquement en boîte automatique.'],
+        ['Competition xDrive','S58 3.0 biturbo','510–530 ch','intégrale débrayable · Steptronic 8','Première M4 à transmission intégrale, débrayable en pure propulsion pour le drift.'],
         ['CSL','S58 3.0 biturbo','550 ch','propulsion · Steptronic 8','Allégée de 100 kg, 2 places, 1 000 exemplaires.'],
       ]},
     ],
@@ -3825,7 +4810,7 @@
     'mercedes-a45': [
       { c:'W176', a:'2013–2018', m:[
         ['A 45 AMG','M133 2.0 turbo','360 ch','intégrale 4Matic · DCT 7','Le 4 cylindres de série le plus puissant du monde à sa sortie.'],
-        ['A 45 (2015+)','M133 2.0 turbo','381 ch','intégrale 4Matic · DCT 7',''],
+        ['A 45 (2015+)','M133 2.0 turbo','381 ch','intégrale 4Matic · DCT 7','Le 4 cylindres turbo de série le plus puissant au monde à son lancement, assemblé à la main.'],
       ]},
       { c:'W177', a:'2019–', m:[
         ['A 45 S','M139 2.0 turbo','421 ch','intégrale 4Matic+ · DCT 8','421 ch pour 2,0 L : record encore inégalé. Bloc monté à la main, turbo à roulement à billes.'],
@@ -3850,19 +4835,19 @@
       ['E21','1975–1983','4 et 6 cyl. atmo','90–143 ch','La fondatrice de la lignée.'],
       ['E30','1982–1994','4 et 6 cyl. atmo','90–171 ch','Première Série 3 en break (Touring), en cabriolet et en 4x4 (325iX). La M3 de cette génération a sa propre fiche.'],
       ['E36','1990–2000','4 et 6 cyl. atmo','102–193 ch','Première à passer à l\'essieu arrière multibras.'],
-      ['E46','1998–2006','4 et 6 cyl. atmo','105–231 ch',''],
+      ['E46','1998–2006','4 et 6 cyl. atmo','105–231 ch','Souvent considérée comme la Série 3 la plus équilibrée, la M3 E46 est devenue une référence.'],
       ['E90/E91/E92','2005–2013','4 et 6 cyl., turbo à partir de 2006','122–306 ch','Arrivée du 6 cylindres turbo N54, base de toute la scène préparation.'],
       ['F30','2012–2019','turbo généralisé','116–326 ch','Le 6 en ligne se raréfie au profit des 4 cylindres.'],
       ['G20','2019–','turbo, hybridation légère','150–374 ch','Retour d\'un châssis nettement plus rigide. Le M340i est le sommet hors M3.'],
     ],
     'bmw-serie5': [
       ['E12','1972–1981','4 et 6 cyl. atmo','90–218 ch','La première Série 5.'],
-      ['E28','1981–1988','6 cyl., premier diesel BMW','90–286 ch',''],
+      ['E28','1981–1988','6 cyl., premier diesel BMW','90–286 ch','La M5 E28 (286 ch) inaugure la lignée des berlines M ultra-performantes.'],
       ['E34','1988–1996','6 cyl. et V8','113–340 ch','Première Série 5 en break Touring.'],
       ['E39','1995–2003','6 cyl. et V8','136–400 ch','Souvent désignée comme la meilleure berline de sa décennie.'],
       ['E60','2003–2010','6 cyl., V8, V10','130–507 ch','Style Bangle très clivant, technologie de rupture (iDrive, direction active).'],
-      ['F10','2010–2017','turbo généralisé','143–600 ch',''],
-      ['G30','2017–2023','turbo, hybrides rechargeables','150–635 ch',''],
+      ['F10','2010–2017','turbo généralisé','143–600 ch','Le six en ligne cède du terrain aux quatre cylindres turbo, y compris en diesel haut de gamme.'],
+      ['G30','2017–2023','turbo, hybrides rechargeables','150–635 ch','Arrivée des versions hybrides rechargeables 530e, et de la M5 Competition à 625 ch.'],
     ],
             'bmw-z4': [
       ['E85/E86','2002–2008','6 cyl. atmo','150–343 ch','La version M Coupé « clown shoe » est devenue collector.'],
@@ -3872,19 +4857,19 @@
     'bmw-x5': [
       ['E53','1999–2006','6 cyl., V8','184–355 ch','Le premier SUV BMW, appelé « Sports Activity Vehicle ».'],
       ['E70','2006–2013','6 cyl., V8 biturbo','173–555 ch','Première version M.'],
-      ['F15','2013–2018','turbo, hybride rechargeable','218–575 ch',''],
-      ['G05','2018–','turbo, hybride','231–625 ch',''],
+      ['F15','2013–2018','turbo, hybride rechargeable','218–575 ch','Première X5 hybride rechargeable (xDrive40e).'],
+      ['G05','2018–','turbo, hybride','231–625 ch','La X5 M Competition et ses 625 ch rivalisent avec des sportives pures.'],
     ],
 
     /* ---- Porsche ------------------------------------------------------ */
                     'porsche-cayenne': [
       ['955 / 957','2002–2010','V6, V8','250–405 ch','Le SUV qui a financé le retour en compétition de Porsche.'],
-      ['958','2010–2017','V6, V8, hybride, diesel','245–420 ch',''],
-      ['9YA','2017–','V6, V8, hybrides rechargeables','340–460 ch',''],
+      ['958','2010–2017','V6, V8, hybride, diesel','245–420 ch','Allègement notable et arrivée de l\'hybride, la première pour un Porsche.'],
+      ['9YA','2017–','V6, V8, hybrides rechargeables','340–460 ch','Décliné en version Coupé au toit fuyant à partir de 2019.'],
     ],
     'porsche-cayenne-turbo': [
-      ['955/957 Turbo','2002–2010','V8 turbo','450–550 ch',''],
-      ['958 Turbo S','2013–2017','V8 turbo','570 ch',''],
+      ['955/957 Turbo','2002–2010','V8 turbo','450–550 ch','La Turbo S de 2006 fut l\'un des SUV les plus puissants du monde à sa sortie.'],
+      ['958 Turbo S','2013–2017','V8 turbo','570 ch','Freins carbone-céramique de série, rare sur un SUV.'],
       ['9YA Turbo GT / E-Hybrid','2021–','V8 turbo, hybride rechargeable','640–739 ch','Le Cayenne le plus rapide jamais produit sur circuit.'],
     ],
 
@@ -3893,11 +4878,11 @@
       ['8L','1996–2003','4 cyl. essence et TDI','90–180 ch','Première compacte premium du groupe.'],
       ['8P','2003–2012','4 cyl. TFSI et TDI','102–265 ch','Apparition de la carrosserie Sportback 5 portes.'],
       ['8V','2012–2020','4 cyl. TFSI et TDI','86–230 ch','Plateforme MQB.'],
-      ['8Y','2020–','4 cyl., hybrides','110–245 ch',''],
+      ['8Y','2020–','4 cyl., hybrides','110–245 ch','La dernière A3 thermique, base des S3 et RS3 hautes performances.'],
     ],
     'audi-rs3': [
       ['8P RS3','2011','5 en ligne 2.5 turbo','340 ch','Première RS3, quattro de série.'],
-      ['8V RS3','2015–2020','5 en ligne 2.5 turbo','367–400 ch',''],
+      ['8V RS3','2015–2020','5 en ligne 2.5 turbo','367–400 ch','Le cinq-cylindres turbo Audi et sa sonorité si particulière, élu meilleur moteur plusieurs années de suite.'],
       ['8Y RS3','2021–','5 en ligne 2.5 turbo','400 ch','Mode Torque Splitter : peut envoyer tout le couple à une seule roue arrière pour drifter.'],
     ],
                 
@@ -3910,7 +4895,7 @@
       ['Mk3','1991–1997','4 cyl., VR6','60–190 ch','Première avec airbags et VR6.'],
       ['Mk4','1997–2003','4 cyl., VR6, V5','68–150 ch','Bond qualitatif majeur pour la finition intérieure.'],
       ['Mk5','2003–2008','TSI, TDI','75–160 ch','Essieu arrière multibras.'],
-      ['Mk6','2008–2012','TSI, TDI','80–170 ch',''],
+      ['Mk6','2008–2012','TSI, TDI','80–170 ch','Restylage profond de la Mk5, gains en qualité perçue et en efficience des moteurs TSI.'],
       ['Mk7','2012–2019','TSI, TDI, e-Golf','85–150 ch','Plateforme MQB.'],
       ['Mk8','2019–','TSI, hybrides','110–150 ch','Commandes tactiles très critiquées, partiellement corrigées en 2024.'],
     ],
@@ -3987,6 +4972,171 @@
      ====================================================================== */
 
   const MAP = {
+    'mg-4'                    : 'mg-4',
+    'suzuki-vitara'           : 'suzuki-vitara',
+    'mg-zs'                   : 'mg-zs',
+    'byd-atto3'               : 'byd-atto3',
+    'audi-s6'                 : 'audi-s6',
+    'audi-s8'                 : 'audi-s8',
+    'audi-sq5'                : 'audi-sq5',
+    'bmw-m135i'               : 'bmw-m135i',
+    'bmw-m235i'               : 'bmw-m235i',
+    'bmw-335i'                : 'bmw-335i',
+    'bmw-m340i'               : 'bmw-m340i',
+    'bmw-130i'                : 'bmw-130i',
+    'vw-golf-gtd'             : 'vw-golf-gtd',
+    'vw-golf-g60'             : 'vw-golf-g60',
+    'honda-integra-dc5'       : 'honda-integra-dc5',
+    'renault-kadjar'          : 'renault-kadjar',
+    'dacia-bigster'           : 'dacia-bigster',
+    'peugeot-boxer'           : 'peugeot-boxer',
+    'citroen-c3-aircross'     : 'citroen-c3-aircross',
+    'ds-4-moderne'            : 'ds-4-moderne',
+    'opel-mokka'              : 'opel-mokka',
+    'opel-grandland'          : 'opel-grandland',
+    'mini-clubman'            : 'mini-clubman',
+    'bmw-i4'                  : 'bmw-i4',
+    'bmw-ix'                  : 'bmw-ix',
+    'audi-q8'                 : 'audi-q8',
+    'vw-id4'                  : 'vw-id4',
+    'vw-transporter'          : 'vw-transporter',
+    'vw-touran'               : 'vw-touran',
+    'cupra-terramar'          : 'cupra-terramar',
+    'toyota-bz4x'             : 'toyota-bz4x',
+    'toyota-proace'           : 'toyota-proace',
+    'nissan-ariya'            : 'nissan-ariya',
+    'mazda-cx5'               : 'mazda-cx5',
+    'mazda-cx60'              : 'mazda-cx60',
+    'kia-niro'                : 'kia-niro',
+    'jeep-compass'            : 'jeep-compass',
+    'ford-kuga'               : 'ford-kuga',
+    'ford-ranger'             : 'ford-ranger',
+    'ds-7'                    : 'ds-7',
+    'porsche-911-cup'         : 'porsche-911-cup',
+    'citroen-berlingo'        : 'citroen-berlingo',
+    'renault-kangoo'          : 'renault-kangoo',
+    'ford-transit'            : 'ford-transit',
+    'peugeot-partner'         : 'peugeot-partner',
+    'citroen-type-h'          : 'citroen-type-h',
+    'renault-trafic'          : 'renault-trafic',
+    'simca-aronde'            : 'simca-aronde',
+    'talbot-samba'            : 'talbot-samba',
+    'panhard-24'              : 'panhard-24',
+    'mercedes-vito'           : 'mercedes-vito',
+    'mercedes-sprinter'       : 'mercedes-sprinter',
+    'morgan-plus-8'           : 'morgan-plus-8',
+    'citroen-ami-2020'        : 'citroen-ami-2020',
+    'rover-75'                : 'rover-75',
+    'isuzu-117'               : 'isuzu-117',
+    'hindustan-ambassador'    : 'hindustan-ambassador',
+    'holden-monaro'           : 'holden-monaro',
+    'lada-2101'               : 'lada-2101',
+    'uaz-452'                 : 'uaz-452',
+    'rwb-911'                 : 'rwb-911',
+    'aston-db12'              : 'aston-db12',
+    'aston-dbx'               : 'aston-dbx',
+    'bmw-serie2'              : 'bmw-serie2',
+    'bmw-x3'                  : 'bmw-x3',
+    'mercedes-cla'            : 'mercedes-cla',
+    'mercedes-glc'            : 'mercedes-glc',
+    'mg-mgb'                  : 'mg-mgb',
+    'cupra-born'              : 'cupra-born',
+    'skoda-kodiaq'            : 'skoda-kodiaq',
+    'skoda-enyaq'             : 'skoda-enyaq',
+    'volvo-amazon'            : 'volvo-amazon',
+    'saab-93'                 : 'saab-93',
+    'polestar-1'              : 'polestar-1',
+    'honda-jazz'              : 'honda-jazz',
+    'daihatsu-copen'          : 'daihatsu-copen',
+    'hyundai-kona'            : 'hyundai-kona',
+    'chrysler-300c'           : 'chrysler-300c',
+    'mercury-cougar-67'       : 'mercury-cougar-67',
+    'ligier-js2'              : 'ligier-js2',
+    'ligier-js50'             : 'ligier-js50',
+    'donkervoort-f22'         : 'donkervoort-f22',
+    'wiesmann-gt'             : 'wiesmann-gt',
+    'puma-gte'                : 'puma-gte',
+    'opel-speedster'          : 'opel-speedster',
+    'fiat-barchetta'          : 'fiat-barchetta',
+    'fiat-x19'                : 'fiat-x19',
+    'renault-fuego'           : 'renault-fuego',
+    'renault-avantime'        : 'renault-avantime',
+    'renault-4'               : 'renault-4',
+    'renault-twizy'           : 'renault-twizy',
+    'renault-estafette'       : 'renault-estafette',
+    'citroen-traction'        : 'citroen-traction',
+    'citroen-mehari'          : 'citroen-mehari',
+    'citroen-gs'              : 'citroen-gs',
+    'subaru-impreza-gc8'      : 'subaru-impreza-gc8',
+    'subaru-impreza-blob'     : 'subaru-impreza-blob',
+    'subaru-legacy'           : 'subaru-legacy',
+    'subaru-forester'         : 'subaru-forester',
+    'mitsubishi-eclipse'      : 'mitsubishi-eclipse',
+    'lancia-beta-montecarlo'  : 'lancia-beta-montecarlo',
+    'lancia-flaminia'         : 'lancia-flaminia',
+    'rr-phantom'              : 'rr-phantom',
+    'rr-ghost'                : 'rr-ghost',
+    'rr-cullinan'             : 'rr-cullinan',
+    'rr-spectre'              : 'rr-spectre',
+    'rr-silvershadow'         : 'rr-silvershadow',
+    'jaguar-mk2'              : 'jaguar-mk2',
+    'jaguar-xj'               : 'jaguar-xj',
+    'gumpert-apollo'          : 'gumpert-apollo',
+    'porsche-914'             : 'porsche-914',
+    'porsche-924'             : 'porsche-924',
+    'porsche-928'             : 'porsche-928',
+    'porsche-944'             : 'porsche-944',
+    'porsche-968'             : 'porsche-968',
+    'porsche-911-r'           : 'porsche-911-r',
+    'mazda-rx7-fb'            : 'mazda-rx7-fb',
+    'nissan-silvia-s13'       : 'nissan-silvia-s13',
+    'nissan-silvia-s14'       : 'nissan-silvia-s14',
+    'mclaren-765lt'           : 'mclaren-765lt',
+    'mclaren-gt'              : 'mclaren-gt',
+    'mclaren-w1'              : 'mclaren-w1',
+    'koenigsegg-cc8s'         : 'koenigsegg-cc8s',
+    'koenigsegg-cc850'        : 'koenigsegg-cc850',
+    'pagani-utopia'           : 'pagani-utopia',
+    'lambo-diablo'            : 'lambo-diablo',
+    'lambo-revuelto'          : 'lambo-revuelto',
+    'maserati-bora'           : 'maserati-bora',
+    'maserati-quattroporte'   : 'maserati-quattroporte',
+    'matra-530'               : 'matra-530',
+    'matra-bagheera'          : 'matra-bagheera',
+    'matra-rancho'            : 'matra-rancho',
+    'mazda-cosmo'             : 'mazda-cosmo',
+    'mazda-rx3'               : 'mazda-rx3',
+    'mercedes-slr'            : 'mercedes-slr',
+    'mercedes-amg-gtbs'       : 'mercedes-amg-gtbs',
+    'honda-nsx-nc1'           : 'honda-nsx-nc1',
+    'honda-integra-type-r'    : 'honda-integra-type-r',
+    'lotus-emira'             : 'lotus-emira',
+    'lotus-europa'            : 'lotus-europa',
+    'mclaren-artura'          : 'mclaren-artura',
+    'audi-a5'                 : 'audi-a5',
+    'bentley-bentayga'        : 'bentley-bentayga',
+    'bentley-flying-spur'     : 'bentley-flying-spur',
+    'bentley-mulsanne'        : 'bentley-mulsanne',
+    'bugatti-tourbillon'      : 'bugatti-tourbillon',
+    'chevrolet-corvette-c1'   : 'chevrolet-corvette-c1',
+    'detomaso-mangusta'       : 'detomaso-mangusta',
+    'delahaye-135'            : 'delahaye-135',
+    'ferrari-400'             : 'ferrari-400',
+    'ferrari-ff'              : 'ferrari-ff',
+    'ferrari-purosangue'      : 'ferrari-purosangue',
+    'iso-grifo'               : 'iso-grifo',
+    'alfa-33-stradale-og'     : 'alfa-33-stradale-og',
+    'alfa-montreal'           : 'alfa-montreal',
+    'alfa-sz'                 : 'alfa-sz',
+    'alfa-duetto'             : 'alfa-duetto',
+    'aston-db7'               : 'aston-db7',
+    'aston-dbs'               : 'aston-dbs',
+    'aston-vanquish'          : 'aston-vanquish',
+    'aston-one77'             : 'aston-one77',
+    'austin-healey-3000'      : 'austin-healey-3000',
+    'bmw-850csi'              : 'bmw-850csi',
+    'bmw-m8'                  : 'bmw-m8',
+    'bentley-blower'          : 'bentley-blower',
     // Groupe B et rallye
     'audi-s1-e2'              : 'audi-sport-quattro-s1',
     'audi-quattro'            : 'audi-quattro-ur',
@@ -4483,7 +5633,6 @@
     { id:'holden-commodore-hsv', brand:'HSV', model:'Commodore GTS', yr:'2013–2017', c:'🇦🇺', cat:'Sportive', r:'legendaire' },
     { id:'porsche-cayenne-turbo', brand:'Porsche', model:'Cayenne Turbo / Turbo GT', yr:'2002–', c:'🇩🇪', cat:'SUV', r:'rare' },
     { id:'tvr-speed12', brand:'TVR', model:'Cerbera Speed 12', yr:'1997–2000', c:'🇬🇧', cat:'Hypercar', r:'legendaire' },
-    { id:'renault-super5-gtturbo', brand:'Renault', model:'Super 5 GT Turbo', yr:'1985–1991', c:'🇫🇷', cat:'Youngtimer', r:'rare' },
     { id:'cupra-formentor-vz5', brand:'Cupra', model:'Formentor VZ5', yr:'2022–2023', c:'🇪🇸', cat:'Sportive', r:'rare' },
     { id:'bmw-1m-m140i', brand:'BMW', model:'1M Coupé / M140i', yr:'2011–2019', c:'🇩🇪', cat:'Sportive', r:'epique' },
     { id:'mercedes-a45-amg', brand:'Mercedes-AMG', model:'A 45 AMG / A 45 S', yr:'2013–', c:'🇩🇪', cat:'Sportive', r:'rare' },
@@ -4656,9 +5805,13 @@
       const vus = new Set(), dbl = [];
       for (const e of CATALOGUE_PLUS) { if (vus.has(e.id)) dbl.push(e.id); vus.add(e.id); }
       if (dbl.length) console.warn('[GMSpecs] doublons internes écartés :', dbl);
+      /* Doublons connus : on ne les injecte jamais, plutôt que de les retirer
+         après coup — sinon l'observateur de mutations les réinjecte en boucle. */
+      const aExclure = (typeof DOUBLONS_A_RETIRER !== 'undefined') ? new Set(DOUBLONS_A_RETIRER) : new Set();
       let n = 0;
       for (const e of CATALOGUE_PLUS) {
         if (connus.has(e.id)) continue;      // le catalogue de l'app fait autorité
+        if (aExclure.has(e.id)) continue;    // doublon identifié : jamais injecté
         CARS.push(e);
         connus.add(e.id);
         n++;
@@ -5071,6 +6224,11 @@
     'land-rover-evoque',    // doublon de 'landrover-evoque', sans fiche technique
     'land-rover-discovery', // doublon de 'landrover-discovery', sans fiche technique
     'simca-1000-rallye2',   // doublon de 'simca-1000', sans fiche technique
+    'vw-t2',                // doublon de 'vw-combi' (qui couvre T1/T2), sans fiche technique
+    'bmw-x3-moderne',       // doublon de 'bmw-x3'
+    'mg4',                  // doublon de 'mg-4'
+    'suzuki-vitara-moderne',// doublon de 'suzuki-vitara'
+    'porsche-911-gt3-cup',  // doublon de 'porsche-911-cup'
   ];
 
   function retirerDoublons() {
@@ -8141,7 +9299,9 @@
       try { aEng = !!(typeof INFO !== 'undefined' && INFO && INFO[id] && INFO[id].eng); } catch (_) {}
       const ch = chMax(id);
 
-      if (aFiche && aGens) niveaux.complet.push(id);
+      // Une fiche SPECS détaillée suffit à elle seule pour le niveau « complet » :
+      // c'est le format le plus riche (ch, couple, poids, prod, anecdote…).
+      if (aFiche) niveaux.complet.push(id);
       else if (aGens) niveaux.generations.push(id);
       else if (aArchi || aEng) niveaux[ch > 0 ? 'architecture' : 'minimal'].push(id);
       else niveaux.vide.push(id);
