@@ -13312,6 +13312,33 @@
           ]
         }
       ]
+    },
+
+    'alfa-giulietta': {
+      types: [
+        {
+          id: 'essence', label: 'Essence',
+          variants: [
+            { id:'1.4tb-120', label:'1.4 TB 120',
+              ch:120, nm:215, kg:1280, cyl:1.368,
+              arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'manuelle 6',
+              note:"Entrée de gamme — sans MultiAir, calage de soupapes fixe." },
+            { id:'1.4tb-multiair-170', label:'1.4 TB MultiAir 170',
+              ch:170, nm:250, kg:1365, cyl:1.368,
+              arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'manuelle 6',
+              note:"Le même 1.4 MultiAir turbo que la 4C, dans une version dégonflée." },
+          ]
+        },
+        {
+          id: 'diesel', label: 'Diesel',
+          variants: [
+            { id:'1.6jtdm-120', label:'1.6 JTDm 120',
+              ch:120, nm:320, kg:1390, cyl:1.598,
+              arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'manuelle 6',
+              note:"Le diesel le plus sobre de la gamme Giulietta." },
+          ]
+        }
+      ]
     }
 
   };
