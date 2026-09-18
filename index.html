@@ -3097,13 +3097,22 @@ const VARIANTS = {
       info = { ...info, eng: `${variant.label} · ${variant.arch}`, hp: `${variant.ch} ch` };
 
       motoHTML = `
-        <div class="moto-select" style="margin-top:14px">
-          <div class="h3">Motorisation</div>
-          <div class="seg" style="margin-top:6px">
-            ${motoData.types.map(t => `<button data-moto-type="${c.id}|${t.id}" class="${t.id===type.id?"on":""}">${escapeHtml(t.label)}</button>`).join("")}
+        <div class="moto-select" style="margin-top:16px">
+          <div class="h3" style="margin-bottom:8px">Motorisation</div>
+          <div style="display:flex;gap:6px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:3px">
+            ${motoData.types.map(t => `<button data-moto-type="${c.id}|${t.id}" style="flex:1;padding:9px 0;border-radius:7px;font:600 12px/1 var(--sans);border:none;background:${t.id===type.id?"var(--red2)":"transparent"};color:${t.id===type.id?"#fff":"var(--muted2)"}">${escapeHtml(t.label)}</button>`).join("")}
           </div>
-          <div class="var-chips" style="margin-top:8px">
-            ${type.variants.map(v => `<span class="vchip${v.id===variant.id?" have":""}" data-moto-variant="${c.id}|${type.id}|${v.id}">${escapeHtml(v.label)}</span>`).join("")}
+          <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">
+            ${type.variants.map(v => v.id===variant.id
+              ? `<div data-moto-variant="${c.id}|${type.id}|${v.id}" style="border:1.5px solid var(--red);border-radius:10px;padding:12px 14px;background:rgba(239,68,68,.08);display:flex;align-items:center;justify-content:space-between;gap:10px">
+                   <div style="min-width:0">
+                     <div style="font:600 14px/1.2 var(--sans);color:#fff">${escapeHtml(v.label)}</div>
+                     <div style="font:400 11.5px/1.3 var(--sans);color:var(--muted2);margin-top:3px">${v.ch} ch · ${escapeHtml(v.bv)} · ${escapeHtml(v.tx)}</div>
+                   </div>
+                   <span style="color:var(--red);font-size:18px;flex:none">&#10003;</span>
+                 </div>`
+              : `<button data-moto-variant="${c.id}|${type.id}|${v.id}" style="text-align:left;border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--panel2);color:var(--txt);font:500 13px/1.2 var(--sans)">${escapeHtml(v.label)} <span style="color:var(--muted2);font-weight:400">· ${v.ch} ch</span></button>`
+            ).join("")}
           </div>
         </div>`;
     }
