@@ -13339,6 +13339,71 @@
           ]
         }
       ]
+    },
+
+    /* ---- Vague 1 : cas « choix moteur sur la même carrosserie » ---------- */
+
+    'mazda-mx5': {
+      types: [
+        {
+          id: 'nd', label: 'ND (2015–)',
+          variants: [
+            { id:'1.5-skyactiv-131', label:'1.5 SkyActiv-G 131',
+              ch:131, nm:150, kg:975, cyl:1.498,
+              arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'propulsion', bv:'manuelle 6',
+              note:"Sous la tonne à vide — le retour à l'esprit d'origine, puissance à 7 000 tr/min." },
+            { id:'2.0-skyactiv-160', label:'2.0 SkyActiv-G 160',
+              ch:160, nm:200, kg:1050, cyl:1.998,
+              arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'propulsion', bv:'manuelle 6',
+              note:"Bloc issu de la Mazda 6, plus coupleux mais 75 kg plus lourd." },
+            { id:'2.0-skyactiv-184', label:'2.0 SkyActiv-G 184',
+              ch:184, nm:205, kg:1050, cyl:1.998,
+              arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'propulsion', bv:'manuelle 6',
+              note:"Refonte 2018 : soupapes d'échappement élargies, pistons et bielles allégés, rupteur à 7 500 tr/min." },
+          ]
+        }
+      ]
+    },
+
+    'toyota-gr-supra': {
+      types: [
+        {
+          id: 'a90', label: 'A90 / A91',
+          variants: [
+            { id:'2.0-258', label:'2.0 Turbo 258',
+              ch:258, nm:400, kg:1395, cyl:1.998,
+              arch:'4 cyl.', adm:'turbo twin-scroll', pos:'avant', tx:'propulsion', bv:'auto 8',
+              note:"100 kg de moins que la 3.0, moteur reculé vers le centre pour un équilibre 50:50." },
+            { id:'3.0-340', label:'3.0 Turbo 340',
+              ch:340, nm:500, kg:1495, cyl:2.998,
+              arch:'6 en ligne', adm:'turbo', pos:'avant', tx:'propulsion', bv:'auto 8',
+              note:"Le six-en-ligne B58 d'origine BMW, partagé avec la Z4 née du même partenariat." },
+          ]
+        }
+      ]
+    },
+
+    'skoda-octavia-rs': {
+      types: [
+        {
+          id: 'essence', label: 'Essence',
+          variants: [
+            { id:'2.0tsi-245', label:'2.0 TSI 245',
+              ch:245, nm:370, kg:1467, cyl:1.984,
+              arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'manuelle 6 / DSG',
+              note:"Seule version à recevoir le différentiel à glissement limité VAQ, hérité de la Golf GTI Performance." },
+          ]
+        },
+        {
+          id: 'diesel', label: 'Diesel',
+          variants: [
+            { id:'2.0tdi-184', label:'2.0 TDI 184',
+              ch:184, nm:380, kg:1572, cyl:1.968,
+              arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction / 4x4', bv:'DSG 6',
+              note:"Le seul moteur de la gamme RS disponible en transmission intégrale — et l'écrasante majorité des ventes françaises." },
+          ]
+        }
+      ]
     }
 
   };
