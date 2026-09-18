@@ -13258,6 +13258,64 @@
      7. API
      ====================================================================== */
 
+  /* ==========================================================================
+     MOTOR_SPECS — couche additive pour les fiches multi-motorisations.
+     Ne modifie ni SPECS ni GENS ni MAP. Clé de premier niveau : id du
+     catalogue (celui utilisé par CARS/INFO dans index.html, pas la clé SPECS).
+     Chaque variante porte les mêmes champs que SPECS (ch, nm, kg, cyl, arch,
+     adm, pos, tx, bv, note) → réutilisable telle quelle par DERIVES.calc().
+     Chiffres vérifiés le 18/09/2026 (presse Stellantis, zeperfs.com,
+     autotijd.be — plusieurs sources convergentes pour chaque variante,
+     génération 2020–2022 pour la cohérence de la gamme diesel).
+     ========================================================================== */
+  const MOTOR_SPECS = {
+
+    'alfa-giulia': {
+      types: [
+        {
+          id: 'essence', label: 'Essence',
+          variants: [
+            { id:'2.0t-200', label:'2.0 Turbo 200',
+              ch:200, nm:330, kg:1429, cyl:1.995,
+              arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'propulsion', bv:'auto 8 ZF',
+              note:"Moteur tout aluminium exclusif à la Giulia, injection directe 200 bars, technologie MultiAir." },
+          ]
+        },
+        {
+          id: 'diesel', label: 'Diesel',
+          variants: [
+            { id:'2.2jtdm-136', label:'2.2 JTDm 136',
+              ch:136, nm:450, kg:1465, cyl:2.143,
+              arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'propulsion', bv:'auto 8',
+              note:"Entrée de gamme diesel — même bloc 2.2 tout aluminium que les versions plus puissantes." },
+            { id:'2.2jtdm-160', label:'2.2 JTDm 160',
+              ch:160, nm:450, kg:1465, cyl:2.143,
+              arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'propulsion', bv:'auto 8',
+              note:"Même couple que le 136 et le 190 — seule la calibration change." },
+            { id:'2.2jtdm-190', label:'2.2 JTDm 190',
+              ch:190, nm:450, kg:1465, cyl:2.143,
+              arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'propulsion', bv:'auto 8',
+              note:"Le diesel le plus véloce avant la version Q4." },
+          ]
+        },
+        {
+          id: 'veloce', label: 'Veloce',
+          variants: [
+            { id:'2.0t-280-q4', label:'2.0 Turbo 280 Q4',
+              ch:280, nm:400, kg:1530, cyl:1.995,
+              arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'intégrale (Q4)', bv:'auto 8 ZF',
+              note:"Différentiel arrière autobloquant, étriers Brembo dédiés." },
+            { id:'2.2jtdm-210-q4', label:'2.2 JTDm 210 Q4',
+              ch:210, nm:470, kg:1540, cyl:2.143,
+              arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'intégrale (Q4)', bv:'auto 8',
+              note:"Le diesel le plus puissant de la gamme Giulia, hors Quadrifoglio." },
+          ]
+        }
+      ]
+    }
+
+  };
+
   const API = {
     CHAMPS, DERIVES, SPECS, MAP, GENS,
 

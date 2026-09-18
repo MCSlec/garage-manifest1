@@ -3082,7 +3082,32 @@ const VARIANTS = {
   }
 
   function infoPageHTML(c, rec, h) {
-    const col = rColor(c.r), info = INFO[c.id] || {};
+    const col = rColor(c.r);
+    const motoData = (typeof MOTOR_SPECS !== "undefined") ? MOTOR_SPECS[c.id] : null;
+    let info = INFO[c.id] || {};
+    let motoHTML = "";
+
+    if (motoData) {
+      const sel = state.motoSel[c.id] || {};
+      const type = motoData.types.find(t => t.id === sel.type) || motoData.types[0];
+      const variant = type.variants.find(v => v.id === sel.variantId) || type.variants[0];
+
+      // Dérive un pseudo-INFO depuis la variante choisie : le reste du rendu
+      // (rows plus bas) n'a rien à savoir de MOTOR_SPECS.
+      info = { ...info, eng: `${variant.label} · ${variant.arch}`, hp: `${variant.ch} ch` };
+
+      motoHTML = `
+        <div class="moto-select" style="margin-top:14px">
+          <div class="h3">Motorisation</div>
+          <div class="seg" style="margin-top:6px">
+            ${motoData.types.map(t => `<button data-moto-type="${c.id}|${t.id}" class="${t.id===type.id?"on":""}">${escapeHtml(t.label)}</button>`).join("")}
+          </div>
+          <div class="var-chips" style="margin-top:8px">
+            ${type.variants.map(v => `<span class="vchip${v.id===variant.id?" have":""}" data-moto-variant="${c.id}|${type.id}|${v.id}">${escapeHtml(v.label)}</span>`).join("")}
+          </div>
+        </div>`;
+    }
+
     const rows = [];
     if (info.eng)  rows.push(["Moteur", info.eng]);
     if (info.hp)   rows.push(["Puissance", info.hp]);
@@ -3104,6 +3129,7 @@ const VARIANTS = {
         <h2>${escapeHtml(c.brand)} ${escapeHtml(c.model)}</h2>
         <p class="muted">${c.c} ${COUNTRY[c.c]||""} · ${escapeHtml(c.cat)}</p>
       </div>
+      ${motoHTML}
       <div class="specs specs-info">${specHTML}</div>
       ${factCard}${catLine}
       ${!h ? `<div class="panel" style="margin-top:14px;text-align:center"><p class="dim" style="font:400 13px/1.4 var(--sans);margin:0">Pas encore au garage. Croise-la, prends-la en photo, et enregistre la prise.</p></div>` : ""}
@@ -3112,6 +3138,7 @@ const VARIANTS = {
 
   function openDetail(carId) {
     activeDetail = carId;
+    if (!state.motoSel) state.motoSel = {}; // couche additive motorisations — init défensive, pas de déclaration globale connue
     const c = CARS_BY_ID[carId], rec = state.spots.get(carId), h = !!rec;
     const pages = [];
     if (h) pages.push(photoPageHTML(c, rec));
@@ -3773,7 +3800,7 @@ const VARIANTS = {
 
   /* ====================================================== ÉVÉNEMENTS (délégation) */
   document.addEventListener("click", (e) => {
-    const t = e.target.closest("[data-tab],[data-fab],[data-rarity],[data-toggle],[data-status],[data-filter],[data-car],[data-close],[data-scrim],[data-cap],[data-pick],[data-var],[data-act],[data-setcover],[data-addphoto],[data-release],[data-dot],[data-favtoggle]");
+    const t = e.target.closest("[data-tab],[data-fab],[data-rarity],[data-toggle],[data-status],[data-filter],[data-car],[data-close],[data-scrim],[data-cap],[data-pick],[data-var],[data-act],[data-setcover],[data-addphoto],[data-release],[data-dot],[data-favtoggle],[data-moto-type],[data-moto-variant]");
     if (!t) return;
 
     if (t.dataset.scrim && e.target === t) return closeOverlay();
@@ -3807,6 +3834,18 @@ const VARIANTS = {
     if (t.hasAttribute("data-dot")) { const pager=$("#pager"); if(pager) pager.scrollTo({ left:+t.dataset.dot*pager.clientWidth, behavior:"smooth" }); return; }
     if (t.dataset.release) { const rid = t.dataset.release; (async () => { if (await askConfirm("Retirer cette voiture du garage ?", "Retirer", true)) release(rid); })(); return; }
     if (t.dataset.favtoggle) { toggleFavorite(t.dataset.favtoggle); return; }
+    if (t.hasAttribute("data-moto-type")) {
+      const [carId, typeId] = t.dataset.motoType.split("|");
+      state.motoSel[carId] = { type: typeId, variantId: null }; // reset sur la 1re variante du type choisi
+      openDetail(carId);
+      return;
+    }
+    if (t.hasAttribute("data-moto-variant")) {
+      const [carId, typeId, variantId] = t.dataset.motoVariant.split("|");
+      state.motoSel[carId] = { type: typeId, variantId };
+      openDetail(carId);
+      return;
+    }
 
     const act = t.dataset.act;
     if (act==="save") return saveDraft();
