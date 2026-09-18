@@ -1985,6 +1985,7 @@ const CATEGORY_DESC = {
   "Non classé": "Une voiture hors du manifeste officiel — ta trouvaille, en attente d'un jour rejoindre le catalogue.",
 };
 const VARIANTS = {
+  "alfa-giulia": ["Ti", "Veloce", "Quadrifoglio"],
   "peugeot-306": ["Phase 1 (1993-97)", "Phase 2 (1997-99)", "Phase 3 (1999-02)"],
   "peugeot-306-s16": ["Phase 1", "Phase 2/3"],
   "peugeot-205": ["Phase 1 (1983-87)", "Phase 2 (1987-98)"],
@@ -3132,6 +3133,40 @@ const VARIANTS = {
       ? `<div class="fact"><div class="fact-k">${icon("info","icon")} Le saviez-vous</div><p>${escapeHtml(info.fact)}</p></div>`
       : (desc ? `<div class="fact"><p>${escapeHtml(desc)}</p></div>` : "");
     const catLine = (info.fact && desc) ? `<p class="cat-desc">${escapeHtml(desc)}</p>` : "";
+
+    // Générations & motorisations — lecture seule de GENS (texte libre, non lié à MOTOR_SPECS).
+    // N'existait dans aucun rendu avant ce patch : gm-specs.js était chargé mais jamais consommé.
+    let gensHTML = "";
+    if (typeof GENS !== "undefined") {
+      const cle = (typeof MAP !== "undefined" && MAP[c.id]) || c.id;
+      const gens = GENS[cle];
+      if (gens && gens.length) {
+        const genCard = (titre, sousTitre, corps) => `
+          <div style="border:1px solid var(--line);background:var(--panel2);border-radius:10px;padding:12px 14px;margin-bottom:8px">
+            <div style="font:600 13px/1.2 var(--sans);color:#fff">${escapeHtml(titre)} <span style="color:var(--muted2);font-weight:400">· ${escapeHtml(sousTitre)}</span></div>
+            ${corps}
+          </div>`;
+        const cartesGen = gens.map(g => {
+          if (Array.isArray(g)) {
+            const [code, annees, meca, puiss, note] = g;
+            return genCard(code, annees, `
+              <div style="font:400 12px/1.3 var(--sans);color:var(--muted2);margin-top:3px">${escapeHtml(meca)} · ${escapeHtml(puiss)}</div>
+              ${note ? `<div style="font:400 11.5px/1.4 var(--sans);color:var(--muted2);margin-top:5px">${escapeHtml(note)}</div>` : ""}
+            `);
+          }
+          if (g && Array.isArray(g.m)) {
+            const lignes = g.m.map(mo => `
+              <div style="padding:8px 10px;background:var(--panel);border-radius:8px;margin-top:6px">
+                <div style="font:600 12px/1.2 var(--sans);color:#fff">${escapeHtml(mo[0])}</div>
+                <div style="font:400 11px/1.3 var(--sans);color:var(--muted2);margin-top:2px">${escapeHtml(mo[1])} · ${escapeHtml(mo[2])} · ${escapeHtml(mo[3])}</div>
+              </div>`).join("");
+            return genCard(g.c, g.a, lignes);
+          }
+          return "";
+        }).join("");
+        gensHTML = `<div style="margin-top:16px"><div class="h3" style="margin-bottom:8px">Générations &amp; motorisations</div>${cartesGen}</div>`;
+      }
+    }
     return `
       <div class="info-head">
         <span class="chip" style="background:${col}22;color:${col}"><span style="width:8px;height:8px;border-radius:50%;background:${col}"></span>${RARITY[c.r].label}</span>
@@ -3141,6 +3176,7 @@ const VARIANTS = {
       ${motoHTML}
       <div class="specs specs-info">${specHTML}</div>
       ${factCard}${catLine}
+      ${gensHTML}
       ${!h ? `<div class="panel" style="margin-top:14px;text-align:center"><p class="dim" style="font:400 13px/1.4 var(--sans);margin:0">Pas encore au garage. Croise-la, prends-la en photo, et enregistre la prise.</p></div>` : ""}
     `;
   }
