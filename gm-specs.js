@@ -326,11 +326,17 @@
       ch:625, nm:750, kg:2350, cyl:4.4, arch:'V8', adm:'biturbo', pos:'avant', tx:'intégrale', bv:'A8',
       note:"Les grands SUV M, poussés à plus de 600 ch dans la version Competition. Des chars d\'assaut capables de tenir tête à des sportives sur circuit malgré leurs 2,3 tonnes. Le X6 M est la déclinaison SUV-coupé de cette démonstration de force." },
     'bmw-m2-cs': { nom:'BMW M2 CS', an:[2020], pays:'Allemagne',
-      ch:550, nm:650, kg:1575, cyl:3.0, arch:'6 en ligne S55 / S58', adm:'biturbo', pos:'avant', tx:'propulsion', bv:'M6 / DCT',
+      ch:450, nm:550, kg:1575, cyl:2.979, arch:'6 en ligne S55', adm:'biturbo', pos:'avant', tx:'propulsion', bv:'M6 / DCT',
       note:"La version la plus radicale de la plus compacte des M, souvent citée comme la BMW M la plus fun de l\'ère moderne : format ramassé, propulsion, six-cylindres, disponible en boîte manuelle. Éléments carbone, châssis affûté. Une pépite pour puristes." },
     'bmw-m4-csl': { nom:'BMW M4 CSL', an:[2022], pays:'Allemagne',
       ch:550, nm:650, kg:1625, cyl:3.0, arch:'6 en ligne S58', adm:'biturbo', pos:'avant', tx:'propulsion', bv:'A8',
       note:"« Coupé Sport Leichtbau » : le label CSL renaît sur la M4, avec 100 kg de moins que la Competition, une propulsion pure et un châssis de piste. 1 000 exemplaires. A signé un record du Nürburgring pour une BMW de série. L\'héritière de la M3 CSL E46." },
+    'bmw-m3-cs': { nom:'BMW M3 CS', an:[2018], pays:'Allemagne',
+      ch:550, nm:650, kg:1765, cyl:2.993, arch:'6 en ligne S58', adm:'biturbo', pos:'avant', tx:'intégrale (M xDrive)', bv:'A8',
+      note:"La berline M la plus puissante de son époque : pression de suralimentation portée de 1,7 à 2,1 bars, vilebrequin forgé allégé, nombreuses pièces carbone. Même moteur que la M4 CSL, mais en quatre portes et en transmission intégrale. Première M3 CS en 2018 sur base F80, à 1 200 exemplaires." },
+    'bmw-m4-cs': { nom:'BMW M4 CS', an:[2017], pays:'Allemagne',
+      ch:550, nm:650, kg:1835, cyl:2.993, arch:'6 en ligne S58', adm:'biturbo', pos:'avant', tx:'propulsion', bv:'A8',
+      note:"L\'échelon intermédiaire entre la M4 Competition et la radicale CSL. La première M4 CS (F82, 2017) a ouvert la voie aux versions CS modernes chez BMW M ; la seconde (G82) reprend la calibration 550 ch de la CSL tout en conservant quatre places." },
     'audi-s3-limo': { nom:'Audi S3 Sportback / Berline', an:[1999], pays:'Allemagne',
       ch:333, nm:420, kg:1540, cyl:2.0, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'quattro', bv:'S tronic 7',
       note:"La compacte premium ultra-efficace, à transmission intégrale quattro de série, déclinée en berline tricorps sur les derniers modèles. Discrète mais redoutable sur route mouillée, elle partage sa base et sa mécanique avec la Golf R." },
@@ -4180,6 +4186,14 @@
     'bmw-m4-csl': [
       ['G82 CSL','2022–','S58 3.0 biturbo','550 ch','100 kg de moins, 2 places, 1 000 exemplaires. Record du tour au Nürburgring pour une BMW de série.'],
     ],
+    'bmw-m3-cs': [
+      ['F80 CS','2018','S55 3.0 biturbo','460 ch','Point final de la génération F80, 1 200 exemplaires. 0 à 100 km/h en 3,9 s.'],
+      ['G80 CS','2023–2024','S58 3.0 biturbo','550 ch','Même moteur que la M4 CSL, mais 5 places et M xDrive.'],
+    ],
+    'bmw-m4-cs': [
+      ['F82 CS','2017','S55 3.0 biturbo','460 ch','La première CS moderne de BMW M, présentée avant la M3 CS.'],
+      ['G82 CS','2024–2025','S58 3.0 biturbo','550 ch','Calibration de la CSL, quatre places conservées.'],
+    ],
     'bmw-x3m': [
       ['F97 / G45','2019–','S58 3.0 biturbo','480–530 ch','Le six en ligne de la M3 dans un SUV compact.'],
     ],
@@ -7597,6 +7611,8 @@
     'bmw-x5m-comp'            : 'bmw-x5m-comp',
     'bmw-m2-cs'               : 'bmw-m2-cs',
     'bmw-m4-csl'              : 'bmw-m4-csl',
+    'bmw-m3-cs'               : 'bmw-m3-cs',
+    'bmw-m4-cs'               : 'bmw-m4-cs',
     'audi-s3-limo'            : 'audi-s3-limo',
     'vw-golf-gti-clubsport'   : 'vw-golf-gti-clubsport',
     'vw-t-roc-r'              : 'vw-t-roc-r',
@@ -8676,10 +8692,21 @@
     </div>`;
   }
 
-  function ficheHTML(idCatalogue) {
+  function ficheHTML(idCatalogue, variante) {
     const cle = MAP[idCatalogue];
-    const f = cle && SPECS[cle];
-    if (!f) return '';
+    const base = cle && SPECS[cle];
+    if (!base && !variante) return '';
+    /* Variante de MOTOR_SPECS choisie dans le sélecteur : elle remplace les
+       champs MÉCANIQUES du modèle (chiffres + architecture). Tout ce qui est
+       propre au modèle (note, surnom, production, son) reste celui de SPECS.
+       Le rupteur est retiré : il est propre à UN moteur, celui de la fiche
+       d'origine, et serait faux pour une autre motorisation. */
+    const f = variante
+      ? { ...(base || { nom: idCatalogue }),
+          ch: variante.ch, nm: variante.nm, kg: variante.kg, cyl: variante.cyl,
+          arch: variante.arch, adm: variante.adm, pos: variante.pos,
+          tx: variante.tx, bv: variante.bv, rupteur: undefined, flou: [] }
+      : base;
 
     const r = rarete(f.prod);
     const flous = (f.flou || []).map(c => (CHAMPS[c] || DERIVES[c] || {}).lib).filter(Boolean);
@@ -8714,8 +8741,18 @@
   }
 
   /** Ce qui est réellement injecté dans la fiche : les deux blocs à la suite. */
-  function blocHTML(idCatalogue) {
-    return ficheHTML(idCatalogue) + gensHTML(idCatalogue) + moteursHTML(idCatalogue);
+  function blocHTML(idCatalogue, variante) {
+    return ficheHTML(idCatalogue, variante) + gensHTML(idCatalogue) + moteursHTML(idCatalogue);
+  }
+
+  /** Lit la motorisation active posée par index.html (data-moto-actif="type|variante"). */
+  function varianteActive(page, idCatalogue) {
+    const m = MOTOR_SPECS[idCatalogue];
+    const el = page.querySelector('[data-moto-actif]');
+    if (!m || !el) return null;
+    const [tId, vId] = el.getAttribute('data-moto-actif').split('|');
+    const t = m.types.find(x => x.id === tId) || m.types[0];
+    return (t && (t.variants.find(v => v.id === vId) || t.variants[0])) || null;
   }
 
 
@@ -8963,6 +9000,8 @@
     { id:'bmw-x5m-comp', brand:'BMW', model:'X5 M / X6 M', yr:'2009–', c:'🇩🇪', cat:'SUV', r:'peucommun' },
     { id:'bmw-m2-cs', brand:'BMW', model:'M2 CS', yr:'2020–', c:'🇩🇪', cat:'Sportive', r:'epique' },
     { id:'bmw-m4-csl', brand:'BMW', model:'M4 CSL', yr:'2022–', c:'🇩🇪', cat:'Sportive', r:'legendaire' },
+    { id:'bmw-m3-cs', brand:'BMW', model:'M3 CS', yr:'2018–2024', c:'🇩🇪', cat:'Berline', r:'epique' },
+    { id:'bmw-m4-cs', brand:'BMW', model:'M4 CS', yr:'2017–2025', c:'🇩🇪', cat:'Sportive', r:'epique' },
 
     { id:'audi-s3-limo', brand:'Audi', model:'S3 Sportback / Berline', yr:'1999–', c:'🇩🇪', cat:'Sportive', r:'peucommun' },
     { id:'audi-rsq3-moderne', brand:'Audi', model:'RS Q3', yr:'2013–', c:'🇩🇪', cat:'SUV', r:'peucommun' },
@@ -13157,11 +13196,14 @@
     if (!pages.length) return;
     const page = pages[pages.length - 1];          // la fiche technique est la dernière page
     if (page.querySelector('.gsp')) return;         // déjà greffé
+    /* Voiture non spottée : index.html pose data-verrou. On ne greffe RIEN —
+       sinon le verrou de collection fuit (bug trouvé au banc navigateur). */
+    if (page.querySelector('[data-verrou]')) return;
     const h2 = page.querySelector('.info-head h2');
     if (!h2) return;
     const id = indexTitres().get(norm(h2.textContent));
     if (!id) return;
-    const html = blocHTML(id);
+    const html = blocHTML(id, varianteActive(page, id));
     if (html) page.insertAdjacentHTML('beforeend', html);
   }
 
@@ -13404,12 +13446,925 @@
           ]
         }
       ]
+    },
+
+    /* ---- Vague 2 ----------------------------------------------------- */
+
+    'kia-stinger': {
+      types: [
+        {
+          id: 'essence', label: 'Essence',
+          variants: [
+            { id:'2.0t-255', label:'2.0 T-GDi 255',
+              ch:255, nm:353, kg:1717, cyl:1.998,
+              arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'propulsion', bv:'auto 8',
+              note:"Arrivé après coup en France — à l'origine réservé au marché américain." },
+            { id:'3.3-v6-370', label:'3.3 V6 Biturbo 370 GT',
+              ch:370, nm:510, kg:1855, cyl:3.342, arch:'V6', adm:'biturbo', pos:'avant', tx:'intégrale', bv:'auto 8',
+              note:"Le haut de gamme, exclusivement en transmission intégrale en France." },
+          ]
+        },
+        {
+          id: 'diesel', label: 'Diesel',
+          variants: [
+            { id:'2.2crdi-200', label:'2.2 CRDi 200',
+              ch:200, nm:440, kg:1778, cyl:2.199, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'propulsion', bv:'auto 8',
+              note:"Longtemps le seul moteur vraiment pertinent pour le marché français, malus oblige." },
+          ]
+        }
+      ]
+    },
+
+    'nissan-300zx': {
+      types: [
+        {
+          id: 'atmo', label: 'Atmosphérique',
+          variants: [
+            { id:'3.0-v6-226', label:'3.0 V6 226',
+              ch:226, nm:272, kg:1530, cyl:2.960, arch:'V6', adm:'atmo', pos:'avant', tx:'propulsion', bv:'manuelle 5',
+              note:"Meilleur équilibre des masses (50:50), comportement jugé plus fin par la presse d'époque, faute de puissance." },
+          ]
+        },
+        {
+          id: 'turbo', label: 'Twin Turbo',
+          variants: [
+            { id:'3.0-v6-biturbo-283', label:'3.0 V6 Twin Turbo 283',
+              ch:283, nm:375, kg:1585, cyl:2.960, arch:'V6', adm:'biturbo', pos:'avant', tx:'propulsion', bv:'manuelle 5',
+              note:"Deux turbos Garrett T25, direction et suspension 4 roues Super HICAS de série." },
+          ]
+        }
+      ]
+    },
+
+    /* ---- Vague 3 ----------------------------------------------------- */
+
+    'toyota-mr2': {
+      types: [
+        {
+          id: 'atmo', label: 'Atmosphérique',
+          variants: [
+            { id:'3s-ge-180', label:'2.0 3S-GE 180',
+              ch:180, nm:191, kg:1240, cyl:1.998, arch:'4 cyl.', adm:'atmo', pos:'central', tx:'propulsion', bv:'manuelle 5',
+              note:"Culasse Yamaha, rupteur à 7 000 tr/min — le choix des puristes du châssis." },
+          ]
+        },
+        {
+          id: 'turbo', label: 'Turbo',
+          variants: [
+            { id:'3s-gte-245', label:'2.0 3S-GTE 245',
+              ch:245, nm:304, kg:1270, cyl:1.998, arch:'4 cyl.', adm:'turbo', pos:'central', tx:'propulsion', bv:'manuelle 5',
+              note:"Le même bloc que la Celica GT-Four, surnommée « bébé Ferrari » pour sa silhouette." },
+          ]
+        }
+      ]
+    },
+
+    'opel-calibra': {
+      types: [
+        {
+          id: 'essence', label: 'Essence',
+          variants: [
+            { id:'2.0i-115', label:'2.0i 115',
+              ch:115, nm:170, kg:1205, cyl:1.998, arch:'4 cyl.', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 5',
+              note:"L'entrée de gamme, record du monde de Cx (0,26) pour une auto 4 places de série." },
+            { id:'2.0i-16v-150', label:'2.0i 16V 150',
+              ch:150, nm:196, kg:1195, cyl:1.998, arch:'4 cyl.', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 5',
+              note:"Culasse 16 soupapes, le compromis le plus vendu de la gamme." },
+            { id:'2.5-v6-170', label:'2.5 V6 170',
+              ch:170, nm:226, kg:1325, cyl:2.497, arch:'V6', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 5',
+              note:"Seul V6 de la gamme, monté transversalement — exercice d'ingénierie peu commun." },
+          ]
+        }
+      ]
+    },
+
+    'alfa-gtv-916': {
+      types: [
+        {
+          id: 'essence', label: 'Essence',
+          variants: [
+            { id:'2.0-ts-150', label:'2.0 Twin Spark 16V 150',
+              ch:150, nm:187, kg:1320, cyl:1.970, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'manuelle 5',
+              note:"Double allumage par cylindre — signature Alfa depuis les années 1980." },
+            { id:'3.0-v6-220', label:'3.0 V6 24V 220',
+              ch:220, nm:265, kg:1420, cyl:2.959, arch:'V6', adm:'atmo', pos:'avant', tx:'traction', bv:'manuelle 5',
+              note:"Le V6 Busso, l'un des plus réputés pour sa sonorité — dérivé de celui de la 164." },
+          ]
+        }
+      ]
+    },
+
+    'audi-tt': {
+      types: [
+        {
+          id: '4cyl', label: '4 cylindres',
+          variants: [
+            { id:'1.8t-180', label:'1.8 T 180',
+              ch:180, nm:235, kg:1355, cyl:1.781, arch:'4 cyl. 20s', adm:'turbo', pos:'avant', tx:'traction', bv:'manuelle 5',
+              note:"Le bloc 1.8T le plus diffusé du groupe Volkswagen, de la Polo GTI à l'Audi A6." },
+            { id:'1.8t-225-q', label:'1.8 T 225 quattro',
+              ch:225, nm:280, kg:1470, cyl:1.781, arch:'4 cyl. 20s', adm:'turbo', pos:'avant', tx:'intégrale', bv:'manuelle 6',
+              note:"Turbo K04 plus gros, dérivé du bloc de l'Audi S3 8L." },
+          ]
+        },
+        {
+          id: 'v6', label: 'V6',
+          variants: [
+            { id:'3.2-v6-250-q', label:'3.2 V6 250 quattro',
+              ch:250, nm:320, kg:1485, cyl:3.189, arch:'V6', adm:'atmo', pos:'avant', tx:'intégrale', bv:'manuelle 6 / DSG',
+              note:"Le haut de gamme, considéré par beaucoup comme le meilleur moteur jamais monté sur un TT." },
+          ]
+        }
+      ]
+    },
+
+    /* ---- Vague 4 ----------------------------------------------------- */
+
+    'fiat-coupe': {
+      types: [
+        {
+          id: 'essence', label: 'Essence',
+          variants: [
+            { id:'1.8-16v-130', label:'1.8 16V 130',
+              ch:130, nm:164, kg:1180, cyl:1.747, arch:'4 cyl.', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 5',
+              note:"Entrée de gamme, hérité de la Barchetta." },
+            { id:'2.0-turbo-16v-195', label:'2.0 Turbo 16V 195',
+              ch:195, nm:296, kg:1320, cyl:1.995, arch:'4 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 5',
+              note:"Le premier échelon turbo, avant l'arrivée du 5 cylindres." },
+            { id:'2.0-20v-turbo-220', label:'2.0 20V Turbo 220',
+              ch:220, nm:310, kg:1310, cyl:1.998, arch:'5 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 6',
+              note:"Bloc 5 cylindres emprunté à la Lancia Delta/Fiat Bravo HGT — la version culte, saluée par la presse pour son agrément malgré un tarif très accessible." },
+          ]
+        }
+      ]
+    },
+
+    'mercedes-190e': {
+      types: [
+        {
+          id: 'essence', label: 'Essence',
+          variants: [
+            { id:'2.3-16', label:'2.3-16',
+              ch:185, nm:235, kg:1400, cyl:2.298, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'propulsion', bv:'manuelle 5',
+              note:"Culasse 16 soupapes conçue par Cosworth sur le bloc fonte du 190E de base — la réponse de Mercedes à la BMW M3 E30." },
+            { id:'2.5-16', label:'2.5-16',
+              ch:195, nm:230, kg:1400, cyl:2.498, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'propulsion', bv:'manuelle 5',
+              note:"Cylindrée agrandie pour muscler la plage bas-régime — course de pistons allongée, vilebrequin et bielles modifiés." },
+          ]
+        }
+      ]
+    },
+
+    /* ---- Vague 5 ----------------------------------------------------- */
+
+    'peugeot-205': {
+      types: [
+        {
+          id: 'gti', label: 'GTI',
+          variants: [
+            { id:'1.6-105', label:'GTI 1.6 105',
+              ch:105, nm:132, kg:875, cyl:1.580, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'manuelle 5',
+              note:"La première GTI, celle qui a lancé la légende — freins à disque à l'avant seulement." },
+            { id:'1.9-130', label:'GTI 1.9 130',
+              ch:130, nm:161, kg:890, cyl:1.905, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'manuelle 5',
+              note:"Freins à 4 disques, train arrière spécifique — considérée par beaucoup comme la meilleure GTI jamais produite." },
+          ]
+        }
+      ]
+    },
+
+    'matra-murena': {
+      types: [
+        {
+          id: 'essence', label: 'Essence',
+          variants: [
+            { id:'1.6', label:'1.6',
+              ch:92, nm:132, kg:1000, cyl:1.592, arch:'4 cyl.', adm:'atmo', pos:'central', tx:'propulsion', bv:'manuelle 5',
+              note:"Trois places de front comme la Bagheera qui l'a précédée — configuration unique sur le marché." },
+            { id:'2.2', label:'2.2',
+              ch:118, nm:181, kg:1050, cyl:2.156, arch:'4 cyl.', adm:'atmo', pos:'central', tx:'propulsion', bv:'manuelle 5',
+              note:"Châssis-poutre central en acier, carrosserie en polyester — la version recommandée par la presse d'époque." },
+          ]
+        }
+      ]
+    },
+
+    'lancia-fulvia': {
+      types: [
+        {
+          id: 'essence', label: 'Essence',
+          variants: [
+            { id:'1.3-v4-90', label:'1.3 V4 90',
+              ch:90, nm:115, kg:980, cyl:1.298, arch:'V4', adm:'atmo', pos:'avant', tx:'traction', bv:'manuelle 4',
+              note:"Le V4 à faible angle d'ouverture, signature technique Lancia depuis les années 1960." },
+            { id:'1.6-hf', label:'1.6 HF',
+              ch:115, nm:160, kg:960, cyl:1.584, arch:'V4', adm:'atmo', pos:'avant', tx:'traction', bv:'manuelle 5',
+              note:"La « Fanalone », surnommée pour ses gros phares — triple championne du monde des rallyes en 1972." },
+          ]
+        }
+      ]
+    },
+
+    /* ---- Vague 6 ----------------------------------------------------- */
+
+    'alfa-156': {
+      types: [
+        {
+          id: 'essence', label: 'Essence',
+          variants: [
+            { id:'1.6ts-120', label:'1.6 TS 120',
+              ch:120, nm:140, kg:1265, cyl:1.598, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'manuelle 5',
+              note:"Twin Spark — double allumage par cylindre, la signature moteur Alfa de l'époque." },
+            { id:'2.0ts-155', label:'2.0 TS 155',
+              ch:155, nm:180, kg:1275, cyl:1.970, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'manuelle 5',
+              note:"Le haut de gamme essence, avant l'arrivée du V6 24V." },
+          ]
+        },
+        {
+          id: 'diesel', label: 'Diesel',
+          variants: [
+            { id:'1.9jtd-110', label:'1.9 JTD 110',
+              ch:110, nm:250, kg:1270, cyl:1.910, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'manuelle 5',
+              note:"Rampe commune Multijet — Alfa parmi les tout premiers constructeurs à l'adopter en Europe." },
+          ]
+        }
+      ]
+    },
+
+    'jaguar-xjs': {
+      types: [
+        {
+          id: '6cyl', label: '6 cylindres',
+          variants: [
+            { id:'3.6-aj6-221', label:'3.6 AJ6 221',
+              ch:221, nm:325, kg:1790, cyl:3.590, arch:'6 en ligne', adm:'atmo', pos:'avant', tx:'propulsion', bv:'manuelle 5 / auto 4',
+              note:"Arrivé en 1983 pour proposer une XJS plus légère et moins gourmande que le V12." },
+          ]
+        },
+        {
+          id: 'v12', label: 'V12',
+          variants: [
+            { id:'5.3-he-282', label:'5.3 HE 282',
+              ch:282, nm:407, kg:1815, cyl:5.343, arch:'V12', adm:'atmo', pos:'avant', tx:'propulsion', bv:'auto 3',
+              note:"Chambres de combustion « Fireball » économes en carburant, développées avec Swiss Jetronic pour sauver le V12 après le choc pétrolier." },
+          ]
+        }
+      ]
+    },
+
+    /* ---- Vague 7 ----------------------------------------------------- */
+
+    'citroen-xantia': {
+      types: [
+        {
+          id: 'essence', label: 'Essence',
+          variants: [
+            { id:'3.0-v6-190', label:'3.0 V6 24V 190 Activa',
+              ch:190, nm:267, kg:1543, cyl:2.946, arch:'V6', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 5',
+              note:"Suspension Activa à correction de roulis active — la Xantia qui ne prend jamais de gîte, même en virage serré." },
+          ]
+        },
+        {
+          id: 'diesel', label: 'Diesel',
+          variants: [
+            { id:'2.1-td-109', label:'2.1 TD 109 Activa',
+              ch:109, nm:250, kg:1520, cyl:2.088, arch:'4 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 5',
+              note:"Même châssis Activa que le V6, pour un tout autre budget d'usage." },
+          ]
+        }
+      ]
+    },
+
+    'tvr-cerbera': {
+      types: [
+        {
+          id: 'speed-six', label: 'Speed Six',
+          variants: [
+            { id:'4.0-speed-six-350', label:'4.0 Speed Six 350',
+              ch:350, nm:447, kg:1130, cyl:3.996, arch:'6 en ligne', adm:'atmo', pos:'avant', tx:'propulsion', bv:'manuelle 5',
+              note:"Moteur maison, carter sec, réglages plus souples que le V8 — le plus puissant 6 cylindres atmosphérique jamais produit en série à l'époque." },
+          ]
+        },
+        {
+          id: 'v8', label: 'V8 AJP8',
+          variants: [
+            { id:'4.5-ajp8-420', label:'4.5 AJP8 420',
+              ch:420, nm:515, kg:1100, cyl:4.475, arch:'V8', adm:'atmo', pos:'avant', tx:'propulsion', bv:'manuelle 5',
+              note:"Vilebrequin à plat comme une Ferrari, différentiel Hydratrak de série — l'un des V8 atmosphériques les plus performants au litre de sa génération." },
+          ]
+        }
+      ]
+    },
+
+    /* ---- Vague 8 ----------------------------------------------------- */
+
+    'alfa-147': {
+      types: [
+        {
+          id: 'essence', label: 'Essence',
+          variants: [
+            { id:'1.6ts-120', label:'1.6 Twin Spark 120',
+              ch:120, nm:146, kg:1210, cyl:1.598, arch:'4 cyl.', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 5',
+              note:"L'entrée de gamme la plus vendue de la 147 — Twin Spark, comme sur la 156." },
+            { id:'2.0ts-150', label:'2.0 Twin Spark 150',
+              ch:150, nm:181, kg:1260, cyl:1.970, arch:'4 cyl.', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 5',
+              note:"Le haut de gamme essence, avant la GTA et son V6 Busso 3.2." },
+          ]
+        },
+        {
+          id: 'diesel', label: 'Diesel',
+          variants: [
+            { id:'1.9jtd-115', label:'1.9 JTD 115',
+              ch:115, nm:275, kg:1270, cyl:1.910, arch:'4 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 5',
+              note:"Rampe commune Multijet — le diesel le plus demandé de la gamme 147." },
+          ]
+        }
+      ]
+    },
+
+    /* ---- Vague 9 ----------------------------------------------------- */
+
+    'peugeot-406-coupe': {
+      types: [
+        {
+          id: 'essence', label: 'Essence',
+          variants: [
+            { id:'2.0-16v-135', label:'2.0 16V 135',
+              ch:135, nm:183, kg:1340, cyl:1.998, arch:'4 cyl.', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 5',
+              note:"L'entrée de gamme — la même carrosserie dessinée et assemblée par Pininfarina que les V6." },
+            { id:'2.2-16v-160', label:'2.2 16V 160',
+              ch:160, nm:217, kg:1334, cyl:2.231, arch:'4 cyl.', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 5',
+              note:"Arrivé au restylage 2003 pour remplacer le 2.0 en haut de gamme 4 cylindres." },
+            { id:'3.0-v6-210', label:'3.0 V6 210',
+              ch:210, nm:290, kg:1485, cyl:2.946, arch:'V6', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 5 / auto',
+              note:"Le V6 ES9, partagé avec la 607 et la Citroën C5 — 235 km/h, la plus rapide des 406." },
+          ]
+        },
+        {
+          id: 'diesel', label: 'Diesel',
+          variants: [
+            { id:'2.2-hdi-136', label:'2.2 HDi 136',
+              ch:136, nm:314, kg:1450, cyl:2.179, arch:'4 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 6',
+              note:"Seul diesel du coupé, arrivé tardivement — rampe commune HDi, boîte 6 de série." },
+          ]
+        }
+      ]
+    },
+
+    /* ---- Vague 10 ---------------------------------------------------- */
+
+    'alfa-75': {
+      types: [
+        {
+          id: '4cyl', label: '4 cylindres',
+          variants: [
+            { id:'2.0-ts-148', label:'2.0 Twin Spark 148',
+              ch:148, nm:186, kg:1180, cyl:1.962, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'propulsion', bv:'transaxle 5',
+              note:"Double allumage et arbres à cames en tête — la 75 la plus équilibrée à conduire selon la presse d'époque." },
+            { id:'1.8-turbo-155', label:'1.8 Turbo 155',
+              ch:155, nm:226, kg:1200, cyl:1.779, arch:'4 cyl.', adm:'turbo Garrett T3', pos:'avant', tx:'propulsion', bv:'transaxle 5',
+              note:"Produite à au moins 5 000 exemplaires pour l'homologation FIA Groupe A — 0 à 100 km/h en 7,6 s." },
+          ]
+        },
+        {
+          id: 'v6', label: 'V6',
+          variants: [
+            { id:'3.0-v6-188', label:'3.0 V6 188',
+              ch:188, nm:248, kg:1300, cyl:2.959, arch:'V6', adm:'atmo', pos:'avant', tx:'propulsion', bv:'transaxle 5',
+              note:"Le V6 Busso dans sa version America — boîte et embrayage à l'arrière (transaxle), d'où une répartition des masses quasi parfaite." },
+          ]
+        }
+      ]
+    },
+
+    /* ---- Vague 11 ---------------------------------------------------- */
+
+    'citroen-c6': {
+      types: [
+        {
+          id: 'essence', label: 'Essence',
+          variants: [
+            { id:'3.0i-v6-215', label:'3.0i V6 215',
+              ch:215, nm:290, kg:1891, cyl:2.946, arch:'V6', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'auto 6',
+              note:"Le seul essence de la gamme, peu vendu face aux diesels — suspension hydropneumatique et amortissement piloté de série." },
+          ]
+        },
+        {
+          id: 'diesel', label: 'Diesel',
+          variants: [
+            { id:'2.2-hdi-175', label:'2.2 HDi 175',
+              ch:175, nm:370, kg:1820, cyl:2.179, arch:'4 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 6',
+              note:"Le ticket d'entrée de la C6 — 4 cylindres moins noble que les V6, mais souple à tous les régimes." },
+            { id:'2.7-v6-hdi-205', label:'2.7 V6 HDi 205',
+              ch:205, nm:440, kg:1686, cyl:2.720, arch:'V6', adm:'biturbo', pos:'avant transversal', tx:'traction', bv:'auto 6',
+              note:"440 Nm dès 2 000 tr/min — le moteur qui a fait la réputation routière de la C6." },
+            { id:'3.0-v6-hdi-240', label:'3.0 V6 HDi 240',
+              ch:240, nm:450, kg:1873, cyl:2.993, arch:'V6', adm:'biturbo', pos:'avant transversal', tx:'traction', bv:'auto 6',
+              note:"Successeur du 2.7 en 2009, filtre à particules de série — 242 km/h, la C6 la plus rapide." },
+          ]
+        }
+      ]
+    },
+
+    /* ---- Vague 12 ---------------------------------------------------- */
+
+    'peugeot-106': {
+      types: [
+        {
+          id: 'sportives', label: 'Sportives',
+          variants: [
+            { id:'rallye-1.3-100', label:'Rallye 1.3 100',
+              ch:100, nm:110, kg:825, cyl:1.294, arch:'4 cyl. 8s', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 5',
+              note:"Version d'homologation pour la classe rallye 1 300 cm³ : ni direction assistée, ni vitres électriques, ni condamnation centralisée — 825 kg, rupteur à 7 200 tr/min." },
+            { id:'s16-gti-120', label:'S16 / GTI 1.6 16V 120',
+              ch:120, nm:145, kg:950, cyl:1.587, arch:'4 cyl. 16s', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 5',
+              note:"Arrivée au restylage 1996 — 205 km/h, la plus rapide de toute la gamme 106. Badgée S16 ou GTI selon les marchés." },
+          ]
+        },
+        {
+          id: 'gamme', label: 'Gamme',
+          variants: [
+            { id:'1.1-60', label:'1.1 60',
+              ch:60, nm:90, kg:815, cyl:1.124, arch:'4 cyl.', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 5',
+              note:"La 106 du quotidien, celle qu'on croise encore le plus souvent." },
+            { id:'1.4-75', label:'1.4 75',
+              ch:75, nm:120, kg:848, cyl:1.360, arch:'4 cyl.', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 5',
+              note:"Le compromis de la gamme, base mécanique de la XSi." },
+          ]
+        }
+      ]
+    },
+
+    /* ---- Vague 13 ---------------------------------------------------- */
+
+    'aston-vantage': {
+      types: [
+        {
+          id: 'v8-atmo', label: 'V8 atmo',
+          variants: [
+            { id:'4.3-v8-385', label:'4.3 V8 385',
+              ch:385, nm:410, kg:1630, cyl:4.280, arch:'V8 32s', adm:'atmo', pos:'avant longitudinal', tx:'propulsion', bv:'manuelle 6 / robotisée',
+              note:"La Vantage d'origine, présentée à Genève en 2005 — le modèle qui a fait passer Aston Martin à une production de grande série." },
+            { id:'4.7-v8-420', label:'4.7 V8 420',
+              ch:420, nm:470, kg:1630, cyl:4.735, arch:'V8 32s', adm:'atmo', pos:'avant longitudinal', tx:'propulsion', bv:'manuelle 6 / robotisée',
+              note:"Refonte 2008 : cylindrée portée à 4,7 L, 288 km/h — sans perte de poids, seul vrai reproche de la presse d'alors." },
+          ]
+        },
+        {
+          id: 'v12', label: 'V12',
+          variants: [
+            { id:'5.9-v12-517', label:'5.9 V12 517',
+              ch:517, nm:570, kg:1680, cyl:5.935, arch:'V12', adm:'atmo', pos:'avant longitudinal', tx:'propulsion', bv:'manuelle 6',
+              note:"Le V12 de la DBS glissé dans la plus petite carrosserie de la gamme — exercice d'ingénierie à la limite du raisonnable." },
+            { id:'5.9-v12-573', label:'5.9 V12 S 573',
+              ch:573, nm:620, kg:1665, cyl:5.935, arch:'V12', adm:'atmo', pos:'avant longitudinal', tx:'propulsion', bv:'Sportshift III 7',
+              note:"Version S, boîte robotisée à 7 rapports — l'aboutissement de la lignée V12 atmosphérique." },
+          ]
+        },
+        {
+          id: 'v8-turbo', label: 'V8 biturbo',
+          variants: [
+            { id:'4.0-v8-510', label:'4.0 Twin-Turbo V8 510',
+              ch:510, nm:685, kg:1530, cyl:3.982, arch:'V8', adm:'biturbo', pos:'avant longitudinal', tx:'propulsion', bv:'auto 8',
+              note:"Génération 2018, moteur d'origine AMG — 100 kg de moins que la 4.7 pour 90 ch de plus, 314 km/h." },
+          ]
+        }
+      ]
+    },
+
+    /* ---- Vague 14 ---------------------------------------------------- */
+
+    'landrover-defender': {
+      types: [
+        {
+          id: 'historique', label: 'Historique',
+          variants: [
+            { id:'300tdi-113', label:'300 Tdi 113',
+              ch:113, nm:265, kg:1671, cyl:2.495, arch:'4 cyl.', adm:'turbo', pos:'avant longitudinal', tx:'intégrale', bv:'manuelle 5 + réducteur',
+              note:"Injection directe, essieux rigides à ressorts — le Defender dans sa forme la plus brute." },
+            { id:'td5-122', label:'Td5 122',
+              ch:122, nm:300, kg:1980, cyl:2.495, arch:'5 cyl.', adm:'turbo', pos:'avant longitudinal', tx:'intégrale', bv:'manuelle 5 + réducteur',
+              note:"Cinq cylindres à injecteurs-pompes, offert pour les 50 ans du modèle en 1998 — vidange tous les 20 000 km seulement." },
+            { id:'2.2td-122', label:'2.2 TD 122',
+              ch:122, nm:360, kg:2050, cyl:2.198, arch:'4 cyl.', adm:'turbo', pos:'avant longitudinal', tx:'intégrale', bv:'manuelle 6 + réducteur',
+              note:"Dernier moteur du Defender historique, arrêté en 2016 après 67 ans de production continue." },
+          ]
+        },
+        {
+          id: 'moderne', label: 'Moderne (L663)',
+          variants: [
+            { id:'d250-249', label:'D250 249',
+              ch:249, nm:570, kg:2245, cyl:2.997, arch:'6 en ligne', adm:'turbo + MHEV', pos:'avant longitudinal', tx:'intégrale', bv:'auto 8',
+              note:"Six-en-ligne diesel semi-hybride — le Defender de 2020 n'a plus rien de commun avec son ancêtre sauf le nom." },
+            { id:'p400-400', label:'P400 400',
+              ch:400, nm:550, kg:2546, cyl:2.996, arch:'6 en ligne', adm:'turbo + MHEV', pos:'avant longitudinal', tx:'intégrale', bv:'auto 8',
+              note:"Essence semi-hybride, six-en-ligne — la version qui a le plus surpris la presse par ses aptitudes routières." },
+            { id:'p525-v8-525', label:'P525 V8 525',
+              ch:525, nm:625, kg:2550, cyl:5.000, arch:'V8', adm:'compresseur', pos:'avant longitudinal', tx:'intégrale', bv:'auto 8',
+              note:"V8 5,0 L suralimenté : 0 à 100 km/h en 5,2 s et 240 km/h — pour un 4x4 à châssis renforcé." },
+          ]
+        }
+      ]
+    },
+
+    /* ---- Vague 15 ---------------------------------------------------- */
+
+    'peugeot-504': {
+      types: [
+        {
+          id: '4cyl', label: '4 cylindres',
+          variants: [
+            { id:'1.8-injection-97', label:'1.8 Injection 97',
+              ch:97, nm:142, kg:1180, cyl:1.787, arch:'4 cyl.', adm:'atmo', pos:'avant longitudinal', tx:'propulsion', bv:'manuelle 4',
+              note:"Le moteur du lancement coupé/cabriolet en 1969 — les 1.8 sont aujourd'hui les 4 cylindres les plus recherchés." },
+            { id:'2.0-injection-105', label:'2.0 Injection 105',
+              ch:105, nm:165, kg:1200, cyl:1.971, arch:'4 cyl.', adm:'atmo', pos:'avant longitudinal', tx:'propulsion', bv:'manuelle 4 / auto 3',
+              note:"Remplace le 1.8 en octobre 1970 ; boîte automatique 3 rapports disponible en option." },
+          ]
+        },
+        {
+          id: 'v6', label: 'V6 PRV',
+          variants: [
+            { id:'2.7-v6-136', label:'2.7 V6 136',
+              ch:136, nm:205, kg:1290, cyl:2.664, arch:'V6 PRV', adm:'atmo', pos:'avant longitudinal', tx:'propulsion', bv:'manuelle 4 / auto 3',
+              note:"Le V6 PRV à carburateurs, né de l'alliance Peugeot-Renault-Volvo — seulement 974 cabriolets produits." },
+            { id:'2.7-v6-ti-144', label:'2.7 V6 Ti 144',
+              ch:144, nm:213, kg:1300, cyl:2.664, arch:'V6 PRV', adm:'atmo', pos:'avant longitudinal', tx:'propulsion', bv:'manuelle 5',
+              note:"Injection Bosch K-Jetronic en 1977, boîte 5 réservée à ce modèle — moins de 1 800 coupés produits, carrosserie Pininfarina." },
+          ]
+        }
+      ]
+    },
+
+    /* ---- Vague 16 : multi-générations (type = génération) ------------- */
+
+    'porsche-panamera': {
+      types: [
+        {
+          id: '970', label: '970 (2009–2016)',
+          variants: [
+            { id:'970-3.6-v6-300', label:'3.6 V6 300',
+              ch:300, nm:400, kg:1850, cyl:3.605, arch:'V6', adm:'atmo', pos:'avant longitudinal', tx:'propulsion', bv:'PDK 7',
+              note:"La Panamera d'entrée arrivée en 2010, un an après le lancement en V8 seul." },
+            { id:'970-3.0-diesel-250', label:'3.0 Diesel 250',
+              ch:250, nm:550, kg:1880, cyl:2.967, arch:'V6', adm:'turbo', pos:'avant longitudinal', tx:'propulsion', bv:'Tiptronic 8',
+              note:"Première Porsche diesel de l'histoire en Europe, V6 d'origine Audi." },
+            { id:'970-s-4.8-v8-400', label:'S 4.8 V8 400',
+              ch:400, nm:500, kg:1900, cyl:4.806, arch:'V8', adm:'atmo', pos:'avant longitudinal', tx:'propulsion', bv:'PDK 7',
+              note:"Le moteur du lancement en 2009, V8 atmosphérique dérivé de celui du Cayenne." },
+          ]
+        },
+        {
+          id: '971', label: '971 (2016–2023)',
+          variants: [
+            { id:'971-4s-diesel-422', label:'4S Diesel V8 422',
+              ch:422, nm:850, kg:2125, cyl:3.956, arch:'V8', adm:'biturbo', pos:'avant longitudinal', tx:'intégrale', bv:'PDK 8',
+              note:"850 Nm dès 1 000 tr/min — la berline diesel de série la plus rapide du monde à son lancement, 285 km/h." },
+          ]
+        },
+        {
+          id: '972', label: '972 (2023–)',
+          variants: [
+            { id:'972-4-353', label:'4 V6 353',
+              ch:353, nm:500, kg:1920, cyl:2.894, arch:'V6', adm:'biturbo', pos:'avant longitudinal', tx:'intégrale', bv:'PDK 8',
+              note:"Suspension active hydraulique en option, capable de contrer le roulis en virage." },
+            { id:'972-gts-500', label:'GTS V8 500',
+              ch:500, nm:660, kg:2065, cyl:3.996, arch:'V8', adm:'biturbo', pos:'avant longitudinal', tx:'intégrale', bv:'PDK 8',
+              note:"Seul V8 non hybride de la troisième génération — 302 km/h, rupteur à 6 800 tr/min." },
+          ]
+        }
+      ]
+    },
+
+    'renault-megane': {
+      types: [
+        {
+          id: 'm3-essence', label: 'III — Essence',
+          variants: [
+            { id:'m3-1.6-16v-110', label:'1.6 16V 110',
+              ch:110, nm:150, kg:1205, cyl:1.598, arch:'4 cyl.', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 6',
+              note:"Le bloc K4M, increvable et répandu — la Mégane essence la plus courante de la troisième génération." },
+            { id:'m3-1.2-tce-130', label:'1.2 TCe 130',
+              ch:130, nm:205, kg:1205, cyl:1.197, arch:'4 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 6',
+              note:"Downsizing à injection directe arrivé au restylage — plus de couple que le 1.6 atmosphérique avec un demi-litre de moins." },
+          ]
+        },
+        {
+          id: 'm3-diesel', label: 'III — Diesel',
+          variants: [
+            { id:'m3-1.5-dci-110', label:'1.5 dCi 110',
+              ch:110, nm:240, kg:1264, cyl:1.461, arch:'4 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 6',
+              note:"Le moteur le plus vendu de la gamme — le 1.5 dCi équipe aussi des Nissan, Dacia et Mercedes Classe A." },
+            { id:'m3-2.0-dci-160', label:'2.0 dCi 160',
+              ch:160, nm:380, kg:1461, cyl:1.995, arch:'4 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 6',
+              note:"Le diesel haut de gamme, 380 Nm dès 2 000 tr/min — 217 km/h." },
+          ]
+        }
+      ]
+    },
+
+    'peugeot-206': {
+      types: [
+        {
+          id: 'essence', label: 'Essence',
+          variants: [
+            { id:'1.4-75', label:'1.4 75',
+              ch:75, nm:120, kg:950, cyl:1.360, arch:'4 cyl.', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 5',
+              note:"La 206 la plus répandue — l'une des voitures les plus vendues d'Europe au début des années 2000." },
+            { id:'1.6-16v-110', label:'1.6 16V 110',
+              ch:110, nm:140, kg:1139, cyl:1.587, arch:'4 cyl.', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 5',
+              note:"Le compromis polyvalent de la gamme, bloc TU5 16 soupapes." },
+            { id:'2.0-s16-138', label:'2.0 S16 / GTi 138',
+              ch:138, nm:190, kg:1050, cyl:1.997, arch:'4 cyl.', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 5',
+              note:"L'héritière des GTI à l'arrivée de la 206, freins à disque aux quatre roues." },
+            { id:'2.0-rc-177', label:'2.0 RC / GTi 180',
+              ch:177, nm:200, kg:1159, cyl:1.997, arch:'4 cyl.', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 5',
+              note:"Calage variable des soupapes, rupteur près de 7 000 tr/min — la 206 de série la plus rapide, 220 km/h." },
+          ]
+        },
+        {
+          id: 'diesel', label: 'Diesel',
+          variants: [
+            { id:'2.0-hdi-90', label:'2.0 HDi 90',
+              ch:90, nm:210, kg:1070, cyl:1.997, arch:'4 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 5',
+              note:"Rampe commune HDi, l'un des premiers diesels modernes démocratisés sur une citadine." },
+            { id:'1.6-hdi-110', label:'1.6 HDi 110',
+              ch:110, nm:240, kg:1136, cyl:1.560, arch:'4 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 5',
+              note:"Moteur développé avec Ford, le diesel le plus performant de la 206." },
+          ]
+        }
+      ]
+    },
+
+    'bmw-m3': {
+      types: [
+        {
+          id: 'e46', label: 'E46 (2000–2006)',
+          variants: [
+            { id:'e46-3.2-343', label:'3.2 six en ligne 343',
+              ch:343, nm:365, kg:1570, cyl:3.246, arch:'6 en ligne', adm:'atmo', pos:'avant longitudinal', tx:'propulsion', bv:'manuelle 6 / SMG',
+              note:"Rupteur à 8 000 tr/min, plus de 85 000 exemplaires — la M de BMW la plus vendue à son époque." },
+          ]
+        },
+        {
+          id: 'g80', label: 'G80 (2020–)',
+          variants: [
+            { id:'g80-3.0-480', label:'3.0 biturbo 480',
+              ch:480, nm:550, kg:1780, cyl:2.993, arch:'6 en ligne', adm:'biturbo', pos:'avant longitudinal', tx:'propulsion', bv:'manuelle 6',
+              note:"La version de base avec boîte manuelle — rare survivance chez les sportives de 2020, réservée à la propulsion." },
+          ]
+        }
+      ]
+    },
+
+    'porsche-911': {
+      types: [
+        {
+          id: '992', label: '992 (2019–)',
+          variants: [
+            { id:'992-carrera-385', label:'Carrera 385',
+              ch:385, nm:450, kg:1505, cyl:2.981, arch:'6 à plat', adm:'biturbo', pos:'arrière', tx:'propulsion', bv:'PDK 8',
+              note:"L'entrée de gamme arrivée 7 mois après la S — même flat-six 3.0 biturbo, dégonflé à 385 ch." },
+            { id:'992-carrera-s-450', label:'Carrera S 450',
+              ch:450, nm:530, kg:1590, cyl:2.981, arch:'6 à plat', adm:'biturbo', pos:'arrière', tx:'propulsion', bv:'PDK 8',
+              note:"Même puissance que la précédente Carrera GTS — 308 km/h, le Nürburgring en 7 min 25 s." },
+          ]
+        }
+      ]
+    },
+
+    /* ---- Vague 17 ---------------------------------------------------- */
+
+    'audi-r8': {
+      types: [
+        {
+          id: 'gen1', label: '1re génération (2006–2015)',
+          variants: [
+            { id:'g1-v10-525', label:'V10 5.2 FSI 525',
+              ch:525, nm:530, kg:1620, cyl:5.204, arch:'V10', adm:'atmo', pos:'central arrière', tx:'intégrale (quattro)', bv:'manuelle 6 / R tronic',
+              note:"Le V10 de la Lamborghini Gallardo, dégonflé de 35 ch — rupteur à 8 000 tr/min, 316 km/h." },
+          ]
+        },
+        {
+          id: 'gen2', label: '2e génération (2015–2024)',
+          variants: [
+            { id:'g2-v10-540', label:'V10 5.2 FSI 540',
+              ch:540, nm:540, kg:1670, cyl:5.204, arch:'V10', adm:'atmo', pos:'central arrière', tx:'intégrale (quattro)', bv:'S tronic 7',
+              note:"Plateforme partagée avec la Huracán — l'une des dernières supercars à V10 atmosphérique." },
+            { id:'g2-v10-plus-610', label:'V10 Plus 610',
+              ch:610, nm:560, kg:1630, cyl:5.204, arch:'V10', adm:'atmo', pos:'central arrière', tx:'intégrale (quattro)', bv:'S tronic 7',
+              note:"40 kg de moins que la V10 de base grâce aux éléments en fibre de carbone, 330 km/h." },
+          ]
+        }
+      ]
+    },
+
+    'audi-rs6': {
+      types: [
+        {
+          id: 'c8', label: 'C8 (2019–)',
+          variants: [
+            { id:'c8-600', label:'RS 6 600',
+              ch:600, nm:800, kg:2075, cyl:3.996, arch:'V8', adm:'biturbo + MHEV', pos:'avant longitudinal', tx:'intégrale (quattro)', bv:'auto 8',
+              note:"Roues arrière directrices de série — seuls le toit, les portes avant et le hayon sont communs avec une A6." },
+            { id:'c8-perf-630', label:'RS 6 performance 630',
+              ch:630, nm:850, kg:2075, cyl:3.996, arch:'V8', adm:'biturbo + MHEV', pos:'avant longitudinal', tx:'intégrale (quattro)', bv:'auto 8',
+              note:"Turbos plus gros, 280 km/h — même poids que la version de base." },
+          ]
+        }
+      ]
+    },
+
+    'porsche-718-boxster': {
+      types: [
+        {
+          id: '982-4cyl', label: '982 — 4 cylindres turbo',
+          variants: [
+            { id:'982-2.0-300', label:'2.0 Turbo 300',
+              ch:300, nm:380, kg:1335, cyl:1.988, arch:'4 cyl. à plat', adm:'turbo', pos:'central arrière', tx:'propulsion', bv:'manuelle 6',
+              note:"Retour au flat-4 chez Porsche pour la première fois depuis la fin des années 1960 — +100 Nm par rapport à l'ancien six atmo." },
+            { id:'982-s-2.5-350', label:'S 2.5 Turbo 350',
+              ch:350, nm:420, kg:1355, cyl:2.497, arch:'4 cyl. à plat', adm:'turbo VTG', pos:'central arrière', tx:'propulsion', bv:'manuelle 6',
+              note:"Turbo à géométrie variable, technologie jusque-là réservée à la 911 Turbo sur un moteur essence de série." },
+          ]
+        },
+        {
+          id: '982-6cyl', label: '982 — 6 cylindres',
+          variants: [
+            { id:'982-gts-4.0-400', label:'GTS 4.0 400',
+              ch:400, nm:420, kg:1405, cyl:3.995, arch:'6 cyl. à plat', adm:'atmo', pos:'central arrière', tx:'propulsion', bv:'manuelle 6',
+              note:"Retour du six atmosphérique réclamé par les clients, rupteur à 7 800 tr/min — 293 km/h en boîte manuelle." },
+          ]
+        }
+      ]
+    },
+
+    /* ---- Vague 18 ---------------------------------------------------- */
+
+    'audi-s3': {
+      types: [
+        {
+          id: '8p', label: '8P (2006–2012)',
+          variants: [
+            { id:'8p-2.0tfsi-265', label:'2.0 TFSI 265',
+              ch:265, nm:350, kg:1455, cyl:1.984, arch:'4 cyl.', adm:'turbo', pos:'avant transversal', tx:'intégrale (quattro)', bv:'manuelle 6',
+              note:"Le 2.0 TFSI élu « moteur de l'année » cinq années de suite entre 2005 et 2009." },
+          ]
+        },
+        {
+          id: '8v', label: '8V (2013–2020)',
+          variants: [
+            { id:'8v-2.0tfsi-300', label:'2.0 TFSI 300',
+              ch:300, nm:380, kg:1395, cyl:1.984, arch:'4 cyl.', adm:'turbo', pos:'avant transversal', tx:'intégrale (quattro)', bv:'manuelle 6',
+              note:"Moteur entièrement redéveloppé — il ne garde de son prédécesseur que la cylindrée — et 60 kg de moins que la 8P." },
+          ]
+        }
+      ]
+    },
+
+    'bmw-m5': {
+      types: [
+        {
+          id: 'e60', label: 'E60 (2005–2010)',
+          variants: [
+            { id:'e60-v10-507', label:'5.0 V10 507',
+              ch:507, nm:520, kg:1745, cyl:4.999, arch:'V10', adm:'atmo', pos:'avant longitudinal', tx:'propulsion', bv:'SMG III 7',
+              note:"Seule berline de série à V10 atmosphérique, rupteur à 8 250 tr/min — BMW la comparait à son V10 de Formule 1 chez Williams." },
+          ]
+        },
+        {
+          id: 'f10', label: 'F10 (2011–2016)',
+          variants: [
+            { id:'f10-v8-560', label:'4.4 V8 biturbo 560',
+              ch:560, nm:680, kg:1870, cyl:4.395, arch:'V8', adm:'biturbo', pos:'avant longitudinal', tx:'propulsion', bv:'DKG 7',
+              note:"Deux cylindres de moins, deux turbos de plus : +160 Nm par rapport au V10." },
+          ]
+        },
+        {
+          id: 'f90', label: 'F90 (2017–2023)',
+          variants: [
+            { id:'f90-v8-600', label:'4.4 V8 biturbo 600',
+              ch:600, nm:750, kg:1970, cyl:4.395, arch:'V8', adm:'biturbo', pos:'avant longitudinal', tx:'intégrale (M xDrive débrayable)', bv:'Steptronic 8',
+              note:"Première M5 à transmission intégrale, avec un mode propulsion pure activable." },
+          ]
+        }
+      ]
+    },
+
+    /* ---- Vague 19 : BMW CS ------------------------------------------- */
+
+    'bmw-m2-cs': {
+      types: [
+        {
+          id: 'f87', label: 'F87 CS (2020)',
+          variants: [
+            { id:'f87-cs-450', label:'3.0 biturbo 450',
+              ch:450, nm:550, kg:1550, cyl:2.979, arch:'6 en ligne', adm:'biturbo', pos:'avant longitudinal', tx:'propulsion', bv:'manuelle 6',
+              note:"Moteur S55 de la M4 Competition, boîte manuelle disponible — 2 200 exemplaires." },
+          ]
+        },
+        {
+          id: 'g87', label: 'G87 CS (2025–)',
+          variants: [
+            { id:'g87-cs-530', label:'3.0 biturbo 530',
+              ch:530, nm:650, kg:1700, cyl:2.993, arch:'6 en ligne', adm:'biturbo', pos:'avant longitudinal', tx:'propulsion', bv:'auto 8',
+              note:"Passage au S58 : +80 ch et +100 Nm sur la génération précédente, 302 km/h." },
+          ]
+        }
+      ]
+    },
+
+    'bmw-m4-cs': {
+      types: [
+        {
+          id: 'f82', label: 'F82 CS (2017)',
+          variants: [
+            { id:'f82-cs-460', label:'3.0 biturbo 460',
+              ch:460, nm:600, kg:1580, cyl:2.979, arch:'6 en ligne', adm:'biturbo', pos:'avant longitudinal', tx:'propulsion', bv:'DKG 7',
+              note:"Même calibration 460 ch du S55 que la M3 CS F80, qui en a hérité l'année suivante." },
+          ]
+        },
+        {
+          id: 'g82', label: 'G82 CS (2024–2025)',
+          variants: [
+            { id:'g82-cs-550', label:'3.0 biturbo 550',
+              ch:550, nm:650, kg:1835, cyl:2.993, arch:'6 en ligne', adm:'biturbo', pos:'avant longitudinal', tx:'propulsion', bv:'auto 8',
+              note:"Même puissance que la CSL, mais quatre places et 200 kg de plus." },
+          ]
+        }
+      ]
+    },
+
+    /* ---- Vague 20 : Audi S4 / S5 (ids issus de CATALOGUE_PLUS) --------- */
+
+    'audi-s4': {
+      types: [
+        {
+          id: 'b6b7', label: 'B6 / B7 (2003–2008)',
+          variants: [
+            { id:'b6-4.2-v8-344', label:'4.2 V8 344',
+              ch:344, nm:410, kg:1660, cyl:4.163, arch:'V8', adm:'atmo', pos:'avant longitudinal', tx:'intégrale (quattro)', bv:'manuelle 6',
+              note:"Le V8 atmosphérique glissé dans une compacte familiale — le moteur que la génération suivante abandonnera." },
+          ]
+        },
+        {
+          id: 'b8', label: 'B8 (2009–2015)',
+          variants: [
+            { id:'b8-3.0tfsi-333', label:'3.0 TFSI 333',
+              ch:333, nm:440, kg:1650, cyl:2.995, arch:'V6', adm:'compresseur', pos:'avant longitudinal', tx:'intégrale (quattro)', bv:'manuelle 6',
+              note:"Malgré le « T » de TFSI, un V6 à compresseur volumétrique — ni turbo ni V8." },
+          ]
+        },
+        {
+          id: 'b9', label: 'B9 (2016–2024)',
+          variants: [
+            { id:'b9-3.0tfsi-354', label:'3.0 TFSI 354',
+              ch:354, nm:500, kg:1630, cyl:2.995, arch:'V6', adm:'turbo', pos:'avant longitudinal', tx:'intégrale (quattro)', bv:'tiptronic 8',
+              note:"Nouveau V6 turbo, plus léger que le compresseur qu'il remplace — +60 Nm." },
+            { id:'b9-3.0tdi-347', label:'3.0 TDI 347',
+              ch:347, nm:700, kg:1785, cyl:2.967, arch:'V6', adm:'turbo + compresseur électrique', pos:'avant longitudinal', tx:'intégrale (quattro)', bv:'tiptronic 8',
+              note:"Arrivé en 2019, il remplace l'essence en Europe — 700 Nm, 200 de plus que le TFSI." },
+          ]
+        }
+      ]
+    },
+
+    'audi-s5': {
+      types: [
+        {
+          id: 'b8', label: 'B8 (2007–2011)',
+          variants: [
+            { id:'b8-4.2fsi-354', label:'4.2 FSI V8 354',
+              ch:354, nm:440, kg:1715, cyl:4.163, arch:'V8', adm:'atmo', pos:'avant longitudinal', tx:'intégrale (quattro)', bv:'manuelle 6',
+              note:"Seul le coupé avait le V8 — Cabriolet et Sportback recevaient déjà le V6 compresseur." },
+          ]
+        },
+        {
+          id: 'b85', label: 'B8.5 (2012–2016)',
+          variants: [
+            { id:'b85-3.0tfsi-333', label:'3.0 TFSI 333',
+              ch:333, nm:440, kg:1750, cyl:2.995, arch:'V6', adm:'compresseur', pos:'avant longitudinal', tx:'intégrale (quattro)', bv:'S tronic 7',
+              note:"Le restylage abandonne le V8 pour le V6 compresseur de la S4 : même couple, 21 ch de moins." },
+          ]
+        },
+        {
+          id: 'b9', label: 'B9 (2017–2024)',
+          variants: [
+            { id:'b9-3.0tfsi-354', label:'3.0 TFSI 354',
+              ch:354, nm:500, kg:1615, cyl:2.995, arch:'V6', adm:'turbo', pos:'avant longitudinal', tx:'intégrale (quattro)', bv:'tiptronic 8',
+              note:"Retour aux 354 ch du V8 d'origine, avec 100 kg de moins." },
+            { id:'b9-3.0tdi-347', label:'3.0 TDI 347',
+              ch:347, nm:700, kg:1770, cyl:2.967, arch:'V6', adm:'turbo + compresseur électrique', pos:'avant longitudinal', tx:'intégrale (quattro)', bv:'tiptronic 8',
+              note:"Première S5 diesel, en 2019 — le coupé sportif passe au gazole en Europe." },
+          ]
+        }
+      ]
     }
 
   };
 
   const API = {
-    CHAMPS, DERIVES, SPECS, MAP, GENS,
+    CHAMPS, DERIVES, SPECS, MAP, GENS, MOTOR_SPECS,
 
     /** Le bloc HTML à injecter dans infoPageHTML. Chaîne vide si non renseignée. */
     blocHTML,
