@@ -2816,6 +2816,15 @@
     'porsche-911-cup': { nom:'Porsche 911 GT3 Cup', an:[1998], pays:'Allemagne',
       ch:510, nm:470, kg:1260, cyl:4.0, arch:'flat-6', adm:'atmo', pos:'arrière', tx:'propulsion', bv:'séquentielle 6',
       note:"La voiture de course de série la plus produite au monde. Base des championnats monotypes Carrera Cup et Supercup depuis 1990. Non homologuée route." },
+    'porsche-911-gt3-r': { nom:'Porsche 911 GT3 R', an:[2016], pays:'Allemagne',
+      ch:565, kg:1250, cyl:4.194, arch:'flat-6', adm:'atmo', pos:'arrière', tx:'propulsion', bv:'séquentielle 6',
+      note:"La 911 de course client pour la catégorie GT3, non homologuée route. La génération 992 (2023) reçoit le flat-six 4,2 L de l\'ancienne RSR d\'endurance, rupteur au-delà de 9 000 tr/min. Porsche a cherché la facilité de pilotage plus que la puissance brute : en GT3, la Balance of Performance bride de toute façon chaque voiture (puissance et poids ajustés course par course)." },
+    'mazda-rx7-fd': { nom:'Mazda RX-7 (FD)', an:[1992,2002], pays:'Japon',
+      ch:255, nm:294, kg:1260, cyl:1.308, arch:'rotatif birotor 13B-REW', adm:'biturbo séquentiel', pos:'avant central', tx:'propulsion', bv:'M5',
+      note:"Moteur rotatif Wankel à deux rotors, suralimenté par deux turbos séquentiels : le second prend le relais à mi-régime. Le moteur compact, reculé derrière l\'essieu avant, donne une répartition des masses quasi parfaite. La puissance est montée à 280 ch en fin de carrière au Japon (plafond volontaire des constructeurs japonais de l\'époque)." },
+    'mercedes-500e': { nom:'Mercedes-Benz 500 E (W124)', an:[1990,1995], pays:'Allemagne',
+      ch:326, nm:480, kg:1700, cyl:4.973, arch:'V8', adm:'atmo', pos:'avant', tx:'propulsion', bv:'A4',
+      note:"Une Mercedes construite en partie par Porsche : la caisse était élargie et assemblée à Zuffenhausen, dans l\'usine Rössle où naissait aussi l\'Audi RS2, peinte à Sindelfingen, puis renvoyée chez Porsche pour recevoir mécanique et intérieur. Le V8 5.0 vient du SL R129. La première berline Mercedes de milieu de gamme à recevoir un huit-cylindres." },
     'citroen-berlingo': { nom:'Citroën Berlingo', an:[1996], pays:'France',
       ch:130, nm:300, kg:1400, cyl:1.5, arch:'4 cyl. essence, diesel, électrique', adm:'turbo', pos:'avant', tx:'traction', bv:'M6 / A8',
       note:"Pionnier du « ludospace » avec le Renault Kangoo : le fourgon devenu familial. Deux fois élu Van of the Year. Un immense succès commercial européen." },
@@ -7861,6 +7870,9 @@
     'nissan-370z'             : 'nissan-370z',
     'nissan-180sx'            : 'nissan-180sx',
     'toyota-celica-gt4'       : 'toyota-celica-gt4',
+    'toyota-celica-gt-four'   : 'toyota-celica-gt4',
+    'porsche-911-gt3-r'       : 'porsche-911-gt3-r',
+    'mercedes-500e'           : 'mercedes-500e',   // ST185 = une génération de la fiche GT-Four (audit 18/09)
     'honda-s660'              : 'honda-s660',
     'radical-sr3'             : 'radical-sr3',
     'ferrari-daytona-365'     : 'ferrari-daytona-365',
@@ -8548,7 +8560,6 @@
     'lancia-delta'            : 'lancia-delta-integrale-evo2',
     'ford-escort-cosworth'    : 'ford-escort-rs-cosworth',
     'subaru-22b'              : 'subaru-impreza-22b',
-    'mitsubishi-evo'          : 'mitsubishi-evo-vi-tme',
 
     // Porsche
     'porsche-959'             : 'porsche-959',
@@ -8570,22 +8581,14 @@
     'bugatti-eb110'           : 'bugatti-eb110-ss',
     'bugatti-chiron'          : 'bugatti-chiron',
     'lexus-lfa'               : 'lexus-lfa',
-    'pagani-zonda'            : 'pagani-zonda-c12s',
-    'gordonmurray-t50'        : 'gma-t50',
     'gma-t50'                 : 'gma-t50',
 
     // Japonaises
     'honda-nsx-na1'           : 'honda-nsx-na1',
-    'honda-s2000'             : 'honda-s2000-ap1',
-    'nissan-skyline-r34'      : 'nissan-skyline-gtr-r34',
-    'toyota-supra-mk4'        : 'toyota-supra-rz-a80',
     'mazda-rx7'               : 'mazda-rx7-fd',
-    'nissan-gtr'              : 'nissan-gtr-r35',
     'toyota-gr-yaris'         : 'toyota-gr-yaris',
 
     // Allemandes
-    'bmw-e30-m3'              : 'bmw-m3-e30-evo3',
-    'mercedes-190e'           : 'mercedes-190e-evo2',
     'audi-rs2'                : 'audi-rs2-avant',
 
     // Françaises
@@ -9649,6 +9652,10 @@
     'mg4',                  // doublon de 'mg-4'
     'suzuki-vitara-moderne',// doublon de 'suzuki-vitara'
     'porsche-911-gt3-cup',  // doublon de 'porsche-911-cup'
+    'gma-t50',                // doublon de 'gordonmurray-t50' (même T.50) — audit du 18/09
+    'ford-fiesta-st-moderne', // doublon de 'ford-fiesta-st'
+    'audi-rsq3-moderne',      // doublon de 'audi-rsq3'
+    'vw-up-gti-mk',           // doublon de 'vw-up-gti'
   ];
 
   function retirerDoublons() {
@@ -14356,6 +14363,183 @@
             { id:'b9-3.0tdi-347', label:'3.0 TDI 347',
               ch:347, nm:700, kg:1770, cyl:2.967, arch:'V6', adm:'turbo + compresseur électrique', pos:'avant longitudinal', tx:'intégrale (quattro)', bv:'tiptronic 8',
               note:"Première S5 diesel, en 2019 — le coupé sportif passe au gazole en Europe." },
+          ]
+        }
+      ]
+    },
+
+    /* ---- Vague 21 : voitures du quotidien (2e scan, format GENS simple) --
+       Source unique par modèle (fiches-auto) pour que masses et couples
+       restent comparables entre variantes d'une même fiche. */
+
+    'renault-clio': {
+      types: [
+        {
+          id: 'c5-essence', label: 'Clio V — Essence',
+          variants: [
+            { id:'c5-sce-65', label:'1.0 SCe 65',
+              ch:65, nm:95, kg:1028, cyl:0.999, arch:'3 cyl.', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 5',
+              note:"Le seul trois-cylindres atmosphérique de la gamme — la Clio la plus simple mécaniquement." },
+            { id:'c5-tce-90', label:'1.0 TCe 90',
+              ch:90, nm:160, kg:1099, cyl:0.999, arch:'3 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 6',
+              note:"Même cylindrée que la SCe 65, mais le turbo fait passer le couple de 95 à 160 Nm." },
+            { id:'c5-tce-140', label:'1.3 TCe 140',
+              ch:140, nm:260, kg:1210, cyl:1.333, arch:'4 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 6',
+              note:"Moteur co-développé avec Daimler, partagé avec la Mercedes Classe A — la Clio V essence la plus rapide, 205 km/h." },
+          ]
+        },
+        {
+          id: 'c5-hybride', label: 'Clio V — Hybride',
+          variants: [
+            { id:'c5-etech-145', label:'1.6 E-Tech 145',
+              ch:145, nm:250, kg:1238, cyl:1.598, arch:'4 cyl. + 2 moteurs électriques', adm:'atmo + hybride', pos:'avant transversal', tx:'traction', bv:'auto 4 (sans embrayage)',
+              note:"Boîte à crabots sans embrayage, inspirée de la Formule 1 — puissance cumulée, le thermique seul fait 91 ch." },
+          ]
+        },
+        {
+          id: 'c5-diesel', label: 'Clio V — Diesel',
+          variants: [
+            { id:'c5-bluedci-115', label:'1.5 Blue dCi 115',
+              ch:115, nm:260, kg:1260, cyl:1.461, arch:'4 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 6',
+              note:"Le 1.5 dCi, l'un des diesels les plus diffusés d'Europe, dans sa version la plus puissante sur la Clio V." },
+          ]
+        }
+      ]
+    },
+
+    'peugeot-208': {
+      types: [
+        {
+          id: 'p1-essence', label: '208 I (2012–2019) — Essence',
+          variants: [
+            { id:'p1-puretech-82', label:'1.2 PureTech 82',
+              ch:82, nm:120, kg:975, cyl:1.199, arch:'3 cyl.', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 5',
+              note:"Moins de 1 000 kg : la 208 a perdu jusqu'à 173 kg par rapport à la 207 qu'elle remplaçait." },
+            { id:'p1-puretech-110', label:'1.2 PureTech 110',
+              ch:110, nm:205, kg:1070, cyl:1.199, arch:'3 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 5',
+              note:"Le trois-cylindres turbo élu « moteur de l'année » dans sa catégorie plusieurs années de suite." },
+          ]
+        },
+        {
+          id: 'p1-diesel', label: '208 I (2012–2019) — Diesel',
+          variants: [
+            { id:'p1-bluehdi-100', label:'1.6 BlueHDi 100',
+              ch:100, nm:255, kg:1100, cyl:1.560, arch:'4 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 5',
+              note:"Le diesel le plus courant de la 208 — plus de couple que le PureTech 110 à puissance moindre." },
+            { id:'p1-bluehdi-120', label:'1.6 BlueHDi 120',
+              ch:120, nm:300, kg:1125, cyl:1.560, arch:'4 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 6',
+              note:"Le diesel le plus puissant de la 208 I, 300 Nm dès 1 750 tr/min." },
+          ]
+        }
+      ]
+    },
+
+    'peugeot-308': {
+      types: [
+        {
+          id: 'p2', label: '308 II (2013–2021)',
+          variants: [
+            { id:'p2-puretech-110', label:'1.2 PureTech 110',
+              ch:110, nm:205, kg:1165, cyl:1.199, arch:'3 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 5',
+              note:"Plateforme EMP2 : jusqu'à 140 kg de moins que la 308 I." },
+            { id:'p2-puretech-130', label:'1.2 PureTech 130',
+              ch:130, nm:230, kg:1133, cyl:1.199, arch:'3 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 6',
+              note:"Élue voiture de l'année 2014 en Europe — la 308 II essence la plus vendue." },
+            { id:'p2-bluehdi-130', label:'1.5 BlueHDi 130',
+              ch:130, nm:300, kg:1192, cyl:1.499, arch:'4 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 6',
+              note:"Arrivé en 2017, il remplace les 1.6 BlueHDi — même puissance que le PureTech 130, 70 Nm de plus." },
+            { id:'p2-bluehdi-150', label:'2.0 BlueHDi 150',
+              ch:150, nm:370, kg:1300, cyl:1.997, arch:'4 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 6',
+              note:"Le diesel haut de gamme de la 308 II avant la version 180 automatique." },
+          ]
+        },
+        {
+          id: 'p5', label: '308 III (2021–)',
+          variants: [
+            { id:'p5-puretech-130', label:'1.2 PureTech 130',
+              ch:130, nm:230, kg:1349, cyl:1.199, arch:'3 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 6',
+              note:"Même moteur que la 308 II, mais 200 kg de plus avec la troisième génération." },
+            { id:'p5-bluehdi-130', label:'1.5 BlueHDi 130',
+              ch:130, nm:300, kg:1427, cyl:1.499, arch:'4 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 6',
+              note:"Dernier diesel de la gamme 308." },
+            { id:'p5-hybrid-180', label:'Hybrid 180',
+              ch:180, nm:360, kg:1678, cyl:1.598, arch:'4 cyl. + moteur électrique', adm:'turbo + hybride rechargeable', pos:'avant transversal', tx:'traction', bv:'auto 8',
+              note:"Hybride rechargeable, batterie de 12,4 kWh — puissance et couple cumulés." },
+            { id:'p5-hybrid-225', label:'Hybrid 225',
+              ch:225, nm:360, kg:1678, cyl:1.598, arch:'4 cyl. + moteur électrique', adm:'turbo + hybride rechargeable', pos:'avant transversal', tx:'traction', bv:'auto 8',
+              note:"Même masse et même couple cumulé que la 180, 45 ch de plus — 235 km/h." },
+          ]
+        }
+      ]
+    },
+
+    /* ---- Vague 22 ---------------------------------------------------- */
+
+    'peugeot-3008': {
+      types: [
+        {
+          id: 'p2-essence', label: '3008 II (2016–2023) — Essence',
+          variants: [
+            { id:'p2-puretech-130', label:'1.2 PureTech 130',
+              ch:130, nm:230, kg:1250, cyl:1.199, arch:'3 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 6',
+              note:"Élu voiture de l'année 2017 en Europe — un SUV de 4,45 m mû par un trois-cylindres de 1,2 L." },
+            { id:'p2-thp-165', label:'1.6 THP 165',
+              ch:165, nm:240, kg:1300, cyl:1.598, arch:'4 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'auto 6',
+              note:"Le 1.6 turbo co-développé avec BMW, celui des Mini Cooper S de la même époque." },
+          ]
+        },
+        {
+          id: 'p2-diesel', label: '3008 II (2016–2023) — Diesel',
+          variants: [
+            { id:'p2-bluehdi-180', label:'2.0 BlueHDi 180',
+              ch:180, nm:400, kg:1465, cyl:1.997, arch:'4 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'auto 6',
+              note:"Le diesel haut de gamme, 400 Nm — 215 kg de plus que le PureTech 130." },
+          ]
+        }
+      ]
+    },
+
+    'citroen-c3': {
+      types: [
+        {
+          id: 'c3-3-essence', label: 'C3 III (2016–2023) — Essence',
+          variants: [
+            { id:'c3-3-puretech-68', label:'1.2 PureTech 68',
+              ch:68, nm:106, kg:980, cyl:1.199, arch:'3 cyl.', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 5',
+              note:"Entrée de gamme — les Airbump latéraux en plastique souple étaient déjà de série sur la plupart des finitions." },
+            { id:'c3-3-puretech-82', label:'1.2 PureTech 82',
+              ch:82, nm:118, kg:980, cyl:1.199, arch:'3 cyl.', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 5',
+              note:"Même masse que la 68, 14 ch de plus — la C3 la plus vendue." },
+            { id:'c3-3-puretech-110', label:'1.2 PureTech 110',
+              ch:110, nm:205, kg:1070, cyl:1.199, arch:'3 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 6',
+              note:"Le seul trois-cylindres turbo de la gamme : presque le double du couple de la 82." },
+          ]
+        },
+        {
+          id: 'c3-3-diesel', label: 'C3 III (2016–2023) — Diesel',
+          variants: [
+            { id:'c3-3-bluehdi-75', label:'1.6 BlueHDi 75',
+              ch:75, nm:233, kg:1090, cyl:1.560, arch:'4 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 5',
+              note:"Deux fois le couple du PureTech 82 pour 7 ch de moins." },
+            { id:'c3-3-bluehdi-100', label:'1.6 BlueHDi 100',
+              ch:100, nm:255, kg:1090, cyl:1.560, arch:'4 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 5',
+              note:"Le diesel le plus puissant de la C3 III, à la même masse que le 75." },
+          ]
+        }
+      ]
+    },
+
+    'toyota-corolla': {
+      types: [
+        {
+          id: 'e210', label: 'E210 (2019–) — Hybride',
+          variants: [
+            { id:'e210-1.8h-122', label:'1.8 Hybrid 122',
+              ch:122, nm:230, kg:1285, cyl:1.798, arch:'4 cyl. + moteur électrique', adm:'atmo + hybride', pos:'avant transversal', tx:'traction', bv:'e-CVT',
+              note:"Le retour du nom Corolla en Europe en 2019, après douze ans d'« Auris » — hybride non rechargeable, couple cumulé." },
+            { id:'e210-2.0h-180', label:'2.0 Hybrid 180',
+              ch:180, nm:286, kg:1340, cyl:1.987, arch:'4 cyl. + moteur électrique', adm:'atmo + hybride', pos:'avant transversal', tx:'traction', bv:'e-CVT',
+              note:"Moteur Dynamic Force à taux de compression de 14:1 — un record pour un bloc essence de série à son lancement." },
           ]
         }
       ]
