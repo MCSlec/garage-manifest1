@@ -586,6 +586,66 @@ de l'éditer.
 
 ---
 
+## 11 bis. Chantiers CADRÉS mais NON ENTAMÉS (ne pas démarrer sans demande)
+
+Ces tâches sont décidées et spécifiées, mais volontairement repoussées. Les
+inscrire ici évite deux dérives : les redécouvrir dans six mois en devant
+casser l'existant, et les démarrer par zèle alors que la priorité est
+ailleurs.
+
+### A. Zone du futur bandeau publicitaire — *préparation seulement*
+
+**But :** réserver la place dans le layout mobile **maintenant**, pour ne pas
+avoir à refaire l'interface le jour où le bandeau arrive.
+
+- Bandeau **fixe en bas**, et **uniquement** ça. Pas d'interstitiel, pas de
+  plein écran, pas de pop-up, rien qui bloque l'utilisateur.
+- **Aucune régie branchée, aucun emplacement visible** tant que ce n'est pas
+  demandé : pas de bloc « PUBLICITÉ », pas de faux cadre.
+- Contraintes : hauteur de bandeau mobile classique ; ne recouvre jamais les
+  boutons ni le contenu ; `padding-bottom` correspondant sur le contenu
+  scrollable ; `env(safe-area-inset-bottom)` respecté ; comportement propre
+  sur desktop ; activable plus tard par une simple classe/id.
+- **La pub est une couche externe de monétisation, jamais une mécanique de
+  jeu.** Elle ne doit influencer ni la fiche voiture, ni la boucle
+  capture → identification → confirmation → collection → fiche → progression.
+- Plus tard : ciblage par pays/langue.
+
+### B. Internationalisation — *préparation seulement*
+
+**But :** poser une base propre pour fr / en / es / de / it / pt, sans
+traduire quoi que ce soit maintenant.
+
+- Recenser les textes d'interface codés en dur et, **si** une abstraction
+  légère (`t("nav.collection")`) s'ajoute sans refonte, la préparer.
+- **Ne pas transformer tout le projet** si cela implique un gros chantier.
+- ⚠️ **Règle structurante : les DONNÉES automobiles ne se mélangent jamais
+  aux textes de traduction.** Un nom de modèle, une note de fiche, un libellé
+  de motorisation ne sont pas des chaînes d'UI. Les confondre rendrait le
+  catalogue intraduisible… et traduisible par erreur, ce qui est pire.
+
+### C. Extraction du Rouleau depuis `banc-v1.html` → `gm-rouleau.js`
+
+Voir `CLAUDE.md` §8 bis. À l'intégration, `onRevele` appellera
+`GMMatcher.rapprocher()`, pas `matchCatalog()`. Exige un banc navigateur
+dédié (rafale, hors-ligne, retry, reprise après fermeture brutale) **avant**
+tout branchement : c'est le seul chemin par lequel l'utilisateur ajoute des
+voitures.
+
+### D. Champs de performance (0–100, v-max, consommation, carburant)
+
+N'existent dans aucune structure. Les ajouter, c'est ~2 000 valeurs à sourcer
+sur 1 017 fiches. **Programme, pas session.**
+
+### E. Étape B — `MOTOR_SPECS` sur les 267 modèles sans sélecteur
+
+654 motorisations, ~4 000 valeurs. **Programme, pas session.**
+
+> **Priorité en cours, qui passe avant A→E :** la fiche voiture générique,
+> celle qui sert les 1 070 entrées avec la même architecture.
+
+---
+
 ## 12. Journal des chantiers
 
 | Date | Chantier | Livré | Fichiers touchés |

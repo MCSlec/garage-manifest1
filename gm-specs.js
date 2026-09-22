@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.138.0';
+  const VERSION_MODULE = '20.139.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -2215,21 +2215,12 @@
     'peugeot-205': { nom:'Peugeot 205', an:[1983,1998], pays:'France',
       ch:130, nm:165, kg:880, cyl:1.9, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
       note:"La voiture qui a sauvé Peugeot. La 205 GTI est LA référence de la GTI des années 80, légère et vive. La T16 de rallye, à moteur central et 4 roues motrices, a dominé le Groupe B." },
-    'renault-5-turbo': { nom:'Renault 5 Turbo', an:[1980,1986], pays:'France',
-      ch:160, nm:221, kg:970, cyl:1.4, arch:'4 cyl.', adm:'turbo', pos:'central', tx:'propulsion', bv:'M5',
-      note:"Une R5 transformée en fauve : moteur central-arrière à la place de la banquette, ailes énormes. Née pour le rallye Groupe B, elle a remporté le Monte-Carlo 1981. Icône absolue de la folie des années 80." },
-    'lancia-delta': { nom:'Lancia Delta HF Integrale', an:[1987,1994], pays:'Italie',
-      ch:215, nm:314, kg:1300, cyl:2.0, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'intégrale', bv:'M5',
-      note:"Six titres mondiaux des rallyes consécutifs (1987-1992), record absolu pour un constructeur. La voiture de rallye la plus victorieuse de l\'histoire de la discipline. L\'Evoluzione est le graal." },
     'ford-sierra-cosworth': { nom:'Ford Sierra RS Cosworth', an:[1986,1992], pays:'États-Unis',
       ch:224, nm:280, kg:1240, cyl:2.0, arch:'4 cyl. Cosworth', adm:'turbo', pos:'avant', tx:'propulsion / intégrale', bv:'M5',
       note:"L\'aileron « baleine » (whale tail) est sa signature. Bête de course en Groupe A et en tourisme. La RS500, produite à 500 exemplaires pour l\'homologation, est extrêmement cotée." },
     'opel-calibra': { nom:'Opel Calibra', an:[1989,1997], pays:'Allemagne',
       ch:204, nm:280, kg:1300, cyl:2.0, arch:'4 cyl. et V6', adm:'turbo / atmo', pos:'avant', tx:'traction / intégrale', bv:'M6',
       note:"Le coupé au Cx record de 0,26, l\'un des plus aérodynamiques de son époque. La 4x4 Turbo, sophistiquée, dominait le championnat allemand DTM face aux Mercedes et Alfa." },
-    'saab-900-turbo': { nom:'Saab 900 Turbo', an:[1978,1998], pays:'Suède',
-      ch:185, nm:263, kg:1300, cyl:2.0, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M5',
-      note:"Pionnière de la démocratisation du turbo, héritage de l\'aéronautique Saab. Pare-brise enveloppant façon cockpit d\'avion, contacteur de démarrage au plancher. Culte auprès des intellectuels et des architectes." },
     'alfa-155': { nom:'Alfa Romeo 155', an:[1992,1997], pays:'Italie',
       ch:190, nm:210, kg:1300, cyl:2.5, arch:'4 cyl. et V6 Busso', adm:'atmo', pos:'avant', tx:'traction / intégrale', bv:'M5/6',
       note:"La Q4 à transmission intégrale a dominé le DTM en 1993 au point de faire changer le règlement. Sa carrosserie anguleuse est très typée années 90. Le V6 Busso reste mélodieux." },
@@ -2292,9 +2283,6 @@
       note:"La dernière Corvette à moteur avant. La ZR1 et son V8 6.2 compressé dépasse les 750 ch. Résurrection du nom « Stingray » sur la version de base." },
 
 
-    'jeep-grand-cherokee': { nom:'Jeep Grand Cherokee', an:[1992], pays:'États-Unis',
-      ch:475, nm:644, kg:2300, cyl:6.4, arch:'V6, V8, hybride', adm:'atmo / turbo', pos:'avant', tx:'4x4', bv:'A8',
-      note:"Le SUV Jeep familial par excellence. La version SRT à V8 6.4 en fait l\'un des SUV les plus rapides de sa catégorie, capable de franchissement sérieux grâce au savoir-faire Jeep." },
 
 
 
@@ -2447,9 +2435,6 @@
 
 
 
-    'kia-ceed': { nom:'Kia Ceed', an:[2006], pays:'Corée du Sud',
-      ch:204, nm:265, kg:1350, cyl:1.6, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'DCT 7',
-      note:"Jumelle technique de la Hyundai i30. La ProCeed, break-coupé sportif « shooting brake », est une carrosserie originale et rare dans le segment. Garantie 7 ans, argument massue de la marque." },
     'fiat-500': { nom:'Fiat 500', an:[2007], pays:'Italie',
       ch:118, nm:215, kg:1000, cyl:0.9, arch:'2 cyl. TwinAir / électrique', adm:'turbo / électrique', pos:'avant', tx:'traction', bv:'M5 / A',
       note:"Réinterprétation moderne de l\'icône de 1957, elle joue à fond la carte du charme rétro et de la personnalisation. Le petit bicylindre TwinAir est un clin d\'œil direct à la 500 d\'origine." },
@@ -2558,8 +2543,9 @@
     'ferrari-812-superfast': { nom:'Ferrari 812 Superfast', an:[2017,2023], pays:'Italie',
       ch:800, nm:718, kg:1525, cyl:6.5, arch:'V12', adm:'atmo', pos:'avant', tx:'propulsion', bv:'DCT 7',
       note:"L\'un des derniers grands V12 atmosphériques de série, hurlant à 8 900 tr/min. Direction assistée électrique et quatre roues directrices pour dompter 800 ch envoyés aux seules roues arrière." },
-    'lamborghini-countach': { nom:'Lamborghini Countach', an:[1974,1990], pays:'Italie',
+    'lamborghini-countach': { nom:'Lamborghini Countach LP5000 QV', an:[1985,1988], pays:'Italie',
       ch:455, nm:500, kg:1490, cyl:5.2, arch:'V12', adm:'atmo', pos:'central', tx:'propulsion', bv:'M5',
+      prod:610,
       note:"Le poster accroché dans toutes les chambres d\'ado des années 80. Portes en ciseaux, angles impossibles signés Gandini. Son nom vient d\'une exclamation de stupéfaction en dialecte piémontais." },
     'lamborghini-huracan': { nom:'Lamborghini Huracán', an:[2014], pays:'Italie',
       ch:640, nm:600, kg:1422, cyl:5.2, arch:'V10', adm:'atmo', pos:'central', tx:'propulsion / intégrale', bv:'DCT 7',
@@ -2602,9 +2588,6 @@
     'audi-rs3': { nom:'Audi RS3', an:[2011], pays:'Allemagne',
       ch:400, nm:500, kg:1575, cyl:2.5, arch:'5 en ligne', adm:'turbo', pos:'avant', tx:'quattro', bv:'S tronic 7',
       note:"Le seul cinq-cylindres turbo du marché, héritier direct de l\'Audi Quattro de rallye. Sa sonorité si particulière lui a valu le titre de meilleur moteur de l\'année à répétition. Mode drift depuis 2021." },
-    'mercedes-c63-amg': { nom:'Mercedes-AMG C 63', an:[2008], pays:'Allemagne',
-      ch:510, nm:700, kg:1800, cyl:4.0, arch:'V8 (jadis) / 4 cyl. hybride', adm:'biturbo', pos:'avant', tx:'propulsion / intégrale', bv:'MCT / DCT',
-      note:"Longtemps animée par un glorieux V8 6.2 atmosphérique, puis un V8 4.0 biturbo. La génération 2023 crée la polémique en passant à un 4 cylindres hybride, malgré une puissance record de 680 ch." },
     'audi-etron-gt': { nom:'Audi e-tron GT', an:[2021], pays:'Allemagne',
       ch:925, nm:1150, kg:2340, cyl:0, arch:'deux moteurs électriques, 800 V', adm:'électrique', pos:'avant/arrière', tx:'quattro', bv:'A2 arrière',
       note:"Cousine technique de la Taycan (plateforme J1 partagée). La RS e-tron GT Performance de 2024 atteint 925 ch, ce qui en fait l\'Audi de série la plus puissante de l\'histoire." },
@@ -2661,9 +2644,6 @@
     'jaguar-etype': { nom:'Jaguar Type E', an:[1961,1975], pays:'Royaume-Uni',
       ch:272, nm:384, kg:1315, cyl:4.2, arch:'6 en ligne puis V12', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M4',
       note:"Enzo Ferrari l\'aurait qualifiée de « plus belle voiture jamais construite ». À son lancement en 1961, sa vitesse de pointe de 240 km/h était phénoménale pour le prix. Exposée au MoMA de New York." },
-    'lamborghini-miura': { nom:'Lamborghini Miura', an:[1966,1973], pays:'Italie',
-      ch:385, nm:388, kg:1290, cyl:3.9, arch:'V12', adm:'atmo', pos:'central transversal', tx:'propulsion', bv:'M5',
-      note:"La première supercar à moteur central de l\'histoire, présentée en 1966 alors que Ferrari s\'y refusait encore. Son V12 monté en travers, derrière le conducteur, a défini le genre pour toujours." },
     'ford-gt': { nom:'Ford GT', an:[2004,2022], pays:'États-Unis',
       ch:656, nm:746, kg:1385, cyl:3.5, arch:'V6 EcoBoost (jadis V8)', adm:'biturbo', pos:'central', tx:'propulsion', bv:'DCT 7',
       note:"Hommage moderne à la GT40 qui battit Ferrari au Mans. La version 2016, à V6 biturbo et carrosserie carbone, est retournée gagner sa catégorie au Mans 50 ans après, en 2016." },
@@ -3242,7 +3222,7 @@
       note:'Seule Groupe B atmosphérique. Son V6 a donné naissance au moteur de la Jaguar XJ220.' },
     'renault-5-turbo-2': { nom:'Renault 5 Turbo 2', an:[1983,1986], pays:'France',
       ch:160, nm:221, kg:1100, cyl:1.4, arch:'4 en ligne', adm:'turbo', pos:'central', tx:'propulsion', bv:'M5',
-      prod:3167, flou:['prod'], note:'Moteur central arrière dans une carrosserie de citadine.' },
+      prod:3167, flou:['prod'], note:"Une R5 transformée en fauve : moteur central-arrière à la place de la banquette, ailes énormes. Née pour le rallye Groupe B, elle a remporté le Monte-Carlo 1981. Icône absolue de la folie des années 80." },
     'lancia-stratos-hf': { nom:'Lancia Stratos HF Stradale', an:[1973,1978], pays:'Italie',
       ch:190, nm:225, kg:980, cyl:2.4, arch:'V6', adm:'atmosphérique', pos:'central', tx:'propulsion', bv:'M5',
       prod:492, son:'V6 Dino', flou:['nm','prod'],
@@ -3296,7 +3276,7 @@
     'lamborghini-miura-sv': { nom:'Lamborghini Miura P400 SV', an:[1971,1973], pays:'Italie',
       ch:385, nm:400, kg:1245, cyl:3.9, arch:'V12 transversal', adm:'atmosphérique', pos:'central', tx:'propulsion', bv:'M5',
       prod:150, son:'V12 transversal, chaîne de distribution audible', flou:['nm','kg'],
-      note:'Premier V12 en position centrale transversale : l\'acte de naissance de la supercar moderne.' },
+      note:"La première supercar à moteur central de l\'histoire, présentée en 1966 alors que Ferrari s\'y refusait encore. Son V12 monté en travers, derrière le conducteur, est l\'acte de naissance du genre." },
     'lamborghini-countach-lp400': { nom:'Lamborghini Countach LP400', an:[1974,1978], pays:'Italie',
       ch:375, nm:361, kg:1065, cyl:4.0, arch:'V12', adm:'atmosphérique', pos:'central', tx:'propulsion', bv:'M5',
       prod:157, surnom:'Periscopio', flou:['nm','prod'],
@@ -3375,13 +3355,13 @@
     /* ---- Orphelines et curiosités --------------------------------------- */
     'saab-900-turbo-16s': { nom:'Saab 900 Turbo 16S', an:[1984,1993], pays:'Suède',
       ch:175, nm:273, kg:1280, cyl:2.0, arch:'4 en ligne', adm:'turbo', pos:'avant', tx:'traction', bv:'M5',
-      flou:['kg'], note:'Marque disparue en 2012. Pare-brise incurvé issu de la culture aéronautique.' },
+      flou:['kg'], note:"Pionnière de la démocratisation du turbo, héritage de l\'aéronautique Saab : pare-brise enveloppant façon cockpit d\'avion, contacteur de démarrage au plancher. Culte auprès des architectes et des intellectuels. La marque a disparu en 2012." },
     'volvo-850-t5r': { nom:'Volvo 850 T-5R', an:[1995,1995], pays:'Suède',
       ch:243, nm:350, kg:1450, cyl:2.3, arch:'5 en ligne', adm:'turbo', pos:'avant', tx:'traction', bv:'M5',
       flou:['kg'], son:'cinq-cylindres turbo', note:"Le break qui a fait basculer l\'image de Volvo : engagé en championnat britannique des voitures de tourisme, il s\'y montrait sur deux roues dans les virages. Un loup déguisé en familiale." },
     'lancia-delta-integrale-evo2': { nom:'Lancia Delta HF Integrale Evoluzione II', an:[1993,1994], pays:'Italie',
       ch:215, nm:308, kg:1340, cyl:2.0, arch:'4 en ligne', adm:'turbo', pos:'avant', tx:'intégrale', bv:'M5',
-      prod:2480, flou:['prod'], note:'Six titres constructeurs consécutifs en rallye pour la lignée Delta.' },
+      prod:2480, flou:['prod'], note:"Six titres mondiaux des rallyes consécutifs (1987-1992), record absolu pour un constructeur. La voiture de rallye la plus victorieuse de l\'histoire de la discipline. L\'Evoluzione est le graal." },
     'ford-escort-rs-cosworth': { nom:'Ford Escort RS Cosworth', an:[1992,1996], pays:'Royaume-Uni',
       ch:227, nm:304, kg:1275, cyl:2.0, arch:'4 en ligne', adm:'turbo', pos:'avant', tx:'intégrale', bv:'M5',
       prod:7145, flou:['prod'], note:"Son aileron biplan, homologué à contrecœur par le service marketing, est entré dans la légende des années 90. Conçue pour le rallye autour du bloc Cosworth YB et d\'une transmission intégrale permanente, elle reste l\'une des Ford les plus désirables du youngtimer." },
@@ -8261,6 +8241,11 @@
        'renault-megane-trophy-r' s'affichait donc sans aucune fiche
        technique, en silence. Détecté par le contrôle d'atteignabilité. */
     'renault-megane-trophy-r' : 'renault-megane-rs-trophy-r',
+    /* Memes fiches, rendues atteignables (voir CATALOGUE_PLUS ci-dessus). */
+    'porsche-911-carrera-rs-27': 'porsche-911-carrera-rs-27',
+    'porsche-911-gt3-rs-40'   : 'porsche-911-gt3-rs-40',
+    'lambo-countach-qv'       : 'lamborghini-countach',
+    'vw-golf-gti-mk1'         : 'vw-golf-gti-mk1',
     'renault-clio-rs'         : 'renault-clio-rs',
     'mini-cooper-s'           : 'mini-cooper-s-modern',
     'abarth-595'              : 'abarth-595',
@@ -8888,6 +8873,19 @@
      ====================================================================== */
 
   const CATALOGUE_PLUS = [
+
+    /* ---- VOITURES DONT LA FICHE EXISTAIT SANS ENTREE CATALOGUE ----------
+       Detectees par le controle « fiches SPECS inatteignables » du banc :
+       leur fiche technique etait ecrite, sourcee, versionnee… et invisible,
+       faute d'une entree qui la designe. On cree l'entree plutot que de
+       jeter la fiche.
+
+       Rarete calee sur le VOLUME, comme l'impose la regle (CONTEXT.md) :
+       legendaire sous ~1 000 ex., epique pour quelques milliers. */
+    { id:'porsche-911-carrera-rs-27', brand:'Porsche', model:'911 Carrera RS 2.7', yr:'1972–1973', c:'🇩🇪', cat:'Classique', r:'epique' },
+    { id:'porsche-911-gt3-rs-40',     brand:'Porsche', model:'911 GT3 RS 4.0 (997)', yr:'2011', c:'🇩🇪', cat:'Supercar', r:'legendaire' },
+    { id:'lambo-countach-qv',         brand:'Lamborghini', model:'Countach LP5000 QV', yr:'1985–1988', c:'🇮🇹', cat:'Classique', r:'legendaire' },
+    { id:'vw-golf-gti-mk1',           brand:'Volkswagen', model:'Golf GTI (Mk1)', yr:'1976–1983', c:'🇩🇪', cat:'Youngtimer', r:'rare' },
 
     /* ---- DÉCLINAISONS QUI CHANGENT LA VOITURE ---------------------------
        Une Cayman GTS n'est pas une Cayman, une A45 n'est pas une Classe A.
