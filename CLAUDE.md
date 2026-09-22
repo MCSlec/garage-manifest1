@@ -253,6 +253,29 @@ Giulia standard.
 - **Le critère de tri.** Moteur différent seul → **même fiche + sélecteur**
   (`MOTOR_SPECS`). Modèle différent (poids/identité/rareté) → **fiche séparée**,
   exclu de la base.
+
+### 4.5 bis — L'entrée catalogue est l'arbitre de ce que décrit une fiche
+
+Corollaire de la règle GTA, et **le contrôle à faire avant d'écrire le moindre
+chiffre** : une fiche `SPECS` doit décrire **exactement la voiture que son entrée
+catalogue annonce** — son libellé, ses millésimes, sa catégorie et sa rareté.
+
+Quand la puissance d'une fiche ne correspond pas à ce que son nom annonce, ce
+n'est pas une donnée manquante, c'est un **périmètre mal défini** — et le
+compléter mécaniquement fige l'erreur. Cas réellement rencontrés et tranchés :
+
+| Fiche | Elle portait | Arbitre | Tranché en |
+|---|---|---|---|
+| Peugeot 106 | 120 ch (la **GTI**) | `106 GTI` et `106 Rallye` ont leurs **propres entrées** ; celle-ci est « Citadine, commun » | 106 1.1i, 60 ch |
+| Simca 1000 | 103 ch (la **Rallye 3**) | L'entrée dit « Rallye **2** » | Rallye 2, 82 ch |
+| Fiat 500 (Nuova) | 23 ch (la **500 R**, 594 cm³) | L'entrée dit « Nuova » ; la moderne a son entrée | 500 F, 18 ch, 499 cm³ |
+| Lancia 037 | masse de la version **Groupe B** | Catégorie « Classique », pas « Course » | Stradale, 1 170 kg |
+| Renault Scénic | `ch` de l'**électrique**, `cyl` du **thermique** | — (incohérence interne) | E-Tech 170, `cyl:0` |
+| Ariel Atom | 350 ch, **aucune version réelle** | — (valeur sans référent) | Atom 4, 320 ch |
+
+**Le réflexe :** avant de chercher un chiffre manquant, vérifie que `ch` désigne
+bien la voiture nommée. Une incohérence ici est la racine des bugs
+Giulia/Quadrifoglio et M2 CS/M4 CSL — la fiche affiche une **autre voiture**.
 - **Exclusions déjà appliquées** au titre de cette règle : 911 Turbo/GT3/GT2 RS,
   M3 CSL/Touring, Golf R/R32, Mégane R.S./R26.R, 206 WRC, séries d'homologation
   en très petit volume (ex. Alfa GTV6 3.0 sud-africaine, 212 ex.).
@@ -272,7 +295,7 @@ incrémenter conjointement :**
 2. `VERSION` (`"garage-v…"`) dans `sw.js` (ligne ~12).
 
 Ces deux numéros sont **tenus synchronisés** (au 22/09/2026 : `gm-specs.js` →
-`20.123.0`, `sw.js` → `garage-v20.123.0`). `VERSION_MODULE` s'affiche en outre
+`20.124.0`, `sw.js` → `garage-v20.124.0`). `VERSION_MODULE` s'affiche en outre
 dans l'UI via `grefferVersion()`, ce qui permet de vérifier de visu quelle version
 tourne réellement sur l'appareil.
 

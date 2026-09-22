@@ -3,7 +3,7 @@
 > Généré le 2026-09-22 par `node banc-audit.js --manques-md`.
 > Régénère-le après chaque vague plutôt que de le corriger à la main.
 
-**25 fiches à compléter** · 59 légitimement incomplètes (voir la fin).
+**20 fiches à compléter** · 59 légitimement incomplètes (voir la fin).
 
 Le champ **ch** est indiqué parce qu'il **désigne la variante exacte** de la fiche :
 cherche le couple ou la masse *de cette version-là*, pas du modèle en général.
@@ -16,12 +16,6 @@ cherche le couple ou la masse *de cette version-là*, pas du modèle en généra
 | Lucid Air | 2021 | 1251 ch | **couple** |
 | Xiaomi SU7 Ultra | 2024 | 1548 ch | **couple** |
 
-## Citadine
-
-| Voiture | Années | Puissance (fixe la variante) | Manque |
-|---|---|---|---|
-| Peugeot 106 | 1991–2003 | 120 ch | **masse, cylindrée** |
-
 ## Classique
 
 | Voiture | Années | Puissance (fixe la variante) | Manque |
@@ -33,11 +27,9 @@ cherche le couple ou la masse *de cette version-là*, pas du modèle en généra
 | Delahaye 135 | 1935–1954 | 160 ch | **couple** |
 | Facel Vega Facel II | 1962–1964 | 390 ch | **couple** |
 | Facel Vega HK500 | 1958–1961 | 360 ch | **couple** |
-| Fiat 500 (Nuova) | 1957–1975 | 23 ch | **couple** |
 | Pegaso Z-102 | 1951–1958 | 360 ch | **couple** |
 | Peugeot 402 | 1935–1942 | 63 ch | **couple** |
 | Rolls-Royce Silver Shadow | 1965–1980 | 200 ch | **couple** |
-| Simca 1000 Rallye 2 | 1961–1978 | 103 ch | **couple** |
 | Tatra T87 | 1936–1950 | 75 ch | **couple** |
 
 ## Hypercar
@@ -48,39 +40,16 @@ cherche le couple ou la masse *de cette version-là*, pas du modèle en généra
 | Hispano Suiza Carmen | 2019 | 1114 ch | **couple** |
 | Mercedes-AMG ONE | 2022 | 1063 ch | **couple** |
 
-## Sportive
-
-| Voiture | Années | Puissance (fixe la variante) | Manque |
-|---|---|---|---|
-| Ariel Atom | 2000 | 350 ch | **couple** |
-
 ## SUV
 
 | Voiture | Années | Puissance (fixe la variante) | Manque |
 |---|---|---|---|
 | Chevrolet K5 Blazer | 1969–1994 | 210 ch | **couple** |
 | GMC Hummer EV | 2021 | 1000 ch | **couple** |
-| Renault Scénic | 1996 | 170 ch | **couple** |
 | Renault Austral | 2022 | 200 ch | **couple** |
 | Tesla Cybertruck | 2023 | 845 ch | **couple** |
 
 ---
-
-## Incohérences fiche / variante — à trancher
-
-Repérées en sourçant : la **puissance de la fiche ne correspond pas à la
-voiture que son nom annonce**. Ce sont des décisions de périmètre, pas des
-trous de données — les combler mécaniquement figerait l'erreur. C'est la même
-famille que les bugs Giulia/Quadrifoglio et M2 CS/M4 CSL.
-
-| Fiche | Le problème | Options |
-|---|---|---|
-| **Peugeot 106** (générique) | Porte 120 ch / 145 Nm, soit les chiffres de la **106 GTI**. Une 106 de base fait 45 à 60 ch. | Soit la fiche devient une 106 de base (et il faut ses chiffres), soit elle assume d'être la sportive — mais alors elle double `peugeot-106-gti`. |
-| **Simca 1000 Rallye 2** | Porte 103 ch, qui est la puissance de la **Rallye 3** (déc. 1977). La Rallye 2 développe 82 ch / 11 mkg. | Renommer en Rallye 3, ou ramener à 82 ch et prendre le couple de la Rallye 2. |
-| **Fiat 500 (Nuova)** | Porte 23 ch, qui est la **500 R** (594 cm³). La Nuova 499 cm³ fait 18 à 21,5 ch. | Trancher quelle version la fiche représente avant de chercher son couple. |
-| **Lancia Rally 037** | `ch:205` est la **Stradale** (route), mais `kg:960` est le poids de la version **Groupe B** de course. La Stradale pèse ~1 170 kg. | Le couple ajouté (234 Nm) est celui de la Stradale : aligner la masse, ou assumer la fiche « voiture de course ». |
-| **Renault Scénic** | `ch:170` est le **Scénic E-Tech électrique** (125 kW), mais `cyl:1.3` est le thermique (qui plafonne à 160 ch). Ajouter le couple de l'électrique contre une cylindrée de 1,3 L produirait un Nm/L absurde. | Trancher : fiche thermique ou fiche électrique ? |
-| **Ariel Atom** | `ch:350` ne correspond à aucune version des bases : Atom 3.5 = 242 ch, Atom 4 = 320 ch, Atom 4R = 400 ch. | Identifier la version visée (3.5R compressée ?) avant de chercher son couple. |
 
 ## Notes de sourcing — cas déjà creusés, et pourquoi ils bloquent
 

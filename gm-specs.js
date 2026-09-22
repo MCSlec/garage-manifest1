@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.123.0';
+  const VERSION_MODULE = '20.124.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -284,9 +284,9 @@
     'peugeot-404': { nom:'Peugeot 404', an:[1960,1975], pays:'France',
       ch:85, nm:135, kg:1050, cyl:1.6, arch:'4 cyl.', adm:'atmo / injection', pos:'avant', tx:'propulsion', bv:'M4',
       note:"Dessinée par Pininfarina, réputée increvable, elle a régné en Afrique où elle roule encore comme taxi de brousse. Multiple vainqueur du rallye de l\'Est africain. Le coupé et le cabriolet sont des classiques élégants. Un pilier de l\'expansion mondiale de Peugeot." },
-    'simca-1000': { nom:'Simca 1000 Rallye', an:[1961,1978], pays:'France',
-      ch:103, kg:800, cyl:1.3, arch:'4 cyl. arrière', adm:'atmo', pos:'arrière', tx:'propulsion', bv:'M4',
-      note:"La berline populaire à moteur arrière, dont les versions Rallye 1, 2 et 3, préparées pour la compétition, sont devenues cultes. La Rallye 3 est rarissime. Une petite bombe à moteur arrière qui a formé des générations de pilotes amateurs français." },
+    'simca-1000': { nom:'Simca 1000 Rallye 2', an:[1970,1978], pays:'France',
+      ch:82, nm:108, kg:860, cyl:1.3, arch:'4 cyl. arrière', adm:'atmo', pos:'arrière', tx:'propulsion', bv:'M4',
+      note:"La berline populaire à moteur arrière, transformée en petite bombe par Simca. La Rallye 2 de 1972 est la plus diffusée des trois : 1 294 cm³, deux carburateurs double corps et quatre freins à disque pour 860 kg seulement. La Rallye 3, bien plus rare, lui succède en 1977. Elle a formé des générations de pilotes amateurs français." },
     'fiat-multipla': { nom:'Fiat Multipla', an:[1998,2010], pays:'Italie',
       ch:154, nm:230, kg:1300, cyl:1.6, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M6',
       note:"L\'un des designs les plus polarisants de l\'histoire (double étage de vitres à l\'avant), régulièrement classé « plus laide voiture du monde »... mais exposée au MoMA pour son audace. Six vraies places de front sur deux rangs. Un génie de l\'habitabilité." },
@@ -312,7 +312,7 @@
       ch:300, nm:400, kg:790, cyl:2.0, arch:'4 cyl. Audi', adm:'turbo', pos:'central', tx:'propulsion', bv:'M6 / DSG',
       note:"La première voiture du fabricant de motos KTM : une barquette de piste sans toit ni pare-brise, à monocoque carbone (une première à ce niveau de prix), signée Dallara. Moteur turbo Audi. L\'esprit moto appliqué à l\'automobile : légèreté et radicalité extrêmes." },
     'ariel-atom': { nom:'Ariel Atom', an:[2000], pays:'Royaume-Uni',
-      ch:350, kg:595, cyl:2.4, arch:'4 cyl. Honda', adm:'atmo / compresseur', pos:'central', tx:'propulsion', bv:'M6',
+      ch:320, nm:420, kg:595, cyl:2.0, arch:'4 cyl. Honda', adm:'turbo', pos:'central', tx:'propulsion', bv:'M6',
       note:"Un châssis tubulaire exosquelette totalement à nu, sans carrosserie ni toit : l\'automobile réduite à son essence. Moins de 600 kg. La version 500 V8, à moteur de superbike, accélère plus vite qu\'une Bugatti Veyron. L\'expérience de conduite la plus brute qui soit." },
 
     /* ===== FICHES COMPLÈTES — vague AU (M/RS déclinaisons + chinoises) === */
@@ -1924,7 +1924,7 @@
       ch:421, nm:500, kg:1480, cyl:2.0, arch:'4 cyl. (jadis 3 portes surélevée)', adm:'turbo', pos:'avant', tx:'traction / intégrale', bv:'DCT 8',
       note:"La première génération, monospace surélevé, a raté le « test de l\'élan » en 1997, forçant Mercedes à ajouter l\'ESP de série sur toute la production. Devenue une vraie compacte premium dès 2012." },
     'fiat-500-classic': { nom:'Fiat 500 (Nuova)', an:[1957,1975], pays:'Italie',
-      ch:23, kg:500, cyl:0.5, arch:'2 cyl. refroidi par air', adm:'atmo', pos:'arrière', tx:'propulsion', bv:'M4',
+      ch:18, nm:35, kg:500, cyl:0.5, arch:'2 cyl. refroidi par air', adm:'atmo', pos:'arrière', tx:'propulsion', bv:'M4',
       note:"La voiture qui a motorisé l\'Italie de l\'après-guerre, plus de 3,8 millions d\'exemplaires. Dessinée par Dante Giacosa. Sa bouille attachante en a fait un symbole national italien, comme la 2CV en France." },
     'fiat-panda': { nom:'Fiat Panda', an:[1980], pays:'Italie',
       ch:100, nm:145, kg:850, cyl:0.9, arch:'2 à 4 cyl.', adm:'turbo / atmo', pos:'avant', tx:'traction / 4x4', bv:'M5/6',
@@ -2133,7 +2133,7 @@
       ch:200, nm:270, kg:1700, cyl:1.8, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'EDC 7',
       note:"L\'inventeur du monospace moderne en Europe, né d\'un projet refusé par Peugeot puis repris par Matra et Renault. La F1, prototype unique à moteur V10 de Formule 1, en était la version folle jamais commercialisée." },
     'renault-scenic': { nom:'Renault Scénic', an:[1996], pays:'France',
-      ch:170, kg:1500, cyl:1.3, arch:'4 cyl. / électrique', adm:'turbo', pos:'avant', tx:'traction', bv:'EDC / A1',
+      ch:170, nm:280, kg:1822, cyl:0, arch:'moteur électrique', adm:'électrique', pos:'avant', tx:'traction', bv:'A1',
       note:"L\'inventeur du monospace compact, Voiture de l\'Année 1997. Un succès qui a créé un segment entier. La dernière génération bascule au 100 % électrique, Voiture de l\'Année 2024." },
 
     /* ===== FICHES COMPLÈTES — vague J (classiques FR/DE mythiques) ======= */
@@ -2153,8 +2153,8 @@
       ch:160, nm:177, kg:1000, cyl:1.9, arch:'4 cyl.', adm:'atmo / turbo', pos:'avant', tx:'traction', bv:'M5',
       note:"Design anguleux signé Marcello Gandini (le père de la Countach), hydropneumatique, hayon en polyester. La BX 4TC de rallye Groupe B est une rareté absolue. La GTi 16v est la sportive de la gamme." },
     'peugeot-106': { nom:'Peugeot 106', an:[1991,2003], pays:'France',
-      ch:120, nm:145, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
-      note:"La 106 Rallye et la S16, légères et vives, sont des sportives d\'accès cultes des années 90. Base de la Citroën Saxo, avec laquelle elle partage la mécanique et le châssis." },
+      ch:60, nm:88, kg:780, cyl:1.1, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
+      note:"La citadine Peugeot des années 90, jumelle technique de la Citroën Saxo avec laquelle elle partage plancher et mécanique. Cette fiche décrit la 106 de grande diffusion ; les versions sportives Rallye et GTI, bien plus rares, ont chacune leur propre fiche." },
     'peugeot-309': { nom:'Peugeot 309', an:[1985,1993], pays:'France',
       ch:130, nm:165, kg:950, cyl:1.9, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
       note:"Devait initialement s\'appeler Talbot Arizona avant l\'abandon de la marque. La GTI 16 reprend le cœur mécanique de la 205 GTI, dans une carrosserie plus discrète et sous-estimée." },
@@ -3252,7 +3252,7 @@
       prod:65, son:'suralimentation double, montée en régime sans creux', flou:['ch','prod'],
       note:'Suralimentation combinée : compresseur volumétrique à bas régime, turbo au-delà. Rarissime.' },
     'lancia-037': { nom:'Lancia Rally 037', an:[1982,1983], pays:'Italie',
-      ch:205, nm:234, kg:960, cyl:2.0, arch:'4 en ligne', adm:'compresseur', pos:'central', tx:'propulsion', bv:'M5',
+      ch:205, nm:234, kg:1170, cyl:2.0, arch:'4 en ligne', adm:'compresseur', pos:'central', tx:'propulsion', bv:'M5',
       prod:207, son:'compresseur volumétrique, sifflement continu',
       note:'Dernière propulsion titrée en championnat du monde des rallyes (1983).' },
     'ford-rs200': { nom:'Ford RS200', an:[1984,1986], pays:'Royaume-Uni',
