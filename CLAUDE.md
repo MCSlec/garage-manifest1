@@ -243,6 +243,32 @@ incomplète — ne pas la « corriger ».
 > (`fmt()` n'affiche alors pas la ligne). N'écris jamais un champ `nc:[…]` en
 > croyant qu'il produira un affichage : il serait inerte.
 
+### 4.4 ter — Une seule norme de mesure par fiche
+
+`ch` et `nm` d'une même fiche doivent provenir de la **même norme** et, idéalement,
+de la **même source**. Mélanger deux référentiels ne produit aucune erreur visible
+mais fausse **tous les ratios dérivés** (kg/ch, ch/t, ch/L, Nm/L) — et ces ratios
+sont justement ce que la fiche met en avant.
+
+Les référentiels qui se confondent le plus facilement :
+
+| Piège | Exemple rencontré |
+|---|---|
+| **SAE gross vs SAE net** (bascule en 1972 aux États-Unis) | Chevrolet C10 portait `ch:255` (SAE gross) avec des couples SAE net. Le 350 V8 en SAE net donne 165 ch **et 255 lb-ft** — la coïncidence des deux « 255 » explique la saisie d'origine. Idem K5 Blazer. |
+| **SAE vs DIN** | Citroën DS : 141 ch SAE = 130 ch DIN. Ami 6 : 35 ch SAE = 32 ch DIN, et c'est la version DIN qui porte le couple publié. |
+| **Couple moteur vs couple à la roue** | GMC Hummer EV : « 11 500 lb-ft » (15 592 Nm) est le couple **à la roue** annoncé par le marketing ; le couple moteur réel est de 1 485 Nm. Même piège sur la Lucid Air (1 430 lb-ft annoncés contre 1 390 Nm moteur). |
+| **Couple cumulé vs couple partiel** | Voir §4.4 — ne jamais additionner soi-même. |
+
+**Le signal d'alerte :** deux sources qui s'écartent d'un **ordre de grandeur** ne
+mesurent presque jamais la même chose. Un écart de 10 % est une imprécision ; un
+écart d'un facteur 1,4 ou 10 est un **changement de référentiel**. Dans ce cas on
+ne moyenne pas, on ne choisit pas au hasard : on identifie la norme et on prend
+les deux valeurs dans celle-là.
+
+Quand la norme retenue n'est pas évidente, la **note de la fiche le précise**
+(« chiffres du V8 5.7 en norme SAE net ») — sinon l'arbitrage se reperd à la
+première relecture.
+
 ### 4.5 — Règle GTA (déclinaisons qui méritent leur propre fiche)
 Une déclinaison qui constitue un **modèle à part entière** — poids, identité et
 rareté propres, pas seulement un choix de moteur sur la même carrosserie — a sa
