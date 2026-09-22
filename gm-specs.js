@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.116.0';
+  const VERSION_MODULE = '20.117.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -1235,7 +1235,7 @@
       ch:150, nm:190, kg:930, cyl:2.0, arch:'4 cyl.', adm:'atmo', pos:'central', tx:'propulsion', bv:'M5',
       note:"Une barquette radicale sans pare-brise à l\'origine (juste un déflecteur), châssis aluminium, moteur central. Un jouet de circuit produit à faible échelle par Renault Sport. Un OVNI dans la gamme d\'un constructeur généraliste." },
     'peugeot-106-gti': { nom:'Peugeot 106 GTI', an:[1996,2003], pays:'France',
-      ch:120, nm:145, arch:'4 cyl. 16v', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
+      ch:120, nm:145, kg:925, cyl:1.6, arch:'4 cyl. 16v', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
       note:"Moins de 950 kg et un 1.6 16v vif : la GTI d\'accès des années 90, jumelle de la Citroën Saxo VTS. Un châssis joueur qui a formé des générations de jeunes conducteurs au plaisir de conduire." },
     'peugeot-309-gti16': { nom:'Peugeot 309 GTI 16', an:[1990,1993], pays:'France',
       ch:160, nm:180, kg:1050, cyl:1.9, arch:'4 cyl. 16v', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
@@ -1657,7 +1657,7 @@
       ch:240, nm:208, kg:1250, cyl:2.0, arch:'4 cyl. F20C', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M6',
       note:"120 ch au litre en atmosphérique, un record de série tenu longtemps. Le VTEC hurle jusqu\'à 9 000 tr/min. Roadster à propulsion pur, sans concession, produit pour les 50 ans de Honda. La boîte manuelle à la course la plus précise du marché." },
     'honda-crx': { nom:'Honda CR-X', an:[1983,1998], pays:'Japon',
-      ch:160, nm:150, arch:'4 cyl. VTEC', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
+      ch:160, nm:150, kg:1080, cyl:1.6, arch:'4 cyl. VTEC', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
       note:"Petit coupé léger et efficient, dont la version VTi/Si a démocratisé le VTEC. La génération del Sol (1992) ajoute un toit targa électrique escamotable. Un jouet mécanique adoré des puristes." },
     'mazda-rx7-fc': { nom:'Mazda RX-7 (FC)', an:[1985,1992], pays:'Japon',
       ch:200, nm:270, kg:1250, cyl:1.3, arch:'birotor Wankel 13B', adm:'turbo', pos:'avant', tx:'propulsion', bv:'M5',
@@ -2081,7 +2081,7 @@
       ch:220, nm:310, kg:1250, cyl:2.0, arch:'5 en ligne', adm:'turbo', pos:'avant', tx:'traction', bv:'M6',
       note:"Le dessin extérieur, signé Chris Bangle, aux passages de roues taillés à la lame, reste l\'un des plus audacieux des années 90. Le 5 cylindres turbo 20V en faisait l\'une des tractions les plus rapides de son temps." },
     'lancia-fulvia': { nom:'Lancia Fulvia', an:[1963,1976], pays:'Italie',
-      ch:132, nm:150, arch:'V4 étroit', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
+      ch:132, nm:150, kg:920, cyl:1.6, arch:'V4 étroit', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
       note:"Son V4 à angle étroit, unique, et sa traction avant précoce. La version HF Coupé a offert à Lancia son premier titre mondial des rallyes en 1972. Élégance et raffinement d\'ingénierie typiquement Lancia." },
     'apollo-ie': { nom:'Apollo Intensa Emozione', an:[2017], pays:'Allemagne',
       ch:780, nm:760, kg:1250, cyl:6.3, arch:'V12 (Ferrari)', adm:'atmo', pos:'central', tx:'propulsion', bv:'séquentielle 6',
@@ -7538,7 +7538,6 @@
     'ford-mustang-mach1'      : 'ford-mustang-mach1',
     'jaguar-ftype-r'          : 'jaguar-ftype-r',
     'audi-s7'                 : 'audi-s7',
-    'audi-rs2-avant-b4'       : 'audi-rs2-avant-b4',
     'toyota-supra-mk3'        : 'toyota-supra-mk3',
     'chevrolet-camaro-z28'    : 'chevrolet-camaro-z28',
     'chevrolet-camaro-zl1'    : 'chevrolet-camaro-zl1',
@@ -8293,7 +8292,6 @@
     'bmw-m4'                  : 'bmw-m4',
     'audi-rs6'                : 'audi-rs6',
     'audi-rs3'                : 'audi-rs3',
-    'mercedes-c43-amg'        : 'mercedes-c63-amg',
     'porsche-taycan'          : 'porsche-taycan',
     'audi-etron-gt'           : 'audi-etron-gt',
     'mercedes-sl'             : 'mercedes-sl',
@@ -8367,7 +8365,6 @@
     'mercedes-vito'           : 'mercedes-vito',
     'mercedes-sprinter'       : 'mercedes-sprinter',
     'morgan-plus-8'           : 'morgan-plus-8',
-    'citroen-ami-2020'        : 'citroen-ami-2020',
     'rover-75'                : 'rover-75',
     'isuzu-117'               : 'isuzu-117',
     'hindustan-ambassador'    : 'hindustan-ambassador',
@@ -9587,6 +9584,13 @@
     'ford-fiesta-st-moderne', // doublon de 'ford-fiesta-st'
     'audi-rsq3-moderne',      // doublon de 'audi-rsq3'
     'vw-up-gti-mk',           // doublon de 'vw-up-gti'
+    /* Détectés par banc-audit.js (22/09) : même voiture présente deux fois
+       dans la grille, donc collectionnable deux fois et comptée double dans
+       la complétion. On conserve à chaque fois l'entrée qui porte la fiche
+       technique et/ou l'INFO d'index.html. */
+    'audi-rs2-avant-b4',      // doublon de 'audi-rs2' (CARS + INFO) — fiches SPECS identiques : 315 ch / 410 Nm / 1 595 kg
+    'mercedes-c43-amg',       // doublon de 'mercedes-c43' — déclarés deux fois dans CATALOGUE_PLUS, champs identiques ; seul 'mercedes-c43' a une fiche SPECS
+    'citroen-ami-2020',       // doublon de 'citroen-ami' — « Ami (2020) » et « Ami » désignent le même quadricycle 8 ch / 485 kg (à ne pas confondre avec 'citroen-ami6', la vraie Ami 6 de 1961)
   ];
 
   function retirerDoublons() {

@@ -332,6 +332,43 @@ function auditer() {
     }
   }
 
+  /* --- A bis. Doublons VISIBLES par l'utilisateur --------------------
+     Angle mort du contrôle de clés : deux entrées d'ID DIFFÉRENTS peuvent
+     désigner la même voiture. Elles passent alors toutes les vérifications
+     techniques tout en apparaissant deux fois dans la grille du garage —
+     la même voiture se collectionne deux fois et gonfle le total. Dans un
+     jeu de collection, c'est un défaut visible, pas un détail. */
+  const parLibelle = new Map();
+  for (const c of carsFusionnes) {
+    const k = `${c.brand} ${c.model}`.toLowerCase().replace(/\s+/g, ' ').trim();
+    if (!parLibelle.has(k)) parLibelle.set(k, []);
+    parLibelle.get(k).push(c.id);
+  }
+  for (const [libelle, ids] of parLibelle) {
+    if (ids.length > 1) {
+      signaler('ERREUR', 'DOUBLON VISIBLE',
+        `« ${libelle} » apparaît ${ids.length} fois dans le catalogue affiché : ${ids.join(' + ')} — la même voiture se collectionne deux fois`);
+    }
+  }
+
+  /* Même piège, détecté par le nom de la FICHE : deux clés SPECS
+     distinctes qui décrivent la même voiture (ex. 'citroen-ami' et
+     'citroen-ami-2020'), invisible au contrôle de libellé si les entrées
+     catalogue sont intitulées différemment. */
+  const parNomFiche = new Map();
+  for (const cle of Object.keys(SPECS)) {
+    const n = String(SPECS[cle].nom || '').toLowerCase().trim();
+    if (!n) continue;
+    if (!parNomFiche.has(n)) parNomFiche.set(n, []);
+    parNomFiche.get(n).push(cle);
+  }
+  for (const [nom, cles] of parNomFiche) {
+    if (cles.length > 1) {
+      signaler('ALERTE', 'DOUBLON VISIBLE',
+        `${cles.length} fiches SPECS portent le nom « ${nom} » : ${cles.join(' + ')} — vérifier qu'il ne s'agit pas du même véhicule décrit deux fois`);
+    }
+  }
+
   /* --- B. SPECS : champs manquants ----------------------------------- */
   const clesSpecs = Object.keys(SPECS);
   const manques = { nm: [], kg: [], note: [], cyl: [], ch: [] };
