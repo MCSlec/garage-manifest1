@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.120.0';
+  const VERSION_MODULE = '20.121.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -168,7 +168,7 @@
       ch:110, nm:140, kg:840, cyl:1.8, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
       note:"La compacte qui a sauvé VW de l\'après-Coccinelle, dessinée par Giugiaro. Surtout, la Golf GTI Mk1 (1976), à moins de 840 kg pour 110 ch, a inventé le concept de la compacte sportive et fondé une lignée qui perdure un demi-siècle plus tard." },
     'ford-fiesta-xr2i': { nom:'Ford Fiesta XR2i / RS Turbo', an:[1989,1994], pays:'États-Unis',
-      ch:133, kg:950, cyl:1.6, arch:'4 cyl.', adm:'turbo / atmo', pos:'avant', tx:'traction', bv:'M5',
+      ch:133, nm:177, kg:950, cyl:1.6, arch:'4 cyl.', adm:'turbo / atmo', pos:'avant', tx:'traction', bv:'M5',
       note:"Les Fiesta sportives des années 80-90 : la XR2i atmosphérique et la RS Turbo, plus vive, aux jantes spécifiques et au bandeau latéral caractéristique. Des youngtimers populaires et joueuses, aujourd\'hui de plus en plus rares et prisées." },
     'peugeot-206-rc': { nom:'Peugeot 206 RC / GTi 180', an:[2003,2007], pays:'France',
       ch:177, nm:202, kg:1037, cyl:2.0, arch:'4 cyl. 16v', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
@@ -517,13 +517,13 @@
       ch:125, nm:145, kg:1000, cyl:1.6, arch:'4 cyl. 16v', adm:'atmo', pos:'avant', tx:'traction', bv:'M5 / robotisée',
       note:"La petite trois-portes joueuse, dont les versions VTS et VTR reprennent le bloc 1.6 16v de la 206 RC. La C2 a aussi couru en rallye (Super 1600), perpétuant la tradition sportive Citroën. Une citadine sportive accessible des années 2000." },
     'renault-4cv': { nom:'Renault 4CV', an:[1947,1961], pays:'France',
-      ch:21, kg:620, cyl:0.75, arch:'4 cyl. arrière', adm:'atmo', pos:'arrière', tx:'propulsion', bv:'M3',
+      ch:21, nm:47, kg:620, cyl:0.75, arch:'4 cyl. arrière', adm:'atmo', pos:'arrière', tx:'propulsion', bv:'M3', flou:['nm'],
       note:"La première française produite à plus d\'un million d\'exemplaires, surnommée « la motte de beurre » pour sa forme et sa couleur d\'origine (peinture de récupération de l\'armée allemande). Elle a motorisé la France de l\'après-guerre. Moteur arrière." },
     'renault-dauphine': { nom:'Renault Dauphine', an:[1956,1967], pays:'France',
-      ch:55, kg:640, cyl:0.85, arch:'4 cyl. arrière', adm:'atmo', pos:'arrière', tx:'propulsion', bv:'M3',
+      ch:55, nm:76, kg:640, cyl:0.85, arch:'4 cyl. arrière', adm:'atmo', pos:'arrière', tx:'propulsion', bv:'M3',
       note:"Deux millions d\'exemplaires, un succès mondial pour Renault. La Gordini (« Dauphine Gordini ») et l\'Ondine, préparées par le Sorcier, sont les versions sportives recherchées. Une berline populaire élégante des Trente Glorieuses." },
     'renault-6': { nom:'Renault 6', an:[1968,1986], pays:'France',
-      ch:47, kg:750, cyl:1.1, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M4',
+      ch:47, nm:76, kg:750, cyl:1.1, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M4',
       note:"Une berline bicorps polyvalente, positionnée entre la 4L et la 16. Hayon pratique, suspension souple typiquement française. Produite des décennies en Amérique du Sud. Une familiale sans prétention mais robuste et attachante des seventies." },
     'renault-14': { nom:'Renault 14', an:[1976,1983], pays:'France',
       ch:72, nm:105, kg:800, cyl:1.4, arch:'4 cyl. (moteur Douvrin PSA)', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
@@ -683,10 +683,10 @@
       ch:68, nm:120, kg:1150, cyl:1.6, arch:'4 cyl. essence et diesel', adm:'atmo', pos:'avant', tx:'traction', bv:'M4',
       note:"Le fourgon au style arrondi caractéristique, omniprésent dans la France des années 70 : ambulances, camions de pompiers, food-trucks avant l\'heure. Sa bouille attachante en fait aujourd\'hui un objet de collection vintage prisé." },
     'citroen-ami6': { nom:'Citroën Ami 6', an:[1961,1978], pays:'France',
-      ch:35, kg:640, cyl:0.6, arch:'2 cyl. à plat', adm:'atmo', pos:'avant', tx:'traction', bv:'M4',
+      ch:35, nm:40, kg:640, cyl:0.6, arch:'2 cyl. à plat', adm:'atmo', pos:'avant', tx:'traction', bv:'M4', flou:['nm'],
       note:"Sa lunette arrière inversée (en Z), un parti pris de style parmi les plus audacieux de son époque, censé garder la vitre propre par temps de pluie. Sur base mécanique de 2CV. Un temps la voiture la plus vendue de France, un ovni stylistique." },
     'citroen-dyane': { nom:'Citroën Dyane', an:[1967,1983], pays:'France',
-      ch:35, kg:600, cyl:0.6, arch:'2 cyl. à plat', adm:'atmo', pos:'avant', tx:'traction', bv:'M4',
+      ch:35, nm:40, kg:600, cyl:0.6, arch:'2 cyl. à plat', adm:'atmo', pos:'avant', tx:'traction', bv:'M4', flou:['nm'],
       note:"Conçue pour remplacer la 2CV avec un style plus moderne et un hayon, elle ne l\'a jamais vraiment supplantée dans le cœur du public. La Méhari en dérive. Une déclinaison plus civilisée mais moins charismatique de la Deuche." },
     'citroen-visa': { nom:'Citroën Visa', an:[1978,1988], pays:'France',
       ch:115, nm:150, kg:800, cyl:1.6, arch:'2 et 4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
@@ -1086,7 +1086,7 @@
       prod:7,
       note:"La première hypercar du monde arabe (Liban). Sept exemplaires. Phares sertis de diamants (option à 400 000 $). Sa cascade la plus célèbre : sauter entre trois gratte-ciel de Dubaï dans « Fast and Furious 7 »." },
     'nio-ep9': { nom:'Nio EP9', an:[2016], pays:'Chine',
-      ch:1360, kg:1735, cyl:0, arch:'quatre moteurs électriques', adm:'électrique', pos:'avant/arrière', tx:'intégrale', bv:'A1',
+      ch:1360, nm:1480, kg:1735, cyl:0, arch:'quatre moteurs électriques', adm:'électrique', pos:'avant/arrière', tx:'intégrale', bv:'A1',
       note:"A détenu le record du Nürburgring pour une électrique en 2017, prouvant que la Chine pouvait jouer dans la cour des hypercars. Batteries échangeables en quelques minutes. Un moteur électrique par roue, pour un contrôle total." },
     'aspark-owl': { nom:'Aspark Owl', an:[2020], pays:'Japon',
       ch:2012, nm:2000, kg:1900, cyl:0, arch:'quatre moteurs électriques', adm:'électrique', pos:'avant/arrière', tx:'intégrale', bv:'A1',
@@ -2147,7 +2147,7 @@
       ch:29, nm:39, kg:560, cyl:0.6, arch:'2 cyl. à plat', adm:'atmo', pos:'avant', tx:'traction', bv:'M4',
       note:"« Quatre roues sous un parapluie » : conçue pour qu\'un paysan traverse un champ labouré avec un panier d\'œufs sans en casser un seul. Plus de 5 millions produites, symbole de la France populaire." },
     'citroen-ds-classic': { nom:'Citroën DS (Déesse)', an:[1955,1975], pays:'France',
-      ch:141, kg:1200, cyl:2.3, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'hydraulique / M4',
+      ch:141, nm:201, kg:1200, cyl:2.3, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'hydraulique / M4',
       note:"Révolution de 1955 : suspension hydropneumatique, direction et freins assistés, phares directionnels. Sa ligne signée Bertoni semblait venir du futur. A sauvé la vie du général de Gaulle lors de l\'attentat du Petit-Clamart." },
     'citroen-bx': { nom:'Citroën BX', an:[1982,1994], pays:'France',
       ch:160, nm:177, kg:1000, cyl:1.9, arch:'4 cyl.', adm:'atmo / turbo', pos:'avant', tx:'traction', bv:'M5',
@@ -3252,7 +3252,7 @@
       prod:65, son:'suralimentation double, montée en régime sans creux', flou:['ch','prod'],
       note:'Suralimentation combinée : compresseur volumétrique à bas régime, turbo au-delà. Rarissime.' },
     'lancia-037': { nom:'Lancia Rally 037', an:[1982,1983], pays:'Italie',
-      ch:205, kg:960, cyl:2.0, arch:'4 en ligne', adm:'compresseur', pos:'central', tx:'propulsion', bv:'M5',
+      ch:205, nm:234, kg:960, cyl:2.0, arch:'4 en ligne', adm:'compresseur', pos:'central', tx:'propulsion', bv:'M5',
       prod:207, son:'compresseur volumétrique, sifflement continu',
       note:'Dernière propulsion titrée en championnat du monde des rallyes (1983).' },
     'ford-rs200': { nom:'Ford RS200', an:[1984,1986], pays:'Royaume-Uni',

@@ -3,7 +3,7 @@
 > Généré le 2026-09-22 par `node banc-audit.js --manques-md`.
 > Régénère-le après chaque vague plutôt que de le corriger à la main.
 
-**48 fiches à compléter** · 59 légitimement incomplètes (voir la fin).
+**39 fiches à compléter** · 59 légitimement incomplètes (voir la fin).
 
 Le champ **ch** est indiqué parce qu'il **désigne la variante exacte** de la fiche :
 cherche le couple ou la masse *de cette version-là*, pas du modèle en général.
@@ -34,9 +34,6 @@ cherche le couple ou la masse *de cette version-là*, pas du modèle en généra
 | BMW Isetta | 1955–1962 | 13 ch | **couple** |
 | Bugatti Type 35 | 1924–1930 | 140 ch | **couple** |
 | Chevrolet C10 | 1960–1987 | 255 ch | **couple** |
-| Citroën Ami 6 | 1961–1978 | 35 ch | **couple** |
-| Citroën Dyane | 1967–1983 | 35 ch | **couple** |
-| Citroën DS (Déesse) | 1955–1975 | 141 ch | **couple** |
 | Cord 810 / 812 | 1936–1937 | 190 ch | **couple** |
 | DAF 33 (Variomatic) | 1967–1974 | 32 ch | **couple** |
 | Delahaye 135 | 1935–1954 | 160 ch | **couple** |
@@ -45,15 +42,10 @@ cherche le couple ou la masse *de cette version-là*, pas du modèle en généra
 | Ferrari 250 GTO | 1962–1964 | 300 ch | **couple** |
 | Fiat 600 | 1955–1969 | 29 ch | **couple** |
 | Fiat 500 (Nuova) | 1957–1975 | 23 ch | **couple** |
-| Ford Fiesta XR2i / RS Turbo | 1989–1994 | 133 ch | **couple** |
 | Lancia Aurelia B20 | 1950–1958 | 118 ch | **couple** |
-| Lancia 037 | 1982–1983 | 205 ch | **couple** |
 | Pegaso Z-102 | 1951–1958 | 360 ch | **couple** |
 | Peugeot 402 | 1935–1942 | 63 ch | **couple** |
 | Porsche 356 | 1948–1965 | 130 ch | **couple** |
-| Renault 4CV | 1947–1961 | 21 ch | **couple** |
-| Renault Dauphine | 1956–1967 | 55 ch | **couple** |
-| Renault 6 | 1968–1986 | 47 ch | **couple** |
 | Rolls-Royce Silver Shadow | 1965–1980 | 200 ch | **couple** |
 | Simca 1000 Rallye 2 | 1961–1978 | 103 ch | **couple** |
 | Tatra T87 | 1936–1950 | 75 ch | **couple** |
@@ -66,7 +58,6 @@ cherche le couple ou la masse *de cette version-là*, pas du modèle en généra
 | Czinger 21C | 2023 | 1350 ch | **couple** |
 | Hispano Suiza Carmen | 2019 | 1114 ch | **couple** |
 | Mercedes-AMG ONE | 2022 | 1063 ch | **couple** |
-| Nio EP9 | 2016 | 1360 ch | **couple** |
 
 ## Sportive
 
@@ -94,6 +85,20 @@ cherche le couple ou la masse *de cette version-là*, pas du modèle en généra
 
 ---
 
+## Incohérences fiche / variante — à trancher
+
+Repérées en sourçant : la **puissance de la fiche ne correspond pas à la
+voiture que son nom annonce**. Ce sont des décisions de périmètre, pas des
+trous de données — les combler mécaniquement figerait l'erreur. C'est la même
+famille que les bugs Giulia/Quadrifoglio et M2 CS/M4 CSL.
+
+| Fiche | Le problème | Options |
+|---|---|---|
+| **Peugeot 106** (générique) | Porte 120 ch / 145 Nm, soit les chiffres de la **106 GTI**. Une 106 de base fait 45 à 60 ch. | Soit la fiche devient une 106 de base (et il faut ses chiffres), soit elle assume d'être la sportive — mais alors elle double `peugeot-106-gti`. |
+| **Simca 1000 Rallye 2** | Porte 103 ch, qui est la puissance de la **Rallye 3** (déc. 1977). La Rallye 2 développe 82 ch / 11 mkg. | Renommer en Rallye 3, ou ramener à 82 ch et prendre le couple de la Rallye 2. |
+| **Fiat 500 (Nuova)** | Porte 23 ch, qui est la **500 R** (594 cm³). La Nuova 499 cm³ fait 18 à 21,5 ch. | Trancher quelle version la fiche représente avant de chercher son couple. |
+| **Lancia Rally 037** | `ch:205` est la **Stradale** (route), mais `kg:960` est le poids de la version **Groupe B** de course. La Stradale pèse ~1 170 kg. | Le couple ajouté (234 Nm) est celui de la Stradale : aligner la masse, ou assumer la fiche « voiture de course ». |
+
 ## Notes de sourcing — cas déjà creusés, et pourquoi ils bloquent
 
 | Voiture | Ce qui bloque |
@@ -102,7 +107,9 @@ cherche le couple ou la masse *de cette version-là*, pas du modèle en généra
 | **Xiaomi SU7 Ultra** | 1 770 Nm chez les uns, 1 135 Nm chez les autres. Écart de 55 % : l'un des deux est probablement le prototype, l'autre la série. |
 | **Mercedes-AMG ONE** | 900 Nm circule, mais Mercedes ne publie aucun couple système. Avec quatre moteurs électriques répartis sur des essieux différents, un couple « combiné » est mal défini. |
 | **Renault Austral E-Tech** | Le « 410 Nm » des fiches est exactement 205 + 205 : une addition des couples thermique et électrique, ce que la convention interdit (voir CLAUDE.md §4.4). Chercher si Renault publie une valeur système réelle. |
-| **Peugeot 106 (générique)** | Porte 120 ch / 145 Nm, soit les chiffres de la **106 GTI**, alors qu'une 106 de base fait 45 à 60 ch. Ajouter une masse cimenterait l'erreur : c'est la fiche elle-même qui doit être tranchée (générique ou sportive ?). |
+| **Hispano Suiza Carmen** | 1 150 Nm chez les uns, 1 600 Nm chez les autres : couple moteur contre couple cumulé des quatre moteurs après démultiplication. |
+| **Porsche 356 Carrera 2** | Le moteur Fuhrmann 587/1 est très documenté en puissance (130 ch à 6 200 tr/min), mais aucune source consultée ne publie son couple. |
+| **Micro-citadines d'époque** (Fiat 500/600/126, BMW Isetta, Trabant 601, DAF 33) | Le couple n'était tout simplement pas communiqué à l'époque pour ces voitures. Piste : les revues techniques (RTA) et les notices constructeur d'origine. |
 
 **Le réflexe à garder :** quand deux sources divergent d'un ordre de grandeur,
 c'est presque toujours qu'elles ne mesurent pas la même chose (couple moteur vs
