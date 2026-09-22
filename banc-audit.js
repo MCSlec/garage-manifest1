@@ -413,6 +413,47 @@ function auditer() {
     }
   }
 
+  /* --- C bis. Cohérence GENS ↔ MOTOR_SPECS ---------------------------
+     Les deux blocs s'affichent sur LA MÊME PAGE de fiche : le sélecteur de
+     motorisation (MOTOR_SPECS) et « Générations & motorisations » (GENS).
+     Ils décrivent en partie les mêmes moteurs, mais sont saisis séparément.
+     Rien ne les tient synchronisés.
+
+     On ne signale que le cas révélateur : une puissance du sélecteur PROCHE
+     SANS ÊTRE ÉGALE à une puissance citée dans les générations (moins de 3 %
+     d'écart). Deux variantes réellement différentes ont des puissances
+     franchement distinctes ; un écart de 1 à 3 % trahit le même moteur cité
+     dans deux unités ou deux normes — 222 ch contre 226 PS, 280 contre 283.
+     C'est l'erreur de §4.4 ter, mais entre deux blocs d'une même fiche. */
+  for (const [idCat, bloc] of Object.entries(MOTOR_SPECS)) {
+    const g = GENS[idCat] || GENS[MAP[idCat]];
+    if (!g || !Array.isArray(bloc.types)) continue;
+
+    const puissancesGens = new Set();
+    for (const gen of g) {
+      const texte = (gen && !Array.isArray(gen) && Array.isArray(gen.m))
+        ? gen.m.map(m => String(m[2] || '')).join(' ')
+        : (Array.isArray(gen) ? String(gen[3] || '') : '');
+      for (const n of texte.match(/\d{2,4}/g) || []) puissancesGens.add(+n);
+    }
+    if (!puissancesGens.size) continue;
+
+    for (const t of bloc.types) {
+      for (const v of t.variants || []) {
+        if (typeof v.ch !== 'number') continue;
+        if (puissancesGens.has(v.ch)) continue;          // concordance exacte
+        for (const p of puissancesGens) {
+          const ecart = Math.abs(p - v.ch) / Math.max(p, v.ch);
+          if (ecart > 0 && ecart < 0.03) {
+            signaler('ALERTE', 'GENS vs MOTOR_SPECS',
+              `${idCat}/${t.id}/${v.id} — le sélecteur annonce ${v.ch} ch, les générations citent ${p} ch pour ce qui semble le même moteur (${(ecart * 100).toFixed(1)} % d'écart) : vraisemblablement ch contre PS, ou deux normes`);
+            break;
+          }
+        }
+      }
+    }
+  }
+
   /* --- D. MAP : correspondances orphelines --------------------------- */
   for (const [idCat, cleSpec] of Object.entries(MAP)) {
     if (!SPECS[cleSpec]) {
