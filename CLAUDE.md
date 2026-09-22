@@ -352,6 +352,7 @@ Ce qu'il attrape, et que ni l'œil ni `node --check` ne voient :
 | **Doublons visibles** (libellé catalogue, nom de fiche) | Deux entrées d'**ID différents** peuvent désigner la même voiture : elles passent tous les contrôles techniques et apparaissent pourtant deux fois dans la grille — donc se collectionnent deux fois. 3 cas trouvés (RS2 Avant, C 43, Ami). |
 | **Contamination copie-voisine** | Le motif des bugs Giulia/Quadrifoglio et M2 CS/M4 CSL : deux fiches adjacentes aux chiffres identiques. |
 | **`MAP` orphelines** | Correspondance pointant vers une fiche ou un id inexistant → fiche technique muette. |
+| **Fiches `SPECS` inatteignables** | `ficheHTML()` résout par `MAP[idCatalogue]` **strictement** — il n'y a **aucun repli** sur `SPECS[idCatalogue]`. Une fiche qu'aucune entrée `MAP` ne désigne est donc écrite, versionnée, relue… et **jamais affichée**, sans le moindre signal. 19 fiches étaient dans ce cas, dont celle de la Mégane R.S. Trophy-R alors que la voiture figurait bien au catalogue : il manquait une seule ligne dans `MAP`. |
 | **Champs manquants / hors plage** | Complétude par champ, et incohérences d'ordre de grandeur. |
 | **Divergences `CARS` / `CATALOGUE_PLUS`** | Un id déclaré des deux côtés : `CARS` fait autorité, l'autre déclaration est **perdue en silence**. |
 
@@ -383,6 +384,26 @@ du TDI diesel. Toutes ont dû être rétablies.
    volontairement une divergence sur une copie et vérifier qu'elle remonte. Un
    contrôle trop strict affiche « 0 anomalie » en ne voyant plus rien — le pire
    des deux mondes, parce qu'il rassure.
+
+### Exempter plutôt que relâcher
+
+Quand un contrôle signale un cas **légitime**, la tentation est d'assouplir son
+seuil. C'est le geste à ne pas faire : il rend le contrôle aveugle à *toute* la
+classe de défauts qu'il existait pour attraper.
+
+La bonne réponse est une **liste d'exemptions nominative et justifiée**
+(`JUMELLES_AVEREES` dans `banc-audit.js`). Chaque entrée cite sa raison, donc
+elle est relisable et contestable ; et le contrôle reste entier pour tous les
+autres cas.
+
+> Exemple : le Porsche 718 Cayman **est** un 718 Boxster à toit fixe — même
+> plateforme MSB, même flat-4, et Porsche homologue les deux à la même masse
+> DIN. Le contrôle « contamination copie-voisine » ne peut pas, par
+> construction, distinguer ça d'un copier-coller raté. On nomme la paire ;
+> on ne baisse pas le seuil.
+
+Une liste d'exemptions sans justification écrite redevient un tapis sous lequel
+on glisse les vrais défauts — la justification *est* le garde-fou.
 
 Préfixé `banc-` : jamais mis en cache par `sw.js` (`HORS_CACHE`), donc sa
 modification n'impose aucun bump de version.
