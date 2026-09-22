@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.115.0';
+  const VERSION_MODULE = '20.116.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -2664,6 +2664,13 @@
     'audi-r8': { nom:'Audi R8', an:[2006,2024], pays:'Allemagne',
       ch:620, nm:580, kg:1595, cyl:5.2, arch:'V10', adm:'atmo', pos:'central', tx:'quattro', bv:'S tronic 7',
       note:"La supercar du quotidien, partageant son V10 atmosphérique et son châssis avec la Lamborghini Huracán. L\'une des dernières à conserver un gros moteur atmosphérique jusqu\'au bout." },
+    /* Chiffres du dossier de presse Audi (Detroit, janvier 2008), recoupés :
+       368 kW / 500 ch à 4 000 tr/min, 1 000 Nm de 1 750 à 3 000 tr/min,
+       1 860 kg, 0 à 100 en 4,2 s, plus de 300 km/h. */
+    'audi-r8-v12-tdi': { nom:'Audi R8 V12 TDI (concept)', an:[2008,2009], pays:'Allemagne',
+      ch:500, nm:1000, kg:1860, cyl:6.0, arch:'V12 TDI', adm:'biturbo', pos:'central', tx:'quattro', bv:'M6',
+      acc:4.2,
+      note:"Le seul V12 diesel jamais installé dans une sportive : le bloc dérivé de la R10 TDI, quadruple vainqueur du Mans, transposé dans le châssis d\'une R8. Ses 1 000 Nm imposaient une transmission spécifique, et son refroidissement une prise d\'air NACA dans le toit. Projet arrêté en 2009 : le bloc, trop long, aurait exigé de revoir toute la structure arrière." },
     'mercedes-amg-gt': { nom:'Mercedes-AMG GT', an:[2014], pays:'Allemagne',
       ch:585, nm:800, kg:1615, cyl:4.0, arch:'V8', adm:'biturbo', pos:'avant', tx:'propulsion / intégrale', bv:'DCT 7',
       note:"Le long capot abrite un V8 4.0 biturbo à « hot-V » (turbos logés dans le V). Descendante spirituelle de la SLS, sans les portes papillon mais avec le même équilibre transaxle." },
@@ -3941,9 +3948,6 @@
     'ford-capri': [
       ['1969–1986','1969–1986','4 et 6 cyl., V6 atmo','54–160 ch','« La voiture que vous vous êtes toujours promise » : le coupé populaire européen des années 70.'],
     ],
-    'ford-gt40': [
-      ['1964–1969','1964–1969','V8 4.7–7.0 atmo, moteur central','335–485 ch','Quatre victoires consécutives aux 24 Heures du Mans (1966-1969), née de la volonté de Ford de battre Ferrari.'],
-    ],
 
     /* ---- Lot 2 étape 3 : Audi, Citroën, Chevrolet, Dacia ----------------- */
     'audi-100': [
@@ -4053,9 +4057,6 @@
     ],
     'bac-mono': [
       ['Mono','2011–','4 cyl. 2.3 atmo (Ford Duratec, préparation Cosworth)','≈ 305 ch','Monoplace homologuée route, poids plume autour de 555 kg. Assemblée à la main à Liverpool.'],
-    ],
-    'radical-sr3': [
-      ['SR3','2001–','4 cyl. Ford ou Suzuki atmo','185–260 ch','Conçue d\'abord pour le circuit ; la RS a été rendue homologuée route par petites touches.'],
     ],
 
     /* ---- Lamera et Mitjet : voitures de course monotype françaises ------
@@ -4418,11 +4419,6 @@
        seul V12 TDI jamais monté dans une sportive, par exemple. Ils sont
        identifiés comme concepts, pas glissés parmi les modèles de série. */
 
-    'audi-r8-v12-tdi': [
-      { c:'Concept', a:'2008–2009', m:[
-        ['R8 V12 TDI','V12 6.0 TDI biturbo, dérivé du bloc de la R10 du Mans','500 ch, 1 000 Nm','quattro · manuelle 6','Présentée à Detroit en janvier 2008, puis en version Le Mans à Genève. Le seul V12 diesel jamais installé dans une sportive. Le couple imposait un carter de boîte spécifique. Projet abandonné en 2009 : deux à trois exemplaires roulants existent.'],
-      ]},
-    ],
     'renault-clio-rs16': [
       { c:'Concept', a:'2016', m:[
         ['Clio R.S. 16','4 cyl. 2.0 turbo de Mégane R.S. 275 Trophy-R','275 ch','traction · manuelle 6','Construite en six semaines par Renault Sport pour les quarante ans de l\'écurie de Formule 1. Voies élargies de 60 mm. Restée sans suite malgré un accueil enthousiaste.'],
@@ -4686,11 +4682,6 @@
       ['Mk2','2004–2011','4 cyl.','80–145 ch','La ST et la RS de cette génération relancent la réputation sportive de la Focus.'],
       ['Mk3','2011–2018','EcoBoost et TDCi','85–150 ch','Première Focus mondiale, vendue à l\'identique sur tous les continents.'],
       ['Mk4','2018–','EcoBoost 3 cyl., EcoBlue','100–155 ch','Le trois-cylindres 1.0 EcoBoost peut désactiver un cylindre pour économiser du carburant.'],
-    ],
-    'ford-focus-rs': [
-      ['Mk1 RS','2002–2003','4 cyl. 2.0 turbo (Cosworth)','215 ch','Voies élargies, différentiel Quaife. 4 501 exemplaires, tous en jaune Imperial.'],
-      ['Mk2 RS','2009–2011','5 cyl. 2.5 turbo (Volvo)','305 ch','Le retour de la RS après 6 ans d\'absence. RS500 limitée à 500 exemplaires, 350 ch.'],
-      ['Mk3 RS','2016–2018','4 cyl. 2.3 EcoBoost','350 ch','Première Focus RS à transmission intégrale et mode Drift.'],
     ],
     'ford-fiesta': [
       ['Mk1 – Mk3','1976–1995','4 cyl. 0.9–1.6','40–75 ch','La première Ford à traction avant, conçue sous le nom de code « Bobcat » supervisé par Henry Ford II.'],
@@ -6536,11 +6527,6 @@
         ['147 GTA','V6 Busso 3.2 24v atmo','250 ch','traction · manuelle 6 / Selespeed','Le V6 Busso, souvent cité comme le plus mélodieux jamais produit, dans une compacte. Motricité difficile de série : les préparations Q2 sont recherchées.'],
       ]},
     ],
-    'alfa-156-gta': [
-      { c:'932', a:'2001–2005', m:[
-        ['156 GTA','V6 Busso 3.2 24v atmo','250 ch','traction · manuelle 6 / Selespeed','Berline et Sportwagon. Le dernier grand chapitre du V6 Busso.'],
-      ]},
-    ],
     'alfa-4c': [
       { c:'960', a:'2013–2020', m:[
         ['4C','1750 TBi 1.75 turbo, bloc alu','240 ch','propulsion · TCT 6 à double embrayage','Coque en fibre de carbone de 65 kg, 895 kg à sec. Direction sans assistance — un choix radical assumé.'],
@@ -6559,12 +6545,6 @@
         ['1.8 Turbo','4 cyl. 1.8 turbo','155 ch','propulsion transaxle · manuelle 5','Boîte accolée au pont arrière : répartition des masses proche de 50/50.'],
         ['3.0 V6 America / QV','V6 Busso 3.0 12v','188–192 ch','propulsion transaxle · manuelle 5','La dernière Alfa à propulsion avant la Giulia de 2016.'],
         ['1.8 Turbo Evoluzione','4 cyl. 1.8 turbo','155 ch','propulsion transaxle · manuelle 5','500 exemplaires d\'homologation pour le championnat du monde des voitures de tourisme.'],
-      ]},
-    ],
-    'alfa-giulietta-qv': [
-      { c:'940', a:'2010–2019', m:[
-        ['Quadrifoglio Verde','1750 TBi 1.75 turbo','235 ch','traction · manuelle 6 / TCT 6','Le 1750 turbo en hommage aux Alfa historiques.'],
-        ['Veloce','1750 TBi 1.75 turbo','240 ch','traction · TCT 6','Dernière évolution, différentiel autobloquant mécanique en option.'],
       ]},
     ],
 
@@ -7448,11 +7428,6 @@
       ['8V','2012–2020','4 cyl. TFSI et TDI','86–230 ch','Plateforme MQB.'],
       ['8Y','2020–','4 cyl., hybrides','110–245 ch','La dernière A3 thermique, base des S3 et RS3 hautes performances.'],
     ],
-    'audi-rs3': [
-      ['8P RS3','2011','5 en ligne 2.5 turbo','340 ch','Première RS3, quattro de série.'],
-      ['8V RS3','2015–2020','5 en ligne 2.5 turbo','367–400 ch','Le cinq-cylindres turbo Audi et sa sonorité si particulière, élu meilleur moteur plusieurs années de suite.'],
-      ['8Y RS3','2021–','5 en ligne 2.5 turbo','400 ch','Mode Torque Splitter : peut envoyer tout le couple à une seule roue arrière pour drifter.'],
-    ],
                 
     /* ---- Volkswagen --------------------------------------------------- */
     'vw-golf-mk1': [
@@ -8054,7 +8029,6 @@
     'toyota-celica'           : 'toyota-celica',
     'toyota-prius'            : 'toyota-prius',
     'toyota-supra-mk4'        : 'toyota-supra-mk4',
-    'honda-nsx-na1'           : 'honda-nsx-na1',
     'koenigsegg-agera-rs'     : 'koenigsegg-agera-rs',
     'koenigsegg-regera'       : 'koenigsegg-regera',
     'koenigsegg-gemera'       : 'koenigsegg-gemera',
@@ -8206,7 +8180,6 @@
     'renault-laguna'          : 'renault-laguna',
     'peugeot-508'             : 'peugeot-508',
     'bugatti-veyron'          : 'bugatti-veyron',
-    'bugatti-chiron'          : 'bugatti-chiron',
     'koenigsegg-jesko'        : 'koenigsegg-jesko',
     'pagani-huayra'           : 'pagani-huayra',
     'alpine-a310'             : 'alpine-a310',
@@ -8216,31 +8189,13 @@
     'mclaren-p1'              : 'mclaren-p1',
     'mercedes-190e-cosworth'  : 'mercedes-190e',
     'peugeot-205'             : 'peugeot-205',
-    'renault-5-turbo'         : 'renault-5-turbo',
-    'lancia-delta'            : 'lancia-delta',
     'ford-sierra-cosworth'    : 'ford-sierra-cosworth',
-    'ford-escort-cosworth'    : 'ford-escort-cosworth',
     'opel-calibra'            : 'opel-calibra',
-    'volvo-850r'              : 'volvo-850',
-    'saab-900turbo'           : 'saab-900-turbo',
     'alfa-155'                : 'alfa-155',
     'bmw-z3'                  : 'bmw-z3',
     'mazda-mx5'               : 'mazda-mx5',
     'toyota-mr2'              : 'toyota-mr2',
-    'ford-mustang'            : 'ford-mustang',
-    'chevrolet-camaro'        : 'chevrolet-camaro',
-    'dodge-challenger'        : 'dodge-challenger',
-    'dodge-charger-moderne'   : 'dodge-charger',
     'chevrolet-corvette-c5'   : 'chevrolet-corvette',
-    'ford-f150'               : 'ford-f150',
-    'ram-1500'                : 'ram-1500',
-    'cadillac-escalade'       : 'cadillac-escalade',
-    'chevrolet-silverado'     : 'chevrolet-silverado',
-    'gmc-hummer-ev'           : 'gmc-hummer-ev',
-    'ford-bronco'             : 'ford-bronco',
-    'lincoln-navigator'       : 'lincoln-navigator',
-    'chrysler-300c'           : 'chrysler-300',
-    'pontiac-firebird'        : 'pontiac-firebird',
     'ford-mustang'            : 'ford-mustang',
     'chevrolet-camaro'        : 'chevrolet-camaro',
     'dodge-challenger'        : 'dodge-challenger',
@@ -8259,11 +8214,9 @@
     'tesla-modely'            : 'tesla-modely',
     'tesla-models-plaid'      : 'tesla-models',
     'tesla-cybertruck'        : 'tesla-cybertruck',
-    'porsche-taycan'          : 'porsche-taycan',
     'hyundai-ioniq5'          : 'hyundai-ioniq5',
     'kia-ev6-gt'              : 'kia-ev6',
     'polestar-2'              : 'polestar-2',
-    'byd-atto3'               : 'byd-atto3',
 
     'renault-5-etech'         : 'renault-5-etech',
     'renault-zoe'             : 'renault-zoe',
@@ -8282,21 +8235,8 @@
     'vw-tiguan'               : 'vw-tiguan',
     'vw-t-roc'                : 'vw-t-roc',
     'audi-q3'                 : 'audi-q3',
-    'ford-kuga'               : 'ford-kuga',
     'dacia-duster'            : 'dacia-duster',
-    'renault-clio'            : 'renault-clio',
-    'peugeot-208'             : 'peugeot-208',
-    'vw-golf'                 : 'vw-golf',
-    'peugeot-308'             : 'peugeot-308',
-    'renault-megane'          : 'renault-megane',
     'citroen-c3'              : 'citroen-c3',
-    'ford-fiesta'             : 'ford-fiesta',
-    'opel-corsa'              : 'opel-corsa',
-    'toyota-yaris'            : 'toyota-yaris',
-    'toyota-corolla'          : 'toyota-corolla',
-    'honda-civic'             : 'honda-civic',
-    'mazda-3'                 : 'mazda-3',
-    'hyundai-i30n'            : 'hyundai-i30',
     'seat-leon'               : 'seat-leon',
     'vw-golf'                 : 'vw-golf',
     'renault-clio'            : 'renault-clio',
@@ -8328,15 +8268,12 @@
     'porsche-cayenne'         : 'porsche-cayenne',
     'porsche-panamera'        : 'porsche-panamera',
     'toyota-gr86'             : 'toyota-gr86',
-    'toyota-gr-yaris'         : 'toyota-gr-yaris',
     'toyota-gr-supra'         : 'toyota-gr-supra',
     'honda-civic-type-r'      : 'honda-civic-type-r',
     'renault-megane-rs'       : 'renault-megane-rs',
     'renault-clio-rs'         : 'renault-clio-rs',
     'mini-cooper-s'           : 'mini-cooper-s-modern',
     'abarth-595'              : 'abarth-595',
-    'audi-s3'                 : 'audi-s3',
-    'audi-tt'                 : 'audi-tt',
     'vw-scirocco'             : 'vw-scirocco',
     'peugeot-rcz'             : 'peugeot-rcz',
     'ferrari-testarossa'      : 'ferrari-testarossa',
@@ -8344,7 +8281,6 @@
     'ferrari-488'             : 'ferrari-488',
     'ferrari-f8'              : 'ferrari-f8',
     'ferrari-812'             : 'ferrari-812-superfast',
-    'lambo-countach'          : 'lamborghini-countach',
     'lambo-huracan'           : 'lamborghini-huracan',
     'lambo-urus'              : 'lamborghini-urus',
     'aston-db11'              : 'aston-db11',
@@ -8358,7 +8294,6 @@
     'audi-rs6'                : 'audi-rs6',
     'audi-rs3'                : 'audi-rs3',
     'mercedes-c43-amg'        : 'mercedes-c63-amg',
-    'porsche-cayman-gt4'      : 'porsche-cayman-gt4',
     'porsche-taycan'          : 'porsche-taycan',
     'audi-etron-gt'           : 'audi-etron-gt',
     'mercedes-sl'             : 'mercedes-sl',
@@ -8376,10 +8311,7 @@
     'audi-r8'                 : 'audi-r8',
     'mercedes-amg-gt'         : 'mercedes-amg-gt',
     'jaguar-etype'            : 'jaguar-etype',
-    'lambo-miura'             : 'lamborghini-miura',
     'ford-gt'                 : 'ford-gt',
-    'lexus-lfa'               : 'lexus-lfa',
-    'honda-nsx-na1'           : 'acura-honda-nsx',
     'dodge-viper'             : 'dodge-viper',
     'chevrolet-corvette-c8'   : 'chevrolet-corvette-c8',
     'mg-4'                    : 'mg-4',
@@ -8581,7 +8513,6 @@
     'bugatti-eb110'           : 'bugatti-eb110-ss',
     'bugatti-chiron'          : 'bugatti-chiron',
     'lexus-lfa'               : 'lexus-lfa',
-    'gma-t50'                 : 'gma-t50',
 
     // Japonaises
     'honda-nsx-na1'           : 'honda-nsx-na1',
