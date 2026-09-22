@@ -2150,6 +2150,7 @@ const VARIANTS = {
      VARIANTS (il les complète), mais AVANT la fonction principale ci-dessous, qui fige
      CARS_BY_ID et TOTAL au démarrage. Placé plus bas, ses ajouts au catalogue arriveraient
      trop tard : les modèles existeraient dans CARS mais resteraient invisibles pour l'app. -->
+<script src="./gm-matcher.js"></script>
 <script src="./gm-specs.js"></script>
 
 <script>
@@ -2757,6 +2758,18 @@ const VARIANTS = {
   // et « voiture non reconnue » produisaient tous le même silence, rendant tout diagnostic
   // terrain impossible (DT-07).
   let lastAiError = null;
+  /* Dernier résultat complet du matcher (statut, marge, scores détaillés).
+     identifyCar() ne renvoie que {id, confidence} pour ne rien casser chez
+     ses appelants ; l'interface qui veut distinguer CONFIRME / AMBIGU /
+     AUCUNE_CORRESPONDANCE_SURE lit lastMatch. */
+  let lastMatch = null;
+  /* Accès au module par le global uniquement — jamais par un nom privé.
+     Le piège est documenté dans CLAUDE.md §2.1 : tester `typeof GMMatcher`
+     serait toujours faux depuis ce scope et échouerait EN SILENCE. */
+  function global_GMMatcher() {
+    return (typeof window !== "undefined" && window.GMMatcher && typeof window.GMMatcher.rapprocher === "function")
+      ? window.GMMatcher : null;
+  }
   async function identifyCar(thumbDataUrl) {
     lastAiError = null;
     const url = resolveAiEndpoint();
@@ -2769,12 +2782,29 @@ const VARIANTS = {
       if (!res.ok) { lastAiError = `Relais IA indisponible (HTTP ${res.status})`; return []; }
       const guesses = await res.json();
       if (!Array.isArray(guesses)) { lastAiError = "Réponse du relais IA inattendue"; return []; }
+      /* Rapprochement délégué à gm-matcher.js quand il est là : il sépare
+         aiConfidence / catalogScore / finalConfidence et expose la marge
+         entre les deux premiers candidats, ce que matchCatalog() ne sait
+         pas faire.
+
+         Le repli sur matchCatalog() n'est pas de la prudence décorative :
+         les modules gm-*.js sont servis RÉSEAU-D'ABORD (voir FRAIS dans
+         sw.js), donc au tout premier lancement hors ligne, ou si le réseau
+         lâche, gm-matcher.js peut ne pas être chargé au moment de la
+         capture. Sans repli, photographier une voiture ne renverrait rien
+         du tout — et l'app resterait muette sur la raison. */
+      if (global_GMMatcher()) {
+        const res = global_GMMatcher().rapprocher(guesses, { catalogue: [...CARS, ...customCars()] });
+        lastMatch = res;
+        return res.candidats.map(c => ({ id: c.id, confidence: c.finalConfidence }));
+      }
       const matched = new Map();
       for (const g of guesses) {
         if (!g || (!g.brand && !g.model)) continue;
         const m = matchCatalog(g.brand, g.model, typeof g.confidence==="number" ? g.confidence : 0.6);
         if (m && (!matched.has(m.id) || matched.get(m.id) < m.confidence)) matched.set(m.id, m.confidence);
       }
+      lastMatch = null;
       return [...matched.entries()].map(([id,confidence]) => ({ id, confidence })).sort((a,b) => b.confidence-a.confidence).slice(0,3);
     } catch (e) {
       lastAiError = (e && e.name === "AbortError")
