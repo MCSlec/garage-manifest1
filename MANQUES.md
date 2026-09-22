@@ -3,7 +3,7 @@
 > Généré le 2026-09-22 par `node banc-audit.js --manques-md`.
 > Régénère-le après chaque vague plutôt que de le corriger à la main.
 
-**39 fiches à compléter** · 59 légitimement incomplètes (voir la fin).
+**26 fiches à compléter** · 59 légitimement incomplètes (voir la fin).
 
 Le champ **ch** est indiqué parce qu'il **désigne la variante exacte** de la fiche :
 cherche le couple ou la masse *de cette version-là*, pas du modèle en général.
@@ -21,9 +21,6 @@ cherche le couple ou la masse *de cette version-là*, pas du modèle en généra
 | Voiture | Années | Puissance (fixe la variante) | Manque |
 |---|---|---|---|
 | Citroën Ami | 2020 | 8 ch | **couple** |
-| Fiat Cinquecento | 1991–1998 | 54 ch | **couple** |
-| Fiat Seicento | 1998–2010 | 54 ch | **couple** |
-| Nissan Cube | 1998–2019 | 122 ch | **couple** |
 | Peugeot 106 | 1991–2003 | 120 ch | **masse, cylindrée** |
 
 ## Classique
@@ -31,25 +28,18 @@ cherche le couple ou la masse *de cette version-là*, pas du modèle en généra
 | Voiture | Années | Puissance (fixe la variante) | Manque |
 |---|---|---|---|
 | Bentley 4½ Litre Blower | 1929–1931 | 240 ch | **couple** |
-| BMW Isetta | 1955–1962 | 13 ch | **couple** |
 | Bugatti Type 35 | 1924–1930 | 140 ch | **couple** |
 | Chevrolet C10 | 1960–1987 | 255 ch | **couple** |
 | Cord 810 / 812 | 1936–1937 | 190 ch | **couple** |
-| DAF 33 (Variomatic) | 1967–1974 | 32 ch | **couple** |
 | Delahaye 135 | 1935–1954 | 160 ch | **couple** |
 | Facel Vega Facel II | 1962–1964 | 390 ch | **couple** |
 | Facel Vega HK500 | 1958–1961 | 360 ch | **couple** |
-| Ferrari 250 GTO | 1962–1964 | 300 ch | **couple** |
-| Fiat 600 | 1955–1969 | 29 ch | **couple** |
 | Fiat 500 (Nuova) | 1957–1975 | 23 ch | **couple** |
-| Lancia Aurelia B20 | 1950–1958 | 118 ch | **couple** |
 | Pegaso Z-102 | 1951–1958 | 360 ch | **couple** |
 | Peugeot 402 | 1935–1942 | 63 ch | **couple** |
-| Porsche 356 | 1948–1965 | 130 ch | **couple** |
 | Rolls-Royce Silver Shadow | 1965–1980 | 200 ch | **couple** |
 | Simca 1000 Rallye 2 | 1961–1978 | 103 ch | **couple** |
 | Tatra T87 | 1936–1950 | 75 ch | **couple** |
-| Trabant 601 | 1963–1991 | 26 ch | **couple** |
 
 ## Hypercar
 
@@ -74,14 +64,6 @@ cherche le couple ou la masse *de cette version-là*, pas du modèle en généra
 | Renault Scénic | 1996 | 170 ch | **couple** |
 | Renault Austral | 2022 | 200 ch | **couple** |
 | Tesla Cybertruck | 2023 | 845 ch | **couple** |
-
-## Youngtimer
-
-| Voiture | Années | Puissance (fixe la variante) | Manque |
-|---|---|---|---|
-| Fiat 126 | 1972–2000 | 26 ch | **couple** |
-| Honda City Turbo II | 1983–1986 | 110 ch | **couple** |
-| Nissan Pao | 1989–1991 | 52 ch | **couple** |
 
 ---
 
