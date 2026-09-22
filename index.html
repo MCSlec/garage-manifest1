@@ -16,6 +16,29 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="Garage" />
 
+<script>
+/* Thème — appliqué AVANT le premier rendu, volontairement inline dans le
+   <head>. Le lire depuis IndexedDB (où vit META) serait asynchrone : la page
+   se peindrait en sombre puis basculerait en clair, un flash visible à chaque
+   ouverture. localStorage est synchrone, et c'est le seul usage qu'on lui
+   donne ici — la collection et les photos restent en IndexedDB (CLAUDE.md
+   §1.4). Une préférence d'affichage est propre à l'appareil : elle n'a rien à
+   faire dans l'export de collection.
+
+   Enveloppé dans un try/catch : en navigation privée ou avec les données de
+   site bloquées, l'accès lève. L'app doit alors démarrer en sombre, pas
+   planter avant d'avoir affiché quoi que ce soit. */
+(function () {
+  try {
+    var t = localStorage.getItem("gm-theme");
+    document.documentElement.setAttribute("data-theme",
+      (t === "light" || t === "dark" || t === "system") ? t : "dark");
+  } catch (e) {
+    document.documentElement.setAttribute("data-theme", "dark");
+  }
+})();
+</script>
+
 <style>
   :root{
     --bg:#0b0b0d; --panel:#161618; --panel2:#111113; --line:#27272a; --line2:#3f3f46;
@@ -496,6 +519,51 @@
 .detail-shell .gm-capture-grid img{
   width:100%; aspect-ratio:1; object-fit:cover;
   border-radius:9px; border:1px solid var(--line);
+}
+
+
+/* ============================================================
+   THÈME CLAIR — un seul design, des variables redéfinies
+   ------------------------------------------------------------
+   Pas une seconde interface : exactement les mêmes règles, avec
+   d'autres valeurs pour les jetons de couleur. Les accents
+   (--red, raretés) ne changent PAS : ils portent du sens (rareté,
+   action), et les basculer casserait la lecture du jeu.
+
+   `[data-theme="system"]` suit la préférence de l'OS ; le mode
+   sombre reste le défaut quand rien n'est stocké.
+   ============================================================ */
+:root[data-theme="light"]{
+  --bg:#f4f4f5; --panel:#ffffff; --panel2:#fafafa;
+  --line:#dedee2; --line2:#c7c7ce;
+  --txt:#18181b; --fg:#18181b;
+  --muted:#52525b; --muted2:#71717a; --dim:#a1a1aa;
+}
+@media (prefers-color-scheme:light){
+  :root[data-theme="system"]{
+    --bg:#f4f4f5; --panel:#ffffff; --panel2:#fafafa;
+    --line:#dedee2; --line2:#c7c7ce;
+    --txt:#18181b; --fg:#18181b;
+    --muted:#52525b; --muted2:#71717a; --dim:#a1a1aa;
+  }
+}
+
+/* En clair, le blanc pur d'une carte active ne ressort plus : on
+   inverse le contraste de la variante sélectionnée plutôt que de
+   lui garder un texte blanc devenu illisible. */
+:root[data-theme="light"] .gsp-moto-actif,
+:root[data-theme="light"] [data-moto-variant] div[style*="color:#fff"],
+:root[data-theme="light"] .info-head h2{ color:var(--txt); }
+
+/* Choix du thème dans les réglages */
+.theme-pick{ display:flex; gap:6px; }
+.theme-pick button{
+  padding:8px 12px; border-radius:999px; border:1px solid var(--line);
+  background:var(--panel2); color:var(--muted);
+  font:600 11px/1 var(--sans); white-space:nowrap;
+}
+.theme-pick button.on{
+  color:#fff; background:var(--red2); border-color:var(--red2);
 }
 
 </style>
@@ -2506,6 +2574,33 @@ const VARIANTS = {
 
   /* ====================================================== HELPERS RENDU */
   const $ = (s, r=document) => r.querySelector(s);
+  /* --- Thème : lecture, barre système, état des boutons ----------------
+     Le thème est DÉJÀ appliqué par le script inline du <head> (avant le
+     premier rendu). Ces fonctions ne font que le refléter dans l'UI. */
+  const themeChoisi = () => { try { return localStorage.getItem("gm-theme") || "dark"; } catch { return "dark"; } };
+  const themeEffectif = () => {
+    const c = themeChoisi();
+    return c === "system"
+      ? (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark")
+      : c;
+  };
+  function majCouleurBarre() {
+    const m = document.querySelector('meta[name="theme-color"]');
+    if (m) m.setAttribute("content", themeEffectif() === "light" ? "#f4f4f5" : "#0b0b0d");
+  }
+  function majBoutonsTheme() {
+    const c = themeChoisi();
+    document.querySelectorAll("[data-theme-set]").forEach(b =>
+      b.classList.toggle("on", b.getAttribute("data-theme-set") === c));
+  }
+  /* En mode « système », l'OS peut basculer pendant que l'app est ouverte
+     (coucher du soleil, bascule manuelle). Sans cet écouteur, la barre
+     système resterait à l'ancienne teinte jusqu'au prochain lancement. */
+  try {
+    window.matchMedia("(prefers-color-scheme: light)")
+      .addEventListener("change", () => { if (themeChoisi() === "system") majCouleurBarre(); });
+  } catch {}
+
   const escapeHtml = (s) => String(s||"").replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
   const fmtDate = (iso) => { try { return new Date(iso).toLocaleDateString("fr-FR",{ day:"2-digit", month:"short", year:"numeric" }); } catch { return ""; } };
   const rColor = (r) => (RARITY[r] || RARITY.courant).color;
@@ -2577,7 +2672,7 @@ const VARIANTS = {
     else if (state.tab==="stats") v.innerHTML = subBackHTML("Statistiques & équipage") + viewStats(st) + crewHTML(st);
     else if (state.tab==="trophies") v.innerHTML = subBackHTML("Trophées") + viewTrophies(st);
     else if (state.tab==="settings") v.innerHTML = subBackHTML("Réglages") + viewSettings(st) + extraSettingsHTML();
-    if (state.tab==="settings") { refreshStorageInfo(); markSWCurrent(); }
+    if (state.tab==="settings") { refreshStorageInfo(); markSWCurrent(); majBoutonsTheme(); majCouleurBarre(); }
     window.scrollTo({ top:0 });
   }
 
@@ -2778,6 +2873,11 @@ const VARIANTS = {
         <div class="rows">
           ${installRow}
           <div class="srow"><div class="l"><b>Envoyer un retour</b><span>Bug, idée, ressenti — inclut la version pour que je m'y retrouve</span></div><button class="btn" data-act="feedback">${icon("upload","icon")}</button></div>
+          <div class="srow"><div class="l"><b>Thème</b><span>Sombre, clair, ou selon ton téléphone</span></div><div class="theme-pick" id="themePick">
+            <button data-theme-set="dark">Sombre</button>
+            <button data-theme-set="light">Clair</button>
+            <button data-theme-set="system">Système</button>
+          </div></div>
           <div class="srow"><div class="l"><b>Stockage utilisé</b><span id="storeInfo">Calcul…</span></div></div>
           <div class="srow"><div class="l"><b>Mode hors-ligne</b><span id="swInfo">Vérification…</span></div></div>
         </div>
@@ -3957,8 +4057,20 @@ const VARIANTS = {
 
   /* ====================================================== ÉVÉNEMENTS (délégation) */
   document.addEventListener("click", (e) => {
-    const t = e.target.closest("[data-tab],[data-fab],[data-rarity],[data-toggle],[data-status],[data-filter],[data-car],[data-close],[data-scrim],[data-cap],[data-pick],[data-var],[data-act],[data-setcover],[data-addphoto],[data-release],[data-dot],[data-favtoggle],[data-moto-type],[data-moto-variant]");
+    const t = e.target.closest("[data-tab],[data-fab],[data-rarity],[data-toggle],[data-status],[data-filter],[data-car],[data-close],[data-scrim],[data-cap],[data-pick],[data-var],[data-act],[data-setcover],[data-addphoto],[data-release],[data-dot],[data-favtoggle],[data-moto-type],[data-moto-variant],[data-theme-set]");
     if (!t) return;
+
+    /* Thème : on écrit l'attribut ET le stockage, puis on recale la couleur
+       de la barre système. Sans ce dernier point, iOS garde la teinte sombre
+       autour de l'app en mode clair — un détail visible sur écran encoché. */
+    if (t.hasAttribute("data-theme-set")) {
+      const choix = t.getAttribute("data-theme-set");
+      document.documentElement.setAttribute("data-theme", choix);
+      try { localStorage.setItem("gm-theme", choix); } catch {}
+      majCouleurBarre();
+      majBoutonsTheme();
+      return;
+    }
 
     if (t.dataset.scrim && e.target === t) return closeOverlay();
     if (t.dataset.close) return closeOverlay();
