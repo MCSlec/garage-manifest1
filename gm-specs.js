@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.122.0';
+  const VERSION_MODULE = '20.123.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -1609,7 +1609,7 @@
       ch:72, nm:93, kg:840, cyl:1.0, arch:'3 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
       note:"Sœur triplée de la Peugeot 107/108 et de la Toyota Aygo, produites sur la même chaîne en République tchèque. La citadine minimaliste par excellence, pensée pour le prix et la sobriété urbaine." },
     'citroen-ami': { nom:'Citroën Ami', an:[2020], pays:'France',
-      ch:8, kg:485, cyl:0, arch:'moteur électrique', adm:'électrique', pos:'avant', tx:'traction', bv:'A1',
+      ch:8, nm:44, kg:485, cyl:0, arch:'moteur électrique', adm:'électrique', pos:'avant', tx:'traction', bv:'A1',
       note:"Quadricycle électrique accessible dès 14 ans en France, sans permis. Portes symétriques inversées (l\'une s\'ouvre à l\'avant, l\'autre à l\'arrière) pour partager les mêmes pièces gauche/droite et réduire les coûts." },
     'ds-3': { nom:'DS 3', an:[2009], pays:'France',
       ch:208, nm:300, kg:1200, cyl:1.6, arch:'4 cyl. / électrique', adm:'turbo', pos:'avant', tx:'traction', bv:'M6 / A8',

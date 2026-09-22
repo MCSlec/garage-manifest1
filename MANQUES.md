@@ -3,7 +3,7 @@
 > Généré le 2026-09-22 par `node banc-audit.js --manques-md`.
 > Régénère-le après chaque vague plutôt que de le corriger à la main.
 
-**26 fiches à compléter** · 59 légitimement incomplètes (voir la fin).
+**25 fiches à compléter** · 59 légitimement incomplètes (voir la fin).
 
 Le champ **ch** est indiqué parce qu'il **désigne la variante exacte** de la fiche :
 cherche le couple ou la masse *de cette version-là*, pas du modèle en général.
@@ -20,7 +20,6 @@ cherche le couple ou la masse *de cette version-là*, pas du modèle en généra
 
 | Voiture | Années | Puissance (fixe la variante) | Manque |
 |---|---|---|---|
-| Citroën Ami | 2020 | 8 ch | **couple** |
 | Peugeot 106 | 1991–2003 | 120 ch | **masse, cylindrée** |
 
 ## Classique
@@ -80,6 +79,8 @@ famille que les bugs Giulia/Quadrifoglio et M2 CS/M4 CSL.
 | **Simca 1000 Rallye 2** | Porte 103 ch, qui est la puissance de la **Rallye 3** (déc. 1977). La Rallye 2 développe 82 ch / 11 mkg. | Renommer en Rallye 3, ou ramener à 82 ch et prendre le couple de la Rallye 2. |
 | **Fiat 500 (Nuova)** | Porte 23 ch, qui est la **500 R** (594 cm³). La Nuova 499 cm³ fait 18 à 21,5 ch. | Trancher quelle version la fiche représente avant de chercher son couple. |
 | **Lancia Rally 037** | `ch:205` est la **Stradale** (route), mais `kg:960` est le poids de la version **Groupe B** de course. La Stradale pèse ~1 170 kg. | Le couple ajouté (234 Nm) est celui de la Stradale : aligner la masse, ou assumer la fiche « voiture de course ». |
+| **Renault Scénic** | `ch:170` est le **Scénic E-Tech électrique** (125 kW), mais `cyl:1.3` est le thermique (qui plafonne à 160 ch). Ajouter le couple de l'électrique contre une cylindrée de 1,3 L produirait un Nm/L absurde. | Trancher : fiche thermique ou fiche électrique ? |
+| **Ariel Atom** | `ch:350` ne correspond à aucune version des bases : Atom 3.5 = 242 ch, Atom 4 = 320 ch, Atom 4R = 400 ch. | Identifier la version visée (3.5R compressée ?) avant de chercher son couple. |
 
 ## Notes de sourcing — cas déjà creusés, et pourquoi ils bloquent
 
