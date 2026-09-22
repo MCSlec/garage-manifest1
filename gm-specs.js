@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.124.0';
+  const VERSION_MODULE = '20.125.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -624,7 +624,7 @@
       ch:54, nm:86, kg:750, cyl:1.1, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
       note:"Produite en Pologne, elle a motorisé l\'Europe de l\'Est post-communiste. La Sporting à 54 ch, badge Abarth, châssis abaissé, est la version recherchée. Une citadine minimaliste devenue youngtimer attachante." },
     'fiat-seicento': { nom:'Fiat Seicento', an:[1998,2010], pays:'Italie',
-      ch:54, nm:86, kg:730, cyl:1.1, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
+      ch:54, nm:88, kg:730, cyl:1.1, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
       note:"Remplaçante de la Cinquecento. La Schumacher Edition célébrait le champion du monde alors chez Ferrari. La version Sporting/Abarth reste la plus vive. Une citadine d\'entrée de gamme populaire du tournant des années 2000." },
     'fiat-124-spider-2016': { nom:'Fiat 124 Spider (2016)', an:[2016,2020], pays:'Italie',
       ch:170, nm:250, kg:1050, cyl:1.4, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'propulsion', bv:'M6',
@@ -683,10 +683,10 @@
       ch:68, nm:120, kg:1150, cyl:1.6, arch:'4 cyl. essence et diesel', adm:'atmo', pos:'avant', tx:'traction', bv:'M4',
       note:"Le fourgon au style arrondi caractéristique, omniprésent dans la France des années 70 : ambulances, camions de pompiers, food-trucks avant l\'heure. Sa bouille attachante en fait aujourd\'hui un objet de collection vintage prisé." },
     'citroen-ami6': { nom:'Citroën Ami 6', an:[1961,1978], pays:'France',
-      ch:35, nm:40, kg:640, cyl:0.6, arch:'2 cyl. à plat', adm:'atmo', pos:'avant', tx:'traction', bv:'M4', flou:['nm'],
+      ch:35, nm:46, kg:640, cyl:0.6, arch:'2 cyl. à plat', adm:'atmo', pos:'avant', tx:'traction', bv:'M4', flou:['nm'],
       note:"Sa lunette arrière inversée (en Z), un parti pris de style parmi les plus audacieux de son époque, censé garder la vitre propre par temps de pluie. Sur base mécanique de 2CV. Un temps la voiture la plus vendue de France, un ovni stylistique." },
     'citroen-dyane': { nom:'Citroën Dyane', an:[1967,1983], pays:'France',
-      ch:35, nm:40, kg:600, cyl:0.6, arch:'2 cyl. à plat', adm:'atmo', pos:'avant', tx:'traction', bv:'M4', flou:['nm'],
+      ch:35, nm:46, kg:600, cyl:0.6, arch:'2 cyl. à plat', adm:'atmo', pos:'avant', tx:'traction', bv:'M4', flou:['nm'],
       note:"Conçue pour remplacer la 2CV avec un style plus moderne et un hayon, elle ne l\'a jamais vraiment supplantée dans le cœur du public. La Méhari en dérive. Une déclinaison plus civilisée mais moins charismatique de la Deuche." },
     'citroen-visa': { nom:'Citroën Visa', an:[1978,1988], pays:'France',
       ch:115, nm:150, kg:800, cyl:1.6, arch:'2 et 4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
@@ -722,7 +722,7 @@
       ch:313, nm:400, kg:1600, cyl:2.0, arch:'4 cyl., électrique', adm:'turbo', pos:'avant', tx:'traction / intégrale', bv:'A7',
       note:"Le plus petit SUV de BMW. La première génération (E84) était encore à propulsion et disponible en 6 cylindres. La dernière (U11) est déclinée en version 100 % électrique (iX1). La M35i, sportive, dépasse les 300 ch." },
     'facel-vega-facel2': { nom:'Facel Vega Facel II', an:[1962,1964], pays:'France',
-      ch:390, kg:1800, cyl:6.3, arch:'V8 Chrysler', adm:'atmo', pos:'avant', tx:'propulsion', bv:'A / M4',
+      ch:390, nm:624, kg:1775, cyl:6.3, arch:'V8 Chrysler', adm:'atmo', pos:'avant', tx:'propulsion', bv:'A / M4',
       note:"La dernière et la plus aboutie des grandes Facel Vega, l\'ultime luxe français d\'après-guerre avant la disparition de la marque. Un gros V8 américain dans une carrosserie élégante et racée. La GT des célébrités et des têtes couronnées de l\'époque." },
     'vw-new-beetle': { nom:'Volkswagen New Beetle', an:[1997,2019], pays:'Allemagne',
       ch:220, nm:280, kg:1300, cyl:2.0, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M6 / DSG',
@@ -1280,7 +1280,7 @@
       ch:712, nm:882, kg:2900, cyl:6.2, arch:'V8 HEMI', adm:'compresseur', pos:'avant', tx:'4x4', bv:'A8',
       note:"Le pick-up le plus puissant de son temps, avec le V8 compressé de la Dodge Hellcat. Conçu pour sauter les dunes à haute vitesse comme un trophy truck. Réponse frontale au Ford F-150 Raptor, en beaucoup plus musclé." },
     'xiaomi-su7': { nom:'Xiaomi SU7 Ultra', an:[2024], pays:'Chine',
-      ch:1548, kg:2360, cyl:0, arch:'trois moteurs électriques', adm:'électrique', pos:'avant/arrière', tx:'intégrale', bv:'A1',
+      ch:1548, nm:1770, kg:2360, cyl:0, arch:'trois moteurs électriques', adm:'électrique', pos:'avant/arrière', tx:'intégrale', bv:'A1', flou:['nm'],
       note:"La première voiture du géant chinois de l\'électronique Xiaomi, et un coup de tonnerre : la version Ultra a battu le record du Nürburgring pour une berline électrique de série. Plus de 1500 ch, prix agressif. L\'entrée fracassante de la tech chinoise dans l\'automobile de performance." },
     'byd-seal': { nom:'BYD Seal', an:[2022], pays:'Chine',
       ch:530, nm:670, kg:2150, cyl:0, arch:'deux moteurs électriques', adm:'électrique', pos:'avant/arrière', tx:'intégrale', bv:'A1',
@@ -1367,7 +1367,7 @@
       prod:25,
       note:"Une voiture de course FIA GT1 homologuée route à seulement 25 exemplaires, pour respecter le règlement. Développée en un temps record. Sa version roadster figure au Guinness comme l\'une des voitures de série les plus chères jamais vendues neuves." },
     'facel-vega-hk500': { nom:'Facel Vega HK500', an:[1958,1961], pays:'France',
-      ch:360, kg:1800, cyl:6.3, arch:'V8 Chrysler', adm:'atmo', pos:'avant', tx:'propulsion', bv:'A / M4',
+      ch:360, nm:540, kg:1750, cyl:5.9, arch:'V8 Chrysler', adm:'atmo', pos:'avant', tx:'propulsion', bv:'A / M4',
       note:"Le grand luxe français d\'après-guerre, avec un gros V8 américain. La GT des célébrités : Ringo Starr, Ava Gardner, Stirling Moss. Albert Camus est mort dans une Facel Vega en 1960. Une marque française prestigieuse aujourd\'hui disparue." },
     'bmw-30csl': { nom:'BMW 3.0 CSL (E9)', an:[1971,1975], pays:'Allemagne',
       ch:206, nm:286, kg:1165, cyl:3.2, arch:'6 en ligne', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M4',
@@ -1609,7 +1609,7 @@
       ch:72, nm:93, kg:840, cyl:1.0, arch:'3 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
       note:"Sœur triplée de la Peugeot 107/108 et de la Toyota Aygo, produites sur la même chaîne en République tchèque. La citadine minimaliste par excellence, pensée pour le prix et la sobriété urbaine." },
     'citroen-ami': { nom:'Citroën Ami', an:[2020], pays:'France',
-      ch:8, nm:44, kg:485, cyl:0, arch:'moteur électrique', adm:'électrique', pos:'avant', tx:'traction', bv:'A1',
+      ch:8, nm:40, kg:485, cyl:0, arch:'moteur électrique', adm:'électrique', pos:'avant', tx:'traction', bv:'A1',
       note:"Quadricycle électrique accessible dès 14 ans en France, sans permis. Portes symétriques inversées (l\'une s\'ouvre à l\'avant, l\'autre à l\'arrière) pour partager les mêmes pièces gauche/droite et réduire les coûts." },
     'ds-3': { nom:'DS 3', an:[2009], pays:'France',
       ch:208, nm:300, kg:1200, cyl:1.6, arch:'4 cyl. / électrique', adm:'turbo', pos:'avant', tx:'traction', bv:'M6 / A8',
@@ -3252,7 +3252,7 @@
       prod:65, son:'suralimentation double, montée en régime sans creux', flou:['ch','prod'],
       note:'Suralimentation combinée : compresseur volumétrique à bas régime, turbo au-delà. Rarissime.' },
     'lancia-037': { nom:'Lancia Rally 037', an:[1982,1983], pays:'Italie',
-      ch:205, nm:234, kg:1170, cyl:2.0, arch:'4 en ligne', adm:'compresseur', pos:'central', tx:'propulsion', bv:'M5',
+      ch:205, nm:234, kg:1170, cyl:2.0, arch:'4 en ligne', adm:'compresseur', pos:'central', tx:'propulsion', bv:'M5', flou:['nm'],
       prod:207, son:'compresseur volumétrique, sifflement continu',
       note:'Dernière propulsion titrée en championnat du monde des rallyes (1983).' },
     'ford-rs200': { nom:'Ford RS200', an:[1984,1986], pays:'Royaume-Uni',
