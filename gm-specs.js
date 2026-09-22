@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.117.0';
+  const VERSION_MODULE = '20.118.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -3245,7 +3245,8 @@
       flou:['ch','nm','prod'], note:"Puissance officiellement 'non communiquée' par Audi. 500 ch est l'estimation courante." },
     'peugeot-205-t16-e2': { nom:'Peugeot 205 Turbo 16 Evolution 2', an:[1985,1986], pays:'France',
       ch:500, kg:910, cyl:1.8, arch:'4 en ligne', adm:'turbo', pos:'central', tx:'intégrale', bv:'M5',
-      prod:20, son:'quatre-cylindres turbo aigu', flou:['ch','prod'] },
+      prod:20, son:'quatre-cylindres turbo aigu', flou:['ch','prod'],
+      note:"Une poignée d\'exemplaires construits pour la course, et deux doublés mondiaux consécutifs : Timo Salonen champion en 1985, Juha Kankkunen en 1986, avec le titre constructeurs les deux fois. Sous une carrosserie de citadine se cachent un moteur central transversal et quatre roues motrices — la silhouette d\'une 205 posée sur une vraie voiture de course. Le sommet du Groupe B, discipline interdite fin 1986." },
     'lancia-delta-s4': { nom:'Lancia Delta S4', an:[1985,1986], pays:'Italie',
       ch:480, kg:890, cyl:1.8, arch:'4 en ligne', adm:'turbo + compresseur', pos:'central', tx:'intégrale', bv:'M5',
       prod:65, son:'suralimentation double, montée en régime sans creux', flou:['ch','prod'],
@@ -3266,12 +3267,14 @@
       prod:3167, flou:['prod'], note:'Moteur central arrière dans une carrosserie de citadine.' },
     'lancia-stratos-hf': { nom:'Lancia Stratos HF Stradale', an:[1973,1978], pays:'Italie',
       ch:190, nm:225, kg:980, cyl:2.4, arch:'V6', adm:'atmosphérique', pos:'central', tx:'propulsion', bv:'M5',
-      prod:492, son:'V6 Dino', flou:['nm','prod'] },
+      prod:492, son:'V6 Dino', flou:['nm','prod'],
+      note:"492 exemplaires, le minimum exigé pour homologuer la première voiture conçue dès l\'origine pour le rallye — et non adaptée depuis une berline. Son V6 est emprunté à la Ferrari Dino, son dessin en coin à Bertone, et son empattement ultracourt lui donne un comportement aussi vif que redouté. Trois titres mondiaux constructeurs d\'affilée : 1974, 1975, 1976." },
 
     /* ---- Flat-six ------------------------------------------------------ */
     'porsche-911-carrera-rs-27': { nom:'Porsche 911 Carrera RS 2.7', an:[1972,1973], pays:'Allemagne',
       ch:210, nm:255, kg:960, cyl:2.7, arch:'flat-6', adm:'atmosphérique', pos:'arrière', tx:'propulsion', bv:'M5',
-      prod:1580, son:'flat-6 atmosphérique refroidi par air', surnom:'Ducktail', flou:['nm'] },
+      prod:1580, son:'flat-6 atmosphérique refroidi par air', surnom:'Ducktail', flou:['nm'],
+      note:"Porsche en attendait 500 pour l\'homologation : 1 580 ont trouvé preneur. Son becquet « queue de canard » (Entenbürzel), que le marketing jugeait inacceptable, plaque l\'arrière à haute vitesse — l\'un des premiers appendices aérodynamiques assumés sur une voiture de série. La 911 de référence des collectionneurs." },
     'porsche-959': { nom:'Porsche 959', an:[1986,1993], pays:'Allemagne',
       ch:450, nm:500, kg:1450, cyl:2.85, arch:'flat-6', adm:'biturbo séquentiel', pos:'arrière', tx:'intégrale', bv:'M6',
       v:317, prod:337, note:'Turbos séquentiels et transmission intégrale pilotée : vingt ans d\'avance.' },
@@ -3284,7 +3287,8 @@
       note:'Embrayage céramique, châssis carbone, aucune assistance électronique de stabilité.' },
     'porsche-911-gt3-rs-40': { nom:'Porsche 911 GT3 RS 4.0 (997)', an:[2011,2012], pays:'Allemagne',
       ch:500, nm:460, kg:1360, cyl:4.0, arch:'flat-6', adm:'atmosphérique', pos:'arrière', tx:'propulsion', bv:'M6',
-      rupteur:8500, prod:600, son:'flat-6 atmosphérique, vilebrequin de la RSR' },
+      rupteur:8500, prod:600, son:'flat-6 atmosphérique, vilebrequin de la RSR',
+      note:"600 exemplaires pour clore la génération 997 et, avec elle, la carrière du moteur Mezger. Ses 4,0 litres reposent sur un vilebrequin emprunté à la 911 GT3 RSR de course, avec bielles en titane et pistons forgés. Le dernier flat-six de cette lignée, et le plus puissant atmosphérique jamais monté sur une Porsche de route à sa sortie." },
     'porsche-911-gt3-rs-992': { nom:'Porsche 911 GT3 RS (992)', an:[2022,null], pays:'Allemagne',
       ch:525, nm:465, kg:1450, cyl:4.0, arch:'flat-6', adm:'atmosphérique', pos:'arrière', tx:'propulsion', bv:'PDK7',
       rupteur:9000, acc:3.2, son:'flat-6 atmosphérique à 9 000 tr/min',
@@ -3309,14 +3313,16 @@
       note:'Moteur boulonné directement au châssis carbone : pas de silentbloc, toutes les vibrations passent.' },
     'ferrari-enzo': { nom:'Ferrari Enzo', an:[2002,2004], pays:'Italie',
       ch:660, nm:657, kg:1365, cyl:6.0, arch:'V12', adm:'atmosphérique', pos:'central', tx:'propulsion', bv:'F1 6',
-      rupteur:8200, v:350, acc:3.4, prod:400, son:'V12 atmosphérique' },
+      rupteur:8200, v:350, acc:3.4, prod:400, son:'V12 atmosphérique',
+      note:"399 exemplaires prévus, tous attribués sur invitation de Maranello. Une 400ᵉ fut construite et offerte à Jean-Paul II, puis vendue aux enchères au profit des victimes du tsunami de 2004. Coque en carbone, boîte F1 à palettes et freins céramique : la Formule 1 transposée sur route, sans la moindre concession au confort." },
     'lamborghini-miura-sv': { nom:'Lamborghini Miura P400 SV', an:[1971,1973], pays:'Italie',
       ch:385, nm:400, kg:1245, cyl:3.9, arch:'V12 transversal', adm:'atmosphérique', pos:'central', tx:'propulsion', bv:'M5',
       prod:150, son:'V12 transversal, chaîne de distribution audible', flou:['nm','kg'],
       note:'Premier V12 en position centrale transversale : l\'acte de naissance de la supercar moderne.' },
     'lamborghini-countach-lp400': { nom:'Lamborghini Countach LP400', an:[1974,1978], pays:'Italie',
       ch:375, nm:361, kg:1065, cyl:4.0, arch:'V12', adm:'atmosphérique', pos:'central', tx:'propulsion', bv:'M5',
-      prod:157, surnom:'Periscopio', flou:['nm'] },
+      prod:157, surnom:'Periscopio', flou:['nm','prod'],
+      note:"La première Countach de série, dessinée par Marcello Gandini chez Bertone. Surnommée « periscopio » pour la gouttière creusée dans le toit, qui menait à un rétroviseur central — la visibilité arrière étant quasi nulle. La plus pure de la lignée : ni élargisseurs, ni aileron, la silhouette en coin à l\'état brut." },
     'mclaren-f1': { nom:'McLaren F1', an:[1992,1998], pays:'Royaume-Uni',
       ch:627, nm:651, kg:1138, cyl:6.1, arch:'V12', adm:'atmosphérique', pos:'central', tx:'propulsion', bv:'M6',
       rupteur:7500, v:386, acc:3.2, prod:106, son:'V12 BMW atmosphérique',
@@ -3341,7 +3347,8 @@
       prod:462000, flou:['prod'], note:'L\'acte fondateur de la compacte sportive.' },
     'porsche-718-cayman-gt4-rs': { nom:'Porsche 718 Cayman GT4 RS', an:[2021,null], pays:'Allemagne',
       ch:500, nm:450, kg:1415, cyl:4.0, arch:'flat-6', adm:'atmosphérique', pos:'central', tx:'propulsion', bv:'PDK7',
-      rupteur:9000, acc:3.4, son:'admission située derrière les oreilles du conducteur' },
+      rupteur:9000, acc:3.4, son:'admission située derrière les oreilles du conducteur',
+      note:"Le flat-six 4,0 atmosphérique de la 911 GT3 et de la GT3 Cup, cette fois en position centrale, et lâché jusqu\'à 9 000 tr/min. Les prises d\'air percées juste derrière les vitres latérales alimentent le moteur à quelques centimètres des oreilles des occupants : l\'admission devient l\'instrument principal. Plus de 23 secondes plus rapide que la GT4 sur le Nürburgring." },
 
     /* ---- Françaises ----------------------------------------------------- */
     'alpine-a110-1600s': { nom:'Alpine A110 1600 S', an:[1970,1973], pays:'France',
@@ -3384,7 +3391,8 @@
       prod:211, flou:['prod'], note:'Ni ABS, ni contrôle de traction, ni airbag. Décision assumée du constructeur.' },
     'de-tomaso-pantera-gt5': { nom:'De Tomaso Pantera GT5', an:[1980,1985], pays:'Italie',
       ch:350, nm:459, kg:1420, cyl:5.8, arch:'V8', adm:'atmosphérique', pos:'central', tx:'propulsion', bv:'M5',
-      flou:['ch','nm','kg'], son:'V8 Ford Cleveland' },
+      flou:['ch','nm','kg'], son:'V8 Ford Cleveland',
+      note:"Une berlinette italienne à moteur central propulsée par un V8 Ford 351 Cleveland — dont De Tomaso conservait un stock après l\'arrêt de sa production américaine en 1974. La GT5 se reconnaît à ses élargisseurs d\'ailes en fibre de verre collés et rivetés, à son aileron et à ses bas de caisse. Quelques centaines d\'exemplaires seulement, toutes séries GT5 confondues." },
 
     /* ---- Orphelines et curiosités --------------------------------------- */
     'saab-900-turbo-16s': { nom:'Saab 900 Turbo 16S', an:[1984,1993], pays:'Suède',
