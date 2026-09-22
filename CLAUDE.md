@@ -230,13 +230,35 @@ Même prudence pour les hybrides **série** en général : la règle du couple c
 vaut pour les architectures **parallèles** où le constructeur publie une valeur
 système (Peugeot PSE, Volvo T8, AMG E Performance, Alfa Tonale Q4…).
 
-### 4.4 bis — Voitures de course : couple non publié
-Pour une voiture de **compétition**, puissance et masse sont fixées par la
-Balance of Performance (bride et lest ajustés course par course) → à déclarer dans
-`flou`. Le **couple n'est jamais publié** par les écuries : le champ `nm` reste
-vide, jamais estimé. Cela concerne ~53 fiches du catalogue (GT3, LMP, F1,
-Groupe B, dragsters). Une fiche de course sans couple est **conforme**, pas
-incomplète — ne pas la « corriger ».
+### 4.4 bis — Voitures de course : couple non publié, et trois régimes de `flou`
+
+Le **couple n'est jamais publié** par les écuries : le champ `nm` reste vide,
+jamais estimé. Une fiche de course sans couple est **conforme**, pas incomplète
+— ne pas la « corriger ». Cela concerne la grande majorité des 69 entrées de
+catégorie « Course ».
+
+Pour `ch` et `kg`, en revanche, **il n'y a pas un seul régime mais trois**, et
+les confondre produit l'erreur dans un sens ou dans l'autre. La BoP ne régit pas
+toutes les voitures de course : appliquer `flou:['ch','kg']` à toute la
+catégorie annoncerait une incertitude là où le chiffre est certain — et le « ≈ »
+perd tout son sens s'il est partout.
+
+Le critère de tri est une **propriété factuelle de la série**, pas une
+impression :
+
+| Régime | Qui | `flou` | Pourquoi |
+|---|---|---|---|
+| **BoP** | GT3, GTE, Hypercar LMH/LMDh — 14 fiches | `['ch','kg']` | Bride **et** lest redéfinis à chaque épreuve. Les 680 ch / 1 030 kg affichés par tous les Hypercar ne sont pas des chiffres d'ingénierie, ce sont des plafonds réglementaires. |
+| **Bride** | F1, prototypes, GT1/LMGTP, WRC, Groupe B, dragster, ovale, IndyCar — 45 fiches | `['ch']` **seulement** | La puissance est bridée par un restricteur ou jamais communiquée. Mais la masse est un **minimum réglementaire** que la voiture atteint exactement : une F1 2023 pèse 798 kg parce que le règlement l'impose — c'est la donnée **la plus ferme** de sa fiche. La marquer « ≈ » serait faux. |
+| **Ferme** | Monotypes et séries clients — 10 fiches | *(rien)* | 911 GT3 Cup, A110 Cup, 488 Challenge, Radical SR3, Lamera, Mitjet, Espace F1, Daytona Coupé : chiffres constructeur, valables toute la saison. |
+
+> ⚠️ **Le piège de la masse réglementaire.** C'est le contresens à ne pas faire.
+> Dans une série à BoP, le lest bouge → la masse est floue. Dans une série à
+> minimum réglementaire, la masse est au contraire *plus* certaine que sur une
+> routière, puisque l'équipe construit la voiture pour taper exactement ce
+> chiffre. Masses réglementaires déjà au catalogue et à laisser fermes :
+> F1 798 kg (2023), 746 (2020), 605 (2004), 505 (1992) ; Top Fuel 1 050 kg ;
+> Sprint Car 635 kg ; Midget 410 kg ; WRC 1 230 kg.
 
 > ⚠️ `nc` n'existe pas comme champ dans le code : il n'y a **aucun** rendu associé.
 > La seule façon de dire « non communiqué » est donc de **laisser le champ absent**
