@@ -140,6 +140,24 @@ const BORNES = {
   cyl: [0, 9,      'L']
 };
 
+/* Jumelles de plateforme avérées — vérifiées une par une chez le constructeur.
+   Le contrôle « contamination copie-voisine » ne peut pas, par construction,
+   distinguer un copier-coller raté de deux voitures qui partagent réellement
+   le même groupe motopropulseur ET la même masse homologuée. Plutôt que de
+   relâcher le contrôle pour tout le monde (il deviendrait aveugle au motif
+   Giulia/Quadrifoglio qui justifie son existence), on nomme les exceptions.
+
+   Chaque entrée doit citer sa justification : c'est ce qui empêche la liste
+   de devenir un tapis sous lequel on glisse les vrais défauts.
+
+   - Cayman / Boxster (982) : le Cayman EST le Boxster à toit fixe. Même
+     plateforme MSB, même flat-4 turbo, et Porsche homologue les deux à la
+     même masse DIN (1 335 kg en 2.0, 1 355 kg en 2.5 S, boîte manuelle). */
+const JUMELLES_AVEREES = new Set([
+  'porsche-boxster+porsche-cayman',
+  'porsche-boxster-s+porsche-cayman-s'
+]);
+
 const anomalies = [];
 const signaler = (gravite, categorie, message) =>
   anomalies.push({ gravite, categorie, message });
@@ -405,6 +423,7 @@ function auditer() {
   for (let i = 1; i < clesSpecs.length; i++) {
     const a = SPECS[clesSpecs[i - 1]], b = SPECS[clesSpecs[i]];
     if (a.ch == null || b.ch == null) continue;
+    if (JUMELLES_AVEREES.has([clesSpecs[i - 1], clesSpecs[i]].sort().join('+'))) continue;
     const memeMeca = a.ch === b.ch && a.nm === b.nm && a.cyl === b.cyl &&
                      a.nm != null && a.cyl != null;
     if (memeMeca && a.kg === b.kg) {
@@ -480,6 +499,51 @@ function auditer() {
     if (!idsCatalogue.has(idCat)) {
       signaler('ERREUR', 'MAP', `${idCat} : id absent du catalogue fusionné (CARS + CATALOGUE_PLUS)`);
     }
+  }
+
+  /* --- D bis. Fiches SPECS inatteignables ---------------------------
+     Symétrique du contrôle D, et c'est l'angle mort qu'il laissait.
+     `ficheHTML()` résout la fiche par `MAP[idCatalogue]` STRICTEMENT —
+     il n'existe aucun repli sur `SPECS[idCatalogue]`. Une fiche dont
+     aucune entrée MAP ne porte la clé n'est donc jamais affichée, quelle
+     que soit sa qualité : elle est écrite, versionnée, relue… et morte.
+
+     Rien ne le signale à l'exécution. C'est ainsi que la fiche de la
+     Mégane R.S. Trophy-R est restée invisible alors que la voiture était
+     bien au catalogue : l'entrée MAP manquait, tout simplement.
+
+     Deux causes possibles, et la distinction est ce qui rend l'alerte
+     actionnable :
+       - la voiture est au catalogue SANS fiche → il manque une entrée MAP,
+         et la fiche existe déjà : correction à un caractère près ;
+       - la voiture est déjà servie par une autre fiche → doublon silencieux,
+         à fusionner puis supprimer (le risque étant qu'un futur MAP pointe
+         sur la mauvaise des deux — le motif Giulia/Quadrifoglio). */
+  const clesAtteintes = new Set();
+  for (const id of idsCatalogue) {
+    const cle = MAP[id];
+    if (cle && SPECS[cle]) clesAtteintes.add(cle);
+  }
+  const sansFiche = [...idsCatalogue].filter(id => !(MAP[id] && SPECS[MAP[id]]));
+  const normaliser = t => String(t).toLowerCase().normalize('NFD')
+    .replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
+
+  for (const cle of Object.keys(SPECS)) {
+    if (clesAtteintes.has(cle)) continue;
+    const nom = SPECS[cle].nom || cle;
+    /* On ne propose un rattachement QUE sur une correspondance de nom
+       exacte. L'appariement approximatif a déjà produit des faux positifs
+       coûteux (cf. CLAUDE.md §5 bis) : ici « A 45 AMG » et « C 63 AMG »
+       partagent assez de mots pour qu'une heuristique souple les confonde.
+       Mieux vaut ne rien proposer que proposer un rattachement faux. */
+    const cible = sansFiche.find(id => {
+      const c = carsFusionnes.find(x => x.id === id);
+      return c && normaliser(c.brand + ' ' + c.model) === normaliser(nom);
+    });
+    signaler('ALERTE', 'FICHE MORTE',
+      cible
+        ? `${cle} « ${nom} » n'est atteinte par aucune entrée MAP — or « ${cible} » est au catalogue SANS fiche : il manque MAP['${cible}'] = '${cle}'`
+        : `${cle} « ${nom} » n'est atteinte par aucune entrée MAP : jamais affichée. Vérifier si une autre fiche sert déjà cette voiture (doublon à fusionner) ou si la voiture mérite sa propre entrée catalogue.`);
   }
 
   /* --- E. MOTOR_SPECS ------------------------------------------------- */
