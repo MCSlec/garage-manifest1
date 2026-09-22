@@ -532,8 +532,23 @@ sortie en code non nul si échec. Préfixé `banc-`, donc hors cache.
 dans l'app existante, inutilisable pour bâtir une interface différente.
 
 `fichePourInterface(idCatalogue, { typeId, variantId })` renvoie les mêmes
-informations en **données brutes** : `modele`, `motorisations[]`, `technique`,
-`derives`, `flou[]`, `rareteFiche`, `generations`, `signature`.
+informations en **données brutes** : `catalogue`, `modele`, `motorisations[]`,
+`technique`, `derives`, `flou[]`, `rareteFiche`, `generations`, `signature`.
+
+> ⚠️ **Le piège des deux raretés.** `catalogue.rarete` est celle du **jeu**
+> (6 paliers, saisie manuelle, pilote les points et la couleur de la tuile) :
+> c'est **celle-ci qu'on affiche**. `rareteFiche` est dérivée du **volume de
+> production** et sert à caractériser la voiture dans la fiche technique ;
+> elle vaut `null` dès que `prod` est inconnu — le cas de la majorité des
+> modèles de grande diffusion. Les afficher l'une pour l'autre produit une
+> fiche qui **contredit sa propre grille**. (Alfa Giulia : `peucommun` au jeu,
+> `rareteFiche` à `null`.)
+
+Le bloc `catalogue` (`brand`, `model`, `yr`, `c`, `cat`, `rarete`) existe parce
+que `SPECS` ne porte qu'un `nom` complet et un `pays` en toutes lettres : ni
+marque seule, ni drapeau, ni catégorie, ni rareté de jeu. Sans lui, une
+interface va chercher l'en-tête dans `CARS` elle-même — et oublie
+`CATALOGUE_PLUS` (§2.3).
 
 **Pourquoi elle est nécessaire.** Sans elle, une interface tierce devrait lire
 `MOTOR_SPECS` elle-même puis **refaire la fusion modèle ↔ variante**. Or cette

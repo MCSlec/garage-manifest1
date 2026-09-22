@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.133.0';
+  const VERSION_MODULE = '20.134.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -14503,8 +14503,31 @@
         return out;
       };
 
+      /* L'IDENTITÉ AFFICHÉE vient de l'entrée catalogue, pas de SPECS.
+         SPECS ne porte qu'un `nom` complet et un `pays` en toutes lettres :
+         ni marque seule, ni drapeau, ni catégorie, ni — surtout — la rareté
+         du JEU. Sans ce bloc, une interface ne peut pas composer son en-tête
+         et ira le chercher dans CARS elle-même, en oubliant CATALOGUE_PLUS
+         (§2.3) ou en confondant les deux raretés (§2.2). */
+      const entree = (typeof CARS !== 'undefined' && Array.isArray(CARS))
+        ? CARS.find(c => c && c.id === idCatalogue) : null;
+
       return {
         idCatalogue, cle,
+
+        /* ⚠️ DEUX RARETÉS COEXISTENT, ET ELLES NE DISENT PAS LA MÊME CHOSE.
+           `catalogue.rarete` est celle du JEU (6 paliers, saisie manuelle,
+           pilote les points et la couleur de la tuile) : c'est CELLE-CI qu'on
+           affiche. `rareteFiche` plus bas est dérivée du volume de production
+           et sert à caractériser la voiture dans la fiche technique — elle
+           vaut `null` dès que `prod` est inconnu, ce qui est le cas de la
+           majorité des modèles de grande diffusion. Les afficher l'une pour
+           l'autre produit une fiche qui contredit sa propre grille. */
+        catalogue: entree ? {
+          brand: entree.brand, model: entree.model, yr: entree.yr,
+          c: entree.c, cat: entree.cat, rarete: entree.r
+        } : null,
+
         modele: choisir(base, ['nom', 'an', 'pays', 'note', 'surnom', 'son', 'prod']),
         /* Copie PROFONDE, pas `{...v}` : une variante peut contenir un
            tableau `flou`, qu'une copie de surface partagerait par référence.
