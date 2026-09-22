@@ -495,6 +495,114 @@ function auditer() {
     console.log(`  ${libelle.padEnd(10)} : ${String(total - liste.length).padStart(4)}/${total} (${pct} %)  — ${liste.length} manquante(s)`);
   }
 
+  /* --- Liste de travail en Markdown (--manques-md) -------------------
+     Destinée à une recherche humaine. Elle SÉPARE ce qui manque vraiment
+     de ce qui est légitimement absent : une fiche de course sans couple
+     ou un hybride HSD sans couple système sont CONFORMES (voir CLAUDE.md
+     §4.4 et §4.4 bis). Les mélanger ferait chercher pour rien, et pire,
+     inciterait à remplir des champs qui doivent rester vides. */
+  if (process.argv.includes('--manques-md')) {
+    const invMap = {};
+    for (const [idc, cle] of Object.entries(MAP)) if (!invMap[cle]) invMap[cle] = idc;
+    const parId = Object.fromEntries(carsFusionnes.map(c => [c.id, c]));
+
+    const lignes = [];
+    for (const cle of Object.keys(SPECS)) {
+      const f = SPECS[cle];
+      const absents = ['nm', 'kg', 'cyl'].filter(ch => f[ch] == null);
+      if (!absents.length) continue;
+      const idc = invMap[cle];
+      const c = idc ? parId[idc] : null;
+      if (!c) continue;                       // fiche orpheline : hors périmètre
+      const arch = String(f.arch || '');
+      const estCourse = c.cat === 'Course';
+      const estHSD = /toyota|lexus/i.test(c.brand) && /hybrid/i.test(arch);
+      const estElectrique = /électrique|electrique/i.test(arch);
+      lignes.push({
+        marque: c.brand, modele: c.model, cat: c.cat, an: (f.an || []).join('–'),
+        ch: f.ch, absents, cle,
+        motif: estCourse ? 'course' : estHSD ? 'hsd' : (estElectrique && absents.length === 1 && absents[0] === 'cyl') ? 'ev' : null
+      });
+    }
+
+    const aChercher = lignes.filter(l => !l.motif);
+    const legitimes = lignes.filter(l => l.motif);
+    const tri = (a, b) => (a.cat || '').localeCompare(b.cat || '') || a.marque.localeCompare(b.marque);
+
+    const out = [];
+    out.push('# Fiches techniques — ce qui manque encore');
+    out.push('');
+    out.push(`> Généré le ${new Date().toISOString().slice(0, 10)} par \`node banc-audit.js --manques-md\`.`);
+    out.push('> Régénère-le après chaque vague plutôt que de le corriger à la main.');
+    out.push('');
+    out.push(`**${aChercher.length} fiches à compléter** · ${legitimes.length} légitimement incomplètes (voir la fin).`);
+    out.push('');
+    out.push('Le champ **ch** est indiqué parce qu\'il **désigne la variante exacte** de la fiche :');
+    out.push('cherche le couple ou la masse *de cette version-là*, pas du modèle en général.');
+    out.push('');
+
+    let catCourante = null;
+    for (const l of aChercher.sort(tri)) {
+      if (l.cat !== catCourante) {
+        catCourante = l.cat;
+        out.push('');
+        out.push(`## ${catCourante}`);
+        out.push('');
+        out.push('| Voiture | Années | Puissance (fixe la variante) | Manque |');
+        out.push('|---|---|---|---|');
+      }
+      const libelles = { nm: 'couple', kg: 'masse', cyl: 'cylindrée' };
+      out.push(`| ${l.marque} ${l.modele} | ${l.an} | ${l.ch} ch | **${l.absents.map(a => libelles[a]).join(', ')}** |`);
+    }
+
+    /* Pièges déjà rencontrés en sourçant. Les consigner évite de refaire
+       le chemin — et surtout évite d'écrire le chiffre facile à trouver
+       mais faux. */
+    out.push('');
+    out.push('---');
+    out.push('');
+    out.push('## Notes de sourcing — cas déjà creusés, et pourquoi ils bloquent');
+    out.push('');
+    out.push('| Voiture | Ce qui bloque |');
+    out.push('|---|---|');
+    out.push('| **Lucid Air** | Deux chiffres incompatibles : 1 390 Nm (bases métriques) contre 1 430 lb-ft annoncés par Lucid, soit ~1 939 Nm. Bases de mesure différentes (couple moteur vs couple à la roue). Il faut trancher *laquelle* Lucid publie. |');
+    out.push('| **Xiaomi SU7 Ultra** | 1 770 Nm chez les uns, 1 135 Nm chez les autres. Écart de 55 % : l\'un des deux est probablement le prototype, l\'autre la série. |');
+    out.push('| **Mercedes-AMG ONE** | 900 Nm circule, mais Mercedes ne publie aucun couple système. Avec quatre moteurs électriques répartis sur des essieux différents, un couple « combiné » est mal défini. |');
+    out.push('| **Renault Austral E-Tech** | Le « 410 Nm » des fiches est exactement 205 + 205 : une addition des couples thermique et électrique, ce que la convention interdit (voir CLAUDE.md §4.4). Chercher si Renault publie une valeur système réelle. |');
+    out.push('| **Peugeot 106 (générique)** | Porte 120 ch / 145 Nm, soit les chiffres de la **106 GTI**, alors qu\'une 106 de base fait 45 à 60 ch. Ajouter une masse cimenterait l\'erreur : c\'est la fiche elle-même qui doit être tranchée (générique ou sportive ?). |');
+    out.push('');
+    out.push('**Le réflexe à garder :** quand deux sources divergent d\'un ordre de grandeur,');
+    out.push('c\'est presque toujours qu\'elles ne mesurent pas la même chose (couple moteur vs');
+    out.push('couple à la roue, prototype vs série, cumulé vs thermique seul). Mieux vaut un');
+    out.push('champ vide qu\'un chiffre faux — la valeur du catalogue, c\'est la confiance.');
+    out.push('');
+    out.push('---');
+    out.push('');
+    out.push('## Légitimement incomplètes — ne pas chercher');
+    out.push('');
+    out.push('Ces fiches sont **conformes** en l\'état. Y inscrire un chiffre serait une erreur,');
+    out.push('pas une amélioration.');
+    out.push('');
+    const groupes = {
+      course: ['Voitures de course — couple jamais publié', 'La puissance et la masse sont fixées course par course par la Balance of Performance ; le couple n\'est communiqué par aucune écurie.'],
+      hsd:    ['Hybrides Toyota / Lexus (HSD) — couple système sans existence physique', 'Thermique et électrique sont reliés par un train épicycloïdal, sans embrayage : les deux couples ne s\'additionnent jamais sur un arbre commun. Toyota ne publie donc aucun couple système, et c\'est délibéré.'],
+      ev:     ['Électriques — pas de cylindrée', 'Un moteur électrique n\'a pas de cylindrée. Le champ est volontairement vide.']
+    };
+    for (const [clef, [titre, explication]] of Object.entries(groupes)) {
+      const l = legitimes.filter(x => x.motif === clef);
+      if (!l.length) continue;
+      out.push(`### ${titre} — ${l.length}`);
+      out.push('');
+      out.push(explication);
+      out.push('');
+      out.push(l.sort(tri).map(x => `${x.marque} ${x.modele}`).join(' · '));
+      out.push('');
+    }
+
+    fs.writeFileSync(path.join(RACINE, 'MANQUES.md'), out.join('\n'));
+    console.log(`MANQUES.md écrit : ${aChercher.length} fiches à compléter, ${legitimes.length} légitimement incomplètes.`);
+  }
+
   if (process.argv.includes('--manques')) {
     for (const [champ, liste] of Object.entries(manques)) {
       if (!liste.length) continue;

@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.119.0';
+  const VERSION_MODULE = '20.120.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -1006,10 +1006,10 @@
       ch:210, kg:2000, cyl:5.7, arch:'6 en ligne et V8', adm:'atmo', pos:'avant', tx:'4x4', bv:'M4 / A3',
       note:"Grand 4x4 à toit amovible, ancêtre du Tahoe. Robuste et simple, il est devenu une base prisée pour les restaurations et les préparations tout-terrain. Le SUV américain à l\'ancienne, avant l\'ère du confort routier." },
     'chevrolet-suburban': { nom:'Chevrolet Suburban', an:[1935], pays:'États-Unis',
-      ch:420, kg:2600, cyl:6.2, arch:'V8, Duramax diesel', adm:'atmo', pos:'avant', tx:'4x4', bv:'A10',
+      ch:420, nm:624, kg:2600, cyl:6.2, arch:'V8, Duramax diesel', adm:'atmo', pos:'avant', tx:'4x4', bv:'A10',
       note:"Le nom de modèle le plus ancien encore en production dans l\'automobile mondiale (depuis 1935). SUV pleine grandeur de huit à neuf places, omniprésent dans les cortèges officiels américains et les films (les fameux « Suburban noirs »)." },
     'chevrolet-tahoe': { nom:'Chevrolet Tahoe', an:[1992], pays:'États-Unis',
-      ch:420, kg:2500, cyl:6.2, arch:'V8', adm:'atmo', pos:'avant', tx:'4x4', bv:'A10',
+      ch:420, nm:624, kg:2500, cyl:6.2, arch:'V8', adm:'atmo', pos:'avant', tx:'4x4', bv:'A10',
       note:"SUV grand format quasi exclusif au marché nord-américain. La voiture des forces de l\'ordre, des agences gouvernementales et des grandes familles américaines. Sa taille imposante le rend rarissime hors des États-Unis." },
     'chevrolet-corvette-c6': { nom:'Chevrolet Corvette (C6)', an:[2005,2013], pays:'États-Unis',
       ch:647, nm:819, kg:1470, cyl:7.0, arch:'V8', adm:'atmo / compresseur', pos:'avant', tx:'propulsion', bv:'M6',
@@ -1703,7 +1703,7 @@
       prod:80,
       note:"Pas de boîte de vitesses conventionnelle : le système « Direct Drive » relie directement le moteur aux roues, l\'électrique comblant les bas régimes. Toutes les portes et le capot s\'ouvrent automatiquement d\'un bouton (« Autoskin »)." },
     'koenigsegg-gemera': { nom:'Koenigsegg Gemera', an:[2020], pays:'Suède',
-      ch:2300, kg:1850, cyl:2.0, arch:'3 cyl. hybride (ou V8)', adm:'biturbo + électrique', pos:'central', tx:'intégrale', bv:'Direct Drive',
+      ch:2300, nm:2750, kg:1850, cyl:5.0, arch:'V8 hybride (5.0 biturbo + Dark Matter)', adm:'biturbo + électrique', pos:'central', tx:'intégrale', bv:'LSTT 9',
       note:"La première Koenigsegg quatre places, un « Mega-GT » familial. Son moteur trois cylindres « Tiny Friendly Giant » sans arbre à cames (soupapes pilotées individuellement) est une révolution technique. Quatre porte-gobelets chauffants et réfrigérants." },
     'rimac-nevera': { nom:'Rimac Nevera', an:[2021], pays:'Croatie',
       ch:1914, nm:2360, kg:2150, cyl:0, arch:'quatre moteurs électriques', adm:'électrique', pos:'avant/arrière', tx:'intégrale', bv:'A1',
@@ -2150,7 +2150,7 @@
       ch:141, kg:1200, cyl:2.3, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'hydraulique / M4',
       note:"Révolution de 1955 : suspension hydropneumatique, direction et freins assistés, phares directionnels. Sa ligne signée Bertoni semblait venir du futur. A sauvé la vie du général de Gaulle lors de l\'attentat du Petit-Clamart." },
     'citroen-bx': { nom:'Citroën BX', an:[1982,1994], pays:'France',
-      ch:160, kg:1000, cyl:1.9, arch:'4 cyl.', adm:'atmo / turbo', pos:'avant', tx:'traction', bv:'M5',
+      ch:160, nm:177, kg:1000, cyl:1.9, arch:'4 cyl.', adm:'atmo / turbo', pos:'avant', tx:'traction', bv:'M5',
       note:"Design anguleux signé Marcello Gandini (le père de la Countach), hydropneumatique, hayon en polyester. La BX 4TC de rallye Groupe B est une rareté absolue. La GTi 16v est la sportive de la gamme." },
     'peugeot-106': { nom:'Peugeot 106', an:[1991,2003], pays:'France',
       ch:120, nm:145, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
@@ -2272,7 +2272,7 @@
       ch:702, nm:881, kg:2500, cyl:6.2, arch:'V8 HEMI (TRX compressé)', adm:'compresseur', pos:'avant', tx:'4x4', bv:'A8',
       note:"Suspension arrière à ressorts hélicoïdaux, rare sur un pick-up, pour un confort de berline. La TRX et son V8 compressé de 702 ch était le pick-up de série le plus puissant du monde." },
     'cadillac-escalade': { nom:'Cadillac Escalade', an:[1999], pays:'États-Unis',
-      ch:682, kg:2700, cyl:6.2, arch:'V8, diesel', adm:'atmo / compresseur', pos:'avant', tx:'4x4', bv:'A10',
+      ch:682, nm:885, kg:2700, cyl:6.2, arch:'V8, diesel', adm:'atmo / compresseur', pos:'avant', tx:'4x4', bv:'A10',
       note:"Le symbole du luxe américain démesuré, star du hip-hop et d\'Hollywood. La version V-Series à V8 compressé de 682 ch est le plus gros SUV de luxe le plus puissant du marché." },
     'chevrolet-silverado': { nom:'Chevrolet Silverado', an:[1999], pays:'États-Unis',
       ch:420, nm:624, kg:2300, cyl:6.2, arch:'V6, V8, Duramax diesel', adm:'atmo', pos:'avant', tx:'propulsion / 4x4', bv:'A10',
