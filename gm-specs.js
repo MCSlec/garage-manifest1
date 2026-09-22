@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.125.0';
+  const VERSION_MODULE = '20.126.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -2278,7 +2278,7 @@
       ch:420, nm:624, kg:2300, cyl:6.2, arch:'V6, V8, Duramax diesel', adm:'atmo', pos:'avant', tx:'propulsion / 4x4', bv:'A10',
       note:"Le grand pick-up de Chevrolet, l\'un des véhicules les plus vendus des États-Unis, quasi absent ailleurs. Décliné en version électrique EV à grande autonomie." },
     'gmc-hummer-ev': { nom:'GMC Hummer EV', an:[2021], pays:'États-Unis',
-      ch:1000, kg:4100, cyl:0, arch:'trois moteurs électriques', adm:'électrique', pos:'avant/arrière', tx:'intégrale', bv:'A1',
+      ch:1000, nm:1485, kg:4100, cyl:0, arch:'trois moteurs électriques', adm:'électrique', pos:'avant/arrière', tx:'intégrale', bv:'A1',
       note:"Résurrection électrique du Hummer, pesant plus de 4 tonnes. Le mode « CrabWalk » permet de rouler en crabe, les quatre roues directrices braquant dans le même sens. 1000 ch annoncés." },
     'ford-bronco': { nom:'Ford Bronco', an:[1966], pays:'États-Unis',
       ch:418, nm:590, kg:2100, cyl:2.7, arch:'V6 EcoBoost (jadis V8)', adm:'turbo', pos:'avant', tx:'4x4', bv:'A10 / M7',
@@ -2328,7 +2328,7 @@
       ch:1020, nm:1420, kg:2200, cyl:0, arch:'trois moteurs électriques', adm:'électrique', pos:'avant/arrière', tx:'intégrale', bv:'A1',
       note:"La Plaid à trois moteurs abat le 0-100 en moins de 2,1 s, faisant d\'elle l\'une des voitures de série les plus rapides du monde. Le volant « yoke » en forme de manche d\'avion a fait débat." },
     'tesla-cybertruck': { nom:'Tesla Cybertruck', an:[2023], pays:'États-Unis',
-      ch:845, kg:3100, cyl:0, arch:'trois moteurs électriques', adm:'électrique', pos:'avant/arrière', tx:'intégrale', bv:'A1',
+      ch:845, nm:1170, kg:3009, cyl:0, arch:'trois moteurs électriques', adm:'électrique', pos:'avant/arrière', tx:'intégrale', bv:'A1',
       note:"Carrosserie en acier inoxydable non peint, pliée à froid. Architecture électrique 48 V, une première dans l\'automobile grand public. Sa vitre « incassable » brisée en direct lors de la présentation est restée célèbre." },
     'porsche-taycan': { nom:'Porsche Taycan', an:[2019], pays:'Allemagne',
       ch:761, nm:1050, kg:2300, cyl:0, arch:'deux moteurs électriques, 800 V', adm:'électrique', pos:'avant/arrière', tx:'intégrale', bv:'A2',
