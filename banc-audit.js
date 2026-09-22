@@ -429,24 +429,42 @@ function auditer() {
     const g = GENS[idCat] || GENS[MAP[idCat]];
     if (!g || !Array.isArray(bloc.types)) continue;
 
-    const puissancesGens = new Set();
+    /* Chaque motorisation GENS est retenue avec SA cylindrée, pour pouvoir
+       l'apparier au bon moteur du sélecteur. Sans cet appariement, le banc
+       compare la puissance d'un V8 à celle d'un V12 et crie à tort — il m'a
+       fait « corriger » deux valeurs justes avant que ce garde-fou existe.
+
+       Deux filtres complètent l'appariement :
+       - une puissance citée en FOURCHETTE (« 218–240 ch ») couvre plusieurs
+         variantes : une valeur du sélecteur comprise dedans n'est pas une
+         contradiction, on l'ignore ;
+       - seule une cylindrée IDENTIQUE autorise la comparaison. */
+    const motosGens = [];
     for (const gen of g) {
-      const texte = (gen && !Array.isArray(gen) && Array.isArray(gen.m))
-        ? gen.m.map(m => String(m[2] || '')).join(' ')
-        : (Array.isArray(gen) ? String(gen[3] || '') : '');
-      for (const n of texte.match(/\d{2,4}/g) || []) puissancesGens.add(+n);
+      const lignes = (gen && !Array.isArray(gen) && Array.isArray(gen.m))
+        ? gen.m.map(m => ({ meca: String(m[1] || ''), puiss: String(m[2] || '') }))
+        : (Array.isArray(gen) ? [{ meca: String(gen[2] || ''), puiss: String(gen[3] || '') }] : []);
+      for (const l of lignes) {
+        const nombres = l.puiss.match(/\d{2,4}/g) || [];
+        if (nombres.length !== 1) continue;       // fourchette ou énumération
+        const cyl = (l.meca.match(/\b(\d\.\d)\b/) || [])[1];
+        motosGens.push({ ch: +nombres[0], cyl: cyl ? +cyl : null });
+      }
     }
-    if (!puissancesGens.size) continue;
+    if (!motosGens.length) continue;
 
     for (const t of bloc.types) {
       for (const v of t.variants || []) {
-        if (typeof v.ch !== 'number') continue;
-        if (puissancesGens.has(v.ch)) continue;          // concordance exacte
-        for (const p of puissancesGens) {
-          const ecart = Math.abs(p - v.ch) / Math.max(p, v.ch);
+        if (typeof v.ch !== 'number' || typeof v.cyl !== 'number') continue;
+        /* Candidates : les motorisations GENS de MÊME cylindrée. */
+        const memeMoteur = motosGens.filter(m => m.cyl !== null && Math.abs(m.cyl - v.cyl) < 0.05);
+        if (!memeMoteur.length) continue;
+        if (memeMoteur.some(m => m.ch === v.ch)) continue;   // concordance exacte
+        for (const m of memeMoteur) {
+          const ecart = Math.abs(m.ch - v.ch) / Math.max(m.ch, v.ch);
           if (ecart > 0 && ecart < 0.03) {
             signaler('ALERTE', 'GENS vs MOTOR_SPECS',
-              `${idCat}/${t.id}/${v.id} — le sélecteur annonce ${v.ch} ch, les générations citent ${p} ch pour ce qui semble le même moteur (${(ecart * 100).toFixed(1)} % d'écart) : vraisemblablement ch contre PS, ou deux normes`);
+              `${idCat}/${t.id}/${v.id} — même cylindrée (${v.cyl} L) mais le sélecteur annonce ${v.ch} ch et les générations ${m.ch} ch (${(ecart * 100).toFixed(1)} % d'écart) : vraisemblablement ch contre PS, ou deux normes`);
             break;
           }
         }

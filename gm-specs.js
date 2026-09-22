@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.127.0';
+  const VERSION_MODULE = '20.128.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -5592,7 +5592,7 @@
       { c:'206', a:'1998–2012', m:[
         ['Essence 1.1–1.6','4 cyl. TU et EW','60–110 ch','traction · manuelle 5','Près de dix millions d\'exemplaires : la Peugeot la plus vendue de l\'histoire.'],
         ['HDi','4 cyl. 1.4–2.0 turbodiesel à rampe commune','68–110 ch','traction · manuelle 5','L\'injection à rampe commune arrive sur le segment.'],
-        ['S16','4 cyl. 2.0 16v atmo','136 ch','traction · manuelle 5','Héritière directe de la 306 S16 en format réduit.'],
+        ['S16','4 cyl. 2.0 16v atmo','138 ch','traction · manuelle 5','Héritière directe de la 306 S16 en format réduit.'],
         ['RC / GT','4 cyl. 2.0 16v atmo','177 ch','traction · manuelle 5','Le 2.0 le plus poussé de PSA. Freins et châssis spécifiques.'],
       ]},
     ],
@@ -5617,7 +5617,7 @@
     'peugeot-406-coupe': [
       { c:'Coupé', a:'1997–2004', m:[
         ['2.0 16v','4 cyl. 2.0 16v atmo','135 ch','traction · manuelle 5','Dessinée et assemblée chez Pininfarina, à Turin.'],
-        ['2.2 16v','4 cyl. 2.2 16v atmo','158 ch','traction · manuelle 5','Le coupé 406, dessiné par Pininfarina, souvent cité parmi les plus beaux coupés français.'],
+        ['2.2 16v','4 cyl. 2.2 16v atmo','160 ch','traction · manuelle 5','Le coupé 406, dessiné par Pininfarina, souvent cité parmi les plus beaux coupés français.'],
         ['3.0 V6','V6 PRV / ES9 3.0 24v atmo','194–210 ch','traction · manuelle 6 / auto 4','Le V6 24 soupapes : la version que les collectionneurs recherchent.'],
       ]},
     ],
@@ -5638,7 +5638,7 @@
         ['2.0 / 2.3 diesel','4 cyl. XD turbodiesel ou atmo','56–80 ch','propulsion · manuelle 4','Le diesel qui a bâti la réputation de robustesse de Peugeot.'],
       ]},
       { c:'Coupé / Cabriolet', a:'1969–1983', m:[
-        ['2.0 injection','4 cyl. 2.0','104 ch','propulsion · manuelle 4','Carrosserie Pininfarina.'],
+        ['2.0 injection','4 cyl. 2.0','105 ch','propulsion · manuelle 4','Carrosserie Pininfarina.'],
         ['2.7 V6','V6 PRV 2.7 atmo','136–144 ch','propulsion · manuelle 5','Le premier V6 PRV, développé avec Renault et Volvo.'],
       ]},
     ],
@@ -6321,7 +6321,7 @@
     ],
     'nissan-300zx': [
       { c:'Z32', a:'1989–2000', m:[
-        ['3.0 atmo','VG30DE 3.0 V6 atmo','222 ch','propulsion · manuelle 5 / auto','La 300ZX, GT japonaise des années 90 au style intemporel, aussi en version twin-turbo.'],
+        ['3.0 atmo','VG30DE 3.0 V6 atmo','226 ch','propulsion · manuelle 5 / auto','La 300ZX, GT japonaise des années 90 au style intemporel, aussi en version twin-turbo.'],
         ['3.0 Twin Turbo','VG30DETT 3.0 V6 biturbo','280 ch (Japon) / 300 ch (export)','propulsion · manuelle 5','Roues arrière directrices Super HICAS. Design resté remarquablement moderne.'],
       ]},
     ],
@@ -6581,7 +6581,7 @@
     'fiat-coupe': [
       { c:'175', a:'1993–2000', m:[
         ['2.0 16v','4 cyl. 2.0 16v atmo','139 ch','traction · manuelle 5','Carrosserie dessinée par Chris Bangle, intérieur par Pininfarina.'],
-        ['2.0 16v Turbo','4 cyl. 2.0 16v turbo','190 ch','traction · manuelle 5','Coupé au dessin extérieur de Pininfarina et intérieur signé... du même. Le 20V Turbo dépasse 220 ch.'],
+        ['2.0 16v Turbo','4 cyl. 2.0 16v turbo','195 ch','traction · manuelle 5','Coupé au dessin extérieur de Pininfarina et intérieur signé... du même. Le 20V Turbo dépasse 220 ch.'],
         ['2.0 20v Turbo','5 en ligne 2.0 20v turbo','220 ch','traction · manuelle 5/6, autobloquant Viscodrive','Le coupé le plus rapide de sa catégorie à sa sortie. La série limitée Plus est la plus recherchée.'],
       ]},
     ],
@@ -7041,7 +7041,7 @@
         ['2.0','MZR 2.0 atmo','126–170 ch','propulsion · manuelle 5/6 / automatique','La plus lourde de la lignée. Version à toit rigide rétractable.'],
       ]},
       { c:'ND', a:'2015–', m:[
-        ['1.5 SkyActiv','1.5 atmo','132 ch','propulsion · manuelle 6','Version européenne et japonaise, la plus légère : environ 1 000 kg.'],
+        ['1.5 SkyActiv','1.5 atmo','131 ch','propulsion · manuelle 6','Version européenne et japonaise, la plus légère : environ 1 000 kg.'],
         ['2.0 SkyActiv','2.0 atmo','160–184 ch','propulsion · manuelle 6','Le bloc revu de 2018 monte à 7 500 tr/min.'],
       ]},
     ],

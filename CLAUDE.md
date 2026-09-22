@@ -321,7 +321,7 @@ incrémenter conjointement :**
 2. `VERSION` (`"garage-v…"`) dans `sw.js` (ligne ~12).
 
 Ces deux numéros sont **tenus synchronisés** (au 22/09/2026 : `gm-specs.js` →
-`20.127.0`, `sw.js` → `garage-v20.127.0`). `VERSION_MODULE` s'affiche en outre
+`20.128.0`, `sw.js` → `garage-v20.128.0`). `VERSION_MODULE` s'affiche en outre
 dans l'UI via `grefferVersion()`, ce qui permet de vérifier de visu quelle version
 tourne réellement sur l'appareil.
 
@@ -359,6 +359,30 @@ Ce qu'il attrape, et que ni l'œil ni `node --check` ne voient :
 les extrêmes **réels** du catalogue (Top Fuel 11 000 ch, Hummer EV 4 100 kg,
 Citroën Ami 8 ch). Un banc qui crie au loup finit ignoré — ne les resserre pas
 sans vérifier la fiche incriminée.
+
+### ⚠️ La sortie du banc se vérifie cas par cas avant d'être appliquée
+
+Les contrôles qui **apparient** des données (GENS ↔ MOTOR_SPECS, contamination
+entre voisines) reposent sur une heuristique. Une heuristique se trompe, et
+appliquer sa sortie en lot **fabrique des erreurs au lieu d'en corriger**.
+
+C'est arrivé : la première version du contrôle GENS ↔ MOTOR_SPECS comparait les
+puissances d'un modèle **sans vérifier qu'il s'agissait du même moteur**. Sa
+liste de 12 « divergences » appliquée telle quelle a cassé **6 valeurs justes** —
+le 462 ch de la 996 GT2 remplacé par celui de la 992 Carrera S, le 103 ch de la
+205 Rallye par celui de la GTI 1.6, le 180 ch de l'Octavia RS essence par celui
+du TDI diesel. Toutes ont dû être rétablies.
+
+**Le réflexe :**
+1. Avant d'appliquer une liste du banc, **ouvrir chaque ligne visée** et vérifier
+   que la valeur appartient bien à la motorisation que le contrôle croit viser.
+2. Corriger d'abord **le détecteur**, ensuite les données. Ici l'appariement se
+   fait désormais sur la **cylindrée**, ce qui supprime la classe entière de faux
+   positifs.
+3. **Tester que le détecteur détecte encore** après l'avoir resserré : réintroduire
+   volontairement une divergence sur une copie et vérifier qu'elle remonte. Un
+   contrôle trop strict affiche « 0 anomalie » en ne voyant plus rien — le pire
+   des deux mondes, parce qu'il rassure.
 
 Préfixé `banc-` : jamais mis en cache par `sw.js` (`HORS_CACHE`), donc sa
 modification n'impose aucun bump de version.
