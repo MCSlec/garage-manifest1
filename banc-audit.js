@@ -565,17 +565,13 @@ function auditer() {
     out.push('');
     out.push('| Voiture | Ce qui bloque |');
     out.push('|---|---|');
-    out.push('| **Lucid Air** | Deux chiffres incompatibles : 1 390 Nm (bases métriques) contre 1 430 lb-ft annoncés par Lucid, soit ~1 939 Nm. Bases de mesure différentes (couple moteur vs couple à la roue). Il faut trancher *laquelle* Lucid publie. |');
     out.push('| **Xiaomi SU7 Ultra** | 1 770 Nm chez les uns, 1 135 Nm chez les autres. Écart de 55 % : l\'un des deux est probablement le prototype, l\'autre la série. |');
     out.push('| **Mercedes-AMG ONE** | 900 Nm circule, mais Mercedes ne publie aucun couple système. Avec quatre moteurs électriques répartis sur des essieux différents, un couple « combiné » est mal défini. |');
     out.push('| **Renault Austral E-Tech** | Le « 410 Nm » des fiches est exactement 205 + 205 : une addition des couples thermique et électrique, ce que la convention interdit (voir CLAUDE.md §4.4). Chercher si Renault publie une valeur système réelle. |');
     out.push('| **Hispano Suiza Carmen** | 1 150 Nm chez les uns, 1 600 Nm chez les autres : couple moteur contre couple cumulé des quatre moteurs après démultiplication. |');
     out.push('| **Porsche 356 Carrera 2** | Le moteur Fuhrmann 587/1 est très documenté en puissance (130 ch à 6 200 tr/min), mais aucune source consultée ne publie son couple. |');
     out.push('| **GMC Hummer EV** | ⚠️ Le « 11 500 lb-ft » (≈ 15 592 Nm) qui circule est le **couple à la roue** annoncé par le marketing GM, pas le couple des moteurs (~1 500 Nm). Ne jamais le saisir tel quel : il donnerait un ratio délirant. |');
-    out.push('| **Chevrolet K5 Blazer** | `ch:210` ne correspond à aucune version des bases : le 5.7 V8 donne 175 ch / 393 Nm en 1972 et 155 ch / 346 Nm en 1973 (SAE net). Périmètre à trancher avant de chercher. |');
-    out.push('| **Chevrolet C10** | ⚠️ `ch:255` est suspect : le 350 V8 donne **165 ch et 255 lb-ft**. Soit c\'est la cotation SAE *gross* d\'avant 1972 (légitime), soit le couple en lb-ft a été saisi dans le champ puissance. À vérifier contre une source d\'époque avant de chercher le couple. |');
     out.push('| **Czinger 21C** | Puissance bien documentée (1 250 ch), couple jamais publié par le constructeur. |');
-    out.push('| **Pegaso Z-102** | `ch:360` vise la 4,5 L compressée, dont le couple n\'est pas publié. Le 3.2 atmosphérique donne 210 ch / 25 mkg. |');
     out.push('| **Micro-citadines d\'époque restantes** (Fiat 500 Nuova, Peugeot 402, Tatra T87, Cord, Bugatti Type 35, Bentley Blower, Delahaye 135) | Couple non communiqué à l\'époque. Piste : revues techniques (RTA) et notices constructeur d\'origine. |');
     out.push('');
     out.push('**Le réflexe à garder :** quand deux sources divergent d\'un ordre de grandeur,');

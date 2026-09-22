@@ -3,17 +3,11 @@
 > Généré le 2026-09-22 par `node banc-audit.js --manques-md`.
 > Régénère-le après chaque vague plutôt que de le corriger à la main.
 
-**15 fiches à compléter** · 59 légitimement incomplètes (voir la fin).
+**11 fiches à compléter** · 59 légitimement incomplètes (voir la fin).
 
 Le champ **ch** est indiqué parce qu'il **désigne la variante exacte** de la fiche :
 cherche le couple ou la masse *de cette version-là*, pas du modèle en général.
 
-
-## Berline
-
-| Voiture | Années | Puissance (fixe la variante) | Manque |
-|---|---|---|---|
-| Lucid Air | 2021 | 1251 ch | **couple** |
 
 ## Classique
 
@@ -21,10 +15,8 @@ cherche le couple ou la masse *de cette version-là*, pas du modèle en généra
 |---|---|---|---|
 | Bentley 4½ Litre Blower | 1929–1931 | 240 ch | **couple** |
 | Bugatti Type 35 | 1924–1930 | 140 ch | **couple** |
-| Chevrolet C10 | 1960–1987 | 255 ch | **couple** |
 | Cord 810 / 812 | 1936–1937 | 190 ch | **couple** |
 | Delahaye 135 | 1935–1954 | 160 ch | **couple** |
-| Pegaso Z-102 | 1951–1958 | 360 ch | **couple** |
 | Peugeot 402 | 1935–1942 | 63 ch | **couple** |
 | Rolls-Royce Silver Shadow | 1965–1980 | 200 ch | **couple** |
 | Tatra T87 | 1936–1950 | 75 ch | **couple** |
@@ -41,7 +33,6 @@ cherche le couple ou la masse *de cette version-là*, pas du modèle en généra
 
 | Voiture | Années | Puissance (fixe la variante) | Manque |
 |---|---|---|---|
-| Chevrolet K5 Blazer | 1969–1994 | 210 ch | **couple** |
 | Renault Austral | 2022 | 200 ch | **couple** |
 
 ---
@@ -50,17 +41,13 @@ cherche le couple ou la masse *de cette version-là*, pas du modèle en généra
 
 | Voiture | Ce qui bloque |
 |---|---|
-| **Lucid Air** | Deux chiffres incompatibles : 1 390 Nm (bases métriques) contre 1 430 lb-ft annoncés par Lucid, soit ~1 939 Nm. Bases de mesure différentes (couple moteur vs couple à la roue). Il faut trancher *laquelle* Lucid publie. |
 | **Xiaomi SU7 Ultra** | 1 770 Nm chez les uns, 1 135 Nm chez les autres. Écart de 55 % : l'un des deux est probablement le prototype, l'autre la série. |
 | **Mercedes-AMG ONE** | 900 Nm circule, mais Mercedes ne publie aucun couple système. Avec quatre moteurs électriques répartis sur des essieux différents, un couple « combiné » est mal défini. |
 | **Renault Austral E-Tech** | Le « 410 Nm » des fiches est exactement 205 + 205 : une addition des couples thermique et électrique, ce que la convention interdit (voir CLAUDE.md §4.4). Chercher si Renault publie une valeur système réelle. |
 | **Hispano Suiza Carmen** | 1 150 Nm chez les uns, 1 600 Nm chez les autres : couple moteur contre couple cumulé des quatre moteurs après démultiplication. |
 | **Porsche 356 Carrera 2** | Le moteur Fuhrmann 587/1 est très documenté en puissance (130 ch à 6 200 tr/min), mais aucune source consultée ne publie son couple. |
 | **GMC Hummer EV** | ⚠️ Le « 11 500 lb-ft » (≈ 15 592 Nm) qui circule est le **couple à la roue** annoncé par le marketing GM, pas le couple des moteurs (~1 500 Nm). Ne jamais le saisir tel quel : il donnerait un ratio délirant. |
-| **Chevrolet K5 Blazer** | `ch:210` ne correspond à aucune version des bases : le 5.7 V8 donne 175 ch / 393 Nm en 1972 et 155 ch / 346 Nm en 1973 (SAE net). Périmètre à trancher avant de chercher. |
-| **Chevrolet C10** | ⚠️ `ch:255` est suspect : le 350 V8 donne **165 ch et 255 lb-ft**. Soit c'est la cotation SAE *gross* d'avant 1972 (légitime), soit le couple en lb-ft a été saisi dans le champ puissance. À vérifier contre une source d'époque avant de chercher le couple. |
 | **Czinger 21C** | Puissance bien documentée (1 250 ch), couple jamais publié par le constructeur. |
-| **Pegaso Z-102** | `ch:360` vise la 4,5 L compressée, dont le couple n'est pas publié. Le 3.2 atmosphérique donne 210 ch / 25 mkg. |
 | **Micro-citadines d'époque restantes** (Fiat 500 Nuova, Peugeot 402, Tatra T87, Cord, Bugatti Type 35, Bentley Blower, Delahaye 135) | Couple non communiqué à l'époque. Piste : revues techniques (RTA) et notices constructeur d'origine. |
 
 **Le réflexe à garder :** quand deux sources divergent d'un ordre de grandeur,

@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.126.0';
+  const VERSION_MODULE = '20.127.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -270,7 +270,7 @@
 
     /* ===== FICHES COMPLÈTES — vague AV (électriques US + classiques + barquettes) */
     'lucid-air': { nom:'Lucid Air', an:[2021], pays:'États-Unis',
-      ch:1251, kg:2360, cyl:0, arch:'deux/trois moteurs électriques', adm:'électrique', pos:'avant/arrière', tx:'intégrale', bv:'A1',
+      ch:1251, nm:1390, kg:2360, cyl:0, arch:'deux/trois moteurs électriques', adm:'électrique', pos:'avant/arrière', tx:'intégrale', bv:'A1',
       note:"La berline électrique de référence en autonomie (plus de 800 km EPA) et en performance. La Sapphire à trois moteurs dépasse les 1200 ch. Fondée par un ancien ingénieur en chef de Tesla, Lucid vise le très haut de gamme technologique." },
     'rivian-r1t': { nom:'Rivian R1T', an:[2021], pays:'États-Unis',
       ch:850, nm:1120, kg:3100, cyl:0, arch:'quatre moteurs électriques', adm:'électrique', pos:'avant/arrière', tx:'intégrale', bv:'A1',
@@ -753,8 +753,8 @@
       prod:7,
       note:"Son nom vient de son rapport poids/puissance de 1:1 (un cheval par kilo), une première mondiale pour une voiture homologuée route. Sept exemplaires. Aileron actif géant, aérodynamique de prototype. Le « megacar » selon Koenigsegg." },
     'pegaso-z102': { nom:'Pegaso Z-102', an:[1951,1958], pays:'Espagne',
-      ch:360, kg:1100, cyl:2.8, arch:'V8', adm:'compresseur', pos:'avant', tx:'propulsion', bv:'transaxle M5',
-      note:"La supercar espagnole des années 50, produite par un constructeur de camions (ENASA). Techniquement en avance (V8 à quatre arbres à cames, boîte transaxle), elle rivalisait avec Ferrari. Carrosseries sur mesure (Touring, Saoutchik). Une centaine d\'exemplaires, extrêmement rares." },
+      ch:195, nm:246, kg:1250, cyl:2.8, arch:'V8 à quatre arbres à cames', adm:'atmo', pos:'avant', tx:'propulsion', bv:'transaxle M5',
+      note:"La supercar espagnole des années 50, produite par un constructeur de camions (ENASA). Techniquement en avance (V8 à quatre arbres à cames, boîte transaxle), elle rivalisait avec Ferrari. Carrosseries sur mesure (Touring, Saoutchik). Une centaine d\'exemplaires, extrêmement rares. Chiffres de la 2,8 L Touring ; les versions 3,2 et 4,5 compressées montaient bien plus haut." },
     'lada-niva': { nom:'Lada Niva', an:[1977], pays:'URSS',
       ch:83, nm:129, kg:1210, cyl:1.7, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'4x4 permanent', bv:'M5',
       note:"L\'un des premiers 4x4 monocoques à transmission intégrale permanente, en avance sur son temps en 1977. Increvable et simple, il a conquis les campagnes du monde entier, de la Sibérie aux Alpes. Produit quasi inchangé pendant près de 50 ans." },
@@ -1000,11 +1000,11 @@
       ch:454, nm:678, kg:1700, cyl:7.4, arch:'V6 et V8', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M4 / A3',
       note:"Mi-berline mi-pick-up : une carrosserie coupé avec une benne à l\'arrière. La version SS 454 embarque l\'un des plus gros V8 jamais montés dans un utilitaire léger. Un concept typiquement américain, culte auprès des amateurs." },
     'chevrolet-c10': { nom:'Chevrolet C10', an:[1960,1987], pays:'États-Unis',
-      ch:255, kg:1800, cyl:5.7, arch:'6 en ligne et V8', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M4 / A3',
-      note:"Le pick-up devenu une base culte de la scène custom et lowrider américaine. Ses lignes épurées des années 60-70 en font l\'un des pick-up classiques les plus restaurés et personnalisés aux États-Unis." },
+      ch:165, nm:346, kg:1800, cyl:5.7, arch:'6 en ligne et V8', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M4 / A3',
+      note:"Le pick-up devenu une base culte de la scène custom et lowrider américaine. Ses lignes épurées des années 60-70 en font l\'un des pick-up classiques les plus restaurés et personnalisés aux États-Unis. Chiffres du V8 5.7 en norme SAE net ; les cotations SAE gross d\'avant 1972, bien plus flatteuses, ne sont pas comparables." },
     'chevrolet-k5-blazer': { nom:'Chevrolet K5 Blazer', an:[1969,1994], pays:'États-Unis',
-      ch:210, kg:2000, cyl:5.7, arch:'6 en ligne et V8', adm:'atmo', pos:'avant', tx:'4x4', bv:'M4 / A3',
-      note:"Grand 4x4 à toit amovible, ancêtre du Tahoe. Robuste et simple, il est devenu une base prisée pour les restaurations et les préparations tout-terrain. Le SUV américain à l\'ancienne, avant l\'ère du confort routier." },
+      ch:175, nm:393, kg:2000, cyl:5.7, arch:'6 en ligne et V8', adm:'atmo', pos:'avant', tx:'4x4', bv:'M4 / A3',
+      note:"Grand 4x4 à toit amovible, ancêtre du Tahoe. Robuste et simple, il est devenu une base prisée pour les restaurations et les préparations tout-terrain. Le SUV américain à l\'ancienne, avant l\'ère du confort routier. Chiffres du V8 5.7 de 1972 en norme SAE net." },
     'chevrolet-suburban': { nom:'Chevrolet Suburban', an:[1935], pays:'États-Unis',
       ch:420, nm:624, kg:2600, cyl:6.2, arch:'V8, Duramax diesel', adm:'atmo', pos:'avant', tx:'4x4', bv:'A10',
       note:"Le nom de modèle le plus ancien encore en production dans l\'automobile mondiale (depuis 1935). SUV pleine grandeur de huit à neuf places, omniprésent dans les cortèges officiels américains et les films (les fameux « Suburban noirs »)." },
