@@ -417,6 +417,87 @@
   .empty .s{ font:400 13px/1.4 var(--sans); color:var(--muted2); }
 
   @media (prefers-reduced-motion: reduce){ *{ transition:none !important; animation:none !important; } }
+
+/* ============================================================
+   FICHE UI V1 — accent constructeur + halo de rareté
+   ------------------------------------------------------------
+   `.detail-shell` s'ajoute AUTOUR de `.info-head`, jamais à sa
+   place : `.info-head h2` est le point d'accroche de gm-specs.js.
+   L'accent constructeur et le halo de rareté sont deux variables
+   DISTINCTES — la rareté ne doit jamais teinter l'identité de la
+   marque, ni l'inverse.
+   ============================================================ */
+.detail-shell{ --brand-accent:var(--red); --rarity-accent:var(--commun); width:100%; }
+
+.detail-shell[data-brand="Alfa Romeo"]   { --brand-accent:#b51f2d; }
+.detail-shell[data-brand="Porsche"]      { --brand-accent:#d8ad32; }
+.detail-shell[data-brand="BMW"]          { --brand-accent:#3f78c5; }
+.detail-shell[data-brand="Ferrari"]      { --brand-accent:#c9142b; }
+.detail-shell[data-brand="Lamborghini"]  { --brand-accent:#d6a928; }
+.detail-shell[data-brand="Mercedes-Benz"]{ --brand-accent:#aeb5bd; }
+.detail-shell[data-brand="Audi"]         { --brand-accent:#c8c8c8; }
+.detail-shell[data-brand="Renault"]      { --brand-accent:#f2c300; }
+.detail-shell[data-brand="Peugeot"]      { --brand-accent:#3f73b8; }
+
+.detail-shell[data-rarity="courant"]   { --rarity-accent:var(--courant); }
+.detail-shell[data-rarity="commun"]    { --rarity-accent:var(--commun); }
+.detail-shell[data-rarity="peucommun"] { --rarity-accent:var(--peucommun); }
+.detail-shell[data-rarity="rare"]      { --rarity-accent:var(--rare); }
+.detail-shell[data-rarity="epique"]    { --rarity-accent:var(--epique); }
+.detail-shell[data-rarity="legendaire"]{ --rarity-accent:var(--legendaire); }
+
+.detail-shell .info-head h2{ font:750 27px/1.05 var(--sans); letter-spacing:-.025em; }
+
+/* Filet d'accent constructeur sous le titre */
+.detail-shell .info-head::after{
+  content:""; display:block; width:26px; height:2px; border-radius:2px;
+  margin-top:10px; background:var(--brand-accent);
+}
+
+/* Sélecteur de motorisation : l'accent suit la marque, pas la rareté */
+.detail-shell .moto-select .h3{
+  color:var(--dim); font:700 10px/1 var(--mono);
+  letter-spacing:.14em; text-transform:uppercase;
+}
+
+/* Halo de rareté sur la photo de couverture. `color-mix` est natif
+   (Safari 16.2+, Chrome 111+) et dégrade proprement : sans lui la
+   photo s'affiche simplement sans halo. */
+.detail-shell .gm-photo-hero{
+  position:relative; aspect-ratio:4/3; overflow:hidden;
+  background:#09090b; border-radius:14px; border:1px solid var(--line);
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--rarity-accent) 8%,transparent),
+             0 12px 40px color-mix(in srgb,var(--rarity-accent) 10%,transparent);
+}
+.detail-shell .gm-photo-hero::after{
+  content:""; position:absolute; inset:0; pointer-events:none;
+  box-shadow:inset 0 0 35px color-mix(in srgb,var(--rarity-accent) 18%,transparent);
+}
+.detail-shell .gm-photo-hero img{ display:block; width:100%; height:100%; object-fit:cover; }
+
+.detail-shell[data-rarity="epique"] .gm-photo-hero,
+.detail-shell[data-rarity="legendaire"] .gm-photo-hero{ animation:gmRarityPulse 3.5s ease-in-out infinite; }
+
+/* Respect d'une préférence système : une animation permanente sur une
+   fiche qu'on lit est exactement ce que `reduced-motion` vise. */
+@media (prefers-reduced-motion:reduce){
+  .detail-shell .gm-photo-hero{ animation:none !important; }
+}
+
+@keyframes gmRarityPulse{
+  0%,100%{ box-shadow:0 0 0 1px color-mix(in srgb,var(--rarity-accent) 10%,transparent),
+                      0 12px 40px color-mix(in srgb,var(--rarity-accent) 10%,transparent); }
+  50%    { box-shadow:0 0 0 1px color-mix(in srgb,var(--rarity-accent) 22%,transparent),
+                      0 12px 48px color-mix(in srgb,var(--rarity-accent) 18%,transparent); }
+}
+
+.detail-shell .gm-captures{ margin-top:18px; }
+.detail-shell .gm-capture-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:7px; }
+.detail-shell .gm-capture-grid img{
+  width:100%; aspect-ratio:1; object-fit:cover;
+  border-radius:9px; border:1px solid var(--line);
+}
+
 </style>
 </head>
 <body>
@@ -3114,12 +3195,23 @@ const VARIANTS = {
 
   function infoPageHTML(c, rec, h) {
     const col = rColor(c.r);
-    const motoData = (typeof MOTOR_SPECS !== "undefined") ? MOTOR_SPECS[c.id] : null;
     let info = INFO[c.id] || {};
     let motoHTML = "";
 
+    /* Données techniques : UNIQUEMENT via le contrat public
+       window.GMSpecs.fichePourInterface(). L'ancien code lisait
+       `MOTOR_SPECS` directement — or ce nom est privé à la clôture de
+       l'IIFE de gm-specs.js : la garde `typeof MOTOR_SPECS !== "undefined"`
+       était donc TOUJOURS fausse et le sélecteur ne s'affichait jamais,
+       sans la moindre erreur JS (CLAUDE.md §2.1). */
+    const sel = (state.motoSel && state.motoSel[c.id]) || {};
+    const GS = (typeof window !== "undefined" && window.GMSpecs
+                && typeof window.GMSpecs.fichePourInterface === "function") ? window.GMSpecs : null;
+    const fiche = GS ? GS.fichePourInterface(c.id, { typeId: sel.type, variantId: sel.variantId }) : null;
+    const motoData = (fiche && fiche.motorisations && fiche.motorisations.length)
+      ? { types: fiche.motorisations } : null;
+
     if (motoData) {
-      const sel = state.motoSel[c.id] || {};
       const type = motoData.types.find(t => t.id === sel.type) || motoData.types[0];
       const variant = type.variants.find(v => v.id === sel.variantId) || type.variants[0];
 
@@ -3127,8 +3219,14 @@ const VARIANTS = {
       // (rows plus bas) n'a rien à savoir de MOTOR_SPECS.
       info = { ...info, eng: `${variant.label} · ${variant.arch}`, hp: `${variant.ch} ch` };
 
+      /* [data-moto-actif] est le CONTRAT avec gm-specs.js (CLAUDE.md §3) :
+         sans ce marqueur, varianteActive() renvoie null et la fiche greffée
+         affiche les chiffres du modèle de base quelle que soit la
+         motorisation choisie — le bug « Giulia Diesel au couple de la 2.0
+         essence ». Il était posé dans index-1.html et n'avait jamais été
+         reporté ici. */
       motoHTML = `
-        <div class="moto-select" style="margin-top:16px">
+        <div class="moto-select" style="margin-top:16px" data-moto-actif="${escapeHtml(type.id)}|${escapeHtml(variant.id)}">
           <div class="h3" style="margin-bottom:8px">Motorisation</div>
           <div style="display:flex;gap:6px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:3px">
             ${motoData.types.map(t => `<button data-moto-type="${c.id}|${t.id}" style="flex:1;padding:9px 0;border-radius:7px;font:600 12px/1 var(--sans);border:none;background:${t.id===type.id?"var(--red2)":"transparent"};color:${t.id===type.id?"#fff":"var(--muted2)"}">${escapeHtml(t.label)}</button>`).join("")}
@@ -3164,40 +3262,24 @@ const VARIANTS = {
       : (desc ? `<div class="fact"><p>${escapeHtml(desc)}</p></div>` : "");
     const catLine = (info.fact && desc) ? `<p class="cat-desc">${escapeHtml(desc)}</p>` : "";
 
-    // Générations & motorisations — lecture seule de GENS (texte libre, non lié à MOTOR_SPECS).
-    // N'existait dans aucun rendu avant ce patch : gm-specs.js était chargé mais jamais consommé.
-    let gensHTML = "";
-    if (typeof GENS !== "undefined") {
-      const cle = (typeof MAP !== "undefined" && MAP[c.id]) || c.id;
-      const gens = GENS[cle];
-      if (gens && gens.length) {
-        const genCard = (titre, sousTitre, corps) => `
-          <div style="border:1px solid var(--line);background:var(--panel2);border-radius:10px;padding:12px 14px;margin-bottom:8px">
-            <div style="font:600 13px/1.2 var(--sans);color:#fff">${escapeHtml(titre)} <span style="color:var(--muted2);font-weight:400">· ${escapeHtml(sousTitre)}</span></div>
-            ${corps}
-          </div>`;
-        const cartesGen = gens.map(g => {
-          if (Array.isArray(g)) {
-            const [code, annees, meca, puiss, note] = g;
-            return genCard(code, annees, `
-              <div style="font:400 12px/1.3 var(--sans);color:var(--muted2);margin-top:3px">${escapeHtml(meca)} · ${escapeHtml(puiss)}</div>
-              ${note ? `<div style="font:400 11.5px/1.4 var(--sans);color:var(--muted2);margin-top:5px">${escapeHtml(note)}</div>` : ""}
-            `);
-          }
-          if (g && Array.isArray(g.m)) {
-            const lignes = g.m.map(mo => `
-              <div style="padding:8px 10px;background:var(--panel);border-radius:8px;margin-top:6px">
-                <div style="font:600 12px/1.2 var(--sans);color:#fff">${escapeHtml(mo[0])}</div>
-                <div style="font:400 11px/1.3 var(--sans);color:var(--muted2);margin-top:2px">${escapeHtml(mo[1])} · ${escapeHtml(mo[2])} · ${escapeHtml(mo[3])}</div>
-              </div>`).join("");
-            return genCard(g.c, g.a, lignes);
-          }
-          return "";
-        }).join("");
-        gensHTML = `<div style="margin-top:16px"><div class="h3" style="margin-bottom:8px">Générations &amp; motorisations</div>${cartesGen}</div>`;
-      }
-    }
+    /* Le bloc « Générations » vivait ici, derrière une garde
+       `typeof GENS !== "undefined"` — toujours fausse depuis index.html,
+       puisque GENS est privé à la clôture de l'IIFE de gm-specs.js
+       (CLAUDE.md §2.1). Il n'a donc JAMAIS rien affiché.
+       Il n'est pas réécrit ici : gm-specs.js greffe déjà ce bloc via
+       blocHTML(), et CLAUDE.md §3 interdit de le dupliquer. */
+
+    /* `.info-head` et son `h2` sont un CONTRAT, pas une mise en forme :
+       gm-specs.js identifie la voiture par `.info-head h2` en QUATRE
+       endroits. Les remplacer par une autre structure fait échouer toute la
+       greffe — en silence, sans erreur JS. Le conteneur `.detail-shell`
+       s'ajoute donc AUTOUR, il ne se substitue à rien.
+
+       `data-verrou` était posé dans index-1.html et n'avait jamais été
+       reporté ici : sans lui, greffer() ne sort pas et masse, couple et
+       ratios fuient sur les voitures non collectées (CLAUDE.md §3). */
     return `
+      <div class="detail-shell" data-brand="${escapeHtml(c.brand)}" data-rarity="${escapeHtml(c.r)}"${!h ? ' data-verrou="1"' : ''}>
       <div class="info-head">
         <span class="chip" style="background:${col}22;color:${col}"><span style="width:8px;height:8px;border-radius:50%;background:${col}"></span>${RARITY[c.r].label}</span>
         <h2>${escapeHtml(c.brand)} ${escapeHtml(c.model)}</h2>
@@ -3206,8 +3288,8 @@ const VARIANTS = {
       ${motoHTML}
       <div class="specs specs-info">${specHTML}</div>
       ${factCard}${catLine}
-      ${gensHTML}
       ${!h ? `<div class="panel" style="margin-top:14px;text-align:center"><p class="dim" style="font:400 13px/1.4 var(--sans);margin:0">Pas encore au garage. Croise-la, prends-la en photo, et enregistre la prise.</p></div>` : ""}
+      </div>
     `;
   }
 
