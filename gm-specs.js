@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.132.0';
+  const VERSION_MODULE = '20.133.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -14421,6 +14421,107 @@
       if (!cle || !SPECS[cle]) return null;
       const f = SPECS[cle];
       return { cle, idCatalogue, ...f, ...deriver(f), rarete: rarete(f.prod), signature: signature(f) };
+    },
+
+    /* ==================================================================
+       fichePourInterface — le contrat de DONNÉES pour une interface tierce
+       ------------------------------------------------------------------
+       POURQUOI ELLE EXISTE
+
+       Jusqu'ici, le seul moyen d'afficher une fiche était `blocHTML()`, qui
+       renvoie du **HTML déjà mis en forme**. C'est parfait pour se greffer
+       dans l'app existante, et inutilisable pour construire une interface
+       différente : on ne peut pas re-styler du markup figé, et on ne peut
+       pas non plus l'afficher dans autre chose qu'un navigateur.
+
+       Une interface qui voudrait la liste des motorisations devrait donc
+       aller lire `MOTOR_SPECS[id].types[...].variants[...]` elle-même, puis
+       REFAIRE la fusion modèle ↔ variante. Or cette fusion a des règles
+       non évidentes, et s'est déjà trompée en production (Giulia Diesel
+       affichant le couple de la 2.0 essence, M4 CS avec la masse de la
+       G82). Dupliquer cette logique, c'est garantir qu'une des deux copies
+       divergera.
+
+       Cette fonction renvoie donc des DONNÉES BRUTES, et applique la fusion
+       au seul endroit où elle est écrite. Elle est purement additive : elle
+       ne modifie ni SPECS, ni GENS, ni MAP, ni MOTOR_SPECS, et `blocHTML()`
+       continue de fonctionner exactement comme avant.
+
+       Paramètres
+         idCatalogue : l'id d'une entrée du catalogue fusionné.
+         choix       : { typeId, variantId } — motorisation sélectionnée.
+                       Omis → la fiche mono-moteur du modèle.
+
+       Retour (null si l'id n'a pas de fiche) :
+       {
+         idCatalogue, cle,
+         modele      : { nom, an, pays, note, surnom, son, prod },
+         motorisations: [ { id, label, variants:[{ id, label, ch, nm, … }] } ],
+         choix       : { typeId, variantId } | null,
+         technique   : { ch, nm, kg, cyl, arch, adm, pos, tx, bv, rupteur },
+         derives     : { kgch, chT, chL, nmL, kgnm },
+         flou        : ['ch', …],        // champs à préfixer de « ≈ »
+         rareteFiche : palier dérivé du volume de production,
+         generations : le bloc GENS brut,
+         signature   : la phrase de caractérisation
+       }
+       ================================================================== */
+    fichePourInterface(idCatalogue, choix) {
+      const cle = MAP[idCatalogue];
+      const base = cle && SPECS[cle];
+      if (!base) return null;
+
+      const bloc = MOTOR_SPECS[idCatalogue];
+      const types = (bloc && Array.isArray(bloc.types)) ? bloc.types : [];
+
+      /* Résolution de la motorisation demandée. Un choix qui ne correspond à
+         rien ne doit PAS renvoyer silencieusement la fiche du modèle en
+         faisant croire qu'il a été honoré : `choix` du retour vaudra null,
+         donc l'interface peut détecter l'écart plutôt que d'afficher les
+         chiffres d'une autre voiture. */
+      let variante = null, choixRetenu = null;
+      if (choix && choix.typeId && choix.variantId) {
+        const t = types.find(t => t && t.id === choix.typeId);
+        const v = t && (t.variants || []).find(v => v && v.id === choix.variantId);
+        if (v) { variante = v; choixRetenu = { typeId: t.id, variantId: v.id }; }
+      }
+
+      /* MÊME fusion que ficheHTML() : la variante remplace les champs
+         MÉCANIQUES, le modèle garde note / surnom / production / son, et le
+         rupteur est retiré car propre à un seul moteur. */
+      const f = variante
+        ? { ...base,
+            ch: variante.ch, nm: variante.nm, kg: variante.kg, cyl: variante.cyl,
+            arch: variante.arch, adm: variante.adm, pos: variante.pos,
+            tx: variante.tx, bv: variante.bv, rupteur: undefined,
+            flou: Array.isArray(variante.flou) ? variante.flou : [] }
+        : base;
+
+      const choisir = (o, cles) => {
+        const out = {};
+        for (const k of cles) if (o[k] !== undefined) out[k] = o[k];
+        return out;
+      };
+
+      return {
+        idCatalogue, cle,
+        modele: choisir(base, ['nom', 'an', 'pays', 'note', 'surnom', 'son', 'prod']),
+        /* Copie PROFONDE, pas `{...v}` : une variante peut contenir un
+           tableau `flou`, qu'une copie de surface partagerait par référence.
+           Une interface qui le trierait ou le viderait corromprait alors
+           MOTOR_SPECS pour toute la session, sans la moindre erreur. */
+        motorisations: types.map(t => ({
+          id: t.id, label: t.label,
+          variants: JSON.parse(JSON.stringify(t.variants || []))
+        })),
+        choix: choixRetenu,
+        technique: choisir(f, ['ch', 'nm', 'kg', 'cyl', 'arch', 'adm', 'pos', 'tx', 'bv', 'rupteur']),
+        derives: deriver(f),
+        flou: Array.isArray(f.flou) ? [...f.flou] : [],
+        rareteFiche: rarete(f.prod),
+        generations: GENS[cle] ? JSON.parse(JSON.stringify(GENS[cle])) : null,
+        signature: signature(f)
+      };
     },
 
     /** Classement du lot sur un champ ou un dérivé. */

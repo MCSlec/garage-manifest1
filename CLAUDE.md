@@ -440,7 +440,7 @@ modification n'impose aucun bump de version.
 | `sw.js` | Service worker (cache, `VERSION`) |
 | `manifest.webmanifest` | Manifeste PWA |
 | `ai-relay-worker.js` | Relais IA Cloudflare — déployé **à part**, hors dossier statique |
-| `banc-v1.html` | Banc d'essai — hors cache, ne pas livrer comme app |
+| `banc-v1.html` | ⚠️ **Contient le prototype complet du « Rouleau »** (~737 lignes), pas un simple banc jetable — voir §9. Hors cache, ne pas livrer comme app, **et ne jamais supprimer** |
 | `index-1.html` | Ancienne copie de travail d'`index.html` — **non servie**, ne pas confondre avec le fichier de prod |
 | `CONTEXT.md` | État projet, décisions, journal des chantiers (le *pourquoi*) |
 | `README.md` | Documentation utilisateur/fonctionnelle (le *quoi*) |
@@ -448,7 +448,108 @@ modification n'impose aucun bump de version.
 
 ---
 
-## 8. Rétro-ingénierie — pourquoi ces règles, et pas d'autres
+## 8 bis. « Le Rouleau » — prototype vivant dans `banc-v1.html`
+
+> ⚠️ **Ne conclus pas qu'il n'existe pas parce que `gm-rouleau.js` est absent
+> du dépôt.** L'erreur a déjà été commise : un `grep` sur `index.html` seul
+> ne trouve rien, et on en déduit à tort que le module vient d'un autre
+> projet. Le Rouleau existe, **entier**, embarqué dans `banc-v1.html`.
+
+**État réel, à jour :**
+
+| Où | Quoi |
+|---|---|
+| `banc-v1.html` | Le module complet (~737 lignes), IIFE exposant `window.GMRouleau`, v1.0.0 |
+| Application principale | **Non intégré.** `index.html` ne le charge pas et ne le connaît pas |
+| `gm-rouleau.js` | **N'existe pas encore** comme fichier autonome |
+
+**Ce que le prototype porte déjà**, et qu'il ne faut surtout pas réécrire de
+zéro : pellicule persistée en **IndexedDB dédiée** (`gm-rouleau` / store
+`pellicule`, base séparée — aucun contact avec le store `spots`), Blob stocké
+nativement plutôt qu'en base64 (+33 % de volume évités), machine à quatre
+états (`latent` → `encours` → `revele` / `echec`), reprise des `encours`
+orphelins après fermeture brutale, back-off exponentiel avec gigue,
+**disjoncteur** après 3 échecs réseau, concurrence bornée, Background Sync,
+purge à 7 jours, et détection des **jumelles d'une rafale** par hachage
+perceptuel (dHash + écart chromatique), avec des seuils calibrés au banc et
+la justification de leur asymétrie écrite en commentaire.
+
+**Point de branchement prévu par le prototype lui-même :**
+
+```
+init({ identify, onRevele, onChange, onErreur, conteneur })
+   └── onRevele(item)  ← « c'est là que tu branches matchCatalog() »
+```
+
+⚠️ À l'intégration, `onRevele` doit appeler **`window.GMMatcher.rapprocher()`**
+et non `matchCatalog()` : ce dernier est désormais le repli, pas le chemin
+nominal (voir §8 ter).
+
+**Règle de travail :** `banc-v1.html` n'est pas un fichier jetable. Ne pas le
+supprimer, ne pas le « nettoyer », ne pas reconstruire le Rouleau ailleurs.
+L'extraction vers `gm-rouleau.js` puis l'intégration à `index.html` est un
+**chantier séparé**, à mener sans perdre les mécanismes ci-dessus.
+
+---
+
+## 8 ter. `gm-matcher.js` — rapprochement IA → catalogue
+
+Sorti d'`index.html` parce que `matchCatalog()` confondait trois grandeurs en
+un seul nombre : la confiance de l'IA, la ressemblance textuelle au catalogue,
+et la confiance affichée. Les mélanger empêche de répondre à la seule question
+qui compte à la capture : **proposer une voiture, ou demander à l'utilisateur
+de choisir ?**
+
+`window.GMMatcher.rapprocher(devinettes, { catalogue })` renvoie :
+
+```
+{ statut: 'CONFIRME' | 'AMBIGU' | 'AUCUNE_CORRESPONDANCE_SURE',
+  candidats: [{ id, brand, model, aiConfidence, catalogScore, finalConfidence, source }],
+  marge, raison }
+```
+
+- **Le catalogue est injecté en paramètre**, jamais lu d'un global : c'est ce
+  qui rend le module testable hors navigateur (`node banc-matcher.js`).
+- **`AUCUNE_CORRESPONDANCE_SURE` est un résultat normal**, pas une panne. Une
+  voiture hors catalogue DOIT le produire. Un matcher qui renvoie toujours
+  quelque chose transforme chaque inconnue en faux positif silencieux, et
+  l'utilisateur collectionne une voiture qu'il n'a pas vue.
+- **La marge décide, pas la confiance absolue.** Deux candidats à 0,70 et 0,69
+  sont ambigus même si les deux scores sont élevés.
+- **`identifyCar()` garde `matchCatalog()` en repli** : les modules `gm-*.js`
+  sont servis réseau-d'abord, donc `gm-matcher.js` peut manquer au premier
+  lancement hors ligne. Sans repli, photographier ne renverrait rien.
+  Le résultat complet est lisible via `lastMatch`.
+
+Banc : `node banc-matcher.js`, 17 tests sur le catalogue **fusionné** (1 070),
+sortie en code non nul si échec. Préfixé `banc-`, donc hors cache.
+
+---
+
+## 8 quater. `GMSpecs.fichePourInterface()` — contrat de DONNÉES
+
+`blocHTML()` renvoie du **HTML déjà mis en forme** : parfait pour se greffer
+dans l'app existante, inutilisable pour bâtir une interface différente.
+
+`fichePourInterface(idCatalogue, { typeId, variantId })` renvoie les mêmes
+informations en **données brutes** : `modele`, `motorisations[]`, `technique`,
+`derives`, `flou[]`, `rareteFiche`, `generations`, `signature`.
+
+**Pourquoi elle est nécessaire.** Sans elle, une interface tierce devrait lire
+`MOTOR_SPECS` elle-même puis **refaire la fusion modèle ↔ variante**. Or cette
+fusion s'est déjà trompée en production (Giulia Diesel affichant le couple de
+la 2.0 essence, M4 CS avec la masse de la G82). Dupliquer cette logique, c'est
+garantir qu'une des deux copies divergera. La fonction applique donc la fusion
+au seul endroit où elle est écrite.
+
+Garde-fou : un `choix` qui ne correspond à aucune variante renvoie
+`choix: null` et les chiffres du modèle — l'interface peut détecter l'écart
+au lieu d'afficher, sans le savoir, les chiffres d'une autre voiture.
+Le retour est une copie profonde : le muter n'altère pas `MOTOR_SPECS`.
+
+---
+
+## 9. Rétro-ingénierie — pourquoi ces règles, et pas d'autres
 
 Pour pouvoir défendre et maintenir ce projet, voici la logique derrière les choix
 les moins évidents :
