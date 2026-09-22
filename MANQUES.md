@@ -3,7 +3,7 @@
 > Généré le 2026-09-22 par `node banc-audit.js --manques-md`.
 > Régénère-le après chaque vague plutôt que de le corriger à la main.
 
-**11 fiches à compléter** · 59 légitimement incomplètes (voir la fin).
+**9 fiches à compléter** · 59 légitimement incomplètes (voir la fin).
 
 Le champ **ch** est indiqué parce qu'il **désigne la variante exacte** de la fiche :
 cherche le couple ou la masse *de cette version-là*, pas du modèle en général.
@@ -15,10 +15,8 @@ cherche le couple ou la masse *de cette version-là*, pas du modèle en généra
 |---|---|---|---|
 | Bentley 4½ Litre Blower | 1929–1931 | 240 ch | **couple** |
 | Bugatti Type 35 | 1924–1930 | 140 ch | **couple** |
-| Cord 810 / 812 | 1936–1937 | 190 ch | **couple** |
-| Delahaye 135 | 1935–1954 | 160 ch | **couple** |
+| Cord 810 / 812 | 1936–1937 | 127 ch | **couple** |
 | Peugeot 402 | 1935–1942 | 63 ch | **couple** |
-| Rolls-Royce Silver Shadow | 1965–1980 | 200 ch | **couple** |
 | Tatra T87 | 1936–1950 | 75 ch | **couple** |
 
 ## Hypercar
@@ -26,7 +24,7 @@ cherche le couple ou la masse *de cette version-là*, pas du modèle en généra
 | Voiture | Années | Puissance (fixe la variante) | Manque |
 |---|---|---|---|
 | Czinger 21C | 2023 | 1350 ch | **couple** |
-| Hispano Suiza Carmen | 2019 | 1114 ch | **couple** |
+| Hispano Suiza Carmen | 2019 | 1019 ch | **couple** |
 | Mercedes-AMG ONE | 2022 | 1063 ch | **couple** |
 
 ## SUV

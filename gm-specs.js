@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.129.0';
+  const VERSION_MODULE = '20.130.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -963,8 +963,8 @@
       ch:265, nm:508, kg:2200, cyl:6.9, arch:'8 en ligne', adm:'atmo (SJ : compresseur)', pos:'avant', tx:'propulsion', bv:'M3',
       note:"Le summum du luxe américain d\'avant-guerre, « It\'s a Duesy ! » (c\'est une merveille) est entré dans le langage. La SJ compressée dépassait 200 km/h en 1932, un exploit. Châssis vendu nu puis carrossé sur mesure pour les stars d\'Hollywood." },
     'cord-810': { nom:'Cord 810 / 812', an:[1936,1937], pays:'États-Unis',
-      ch:190, kg:1800, cyl:4.7, arch:'V8', adm:'atmo (compresseur en option)', pos:'avant', tx:'traction', bv:'M4',
-      note:"Une révolution en 1936 : traction avant, phares escamotables (une première mondiale), pas de marchepied. Son style « coffin nose » (nez en cercueil) signé Gordon Buehrig est exposé au MoMA. En avance de vingt ans sur son temps." },
+      ch:127, kg:1800, cyl:4.7, arch:'V8 latéral Lycoming', adm:'atmo (compresseur en option)', pos:'avant', tx:'traction', bv:'M4',
+      note:"Une révolution en 1936 : traction avant, phares escamotables (une première mondiale), pas de marchepied. Son style « coffin nose » (nez en cercueil) signé Gordon Buehrig est exposé au MoMA. En avance de vingt ans sur son temps. Chiffres du V8 Lycoming atmosphérique (125 bhp, soit 127 ch) ; la 812 à compresseur monte à 172 ch." },
     'tucker-48': { nom:'Tucker 48', an:[1948], pays:'États-Unis',
       ch:166, nm:509, kg:1900, cyl:5.5, arch:'flat-6', adm:'atmo', pos:'arrière', tx:'propulsion', bv:'M4',
       prod:51,
@@ -1088,8 +1088,9 @@
       ch:2012, nm:2000, kg:1900, cyl:0, arch:'quatre moteurs électriques', adm:'électrique', pos:'avant/arrière', tx:'intégrale', bv:'A1',
       note:"L\'une des voitures d\'accélération les plus violentes du monde : 0 à 100 km/h annoncé sous les 2 secondes. Hypercar électrique japonaise ultra-basse (moins d\'un mètre de haut), produite à une poignée d\'exemplaires." },
     'hispano-suiza-carmen': { nom:'Hispano Suiza Carmen', an:[2019], pays:'Espagne',
-      ch:1114, kg:1690, cyl:0, arch:'quatre moteurs électriques', adm:'électrique', pos:'arrière', tx:'propulsion', bv:'A1',
-      note:"Le renouveau d\'une marque espagnole prestigieuse de l\'entre-deux-guerres. Style Art déco inspiré de la Dubonnet Xenia de 1938. Carrosserie carbone entièrement faite main. 19 exemplaires, luxe et exclusivité extrêmes." },
+      ch:1019, kg:1690, cyl:0, arch:'deux moteurs électriques', adm:'électrique', pos:'arrière', tx:'propulsion', bv:'A1',
+      prod:19,
+      note:"Le renouveau d\'une marque espagnole prestigieuse de l\'entre-deux-guerres. Style Art déco inspiré de la Dubonnet Xenia de 1938. Carrosserie carbone entièrement faite main, deux moteurs logés sur le train arrière. Hispano Suiza ne publie aucun couple système. La Carmen Boulogne, plus radicale, porte la puissance à 1 114 ch." },
     'praga-bohema': { nom:'Praga Bohema', an:[2023], pays:'Tchéquie',
       ch:700, nm:725, kg:982, cyl:3.8, arch:'6 en ligne (Nissan GT-R)', adm:'biturbo', pos:'central', tx:'propulsion', bv:'séquentielle 6',
       prod:89,
@@ -3012,9 +3013,9 @@
       ch:585, nm:900, kg:2890, cyl:0, arch:'deux moteurs électriques', adm:'électrique', pos:'avant/arrière', tx:'intégrale', bv:'A1',
       note:"La première Rolls-Royce 100 % électrique. Le silence électrique correspond enfin à l\'idéal que la marque poursuivait depuis toujours. Le coupé le plus lourd jamais produit par la firme." },
     'rr-silvershadow': { nom:'Rolls-Royce Silver Shadow', an:[1965,1980], pays:'Royaume-Uni',
-      ch:200, kg:2100, cyl:6.75, arch:'V8', adm:'atmo', pos:'avant', tx:'propulsion', bv:'A3',
-      flou:['ch'],
-      note:"Première Rolls à structure monocoque et freins à disques (sous licence Citroën). Puissance jamais communiquée officiellement, décrite comme « suffisante » par la marque." },
+      ch:203, nm:540, kg:2100, cyl:6.75, arch:'V8', adm:'atmo', pos:'avant', tx:'propulsion', bv:'A3',
+      flou:['ch','nm'],
+      note:"Première Rolls à structure monocoque et freins à disques (sous licence Citroën). Puissance jamais communiquée officiellement, décrite comme « suffisante » par la marque : les 203 ch et 540 Nm sont des relevés de bases spécialisées sur le 6,75 L européen, pas des chiffres constructeur — d\'où le ≈." },
     'jaguar-mk2': { nom:'Jaguar Mk2', an:[1959,1967], pays:'Royaume-Uni',
       ch:220, nm:325, kg:1500, cyl:3.8, arch:'6 en ligne', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M4',
       note:"La berline sportive des années 60, aussi appréciée des gangsters que de la police britannique — d\'où son surnom des deux côtés de la loi. Le 3.8 était la voiture 4 portes la plus rapide de son temps." },
@@ -3154,9 +3155,9 @@
       prod:401,
       note:"« Mangouste » en italien : l\'animal qui tue le cobra, allusion à la rupture de De Tomaso avec Carroll Shelby. Capot moteur en deux volets vitrés, spectaculaire. Dessin de Giugiaro." },
     'delahaye-135': { nom:'Delahaye 135', an:[1935,1954], pays:'France',
-      ch:160, kg:1200, cyl:3.6, arch:'6 en ligne', adm:'atmo', pos:'avant', tx:'propulsion', bv:'Cotal',
+      ch:137, nm:235, kg:1557, cyl:3.6, arch:'6 en ligne', adm:'atmo', pos:'avant', tx:'propulsion', bv:'Cotal',
       flou:['ch'],
-      note:"Sommet de l\'élégance automobile française d\'avant-guerre. Carrossée par Figoni & Falaschi, Chapron ou Saoutchik, chaque exemplaire est unique. Victorieuse au Mans 1938." },
+      note:"Sommet de l\'élégance automobile française d\'avant-guerre. Carrossée par Figoni & Falaschi, Chapron ou Saoutchik, chaque exemplaire est unique. Chiffres de la 135 M routière à trois carburateurs (137 ch, 235 Nm, 1 557 kg) : la puissance reste approximative car elle a varié de 95 à 145 ch selon les millésimes et la carburation. C\'est la 135 Compétition Spéciale, allégée et portée à 160 ch, qui s\'est imposée au Mans en 1938." },
     'ferrari-400': { nom:'Ferrari 400 / 412', an:[1976,1989], pays:'Italie',
       ch:340, nm:471, kg:1810, cyl:4.8, arch:'V12', adm:'atmo', pos:'avant', tx:'propulsion', bv:'A3 / M5',
       note:"Première Ferrari à proposer une boîte automatique (une General Motors à trois rapports). Grande GT quatre places longtemps mal-aimée, aujourd\'hui redécouverte." },
@@ -3213,7 +3214,7 @@
     'bentley-blower': { nom:'Bentley 4½ Litre « Blower »', an:[1929,1931], pays:'Royaume-Uni',
       ch:240, kg:1625, cyl:4.4, arch:'4 en ligne compressé', adm:'compresseur Roots', pos:'avant', tx:'propulsion', bv:'M4',
       prod:55, flou:['ch','prod'],
-      note:"Le compresseur monté devant la calandre est sa signature. Contre l\'avis de W.O. Bentley lui-même, qui détestait la suralimentation. Icône des 24 Heures du Mans, aujourd\'hui rééditée à l\'identique." },
+      note:"Le compresseur monté devant la calandre est sa signature. Contre l\'avis de W.O. Bentley lui-même, qui détestait la suralimentation. Icône des 24 Heures du Mans, aujourd\'hui rééditée à l\'identique. Les 240 ch sont ceux de la configuration course à 4 200 tr/min ; les Blower routières en développaient 175." },
 
     /* ---- Groupe B et rallye ------------------------------------------ */
     'audi-sport-quattro-s1': { nom:'Audi Sport quattro S1 E2', an:[1985,1986], pays:'Allemagne',
@@ -9672,7 +9673,7 @@
     'detomaso-p72':'V8 5.0 compressé moteur central manuelle 6 à grille',
     'facel-vega-hk500':'V8 Chrysler 6.3 atmo propulsion',
     'facel-vega-facel2':'V8 Chrysler 6.3 atmo propulsion',
-    'delahaye-135':'6 en ligne 3.5 atmo propulsion',
+    'delahaye-135':'6 en ligne 3.6 atmo propulsion',
     'duesenberg-model-j':'8 en ligne 6.9 atmo compressé propulsion',
     'cord-810':'V8 4.7 compressé traction phares escamotables',
     'tucker-48':'flat-6 5.5 atmo moteur arrière',
@@ -9703,7 +9704,7 @@
     'wiesmann-gt':'V8 BMW 4.4 atmo propulsion',
     'spyker-c8':'V8 Audi 4.2 atmo moteur central boîte à grille',
     'gtaspano-spano':'V10 8.0 biturbo moteur central',
-    'hispano-suiza-carmen':'quatre moteurs électriques monocoque carbone',
+    'hispano-suiza-carmen':'deux moteurs électriques monocoque carbone',
     'nio-ep9':'quatre moteurs électriques record du Nürburgring',
     'aspark-owl':'quatre moteurs électriques',
     'wmotors-lykan':'flat-6 3.7 biturbo RUF moteur central',
