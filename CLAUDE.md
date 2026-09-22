@@ -210,12 +210,38 @@ Format DÉTAILLÉ : { c: code, a: années, m: [[ nom, mécanique, ch, transmissi
 Le **code** (E30, 964, NA, Fox…) est ce qui compte pour un passionné : c'est la
 première colonne. Le rendu (`gensHTML`) gère les deux formats.
 
-### 4.4 — Couple cumulé pour les hybrides
+### 4.4 — Couple cumulé pour les hybrides… sauf architecture HSD
 Pour un véhicule **hybride**, `ch` et `nm` désignent les valeurs **cumulées**
 (thermique + électrique), conformément à la communication constructeur. La note
 de la fiche le précise (« puissance et couple cumulés », « couple cumulé »). Ne
 pas additionner soi-même des chiffres partiels ni mélanger une puissance
 thermique seule avec un couple cumulé : on reprend la valeur système publiée.
+
+⚠️ **Exception majeure — les hybrides Toyota / Lexus (HSD).** Toyota ne publie
+**aucun** couple système pour son Hybrid Synergy Drive, et ce n'est pas un oubli :
+dans cette architecture, thermique et électrique sont reliés par un **train
+épicycloïdal**, sans embrayage ni convertisseur. Les deux couples ne s'additionnent
+donc jamais sur un arbre commun — **un « couple cumulé » n'a pas de sens physique**
+ici. Y inscrire un chiffre, même trouvé quelque part, est une **erreur technique**,
+pas une approximation. Le champ `nm` reste vide pour ces fiches (Prius, Camry,
+Crown, RAV4 hybride, C-HR, Lexus RX…).
+
+Même prudence pour les hybrides **série** en général : la règle du couple cumulé
+vaut pour les architectures **parallèles** où le constructeur publie une valeur
+système (Peugeot PSE, Volvo T8, AMG E Performance, Alfa Tonale Q4…).
+
+### 4.4 bis — Voitures de course : couple non publié
+Pour une voiture de **compétition**, puissance et masse sont fixées par la
+Balance of Performance (bride et lest ajustés course par course) → à déclarer dans
+`flou`. Le **couple n'est jamais publié** par les écuries : le champ `nm` reste
+vide, jamais estimé. Cela concerne ~53 fiches du catalogue (GT3, LMP, F1,
+Groupe B, dragsters). Une fiche de course sans couple est **conforme**, pas
+incomplète — ne pas la « corriger ».
+
+> ⚠️ `nc` n'existe pas comme champ dans le code : il n'y a **aucun** rendu associé.
+> La seule façon de dire « non communiqué » est donc de **laisser le champ absent**
+> (`fmt()` n'affiche alors pas la ligne). N'écris jamais un champ `nc:[…]` en
+> croyant qu'il produira un affichage : il serait inerte.
 
 ### 4.5 — Règle GTA (déclinaisons qui méritent leur propre fiche)
 Une déclinaison qui constitue un **modèle à part entière** — poids, identité et
@@ -262,6 +288,32 @@ hors-ligne uniquement.
 
 ---
 
+## 5 bis. Le banc d'audit des données — `node banc-audit.js`
+
+Contrôle structurel du catalogue, exécuté hors navigateur (DOM simulé). Il charge
+`gm-specs.js` réellement, donc il audite le catalogue **fusionné tel que l'app le
+voit**, pas une lecture statique du texte. Il sort en code non nul sur ERREUR :
+utilisable comme garde avant commit.
+
+Ce qu'il attrape, et que ni l'œil ni `node --check` ne voient :
+
+| Contrôle | Pourquoi il existe |
+|---|---|
+| **Clés dupliquées** (scan de la source) | En JS, une clé répétée dans un littéral d'objet est **écrasée en silence**. 50 cas trouvés au premier passage, dont `GENS['audi-rs3']` dont la version détaillée disparaissait au profit d'une version appauvrie. Indétectable après chargement : le doublon est déjà absorbé. |
+| **Doublons visibles** (libellé catalogue, nom de fiche) | Deux entrées d'**ID différents** peuvent désigner la même voiture : elles passent tous les contrôles techniques et apparaissent pourtant deux fois dans la grille — donc se collectionnent deux fois. 3 cas trouvés (RS2 Avant, C 43, Ami). |
+| **Contamination copie-voisine** | Le motif des bugs Giulia/Quadrifoglio et M2 CS/M4 CSL : deux fiches adjacentes aux chiffres identiques. |
+| **`MAP` orphelines** | Correspondance pointant vers une fiche ou un id inexistant → fiche technique muette. |
+| **Champs manquants / hors plage** | Complétude par champ, et incohérences d'ordre de grandeur. |
+| **Divergences `CARS` / `CATALOGUE_PLUS`** | Un id déclaré des deux côtés : `CARS` fait autorité, l'autre déclaration est **perdue en silence**. |
+
+**Calibrage :** les bornes de plausibilité sont volontairement larges, calées sur
+les extrêmes **réels** du catalogue (Top Fuel 11 000 ch, Hummer EV 4 100 kg,
+Citroën Ami 8 ch). Un banc qui crie au loup finit ignoré — ne les resserre pas
+sans vérifier la fiche incriminée.
+
+Préfixé `banc-` : jamais mis en cache par `sw.js` (`HORS_CACHE`), donc sa
+modification n'impose aucun bump de version.
+
 ## 6. Checklist avant livraison
 
 1. **Patch ciblé, pas de réécriture.** `git diff` ne montre que le changement
@@ -275,7 +327,10 @@ hors-ligne uniquement.
 6. **Données sourcées** : `flou` renseigné pour l'incertain, `nc` non maquillé,
    couple cumulé pour les hybrides, règle GTA appliquée (§4).
 7. **`VERSION_MODULE` + `sw.js VERSION` incrémentés et synchronisés** (§5).
-8. **Vérification comportementale, pas seulement syntaxique** : `node --check`
+8. **`node banc-audit.js` repasse à 0 erreur** (§5 bis) — obligatoire dès qu'on
+   touche aux données. C'est la garde mécanique contre les doublons silencieux,
+   les correspondances mortes et la contamination entre fiches voisines.
+9. **Vérification comportementale, pas seulement syntaxique** : `node --check`
    ne prouve rien sur le câblage DOM. Un test d'exécution réelle (banc Playwright
    qui écrit des spots dans IndexedDB, ouvre les fiches, lit le DOM) est
    obligatoire pour toute modification de la greffe ou du contrat inter-modules.

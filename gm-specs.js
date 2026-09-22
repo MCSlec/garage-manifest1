@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.118.0';
+  const VERSION_MODULE = '20.119.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -1256,7 +1256,7 @@
       ch:600, nm:800, kg:2315, cyl:4.0, arch:'V8', adm:'biturbo', pos:'avant', tx:'quattro', bv:'tiptronic 8',
       note:"Le SUV-coupé le plus performant d\'Audi, partageant sa base technique avec le Lamborghini Urus et le Porsche Cayenne. A un temps détenu le record du Nürburgring pour un SUV de série. Hybridation légère 48 V." },
     'audi-rs-etron-gt': { nom:'Audi RS e-tron GT', an:[2021], pays:'Allemagne',
-      ch:925, kg:2340, cyl:0, arch:'deux moteurs électriques, 800 V', adm:'électrique', pos:'avant/arrière', tx:'quattro', bv:'A2',
+      ch:925, nm:1027, kg:2340, cyl:0, arch:'deux moteurs électriques, 800 V', adm:'électrique', pos:'avant/arrière', tx:'quattro', bv:'A2',
       note:"La sportive électrique d\'Audi, cousine technique de la Porsche Taycan avec laquelle elle partage la plateforme J1. Boîte à deux rapports sur l\'essieu arrière. La version Performance dépasse les 900 ch en surboost." },
     'bmw-1m': { nom:'BMW 1M Coupé', an:[2011], pays:'Allemagne',
       ch:340, nm:500, kg:1495, cyl:3.0, arch:'6 en ligne N54', adm:'biturbo', pos:'avant', tx:'propulsion', bv:'M6',
@@ -1876,7 +1876,7 @@
       ch:260, nm:322, kg:1630, cyl:3.2, arch:'V6', adm:'atmo', pos:'avant', tx:'traction / Q4', bv:'M6',
       note:"Coupé au dessin signé Giugiaro (ItalDesign), dérivé d\'un concept-car acclamé. Sa beauté a longtemps fait oublier son poids élevé. Le V6 3.2 JTS en Q4 à transmission intégrale est le plus recherché." },
     'alfa-tonale': { nom:'Alfa Romeo Tonale', an:[2022], pays:'Italie',
-      ch:280, kg:1600, cyl:1.3, arch:'4 cyl. hybride rechargeable', adm:'turbo + électrique', pos:'avant', tx:'intégrale', bv:'A6',
+      ch:280, nm:520, kg:1600, cyl:1.3, arch:'4 cyl. hybride rechargeable', adm:'turbo + électrique', pos:'avant', tx:'intégrale', bv:'A6',
       note:"Premier Alfa hybride rechargeable, sur le segment très disputé des SUV compacts premium. Nommé d\'après un col alpin italien, fidèle à la tradition de la marque (comme le Stelvio)." },
     'vw-up': { nom:'Volkswagen up!', an:[2011,2023], pays:'Allemagne',
       ch:115, nm:200, kg:1000, cyl:1.0, arch:'3 cyl. / électrique', adm:'atmo / turbo', pos:'avant', tx:'traction', bv:'M5',
@@ -2916,7 +2916,7 @@
       ch:95, nm:150, kg:920, cyl:1.8, arch:'4 en ligne', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M4',
       note:"L\'un des roadsters les plus produits de l\'histoire, plus d\'un demi-million d\'exemplaires. Symbole du plaisir de conduire abordable à l\'anglaise. La MGB GT V8 est la plus rare." },
     'cupra-born': { nom:'Cupra Born', an:[2021], pays:'Espagne',
-      ch:326, kg:1700, cyl:0, arch:'moteur électrique', adm:'électrique', pos:'arrière', tx:'propulsion', bv:'A1',
+      ch:326, nm:545, kg:1700, cyl:0, arch:'moteur électrique', adm:'électrique', pos:'arrière', tx:'propulsion', bv:'A1',
       note:"La compacte électrique sportive de Cupra, cousine de la VW ID.3 mais au châssis affûté. La VZ pousse la puissance au-delà de 320 ch." },
     'skoda-kodiaq': { nom:'Škoda Kodiaq', an:[2016], pays:'Tchéquie',
       ch:245, nm:370, kg:1600, cyl:2.0, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction / intégrale', bv:'A7',
