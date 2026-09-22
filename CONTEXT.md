@@ -224,6 +224,19 @@ comme variante d'équipement et comme type de motorisation) ?
 | **Légendaire** | 50 | Voitures de course (GT3 R, GT3, AMG GT3…) et séries limitées sous ~1 000 exemplaires (M4 CSL, 911 R, RS2) |
 
 **Critère de classement = volume de production réel, jamais l'impression.**
+
+> **Application aux voitures de course (22/09/2026).** 50 des 69 entrées
+> « Course » étaient déjà `legendaire`, 19 non — un écart systématique, pas
+> ponctuel. Tranché **par volume**, comme la règle l'impose, et non par
+> statut : 14 passent en `legendaire` (GT3 client, la plus diffusée étant
+> l'AMG GT3 à ~300 ex. ; GTE et Hypercar LMH/LMDh à quelques dizaines de
+> châssis ; Rally1 ; A110 Cup ~150), la Radical SR3 passe `rare` → `epique`
+> (~1 500 ex.). **Trois restent volontairement en place** : la 911 GT3 Cup
+> à `epique` (5 381 produites depuis 1990, 1 130 pour la seule 992 — la
+> règle la cite nommément à ce palier), la Dallara IR-18 à `epique` et les
+> Midget / Sprint Car à `rare`, types de châssis construits par milliers.
+> Effet sur le jeu : **+444 points sur un maximum de 19 092, soit +2,3 %**.
+
 Deux faux positifs corrigés au banc : (1) l'ancienneté se juge sur la fin de
 production, pas le début ; (2) `chMax` renvoyait la puissance max toutes
 générations confondues, ce qui faisait hériter une fiche générique de la
