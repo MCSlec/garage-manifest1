@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.142.0';
+  const VERSION_MODULE = '20.143.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -3408,7 +3408,36 @@
       note:"La 911 manuelle la plus puissante jamais produite : le moteur de la Turbo, dégonflé à 550 ch, envoyé aux seules roues arrière et confié à une boîte mécanique à sept rapports. Double bossage, bandes Fuchs, toit en double dôme. 1 250 exemplaires. Masse non communiquée par Porsche." },
     'porsche-cayman-gts': { nom:'Porsche 718 Cayman GTS 4.0', an:[2020], pays:'Allemagne',
       ch:400, nm:430, kg:1435, cyl:4.0, arch:'flat-6', adm:'atmo', pos:'central', tx:'propulsion', bv:'M6 / PDK 7',
-      note:"Le retour du six cylindres atmosphérique dans le 718, après la fronde des clients contre le flat-4 turbo. Quatre litres, 400 ch, et le châssis à moteur central que beaucoup jugent supérieur à celui de la 911. La réponse de Porsche à sa propre erreur." }
+      note:"Le retour du six cylindres atmosphérique dans le 718, après la fronde des clients contre le flat-4 turbo. Quatre litres, 400 ch, et le châssis à moteur central que beaucoup jugent supérieur à celui de la 911. La réponse de Porsche à sa propre erreur." },
+
+    /* ---- Vague 3 : sportives allemandes -------------------------------- */
+    'mercedes-a45-amg': { nom:'Mercedes-AMG A 45 S', an:[2019], pays:'Allemagne',
+      ch:421, nm:500, kg:1625, cyl:2.0, arch:'4 en ligne', adm:'turbo', pos:'avant', tx:'intégrale', bv:'DCT 8',
+      note:"Le quatre cylindres de série le plus puissant du monde à sa sortie : 421 ch d\'un seul bloc de deux litres, soit plus de 210 ch par litre. Chaque moteur est assemblé à la main par un seul technicien, dont la plaque est vissée dessus." },
+    'vw-tiguan-r': { nom:'Volkswagen Tiguan R', an:[2021], pays:'Allemagne',
+      ch:320, nm:420, kg:1700, cyl:2.0, arch:'4 en ligne', adm:'turbo', pos:'avant', tx:'intégrale', bv:'DSG 7',
+      flou:['kg'],
+      note:"Le premier Tiguan sportif : le bloc EA888 de la Golf R dans un SUV familial, avec le différentiel arrière à vectorisation de couple capable d\'envoyer toute la motricité sur une seule roue. 250 km/h avec les sièges enfants à l\'arrière." },
+    'vw-passat-r36': { nom:'Volkswagen Passat R36', an:[2007,2010], pays:'Allemagne',
+      ch:300, nm:350, kg:1689, cyl:3.6, arch:'V6 FSI', adm:'atmo', pos:'avant', tx:'intégrale', bv:'DSG 6',
+      son:'V6 atmosphérique',
+      note:"La Passat la plus puissante jamais produite, et la dernière à recevoir un six cylindres atmosphérique. Break familial de 250 km/h, sans le moindre signe extérieur ostentatoire — l\'archétype de la voiture de monsieur-tout-le-monde qui ne l\'est pas." },
+
+    /* ---- Vague 4 : muscle cars américaines -----------------------------
+       Chiffres en norme SAE NET, convertis en ch (PS) pour rester
+       homogènes avec le reste du catalogue — voir CLAUDE.md §4.4 ter. */
+    'dodge-challenger-hellcat': { nom:'Dodge Challenger SRT Hellcat', an:[2015,2023], pays:'États-Unis',
+      ch:727, nm:889, kg:2003, cyl:6.2, arch:'V8 HEMI', adm:'compresseur', pos:'avant', tx:'propulsion', bv:'M6 / A8',
+      son:'V8 compressé',
+      note:"Deux tonnes, 727 ch et une clé rouge qui débride la pleine puissance — la noire la limite à 500 ch. Le sifflement du compresseur Lysholm est devenu sa signature sonore. Chiffres du Hellcat en norme SAE net ; la Demon qui partage l\'entrée va encore plus loin." },
+    'ford-mustang-shelby': { nom:'Shelby Mustang GT500 (2020)', an:[2020,2022], pays:'États-Unis',
+      ch:771, nm:848, kg:1897, cyl:5.2, arch:'V8 Predator', adm:'compresseur', pos:'avant', tx:'propulsion', bv:'DCT 7',
+      son:'V8 compressé',
+      note:"Le V8 compressé le plus dense en puissance jamais monté sur une voiture de série, selon Ford. Vilebrequin à plan croisé, contrairement à la Voodoo atmosphérique de la GT350, et boîte double embrayage imposée — pas de manuelle. Chiffres SAE net." },
+    'ford-mustang-boss': { nom:'Ford Mustang Boss 302 (2012)', an:[2012,2013], pays:'États-Unis',
+      ch:450, nm:515, kg:1647, cyl:5.0, arch:'V8 Coyote', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M6',
+      son:'V8 atmosphérique',
+      note:"Résurrection d\'un nom de 1969, avec un échappement latéral à clapets réglables par vis — livré avec les rondelles pour l\'ouvrir en piste. Version Laguna Seca sans banquette arrière. Chiffres SAE net ; la Boss 429 qui partage l\'entrée est une autre voiture." }
   };
 
   /* ======================================================================
@@ -8294,6 +8323,14 @@
     'porsche-911-speedster'   : 'porsche-911-speedster',
     'porsche-911-sport-classic': 'porsche-911-sport-classic',
     'porsche-cayman-gts'      : 'porsche-cayman-gts',
+    /* Vague 3 : sportives allemandes. */
+    'mercedes-a45-amg'        : 'mercedes-a45-amg',
+    'vw-tiguan-r'             : 'vw-tiguan-r',
+    'vw-passat-r36'           : 'vw-passat-r36',
+    /* Vague 4 : muscle cars americaines. */
+    'dodge-challenger-hellcat': 'dodge-challenger-hellcat',
+    'ford-mustang-shelby'     : 'ford-mustang-shelby',
+    'ford-mustang-boss'       : 'ford-mustang-boss',
     'porsche-911-carrera-rs-27': 'porsche-911-carrera-rs-27',
     'porsche-911-gt3-rs-40'   : 'porsche-911-gt3-rs-40',
     'lambo-countach-qv'       : 'lamborghini-countach',
@@ -9565,6 +9602,15 @@
     'audi-rs2-avant-b4',      // doublon de 'audi-rs2' (CARS + INFO) — fiches SPECS identiques : 315 ch / 410 Nm / 1 595 kg
     'mercedes-c43-amg',       // doublon de 'mercedes-c43' — déclarés deux fois dans CATALOGUE_PLUS, champs identiques ; seul 'mercedes-c43' a une fiche SPECS
     'citroen-ami-2020',       // doublon de 'citroen-ami' — « Ami (2020) » et « Ami » désignent le même quadricycle 8 ch / 485 kg (à ne pas confondre avec 'citroen-ami6', la vraie Ami 6 de 1961)
+    /* Révélé le 23/09 en comblant les fiches manquantes : 'bmw-1m-m140i'
+       (CATALOGUE_PLUS, « 1M Coupé / M140i ») décrit la MÊME voiture que
+       'bmw-1m' (CARS, legendaire, fiche complète). Le 1M apparaissait donc
+       deux fois dans la grille, et se collectionnait deux fois.
+       Le doublon existait avant : il était invisible au banc parce que
+       'bmw-1m-m140i' n'avait aucune fiche, donc aucun NOM à comparer.
+       Écrire la fiche manquante a suffi à le faire apparaître — c'est la
+       raison pour laquelle on comble plutôt que d'ignorer. */
+    'bmw-1m-m140i',           // doublon de 'bmw-1m' — CARS fait autorité (§2.3)
   ];
 
   function retirerDoublons() {
