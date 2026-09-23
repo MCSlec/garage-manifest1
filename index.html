@@ -111,39 +111,68 @@
 
   /* ---------- Filtres ---------- */
   .filters{ display:flex; flex-wrap:wrap; gap:8px; margin-top:16px; }
+  /* Les trois selects se dimensionnaient sur leur CONTENU : « Toutes marques »
+     et « Tous types » tenaient sur une ligne, « Tri : rareté » retombait seul
+     en dessous, avec des largeurs inegales. Ils se partagent desormais une
+     seule rangee a parts egales — une rangee entiere regagnee avant la
+     premiere voiture, et un alignement net. */
+  .filters select.sel{ flex:1 1 0; min-width:0; }
+  .filters .seg{ flex:1 1 100%; }
+  .filters .seg button{ flex:1; text-align:center; }
   .search{ position:relative; flex:1 1 100%; }
   .search .icon{ position:absolute; left:11px; top:50%; transform:translateY(-50%); color:var(--muted2); width:18px; height:18px; }
   .search input{ width:100%; padding:10px 12px 10px 36px; border:1px solid var(--line); background:var(--panel2);
     border-radius:9px; font-size:14px; }
   .search input::placeholder{ color:var(--dim); }
-  select.sel{ padding:10px 12px; border:1px solid var(--line); background:var(--panel2); border-radius:9px; font-size:13px; color:var(--muted); }
+  select.sel{ padding:10px 8px; border:1px solid var(--line); background:var(--panel2); border-radius:9px; font-size:12.5px; color:var(--muted); }
   .seg{ display:flex; border:1px solid var(--line); border-radius:9px; overflow:hidden; }
   .seg button{ padding:10px 12px; font-size:13px; color:var(--muted2); background:var(--panel2); }
-  .seg button.on{ background:var(--red2); color:#fff; }
+  /* L'onglet actif etait un aplat ROUGE pleine largeur. Or le rouge est
+     l'accent de l'ACTION principale — le bouton + de capture. Deux rouges de
+     cette taille sur le meme ecran se disputent l'attention et aucun ne
+     signale plus rien. L'etat actif passe donc en gris eleve, avec un simple
+     filet rouge : la selection reste evidente, le rouge reste rare. */
+  .seg button.on{ background:var(--line); color:var(--txt); font-weight:600; box-shadow:inset 0 -2px 0 var(--red2); }
   input:focus, select:focus, textarea:focus{ outline:none; border-color:var(--red); }
 
   /* ---------- Grille voitures ---------- */
-  .grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-top:16px; }
+  .grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-top:18px; }
   @media(min-width:520px){ .grid{ grid-template-columns:repeat(3,1fr); } }
   @media(min-width:760px){ .grid{ grid-template-columns:repeat(4,1fr); } }
   .card{ position:relative; border:1px solid var(--line); background:var(--panel); border-radius:11px; overflow:hidden; text-align:left; transition:transform .12s ease, border-color .12s ease; }
   .card:active{ transform:scale(.98); }
-  .card.have{ border-color:#3f3f46; }
+  /* La rareté se lit au HALO, jamais à la bordure néon : un liseré teinté et
+     une ombre portée très basse, sur la carte COLLECTÉE uniquement. Une
+     grille de 1 074 voitures dont on ne possède presque rien doit rester
+     calme — la couleur est la récompense de la prise, pas le décor. */
+  .card.have{
+    border-color:color-mix(in srgb, var(--rr) 26%, var(--line2));
+    box-shadow:0 0 0 1px color-mix(in srgb, var(--rr) 8%, transparent),
+               0 6px 18px color-mix(in srgb, var(--rr) 9%, transparent);
+  }
   .card.flash{ animation:flash 1.4s ease; }
   @keyframes flash{ 0%,100%{ box-shadow:0 0 0 0 transparent; } 20%{ box-shadow:0 0 0 3px var(--rr, var(--red)); } }
-  .thumb{ position:relative; aspect-ratio:4/3; background:#0e0e10; display:grid; place-items:center; overflow:hidden; }
+  /* Vignette verrouillee : fond plus profond et silhouette plus discrete.
+     Elle occupe 4/3 de la carte et se repete 1 000 fois — plus elle est
+     sourde, plus une vraie photo ressort a cote. */
+  .thumb{ position:relative; aspect-ratio:4/3; background:#0a0a0c; display:grid; place-items:center; overflow:hidden; }
   .thumb img{ width:100%; height:100%; object-fit:cover; }
-  .thumb .glyph{ opacity:.16; color:#fff; }
+  .thumb .glyph{ opacity:.11; color:#fff; }
   .thumb .lock{ position:absolute; color:#52525b; }
   .cdot{ position:absolute; left:8px; top:8px; width:10px; height:10px; border-radius:50%; box-shadow:0 0 0 2px var(--bg); }
   .cflag{ position:absolute; right:8px; top:6px; font-size:15px; filter:drop-shadow(0 1px 1px rgba(0,0,0,.6)); }
   .cchk{ position:absolute; right:8px; bottom:8px; width:20px; height:20px; border-radius:50%; background:var(--red2); display:grid; place-items:center; box-shadow:0 0 0 2px var(--bg); }
   .cchk .icon{ width:13px; height:13px; color:#fff; stroke-width:3; }
-  .cmeta{ padding:9px 10px; }
-  .cmeta .rr{ font:600 9px/1 var(--mono); letter-spacing:.06em; text-transform:uppercase; }
-  .cmeta .nm{ margin:4px 0 2px; font:600 13px/1.15 var(--sans); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .cmeta .nm.miss{ color:var(--muted2); }
-  .cmeta .br{ font:400 11px/1.2 var(--sans); color:var(--muted2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .cmeta{ padding:11px 12px 12px; }
+  /* Hierarchie remise a l'endroit : le NOM de la voiture domine. Le palier
+     de rarete redevient un micro-label gris — il criait plus fort que le
+     modele, alors que le point colore en haut de vignette suffit a le
+     reperer pendant la chasse. */
+  .cmeta .rr{ font:600 9px/1 var(--mono); letter-spacing:.08em; text-transform:uppercase; color:var(--dim); }
+  .card.have .cmeta .rr{ color:color-mix(in srgb, var(--rr) 60%, var(--muted)); }
+  .cmeta .nm{ margin:6px 0 3px; font:650 14px/1.15 var(--sans); letter-spacing:-.012em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .cmeta .nm.miss{ color:var(--muted); }
+  .cmeta .br{ font:400 11px/1.25 var(--sans); color:var(--dim); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .count-line{ margin:14px 2px 0; font:400 12px/1 var(--mono); color:var(--muted2); }
 
   /* progress rails (marques/pays) */
@@ -2796,7 +2825,7 @@ const VARIANTS = {
         ${rec?.favorite ? `<span class="cfav">${icon("star")}</span>` : ""}
       </div>
       <div class="cmeta">
-        <div class="rr" style="color:${col}">${RARITY[c.r].label}</div>
+        <div class="rr">${RARITY[c.r].label}</div>
         <div class="nm${h?"":" miss"}">${escapeHtml(c.model)}</div>
         <div class="br">${escapeHtml(c.brand)} · ${escapeHtml(c.cat)}</div>
       </div>
