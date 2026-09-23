@@ -1,9 +1,9 @@
 # Fiches techniques — ce qui manque encore
 
-> Généré le 2026-09-22 par `node banc-audit.js --manques-md`.
+> Généré le 2026-09-23 par `node banc-audit.js --manques-md`.
 > Régénère-le après chaque vague plutôt que de le corriger à la main.
 
-**9 fiches à compléter** · 59 légitimement incomplètes (voir la fin).
+**10 fiches à compléter** · 59 légitimement incomplètes (voir la fin).
 
 Le champ **ch** est indiqué parce qu'il **désigne la variante exacte** de la fiche :
 cherche le couple ou la masse *de cette version-là*, pas du modèle en général.
@@ -26,6 +26,12 @@ cherche le couple ou la masse *de cette version-là*, pas du modèle en généra
 | Czinger 21C | 2023 | 1350 ch | **couple** |
 | Hispano Suiza Carmen | 2019 | 1019 ch | **couple** |
 | Mercedes-AMG ONE | 2022 | 1063 ch | **couple** |
+
+## Supercar
+
+| Voiture | Années | Puissance (fixe la variante) | Manque |
+|---|---|---|---|
+| Porsche 911 Sport Classic | 2022 | 550 ch | **masse** |
 
 ## SUV
 

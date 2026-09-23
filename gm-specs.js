@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.141.0';
+  const VERSION_MODULE = '20.142.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -3367,7 +3367,48 @@
       prod:7145, flou:['prod'], note:"Son aileron biplan, homologué à contrecœur par le service marketing, est entré dans la légende des années 90. Conçue pour le rallye autour du bloc Cosworth YB et d\'une transmission intégrale permanente, elle reste l\'une des Ford les plus désirables du youngtimer." },
     'audi-quattro-ur': { nom:'Audi quattro (Ur-quattro)', an:[1980,1991], pays:'Allemagne',
       ch:200, nm:285, kg:1290, cyl:2.1, arch:'5 en ligne', adm:'turbo', pos:'avant', tx:'intégrale', bv:'M5',
-      prod:11452, son:'cinq-cylindres turbo', note:'A rendu la transmission intégrale obligatoire en rallye.' }
+      prod:11452, son:'cinq-cylindres turbo', note:'A rendu la transmission intégrale obligatoire en rallye.' },
+
+    /* ====================================================================
+       COMBLEMENT DES ENTRÉES SANS FICHE — vague 1 : youngtimers français
+       --------------------------------------------------------------------
+       62 entrées du catalogue s'affichaient sans aucune fiche technique
+       (94,2 % de couverture). Chaque valeur ci-dessous est sourcée ; aucune
+       n'est déduite d'une autre. Les cas où les sources se contredisent
+       sont volontairement laissés de côté plutôt qu'arbitrés au hasard.
+       ==================================================================== */
+    'peugeot-306-gti6': { nom:'Peugeot 306 GTI-6', an:[1996,2001], pays:'France',
+      ch:167, nm:193, kg:1214, cyl:2.0, arch:'4 en ligne 16v (XU10J4RS)', adm:'atmo', pos:'avant', tx:'traction', bv:'M6',
+      note:"La boîte à SIX rapports est ce qui la distingue de toutes ses rivales de l\'époque, et ce que son nom annonce. Châssis considéré comme l\'un des meilleurs jamais montés sous une traction — Peugeot n\'a jamais vraiment retrouvé ce niveau depuis." },
+    'peugeot-306-rallye': { nom:'Peugeot 306 Rallye', an:[1998,1999], pays:'France',
+      ch:167, nm:193, kg:1163, cyl:2.0, arch:'4 en ligne 16v (XU10J4RS)', adm:'atmo', pos:'avant', tx:'traction', bv:'M6',
+      note:"La GTI-6 déshabillée : même mécanique, 50 kg de moins, jantes en tôle et équipement réduit au strict nécessaire. Vendue uniquement en blanc ou bleu. La version que les puristes préfèrent, justement parce qu\'on lui a tout retiré." },
+    'citroen-ax-sport': { nom:'Citroën AX Sport', an:[1987,1992], pays:'France',
+      ch:95, nm:113, kg:715, cyl:1.3, arch:'4 en ligne double carbu', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
+      note:"715 kg seulement : l\'AX était si légère que ses 95 ch suffisaient à tenir tête à des voitures bien plus puissantes. Deux carburateurs double corps, une caisse en tôle fine, aucune insonorisation. Le rapport poids/puissance comme seule stratégie." },
+    'renault-clio-16s': { nom:'Renault Clio 16S', an:[1991,1998], pays:'France',
+      ch:137, nm:162, kg:980, cyl:1.8, arch:'4 en ligne 16v', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
+      note:"Le seize soupapes qui a lancé la lignée sportive Clio, et la base sur laquelle Williams a ensuite été construite. Moins d\'une tonne pour 137 ch : la recette de la GTI des années 90, appliquée sans compromis." },
+    'renault-alpine-a610': { nom:'Alpine A610 Turbo', an:[1991,1995], pays:'France',
+      ch:250, nm:350, kg:1420, cyl:3.0, arch:'V6 PRV', adm:'turbo', pos:'arrière', tx:'propulsion', bv:'M5',
+      note:"La dernière Alpine de Dieppe avant vingt ans de silence. Moteur en porte-à-faux arrière comme une 911, phares escamotables, 265 km/h — et un échec commercial complet, faute d\'image face à Porsche. Aujourd\'hui redécouverte." },
+
+    /* ---- Vague 2 : déclinaisons Porsche sans fiche --------------------- */
+    'porsche-911-gt3-touring': { nom:'Porsche 911 GT3 Touring (992)', an:[2021], pays:'Allemagne',
+      ch:510, nm:470, kg:1418, cyl:4.0, arch:'flat-6', adm:'atmo', pos:'arrière', tx:'propulsion', bv:'M6 / PDK 7',
+      rupteur:9000,
+      note:"Exactement la GT3, aileron en moins. Même flat-6 atmosphérique à 9 000 tr/min, même châssis, mais une carrosserie lisse et un intérieur cuir : la voiture pour ceux qui veulent le moteur sans l\'affichage. Longtemps réservée à la boîte manuelle." },
+    'porsche-911-speedster': { nom:'Porsche 911 Speedster (991)', an:[2019], pays:'Allemagne',
+      ch:510, nm:470, kg:1465, cyl:4.0, arch:'flat-6', adm:'atmo', pos:'arrière', tx:'propulsion', bv:'M6',
+      prod:1948, rupteur:9000,
+      note:"1 948 exemplaires, en référence à l\'année de fondation de Porsche. Mécanique de GT3, capote manuelle, double bossage arrière et pare-brise raccourci. La dernière 991, et le dernier adieu au flat-6 atmosphérique dans une décapotable." },
+    'porsche-911-sport-classic': { nom:'Porsche 911 Sport Classic (992)', an:[2022], pays:'Allemagne',
+      ch:550, nm:600, cyl:3.7, arch:'flat-6', adm:'biturbo', pos:'arrière', tx:'propulsion', bv:'M7',
+      prod:1250,
+      note:"La 911 manuelle la plus puissante jamais produite : le moteur de la Turbo, dégonflé à 550 ch, envoyé aux seules roues arrière et confié à une boîte mécanique à sept rapports. Double bossage, bandes Fuchs, toit en double dôme. 1 250 exemplaires. Masse non communiquée par Porsche." },
+    'porsche-cayman-gts': { nom:'Porsche 718 Cayman GTS 4.0', an:[2020], pays:'Allemagne',
+      ch:400, nm:430, kg:1435, cyl:4.0, arch:'flat-6', adm:'atmo', pos:'central', tx:'propulsion', bv:'M6 / PDK 7',
+      note:"Le retour du six cylindres atmosphérique dans le 718, après la fronde des clients contre le flat-4 turbo. Quatre litres, 400 ch, et le châssis à moteur central que beaucoup jugent supérieur à celui de la 911. La réponse de Porsche à sa propre erreur." }
   };
 
   /* ======================================================================
@@ -8242,6 +8283,17 @@
        technique, en silence. Détecté par le contrôle d'atteignabilité. */
     'renault-megane-trophy-r' : 'renault-megane-rs-trophy-r',
     /* Memes fiches, rendues atteignables (voir CATALOGUE_PLUS ci-dessus). */
+    /* Vague 1 du comblement des entrées sans fiche (youngtimers français). */
+    'peugeot-306-gti6'        : 'peugeot-306-gti6',
+    'peugeot-306-rallye'      : 'peugeot-306-rallye',
+    'citroen-ax-sport'        : 'citroen-ax-sport',
+    'renault-clio-16s'        : 'renault-clio-16s',
+    'renault-alpine-a610'     : 'renault-alpine-a610',
+    /* Vague 2 : déclinaisons Porsche. */
+    'porsche-911-gt3-touring' : 'porsche-911-gt3-touring',
+    'porsche-911-speedster'   : 'porsche-911-speedster',
+    'porsche-911-sport-classic': 'porsche-911-sport-classic',
+    'porsche-cayman-gts'      : 'porsche-cayman-gts',
     'porsche-911-carrera-rs-27': 'porsche-911-carrera-rs-27',
     'porsche-911-gt3-rs-40'   : 'porsche-911-gt3-rs-40',
     'lambo-countach-qv'       : 'lamborghini-countach',
