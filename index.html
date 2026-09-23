@@ -237,6 +237,14 @@
   .btn.red{ background:var(--red2); border-color:var(--red2); color:#fff; }
   .btn.red:active{ background:var(--red-dk); }
   .btn.ghost{ background:transparent; }
+  /* Action DESTRUCTIVE : neutre au repos, rouge au contact seulement.
+     Elle etait aussi accentuee que « Ajouter une photo », l'action
+     principale — deux rouges cote a cote, et le plus visible etait celui
+     qui efface une prise. L'icone suffit a annoncer ce qu'elle fait ;
+     le rouge n'apparait qu'au moment de l'appui, comme confirmation
+     visuelle du geste. */
+  .btn-danger{ color:var(--muted2); border-color:var(--line2); }
+  .btn-danger:active{ color:var(--red); border-color:var(--red-dk); background:rgba(239,68,68,.08); }
   .btn:disabled{ opacity:.4; }
   .meter{ height:8px; border-radius:6px; background:#232327; overflow:hidden; margin-top:8px; }
   .meter>i{ display:block; height:100%; background:var(--red); }
@@ -3299,7 +3307,7 @@ const VARIANTS = {
     return `
       <div class="detail-hero" style="border-radius:12px;overflow:hidden">
         ${ph ? `<img src="${ph}" />` : `<svg viewBox="0 0 24 24" class="icon" style="width:64px;height:64px;color:${col}">${P.car}</svg>`}
-        <span class="chip" style="position:absolute;left:12px;top:12px;background:${col}22;color:${col}"><span style="width:8px;height:8px;border-radius:50%;background:${col}"></span>${RARITY[c.r].label}</span>
+        <span class="chip" style="position:absolute;left:12px;top:12px;background:rgba(9,9,11,.62);border:1px solid ${col}44;color:var(--muted);backdrop-filter:blur(6px)"><span style="width:8px;height:8px;border-radius:50%;background:${col};box-shadow:0 0 8px ${col}88"></span>${RARITY[c.r].label}</span>
       </div>
       ${strip}
       <div class="detail-title"><div><h2>${escapeHtml(c.model)}</h2><p class="muted">${c.c} ${escapeHtml(c.brand)}</p></div>
@@ -3318,7 +3326,7 @@ const VARIANTS = {
       <div style="display:flex;gap:10px;margin-top:14px">
         <button class="btn" data-addphoto="1" style="flex:1">${icon("camera","icon")}&nbsp; Ajouter une photo</button>
         <button class="btn ghost" data-act="sharecard" title="Partager la carte">${icon("star","icon")}</button>
-        <button class="btn ghost" data-release="${c.id}" style="color:var(--red);border-color:var(--red-dk)">${icon("trash","icon")}</button>
+        <button class="btn ghost btn-danger" data-release="${c.id}">${icon("trash","icon")}</button>
       </div>`;
   }
 
@@ -3410,7 +3418,7 @@ const VARIANTS = {
     return `
       <div class="detail-shell" data-brand="${escapeHtml(c.brand)}" data-rarity="${escapeHtml(c.r)}"${!h ? ' data-verrou="1"' : ''}>
       <div class="info-head">
-        <span class="chip" style="background:${col}22;color:${col}"><span style="width:8px;height:8px;border-radius:50%;background:${col}"></span>${RARITY[c.r].label}</span>
+        <span class="chip" style="background:${col}12;border:1px solid ${col}33;color:var(--muted)"><span style="width:8px;height:8px;border-radius:50%;background:${col};box-shadow:0 0 8px ${col}88"></span>${RARITY[c.r].label}</span>
         <h2>${escapeHtml(c.brand)} ${escapeHtml(c.model)}</h2>
         <p class="muted">${c.c} ${COUNTRY[c.c]||""} · ${escapeHtml(c.cat)}</p>
       </div>
