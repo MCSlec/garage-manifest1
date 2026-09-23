@@ -3,7 +3,7 @@
 > Généré le 2026-09-23 par `node banc-audit.js --manques-md`.
 > Régénère-le après chaque vague plutôt que de le corriger à la main.
 
-**10 fiches à compléter** · 59 légitimement incomplètes (voir la fin).
+**19 fiches à compléter** · 59 légitimement incomplètes (voir la fin).
 
 Le champ **ch** est indiqué parce qu'il **désigne la variante exacte** de la fiche :
 cherche le couple ou la masse *de cette version-là*, pas du modèle en général.
@@ -16,8 +16,16 @@ cherche le couple ou la masse *de cette version-là*, pas du modèle en généra
 | Bentley 4½ Litre Blower | 1929–1931 | 240 ch | **couple** |
 | Bugatti Type 35 | 1924–1930 | 140 ch | **couple** |
 | Cord 810 / 812 | 1936–1937 | 127 ch | **couple** |
+| Fiat 500 « Topolino » | 1936–1955 | 13 ch | **masse** |
 | Peugeot 402 | 1935–1942 | 63 ch | **couple** |
 | Tatra T87 | 1936–1950 | 75 ch | **couple** |
+| Volkswagen Passat (B1–B4) | 1973–1996 | 75 ch | **couple** |
+
+## Concept
+
+| Voiture | Années | Puissance (fixe la variante) | Manque |
+|---|---|---|---|
+| Renault Clio R.S. 16 (concept) | 2016 | 275 ch | **couple, masse** |
 
 ## Hypercar
 
@@ -27,17 +35,33 @@ cherche le couple ou la masse *de cette version-là*, pas du modèle en généra
 | Hispano Suiza Carmen | 2019 | 1019 ch | **couple** |
 | Mercedes-AMG ONE | 2022 | 1063 ch | **couple** |
 
+## Pick-up
+
+| Voiture | Années | Puissance (fixe la variante) | Manque |
+|---|---|---|---|
+| Shelby F-150 | 2017 | 796 ch | **couple, masse** |
+
+## Sportive
+
+| Voiture | Années | Puissance (fixe la variante) | Manque |
+|---|---|---|---|
+| HSV Commodore GTS | 2013–2017 | 585 ch | **masse** |
+
 ## Supercar
 
 | Voiture | Années | Puissance (fixe la variante) | Manque |
 |---|---|---|---|
+| Alfa Romeo 33 Stradale (2023) | 2023 | 620 ch | **couple** |
 | Porsche 911 Sport Classic | 2022 | 550 ch | **masse** |
 
 ## SUV
 
 | Voiture | Années | Puissance (fixe la variante) | Manque |
 |---|---|---|---|
+| Kia Sportage (1re gén.) | 1993–2004 | 128 ch | **masse** |
 | Renault Austral | 2022 | 200 ch | **couple** |
+| Renault Rafale | 2023 | 200 ch | **couple** |
+| Renault Arkana | 2019 | 145 ch | **couple** |
 
 ---
 
@@ -53,6 +77,14 @@ cherche le couple ou la masse *de cette version-là*, pas du modèle en généra
 | **GMC Hummer EV** | ⚠️ Le « 11 500 lb-ft » (≈ 15 592 Nm) qui circule est le **couple à la roue** annoncé par le marketing GM, pas le couple des moteurs (~1 500 Nm). Ne jamais le saisir tel quel : il donnerait un ratio délirant. |
 | **Czinger 21C** | Puissance bien documentée (1 250 ch), couple jamais publié par le constructeur. |
 | **Micro-citadines d'époque restantes** (Fiat 500 Nuova, Peugeot 402, Tatra T87, Cord, Bugatti Type 35, Bentley Blower, Delahaye 135) | Couple non communiqué à l'époque. Piste : revues techniques (RTA) et notices constructeur d'origine. |
+| **Renault Rafale / Arkana E-Tech** | Même cas que l'Austral, et c'est un cas **de règle, pas de sourcing** : la boîte multimode à crabots n'additionne pas les deux couples sur un arbre commun (thermique et électrique passent par des trains de rapports différents). Renault ne publie donc aucun couple système. Traiter comme l'exception HSD de CLAUDE.md §4.4 — laisser vide, c'est la bonne réponse. |
+| **Fiat 500 A « Topolino »** | Masse : 535 kg circule côté historiens, 740 kg côté bases techniques. Facteur 1,4 → ce sont deux grandeurs différentes (à vide contre PTAC). Piste : notice Fiat d'origine ou registre du club Topolino. |
+| **Alfa Romeo 33 Stradale (2023)** | Alfa ne publie aucun couple pour le V6 biturbo, et la masse de 1 500 kg vient des bases techniques, pas du constructeur (d'où le `flou:['kg']`). |
+| **HSV Commodore GTS (Gen-F)** | Puissance et couple bien documentés (585 ch / 740 Nm), mais aucune source consultée ne donne la masse — les bases techniques australiennes ne sont pas indexées côté européen. Piste : brochures HSV d'origine, presse australienne. |
+| **Kia Sportage (1re gén.)** | 128 ch / 175 Nm en norme européenne (attention : 140 ch en norme **JIS** sur les bases asiatiques — ne pas mélanger, cf. §4.4 ter). Masse absente des sources accessibles. |
+| **Shelby F-150 Super Snake** | Shelby publie une puissance (785 ch SAE au millésime 2024) mais ni couple ni masse : ce sont des conversions, pas des homologations. Le chiffre monte d'année en année (770 → 785 → 810+), donc toute reprise doit préciser le millésime. |
+| **Renault Clio R.S. 16** | Concept jamais homologué : Renault n'a publié que la puissance (275 ch, moteur de Mégane R.S. Trophy-R). Reprendre le couple de la Mégane serait une déduction, pas une source. |
+| **Volkswagen Passat (B1–B4)** | Masse trouvée (920 kg, B2 1.6), couple absent des bases accessibles pour cette version-là. Ne pas reprendre celui d'une autre cylindrée. |
 
 **Le réflexe à garder :** quand deux sources divergent d'un ordre de grandeur,
 c'est presque toujours qu'elles ne mesurent pas la même chose (couple moteur vs
