@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.151.0';
+  const VERSION_MODULE = '20.152.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -3286,8 +3286,8 @@
       rupteur:7500, v:386, acc:3.2, prod:106, son:'V12 BMW atmosphérique',
       note:'Trois places, conducteur au centre. Compartiment moteur doublé d\'or pour dissiper la chaleur.' },
     'jaguar-xj220': { nom:'Jaguar XJ220', an:[1992,1994], pays:'Royaume-Uni',
-      ch:542, nm:644, kg:1470, cyl:3.5, arch:'V6', adm:'biturbo', pos:'central', tx:'propulsion', bv:'M5',
-      v:349, prod:275, note:'Annoncée en V12 intégral, produite en V6 biturbo propulsion. Procès à la clé.' },
+      ch:550, nm:644, kg:1470, cyl:3.5, arch:'V6', adm:'biturbo', pos:'central', tx:'propulsion', bv:'M5',
+      v:349, prod:275, note:'Annoncée en V12 intégral, produite en V6 biturbo propulsion. Procès à la clé. 542 bhp annoncés en norme britannique, soit 550 ch.' },
     'bugatti-eb110-ss': { nom:'Bugatti EB110 Super Sport', an:[1992,1995], pays:'Italie',
       ch:611, nm:650, kg:1418, cyl:3.5, arch:'V12', adm:'quadriturbo', pos:'central', tx:'intégrale', bv:'M6',
       prod:33, flou:['kg','prod'], note:'Quatre turbos, soixante soupapes, châssis carbone. Bugatti époque Campogalliano.' },
@@ -8415,6 +8415,120 @@
     'jaguar-xk120': [
       ['XK120 Roadster (OTS)','1948–1954','6 en ligne XK 3.4 double arbre','','Plus de 190 km/h en 1949 : la voiture de série la plus rapide du monde à sa sortie. Les quelque 240 premiers exemplaires ont une carrosserie en aluminium sur armature en frêne.'],
       ['Coupé (FHC) et cabriolet (DHC)','1951–1954','6 en ligne XK 3.4 double arbre','','Coupé fermé en 1951, cabriolet en 1953. Le moteur XK sera produit jusqu\'en 1992.'],
+    ],
+    'matra-530': [
+      ['M530','1967–1970','V4 Ford Taunus 1.7, moteur central','70 ch','Toit targa en deux panneaux et phares escamotables, sur une sportive à moteur central vendue au prix d\'une berline.'],
+      ['530 LX / SX','1970–1973','V4 Ford Taunus 1.7, moteur central','70 ch','Face avant redessinée et équipement simplifié. 9 609 exemplaires au total, tous en conduite à gauche.'],
+    ],
+    'citroen-sm': [
+      ['SM 2.7 carburateurs','1970–1972','V6 Maserati 2.7','170 ch','La DS devenue grand tourisme, avec un V6 conçu par Maserati, alors propriété de Citroën. Direction DIRAVI à rappel asservi et phares directionnels.'],
+      ['SM 2.7 injection','1972–1975','V6 Maserati 2.7 à injection','178 ch',''],
+      ['SM 3.0 automatique','1973–1975','V6 Maserati 3.0','180 ch','Réservée à la boîte automatique. 12 920 SM au total, tuées par la crise pétrolière et la faillite de Citroën.'],
+    ],
+    'bmw-e30-m3': [
+      ['M3','1986–1991','4 cyl. 2.3 16v (S14)','195–215 ch','Conçue pour gagner en championnat de tourisme : caisse retouchée à presque tous les panneaux, et l\'une des voitures de course les plus titrées de l\'histoire.'],
+      ['Evolution / Evolution II','1987–1988','4 cyl. 2.3 16v (S14)','','Séries d\'homologation pour la compétition ; l\'Evolution II atteint 220 ch.'],
+      ['Sport Evolution','1990','4 cyl. 2.5 16v (S14)','238 ch','600 exemplaires. Aileron et becquet réglables.'],
+      ['Cabriolet','1988–1991','4 cyl. 2.3 16v (S14)','','786 exemplaires. Au total, 17 970 M3 E30.'],
+    ],
+    'lancia-stratos': [
+      ['Stratos HF Stradale','1973–1978','V6 Ferrari Dino 2.4, moteur central','190 ch','Conçue d\'emblée pour le rallye, sur un empattement très court. Environ 492 exemplaires routiers pour homologuer la voiture qui gagne trois championnats du monde de suite, de 1974 à 1976.'],
+    ],
+    'ferrari-f40': [
+      ['F40','1987–1992','V8 2.9 biturbo','478 ch','La dernière Ferrari validée par Enzo Ferrari, pour les 40 ans de la marque. Première voiture de série au-delà de 320 km/h, sans direction assistée, sans ABS, et des vitres coulissantes en plastique.'],
+      ['F40 LM / Competizione','1989–1994','V8 2.9 biturbo','','Versions de course. 1 311 F40 au total, toutes versions confondues.'],
+    ],
+    'mazda-cosmo': [
+      ['L10A (Série I)','1967–1968','birotor Wankel 10A','110 ch','Première voiture de série à moteur rotatif à deux rotors. Assemblée à la main, environ une par jour. 343 exemplaires.'],
+      ['L10B (Série II)','1968–1972','birotor Wankel 10A','128 ch','Empattement allongé, boîte à cinq rapports. 833 exemplaires.'],
+    ],
+    'ferrari-daytona-365': [
+      ['365 GTB/4','1968–1973','V12 4.4 atmo','352 ch','Surnommée « Daytona » après le triplé Ferrari aux 24 Heures de Daytona 1967. Phares escamotables à partir de 1971. 1 284 coupés.'],
+      ['365 GTS/4','1969–1973','V12 4.4 atmo','352 ch','122 spiders d\'origine. Beaucoup de coupés ont été découpés plus tard pour en imiter.'],
+    ],
+    'opel-gt-classic': [
+      ['GT 1100','1968–1970','4 cyl. 1.1','60 ch','« Nur fliegen ist schöner » — seul voler est plus beau. Carrosserie fabriquée en France par Brissonneau & Lotz, puis Chausson.'],
+      ['GT 1900','1968–1973','4 cyl. 1.9','90 ch','Phares escamotables par un levier mécanique sur la console. 103 463 Opel GT au total.'],
+    ],
+    'fiat-131-abarth': [
+      ['131 Abarth Rally (Stradale)','1976–1978','4 cyl. 2.0 16v','140 ch','400 exemplaires routiers pour homologuer la voiture de rallye du Groupe 4. Suspension arrière indépendante et ailes en polyester sur une berline familiale. Championne du monde des rallyes en 1977, 1978 et 1980.'],
+    ],
+    'bugatti-eb110': [
+      ['EB110 GT','1991–1995','V12 3.5 quatre turbos','560 ch','La Bugatti de Romano Artioli, construite dans l\'usine neuve de Campogalliano, près de Modène. Soixante soupapes, quatre turbos et quatre roues motrices, sur un châssis en carbone.'],
+      ['EB110 SS','1992–1995','V12 3.5 quatre turbos','612 ch','Version allégée et plus puissante. 139 EB110 au total avant la faillite de 1995.'],
+    ],
+    'renault-12-gordini': [
+      ['R12 Gordini','1970–1974','4 cyl. 1.6 (moteur de R16 TS retravaillé)','113 ch','Livrée bleue à doubles bandes blanches, pour remplacer la R8 Gordini dans les coupes monomarques. 5 188 exemplaires.'],
+    ],
+    'panhard-24': [
+      ['24 C / CT (courte)','1963–1967','2 cyl. à plat 848 cm³ refroidi par air','','La dernière Panhard : Citroën, propriétaire de la marque, arrête la production automobile en 1967. La version « Tigre » du bicylindre sort 60 ch.'],
+      ['24 B / BT (longue)','1964–1967','2 cyl. à plat 848 cm³ refroidi par air','','Empattement allongé pour quatre vraies places. 28 651 Panhard 24 au total.'],
+    ],
+    'ligier-js2': [
+      ['JS2','1971–1975','V6 Maserati 2.7 puis 3.0, moteur central','','Le V6 de la Citroën SM dans un coupé à moteur central. « JS » pour Jo Schlesser, ami de Guy Ligier mort en course. Deuxième aux 24 Heures du Mans 1975. Production estimée à quelques centaines d\'exemplaires, les sources divergeant.'],
+    ],
+    'bizzarrini-5300gt': [
+      ['5300 GT Strada','1964–1968','V8 Chevrolet 5.4 (327)','','Version routière de l\'Iso Grifo A3/C de course, par Giotto Bizzarrini, ex-ingénieur de la Ferrari 250 GTO. 133 exemplaires.'],
+    ],
+    'detomaso-mangusta': [
+      ['Mangusta','1967–1971','V8 Ford 4.7 puis 4.9, moteur central','','Carrosserie de Giugiaro chez Ghia, capot moteur en deux parties « papillon ». Environ 150 exemplaires pour l\'Europe, le reste pour les États-Unis : 401 au total.'],
+    ],
+    'vw-sp2': [
+      ['SP2','1972–1975','flat-4 VW 1.7 refroidi par air, moteur arrière','','Dessiné et construit par Volkswagen do Brasil, dans un pays fermé aux importations. 10 205 exemplaires.'],
+    ],
+    'bmw-m1': [
+      ['M1 (route)','1978–1981','6 en ligne 3.5 24v (M88)','277 ch','Première BMW M, dessinée par Giugiaro. Codéveloppée avec Lamborghini, qui a abandonné le projet : BMW a dû la faire construire ailleurs. 453 exemplaires, course comprise.'],
+      ['M1 Procar','1979–1980','6 en ligne 3.5 24v (M88)','480 ch','Coupe monomarque disputée en lever de rideau des Grands Prix, avec les pilotes de Formule 1 en vedette.'],
+    ],
+    'ferrari-288-gto': [
+      ['288 GTO','1984–1987','V8 2.9 biturbo, moteur central longitudinal','400 ch','Conçue pour le Groupe B, qui disparaît avant ses débuts. 272 exemplaires.'],
+      ['288 GTO Evoluzione','1986','V8 2.9 biturbo','650 ch','Six exemplaires, prototype compris. Son développement mène directement à la F40.'],
+    ],
+    'toyota-2000gt': [
+      ['2000GT','1967–1970','6 en ligne 2.0 double arbre (3M)','150 ch','Culasse développée par Yamaha. Deux cabriolets spéciaux tournés pour On ne vit que deux fois, James Bond au Japon. 351 exemplaires.'],
+    ],
+    'facel-vega-hk500': [
+      ['HK500','1958–1961','V8 Chrysler 5.9 et 6.3','','La « Rolls française » : un coupé français à V8 américain, parmi les voitures quatre places les plus rapides de son temps. Environ 490 exemplaires, surtout en boîte automatique.'],
+    ],
+    'bmw-30csl': [
+      ['3.0 CSL','1972–1975','6 en ligne 3.0 puis 3.2 à injection','206 ch (3.2)','« L » pour « Leicht » : panneaux en aluminium, vitres fines. Le kit aérodynamique de la version d\'homologation lui vaut le surnom de « Batmobile ». Carrosserie assemblée par Karmann, 1 265 exemplaires.'],
+    ],
+    'jaguar-dtype': [
+      ['D-Type','1954–1957','6 en ligne XK 3.4 puis 3.8','','Monocoque en aluminium inspirée de l\'aéronautique, et l\'aileron dorsal derrière le pilote. Trois victoires au Mans, en 1955, 1956 et 1957. Environ 71 exemplaires.'],
+      ['XKSS','1957','6 en ligne XK 3.4','','D-Type invendues converties pour la route. Neuf détruites dans l\'incendie de l\'usine de Browns Lane : seize exemplaires seulement. Steve McQueen en possédait une.'],
+    ],
+    'mercury-cougar-67': [
+      ['Cougar / XR-7','1967–1968','V8 4.7 (289) et 6.4 (390)','','La cousine chic de la Mustang, sur un empattement allongé, avec phares escamotables derrière une calandre « rasoir électrique ». Voiture de l\'Année Motor Trend 1967.'],
+      ['Cougar / Eliminator','1969–1970','V8 5.0 (Boss 302) à 7.0 (428 Cobra Jet)','','L\'Eliminator répond aux muscle cars de GM. Puissances d\'époque en SAE brute, non reprises.'],
+    ],
+    'nissan-hakosuka': [
+      ['PGC10 (berline 4 portes)','1969–1970','6 en ligne 2.0 24v (S20)','160 ch','Moteur dérivé du prototype de course Prince R380. « Hakosuka » : la « Skyline boîte ». Environ 832 exemplaires.'],
+      ['KPGC10 (coupé)','1970–1972','6 en ligne 2.0 24v (S20)','160 ch','Empattement raccourci. Plus de 50 victoires en course au Japon. Environ 1 197 exemplaires.'],
+    ],
+    'bmw-507': [
+      ['507 (Série I et II)','1956–1959','V8 3.2 aluminium','150 ch','Dessinée par Albrecht von Goertz, voulue pour le marché américain à des milliers d\'exemplaires. Trop chère : 252 construites, et des pertes qui ont failli couler BMW. Elvis Presley en possédait une.'],
+    ],
+    'porsche-550': [
+      ['550 Spyder','1953–1956','flat-4 1.5 quatre arbres (Fuhrmann)','110 ch','Surnommée « la tueuse de géants » pour ses victoires sur des voitures bien plus puissantes. James Dean s\'est tué au volant de la sienne en 1955. 90 exemplaires.'],
+    ],
+    'lambo-countach-qv': [
+      ['LP5000 Quattrovalvole','1985–1988','V12 5.2 quatre soupapes par cylindre','455 ch','La Countach la plus puissante : culasses à quatre soupapes et six carburateurs Weber montés au-dessus du moteur. Injection Bosch sur les versions américaines. Un peu plus de 600 exemplaires, les sources divergeant.'],
+    ],
+    'bmw-2002': [
+      ['2002 turbo','1973–1975','4 cyl. 2.0 turbo à injection','170 ch','Première voiture européenne de série à turbocompresseur, lancée en pleine crise pétrolière. Inscription « turbo » inversée sur le bouclier avant, pour le rétroviseur de la voiture de devant. 1 672 exemplaires.'],
+    ],
+    'alfa-33-stradale-og': [
+      ['33 Stradale','1967–1969','V8 2.0 atmo (Tipo 33/2)','230 ch','La voiture de course Tipo 33 adaptée à la route, dessinée par Franco Scaglione. Portes papillon et carrosserie en aluminium. 18 exemplaires, dont plusieurs devenus des concept cars.'],
+    ],
+    'alfa-sz': [
+      ['SZ (ES-30)','1989–1991','V6 Alfa 3.0 « Busso »','210 ch','Surnommée « Il Mostro », le monstre. Carrosserie en composite assemblée par Zagato, dessin du Centro Stile Alfa Romeo et de Fiat. 1 036 coupés ; le roadster RZ suit en 1992-1993, à 278 exemplaires.'],
+    ],
+    'ferrari-250-gto': [
+      ['Série I','1962–1963','V12 3.0 Colombo atmo','300 ch','Homologuée en GT en faisant croire à la FIA qu\'elle n\'était qu\'une évolution de la 250 GT SWB. Trois titres mondiaux GT consécutifs. 33 exemplaires.'],
+      ['Série II','1964','V12 3.0 Colombo atmo','300 ch','Carrosserie inspirée de la 250 LM : trois exemplaires, et quatre Série I recarrossées. 36 250 GTO au total, les voitures les plus chères jamais vendues aux enchères.'],
+    ],
+    'jaguar-xj220': [
+      ['XJ220','1992–1994','V6 3.5 biturbo (JRV-6)','550 ch','Présentée en V12 à quatre roues motrices, livrée en V6 biturbo propulsion : des clients ont attaqué Jaguar en justice. Châssis en nid d\'abeille d\'aluminium, 349 km/h, voiture de série la plus rapide du monde en 1992.'],
     ],
     'toyota-century': [
       ['G20 / G30 / G40','1967–1997','V8 3.0, 3.4 puis 4.0','','Trente ans de production quasiment sans changement de ligne, réservée au marché japonais.'],
