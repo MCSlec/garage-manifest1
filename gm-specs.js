@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.144.0';
+  const VERSION_MODULE = '20.145.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -4441,10 +4441,6 @@
       ['R53','2002–2006','1.6 à compresseur','163–170 ch','Le sifflement du compresseur : la préférée des amateurs.'],
       ['R56 / F56','2006–','1.6 puis 2.0 turbo','175–192 ch','Passage au turbo (co-développé avec PSA puis BMW), plus coupleux que le compresseur d\'origine.'],
     ],
-    'ford-fiesta-st-moderne': [
-      ['Mk6 / Mk7','2005–2017','2.0 atmo puis 1.6 EcoBoost','150–200 ch','Le châssis de la Mk7 est unanimement salué.'],
-      ['Mk8','2018–2023','1.5 · 3 cyl. turbo','200 ch','Désactivation d\'un cylindre en charge partielle.'],
-    ],
 
 
     /* ---- LOT VILLE 2026 : générations avec intervalles de puissance --------
@@ -4538,9 +4534,11 @@
       ['F20/F21','2011–2019','3, 4 et 6 cyl. turbo','95–240 ch','Dernière Série 1 à propulsion hors M140i.'],
       ['F40 / F70','2019–','3 et 4 cyl. turbo','109–306 ch','Passage à la traction, très critiqué par les fidèles.'],
     ],
-    'bmw-1m-m140i': [
+    /* Ex-'bmw-1m-m140i', id d'un doublon retiré : bloc jamais affiché.
+       Seule la ligne 1M relève de cette entrée ; la M140i appartient à
+       'bmw-m135i' et y sera sourcée à part. */
+    'bmw-1m': [
       ['1M Coupé (E82)','2011','N54 3.0 biturbo','340 ch','Production limitée à une seule année. Voies élargies reprises de la M3 E92, essieu arrière de M3. Devenue culte.'],
-      ['M140i (F20)','2017–2019','B58 3.0 turbo','340 ch','Le dernier grand 6 en ligne compact avant l\'arrêt de la propulsion chez BMW compact.'],
     ],
     'bmw-x1': [
       ['E84','2009–2015','4 et 6 cyl.','143–306 ch','La première génération, à propulsion, existe même en 6 cylindres dans la X1 35i.'],
@@ -4771,8 +4769,13 @@
     'vw-up': [
       ['up!','2011–2023','3 cyl. 1.0, e-up!','60–75 ch','Citadine minimaliste bien née, jumelle des Škoda Citigo et SEAT Mii.'],
     ],
-    'vw-up-gti-mk': [
-      ['up! GTI','2018–2023','4 cyl. 1.0 turbo TSI','115 ch','Reprend délibérément le rapport poids/puissance de la Golf GTI Mk1. Production limitée en Europe.'],
+    /* Ex-'vw-up-gti-mk', id d'un doublon retiré : bloc jamais affiché.
+       Corrigé au passage : « 4 cyl. » contredisait la fiche — le 1.0 TSI
+       de la up! GTI est un TROIS cylindres —, et 115 ch est aligné sur les
+       116 ch de SPECS['vw-up-gti']. La mention « production limitée » est
+       retirée : aucune source ne l'étaye. */
+    'vw-up-gti': [
+      ['up! GTI','2018–2023','3 cyl. 1.0 TSI turbo','116 ch','Reprend délibérément le rapport poids/puissance de la Golf GTI Mk1 de 1976.'],
     ],
     'citroen-c4': [
       ['I','2004–2010','essence et HDi','75–110 ch','Sa pub avec un robot transformer dansant est restée dans les mémoires.'],
@@ -14857,7 +14860,14 @@
         derives: deriver(f),
         flou: Array.isArray(f.flou) ? [...f.flou] : [],
         rareteFiche: rarete(f.prod),
-        generations: GENS[cle] ? JSON.parse(JSON.stringify(GENS[cle])) : null,
+        /* GENS est indexé par l'id CATALOGUE, exactement comme le lit
+           gensHTML() — et non par la clé de fiche `cle`. La première version
+           lisait GENS[cle] : pour les 28 voitures dont l'id diffère de leur
+           clé de fiche (Range Rover, Land Cruiser, Huracán…), l'API renvoyait
+           `null` alors que l'app affichait leurs générations. Une API de
+           données qui ne dit pas la même chose que l'écran est pire que pas
+           d'API. */
+        generations: GENS[idCatalogue] ? JSON.parse(JSON.stringify(GENS[idCatalogue])) : null,
         signature: signature(f)
       };
     },

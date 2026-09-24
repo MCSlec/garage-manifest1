@@ -560,7 +560,7 @@ de l'éditer.
 - [ ] **204 fiches multi-générations restent sans sélecteur `MOTOR_SPECS`** — répartition connue par catégorie : SUV (45), Sportive (57), Berline (31), Classique (13), Citadine (15), Supercar (10), Youngtimer (11), Roadster (7), Hypercar (3), GT (3), Course (0, **traité le 22/09** : 917, 956/962, 205 T16, Impreza WRC, Mitjet 2L restaient — à vérifier l'état exact au dépôt)
 - [x] ~~fiches techniques non remplies~~ — **terminé le 24/09/2026**, voir ci-dessus
 - [x] ~~Chantier matching IA~~ — **`gm-matcher.js` livré** (22/09) : `finalConfidence`, `AUCUNE_CORRESPONDANCE_SURE`, catalogue injecté en paramètre, banc `node banc-matcher.js` 17/17. `matchCatalog()` reste en repli dans `identifyCar()`
-- [ ] **441 entrées sans bloc « Générations »** (632/1 073 couvertes). C'est désormais le plus gros gisement restant du catalogue — cadré, non entamé
+- [ ] **412 entrées sans bloc « Générations »** (661/1 073 affichées). C'est désormais le plus gros gisement restant du catalogue. ⚠️ Mesurer par `GENS[idCatalogue]`, la clé que lit le rendu : mesuré par la clé de fiche, on trouve 441 et on réécrit des blocs qui existent déjà (voir `CLAUDE.md` §2.2)
 - [ ] Fiche à onglets (Fiche technique / Photos / Historique) — direction validée sur maquette, **pas implémentée**, périmètre élargi non couvert par le modèle de données actuel (dimensions, équipement, poids tractable, comparatif concurrents)
 - [ ] Vue cinématique du véhicule (caméra fluide autour de la voiture) — CSS/photos compositing **prouvé insuffisant** par test Playwright réel ; pistes restantes : vidéo en boucle non scrubbée, ou accepter des transitions photo statiques
 - [ ] Feature clan payante (freemium ~5€) — non commencée

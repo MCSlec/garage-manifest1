@@ -546,6 +546,30 @@ function auditer() {
         : `${cle} « ${nom} » n'est atteinte par aucune entrée MAP : jamais affichée. Vérifier si une autre fiche sert déjà cette voiture (doublon à fusionner) ou si la voiture mérite sa propre entrée catalogue.`);
   }
 
+  /* --- D ter. Blocs GENS morts ---------------------------------------
+     Même angle mort que D bis, pour les générations. `gensHTML()` lit
+     `GENS[idCatalogue]` — l'id CATALOGUE, pas la clé de fiche : il n'y a
+     aucun passage par MAP. Un bloc rangé sous une clé qui n'est pas un id
+     du catalogue fusionné n'est donc jamais affiché.
+
+     Cause réelle trouvée le 24/09 : quand DOUBLONS_A_RETIRER supprime une
+     entrée en double, ses générations restent attachées à l'id supprimé.
+     C'est ainsi que la up! GTI s'affichait sans générations alors qu'elles
+     existaient — sous 'vw-up-gti-mk', l'id du doublon retiré.
+
+     Deuxième cause, plus sournoise : ranger un bloc sous la clé de FICHE
+     (MAP[id]) quand elle diffère de l'id. `fichePourInterface()` lisait
+     justement GENS[MAP[id]] et renvoyait `null` pour 28 voitures dont
+     l'app affichait pourtant les générations. */
+  for (const cle of Object.keys(GENS)) {
+    if (idsCatalogue.has(cle)) continue;
+    const survivant = [...idsCatalogue].find(id => MAP[id] === cle && !GENS[id]);
+    signaler('ALERTE', 'GENS MORTE',
+      survivant
+        ? `GENS['${cle}'] : aucune entrée catalogue de cet id, jamais affiché — or « ${survivant} » pointe sur cette fiche et n'a PAS de générations : renommer la clé en '${survivant}'`
+        : `GENS['${cle}'] : aucune entrée catalogue de cet id, jamais affiché. Id d'un doublon retiré ? Reporter le contenu utile sur l'entrée survivante, puis supprimer.`);
+  }
+
   /* --- E. MOTOR_SPECS ------------------------------------------------- */
   let nbModeles = 0, nbTypes = 0, nbVariantes = 0;
   for (const [idCat, bloc] of Object.entries(MOTOR_SPECS)) {

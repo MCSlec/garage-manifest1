@@ -104,9 +104,19 @@ Toutes les structures internes — `SPECS`, `GENS`, `MAP`, `MOTOR_SPECS`,
 | Structure | Clé | Contenu | Rôle |
 |---|---|---|---|
 | `SPECS` | clé de spec (`'alfa-giulia'`) | fiche **plate** : `ch, nm, kg, cyl, arch, adm, pos, tx, bv, rupteur, prod, note, son, surnom, flou[]` | La fiche technique mono-moteur du modèle |
-| `GENS` | clé de spec | tableau de générations, format **positionnel** (voir §4.3) | Bloc « Générations & motorisations » (texte libre) |
+| `GENS` | **id catalogue** ⚠️ | tableau de générations, format **positionnel** (voir §4.3) | Bloc « Générations & motorisations » (texte libre) |
 | `MAP` | **id catalogue** → **clé de spec** | table de correspondance | Relie une entrée du catalogue à sa fiche `SPECS`/`GENS` |
 | `MOTOR_SPECS` | **id catalogue** | `{ types:[{ id, label, variants:[{ id, label, ch, nm, kg, cyl, arch, adm, pos, tx, bv, note }] }] }` | Sélecteur multi-motorisations |
+
+> ⚠️ **`GENS` et `SPECS` ne sont PAS indexés pareil.** `SPECS` l'est par clé
+> de fiche (on y arrive via `MAP[id]`) ; `GENS` l'est par **id catalogue**,
+> directement — `gensHTML()` lit `GENS[idCatalogue]`, sans passer par `MAP`.
+> Pour 28 voitures les deux diffèrent (`landrover-rangerover` → fiche
+> `range-rover`). Ranger des générations sous la clé de fiche, ou les lire
+> par elle, les rend invisibles **sans aucune erreur**. Ce tableau affirmait
+> l'inverse jusqu'au 24/09 : `fichePourInterface()` a été écrite d'après lui
+> et renvoyait `generations: null` pour ces 28 voitures. Le banc d'audit
+> signale désormais tout bloc `GENS` orphelin (contrôle D ter).
 
 Points de conception à respecter :
 - **`MOTOR_SPECS` est purement additif.** Il ne modifie ni `SPECS`, ni `GENS`, ni
@@ -375,6 +385,7 @@ Ce qu'il attrape, et que ni l'œil ni `node --check` ne voient :
 | **Contamination copie-voisine** | Le motif des bugs Giulia/Quadrifoglio et M2 CS/M4 CSL : deux fiches adjacentes aux chiffres identiques. |
 | **`MAP` orphelines** | Correspondance pointant vers une fiche ou un id inexistant → fiche technique muette. |
 | **Fiches `SPECS` inatteignables** | `ficheHTML()` résout par `MAP[idCatalogue]` **strictement** — il n'y a **aucun repli** sur `SPECS[idCatalogue]`. Une fiche qu'aucune entrée `MAP` ne désigne est donc écrite, versionnée, relue… et **jamais affichée**, sans le moindre signal. 19 fiches étaient dans ce cas, dont celle de la Mégane R.S. Trophy-R alors que la voiture figurait bien au catalogue : il manquait une seule ligne dans `MAP`. |
+| **Blocs `GENS` morts** | Même angle mort pour les générations, mais par l'autre bout : `gensHTML()` lit `GENS[idCatalogue]` directement. Un bloc rangé sous un id qui n'est pas au catalogue n'est jamais affiché. 3 cas trouvés, tous issus de doublons retirés par `DOUBLONS_A_RETIRER` — leurs générations restaient attachées à l'id supprimé, et la up! GTI s'affichait sans les siennes. |
 | **Champs manquants / hors plage** | Complétude par champ, et incohérences d'ordre de grandeur. |
 | **Divergences `CARS` / `CATALOGUE_PLUS`** | Un id déclaré des deux côtés : `CARS` fait autorité, l'autre déclaration est **perdue en silence**. |
 
