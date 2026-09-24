@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.149.0';
+  const VERSION_MODULE = '20.150.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -8167,6 +8167,119 @@
     'mercedes-cla45': [
       ['C117','2013–2019','4 cyl. 2.0 turbo (M133)','360–381 ch','Avec l\'A 45, première AMG sur une plateforme de traction avant, en transmission intégrale 4MATIC.'],
       ['C118','2019–','4 cyl. 2.0 turbo (M139)','387–421 ch','Le M139 est monté à l\'envers, turbo côté cloison. La CLA 45 S atteint 421 ch, record pour un quatre cylindres de série à sa sortie.'],
+    ],
+
+    /* ---- Vague G5 --------------------------------------------------------- */
+    'lotus-elan': [
+      ['S1 à S4','1962–1971','4 cyl. twin cam Lotus-Ford 1.5 puis 1.6','','Châssis-poutre en acier et caisse en polyester : 700 kg environ. Mazda l\'a prise pour modèle en concevant la MX-5.'],
+      ['Sprint','1971–1973','4 cyl. twin cam « Big Valve »','128 ch','La dernière et la plus puissante des Elan.'],
+      ['+2','1967–1975','4 cyl. twin cam 1.6','','Allongée d\'une soixantaine de centimètres pour deux places d\'appoint.'],
+    ],
+    'lotus-evora': [
+      ['Evora / Evora S','2009–2014','V6 Toyota 3.5 atmo, puis compressé','280–350 ch','Première Lotus entièrement nouvelle depuis l\'Elise, et la première à 2+2 places depuis l\'Excel.'],
+      ['Evora 400 / 410 / GT430','2015–2021','V6 Toyota 3.5 compressé','406–436 ch','La GT430 est à sa sortie la Lotus de série la plus puissante jamais construite.'],
+    ],
+    'bmw-m6': [
+      ['E63 / E64','2005–2010','V10 5.0 atmo (S85)','507 ch','Le V10 de la M5 E60, et un toit en carbone. Aux États-Unis, la M635CSi E24 des années 80 portait déjà le nom de M6.'],
+      ['F06 / F12 / F13','2012–2018','V8 4.4 biturbo (S63)','560–600 ch','Coupé, cabriolet et Gran Coupé quatre portes. La M6 Competition atteint 600 ch.'],
+    ],
+    'toyota-celica-gt4': [
+      ['ST165','1986–1989','4 cyl. 2.0 turbo 3S-GTE','','Première Celica à transmission intégrale, construite pour homologuer la voiture du championnat du monde des rallyes.'],
+      ['ST205','1994–1999','4 cyl. 2.0 turbo 3S-GTE','242–255 ch','Dernière GT-Four. L\'équipe Toyota est exclue du championnat 1995 pour une bride de turbo truquée. La ST185, entre les deux, a sa propre entrée.'],
+    ],
+    'maserati-biturbo': [
+      ['Biturbo (carburateurs)','1981–1987','V6 biturbo 2.0 et 2.5, 18 soupapes','','Premier moteur à deux turbocompresseurs monté sur une voiture de série. Une Maserati vendue au prix d\'une BMW Série 3 : le pari qui a sauvé la marque, et ruiné sa réputation de fiabilité.'],
+      ['Injection (222, 228, 430, Spyder, Karif)','1987–1994','V6 biturbo 2.0 à 2.8, 18 puis 24 soupapes','','Une vingtaine de variantes en coupé, berline et spider. La Karif, 221 exemplaires, est la plus rare.'],
+    ],
+    'chevrolet-nova-ss': [
+      ['Chevy II Nova SS','1963–1965','6 cyl., V8 4.6 puis 5.4 (327)','','La compacte de Chevrolet ne devient une muscle car qu\'en 1965, avec le 327.'],
+      ['2e gén.','1966–1967','V8 5.4 (327)','',''],
+      ['3e gén.','1968–1974','V8 5.7 et 6.5 (396)','','La Nova SS 396 : un gros V8 dans la plus petite Chevrolet, le sommet de la lignée. Puissances d\'époque en SAE brute, non reprises.'],
+      ['4e gén.','1975–1976','V8','','SS réduite à un habillage.'],
+    ],
+    'suzuki-alto-works': [
+      ['CA72V','1987–1988','3 cyl. 550 cm³ turbo','64 ch','La première Works, avec transmission intégrale en option. Elle fixe à elle seule le plafond de 64 ch que tous les constructeurs japonais s\'imposeront pour les kei cars.'],
+      ['CM11 / CM22','1988–1994','3 cyl. 550 puis 660 cm³ turbo','64 ch',''],
+      ['HA21S / HA22S','1994–2000','3 cyl. 660 cm³ turbo','64 ch','Les plus recherchées. Le nom reviendra en 2015 sur l\'Alto HA36S.'],
+    ],
+    'simca-aronde': [
+      ['9 Aronde','1951–1955','4 cyl. 1.2','','Première Simca de conception entièrement maison, après des années de Fiat sous licence.'],
+      ['90A','1955–1958','4 cyl. 1.3 Flash','',''],
+      ['P60','1958–1964','4 cyl. 1.3 Flash puis Rush','','Environ 1,4 million d\'Aronde au total : elle fait de Simca le deuxième constructeur français à la fin des années 50.'],
+    ],
+    'ferrari-400': [
+      ['400 GT / Automatic','1976–1979','V12 4.8 carburateurs','340 ch','Première Ferrari proposée avec une boîte automatique, empruntée à General Motors.'],
+      ['400i','1979–1985','V12 4.8 injection','310 ch','L\'injection Bosch fait perdre de la puissance au nom des normes antipollution. 1 305 exemplaires.'],
+      ['412','1985–1989','V12 4.9 injection','340 ch','Premier ABS sur une Ferrari. 576 exemplaires.'],
+    ],
+    'donkervoort-d8': [
+      ['D8 GTO / GTO-RS','2013–2019','5 cyl. Audi 2.5 TFSI','','Le cinq cylindres de l\'Audi RS3 dans une Seven néerlandaise en carbone de moins de 700 kg. La lignée D8 remonte à 1993, avec des moteurs Ford puis Audi 1.8 turbo.'],
+      ['D8 GTO-JD70','2020–2022','5 cyl. Audi 2.5 TFSI','421 ch','680 kg et 2 g d\'accélération latérale revendiqués — une première pour une voiture de route. Nommée pour les 70 ans de Joop Donkervoort. La F22 qui lui succède a sa propre entrée.'],
+    ],
+    'bmw-635csi': [
+      ['630 CS / 633 CSi','1976–1979','6 en ligne 3.0 et 3.2 (M30)','','Le « requin », à la calandre penchée vers l\'avant. Carrosserie assemblée d\'abord chez Karmann.'],
+      ['628 CSi / 635 CSi','1978–1989','6 en ligne 2.8 et 3.5 (M30 / M90)','218 ch (635 CSi)','86 216 E24 au total. La 635 CSi gagne le championnat d\'Europe des voitures de tourisme.'],
+    ],
+    'lancia-flaminia': [
+      ['Berlina','1957–1970','V6 2.5 puis 2.8','','La seule carrosserie produite en usine. Quatre limousines « Presidenziale » servent encore la présidence italienne.'],
+      ['Coupé (Pininfarina)','1959–1967','V6 2.5 puis 2.8','','5 236 exemplaires : la plus répandue des Flaminia.'],
+      ['GT, GTL et Convertible (Touring)','1959–1967','V6 2.5 puis 2.8','','Carrosseries « Superleggera » de Touring.'],
+      ['Sport et Super Sport (Zagato)','1959–1967','V6 2.5 puis 2.8','','Toit à double bossage signé Zagato, et les plus puissantes. 12 633 Flaminia au total.'],
+    ],
+    'isuzu-117': [
+      ['117 Coupé (fabrication manuelle)','1968–1972','4 cyl. 1.6 double arbre','120 ch','Dessin de Giugiaro chez Ghia — l\'une des premières japonaises signées par un styliste italien — et carrosserie formée à la main.'],
+      ['117 Coupé (série)','1973–1977','4 cyl. 1.6 à 2.0','','Industrialisation de la production.'],
+      ['117 Coupé (phares rectangulaires)','1977–1981','4 cyl. 1.8 et 2.0, diesel 2.2','','L\'une des premières sportives proposées en diesel. 86 192 exemplaires au total ; la Piazza, encore de Giugiaro, lui succède.'],
+    ],
+    'porsche-924': [
+      ['924','1976–1985','4 cyl. 2.0 Audi-Volkswagen','125 ch','Conçue pour Volkswagen, qui l\'a abandonnée en cours de route : Porsche l\'a reprise et construite chez Audi à Neckarsulm. Boîte-pont à l\'arrière pour l\'équilibre des masses.'],
+      ['924 Turbo','1979–1984','4 cyl. 2.0 turbo','170–177 ch','La Carrera GT de 1980, 406 exemplaires, a servi de base aux 924 du Mans.'],
+      ['924 S','1986–1988','4 cyl. 2.5 (Porsche 944)','150–160 ch','Le moteur de la 944 dans la caisse de la 924.'],
+    ],
+    'peugeot-308-gt': [
+      ['308 II GT','2014–2021','4 cyl. 1.6 THP essence, 2.0 BlueHDi','180–205 ch','Version sportive « civilisée », à côté de la 308 GTi qui a sa propre entrée.'],
+      ['308 III GT','2021–','3 cyl. PureTech, hybride rechargeable, électrique','','Le nouveau logo au blason Peugeot apparaît sur cette génération.'],
+    ],
+    'audi-sq5': [
+      ['8R','2013–2017','V6 3.0 TDI biturbo, V6 3.0 TFSI compressé (Amérique)','313–354 ch','Premier modèle S d\'Audi à moteur diesel.'],
+      ['FY','2017–2024','V6 3.0 TFSI puis V6 3.0 TDI','341–354 ch','Le diesel revient en 2019, avec un compresseur électrique contre le temps de réponse du turbo.'],
+      ['3e gén.','2024–','V6 3.0 TFSI hybride léger','','Sur la plateforme PPC, avec système hybride 48 V « MHEV plus ».'],
+    ],
+    'toyota-proace': [
+      ['I','2013–2016','4 cyl. diesel','','Un Peugeot Expert et Citroën Jumpy rebadgés, construits par Sevel : Toyota entre sur le marché européen du fourgon moyen par un accord avec PSA.'],
+      ['II','2016–','4 cyl. diesel, électrique (Proace Electric)','','Codéveloppé avec PSA sur la plateforme EMP2. Version passagers Proace Verso.'],
+    ],
+    'plymouth-road-runner': [
+      ['1re gén. (Belvedere)','1968–1970','V8 6.3 (383), 7.0 Hemi (426), 7.2 (440 Six-Pack)','','Une muscle car dépouillée et bon marché, avec le klaxon « bip-bip » du dessin animé, dont Plymouth avait payé les droits à Warner Bros. La Superbird de 1970 a sa propre entrée.'],
+      ['2e gén.','1971–1975','V8 5.2 à 7.2','','Les 383, Hemi et 440 Six-Pack disparaissent en 1972 avec les normes antipollution.'],
+      ['Volaré','1976–1980','6 cyl., V8 5.2 et 5.9','','Simple finition sportive d\'une compacte : la fin de la lignée.'],
+    ],
+    'vw-golf-gte': [
+      ['Mk7','2014–2020','4 cyl. 1.4 TSI hybride rechargeable','204 ch','Le « GTI hybride » : l\'esprit GTI et une cinquantaine de kilomètres en mode électrique.'],
+      ['Mk8','2020–2024','4 cyl. 1.4 TSI hybride rechargeable','245 ch','La GTE égale la GTI en puissance, 245 ch.'],
+      ['Mk8.5','2024–','4 cyl. 1.5 TSI hybride rechargeable','272 ch','Batterie de près de 20 kWh et plus de 130 km en électrique : la GTE dépasse désormais la GTI en puissance.'],
+    ],
+    'puma-gte': [
+      ['GTE / GTS','1970–1980','flat-4 VW 1.6 refroidi par air, moteur arrière','','Carrosserie en fibre de verre sur un plancher de Volkswagen brésilienne. 8 705 GTE : le plus grand succès de Puma, qui produit environ 22 000 voitures jusqu\'en 1995.'],
+    ],
+    'daihatsu-copen': [
+      ['L880K','2002–2012','4 cyl. 660 cm³ turbo (kei)','64 ch','Toit rigide rétractable électrique sur une voiture de 3,40 m. L\'Europe a reçu de 2005 à 2011 une version à moteur 1.3.'],
+      ['LA400K','2014–','3 cyl. 660 cm³ turbo (kei)','64 ch','Panneaux de carrosserie en résine interchangeables. Version GR Sport réglée par Toyota Gazoo Racing.'],
+    ],
+    'vw-touran': [
+      ['1T','2003–2015','4 cyl. FSI, TSI, TDI, gaz naturel EcoFuel','','Premier monospace compact de Volkswagen, sur base de Golf V. Douze ans de carrière.'],
+      ['5T','2015–','4 cyl. TSI et TDI','','Sur la plateforme MQB, plus longue et plus légère.'],
+    ],
+    'fiat-x19': [
+      ['Fiat X1/9','1972–1982','4 cyl. 1.3 puis 1.5, moteur central','','Dessinée par Marcello Gandini chez Bertone : une petite sportive à moteur central et toit targa, au prix d\'une berline. Environ 140 500 exemplaires sous marque Fiat.'],
+      ['Bertone X1/9','1982–1989','4 cyl. 1.5, moteur central','85 ch','Fiat cède la production et le nom à Bertone. Environ 19 500 exemplaires, tous en boîte cinq rapports.'],
+    ],
+    'mini-clubman': [
+      ['R55','2007–2014','4 cyl. 1.6 essence et diesel, turbo','90–211 ch','Break court à portes arrière battantes et une seule porte latérale, côté droit — même dans les pays à conduite à gauche.'],
+      ['F54','2015–2024','3 et 4 cyl. turbo','102–306 ch','Cinq portes, et des portes arrière toujours battantes. Le dernier Clubman sort de l\'usine d\'Oxford début 2024.'],
+    ],
+    'noble-m600': [
+      ['M600 / CarbonSport / Speedster','2010–2018','V8 Volvo-Yamaha 4.4 biturbo','659 ch','Le V8 du Volvo XC90 porté à 659 ch, avec un bouton qui bride la puissance à 450 ou 550 ch selon la route. Assemblée à la main dans le Leicestershire.'],
     ],
     'toyota-century': [
       ['G20 / G30 / G40','1967–1997','V8 3.0, 3.4 puis 4.0','','Trente ans de production quasiment sans changement de ligne, réservée au marché japonais.'],
