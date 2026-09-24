@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.152.0';
+  const VERSION_MODULE = '20.153.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -1061,8 +1061,8 @@
       ch:250, nm:388, kg:1800, cyl:4.6, arch:'V8', adm:'atmo', pos:'avant', tx:'propulsion', bv:'A4',
       note:"LA voiture de police et le taxi américain par excellence pendant vingt ans, omniprésente dans tous les films et séries des États-Unis. Grande berline à propulsion, châssis séparé robuste, réparable indéfiniment. Un monument de la culture populaire US." },
     'ford-taurus-sho': { nom:'Ford Taurus SHO', an:[1989], pays:'États-Unis',
-      ch:365, nm:475, kg:1900, cyl:3.5, arch:'V6 (jadis Yamaha)', adm:'biturbo', pos:'avant', tx:'intégrale', bv:'A6',
-      note:"« Super High Output » : une berline familiale anodine avec un V6 haute performance. La première génération avait un V6 Yamaha à haut régime et boîte manuelle, un sleeper culte. Les récentes passent au V6 EcoBoost biturbo." },
+      ch:223, nm:271, kg:1519, cyl:3, arch:'V6 Yamaha 24v', adm:'atmo', pos:'avant', tx:'traction', bv:'M5', flou:['kg'],
+      note:"« Super High Output » : une berline familiale anodine avec un V6 Yamaha 24 soupapes à haut régime, en boîte manuelle uniquement. Le sleeper culte de la fin des années 80. Chiffres de la SHO 1989 (220 hp SAE net) ; les sources divergent sur la masse (1 450 à 1 520 kg). La SHO EcoBoost des années 2010 est une autre voiture." },
     'ford-f150-raptor': { nom:'Ford F-150 Raptor', an:[2010], pays:'États-Unis',
       ch:456, nm:691, kg:2600, cyl:3.5, arch:'V6 EcoBoost (R : V8)', adm:'biturbo', pos:'avant', tx:'4x4', bv:'A10',
       note:"Le pick-up conçu pour rouler à fond dans le désert, aux suspensions à grand débattement Fox. La version Raptor R reçoit le V8 5.2 compressé de la Shelby GT500. Inventeur du segment des pick-up de performance tout-terrain." },
@@ -8530,6 +8530,71 @@
     'jaguar-xj220': [
       ['XJ220','1992–1994','V6 3.5 biturbo (JRV-6)','550 ch','Présentée en V12 à quatre roues motrices, livrée en V6 biturbo propulsion : des clients ont attaqué Jaguar en justice. Châssis en nid d\'abeille d\'aluminium, 349 km/h, voiture de série la plus rapide du monde en 1992.'],
     ],
+    /* ---- Vague G8 : dernières classiques, premières youngtimers --------- */
+    'audi-quattro': [
+      ['quattro 10v (WR)','1980–1987','5 cyl. 2.1 turbo, 10 soupapes','200 ch','L\'« Ur-quattro » : transmission intégrale permanente et turbo sur un coupé de série, la recette qui bouleverse les rallyes.'],
+      ['quattro 10v (MB)','1987–1989','5 cyl. 2.2 turbo, 10 soupapes','200 ch','Cylindrée portée à 2,2 litres, même puissance.'],
+      ['quattro 20v (RR)','1989–1991','5 cyl. 2.2 turbo, 20 soupapes','220 ch','Culasse à quatre soupapes par cylindre pour la dernière année. 11 452 quattro au total.'],
+      ['Sport quattro','1984–1985','5 cyl. 2.1 turbo, 20 soupapes, alliage léger','306 ch','Empattement raccourci de 32 cm pour le Groupe B, carrosserie en Kevlar et aluminium. 214 exemplaires d\'homologation. La S1 E2 de rallye a sa propre fiche.'],
+    ],
+    'aston-db5': [
+      ['DB5 (coupé)','1963–1965','6 en ligne 4.0 double arbre (Tadek Marek)','','Évolution de la DB4, moteur porté à 4 litres. La Vantage, à trois carburateurs Weber, est la plus puissante.'],
+      ['DB5 Convertible','1963–1965','6 en ligne 4.0','','123 exemplaires.'],
+      ['DB5 Shooting Brake (Radford)','1965','6 en ligne 4.0','','Commandé par David Brown lui-même, pour loger son chien de chasse. Douze conversions par le carrossier Harold Radford. 1 059 DB5 au total, toutes carrosseries.'],
+    ],
+    'lancia-037': [
+      ['Rally 037 Stradale','1982–1983','4 cyl. 2.0 compresseur Volumex, moteur central','205 ch','Série d\'homologation pour le Groupe B : 207 exemplaires, carrosserie Pininfarina, châssis Dallara. Dérivée de la Beta Montecarlo.'],
+      ['Rally 037 (Groupe B)','1982–1985','4 cyl. 2.0 puis 2.1 compresseur','','Titre constructeurs 1983 face aux Audi quattro : la dernière propulsion championne du monde des rallyes.'],
+    ],
+    'porsche-911-carrera-rs-27': [
+      ['Carrera RS 2.7 Touring (M472)','1972–1973','flat-6 2.7 à injection','210 ch','Finition route : sièges et garnitures de la 911 S. 1 308 exemplaires, la grande majorité de la série.'],
+      ['Carrera RS 2.7 Sport (M471)','1972–1973','flat-6 2.7 à injection','210 ch','La « Leichtbau » : tôles et vitres amincies, sans banquette arrière ni insonorisant. 200 exemplaires.'],
+      ['Carrera RSR 2.8','1973','flat-6 2.8','','Version course, 55 exemplaires. 1 580 Carrera RS 2.7 au total, homologation comprise.'],
+    ],
+    'plymouth-superbird': [
+      ['Road Runner Superbird','1970','V8 7.2 (440) ou 7.0 HEMI (426)','','Un seul millésime, pour la NASCAR, qui exigeait alors un exemplaire par concessionnaire. Environ 1 935 exemplaires aux États-Unis, dont 135 seulement en HEMI. Puissances d\'époque en SAE brute, non reprises.'],
+    ],
+    'dodge-charger-daytona-69': [
+      ['Charger Daytona','1969','V8 7.2 (440) ou 7.0 HEMI (426)','','503 exemplaires, dont 70 en HEMI, pour atteindre le minimum de 500 imposé par la NASCAR. Le 24 mars 1970 à Talladega, Buddy Baker y boucle le premier tour de circuit fermé au-dessus des 200 mph (322 km/h). Puissances d\'époque en SAE brute, non reprises.'],
+    ],
+    'cord-810': [
+      ['810','1936','V8 4.7 à soupapes latérales (Lycoming)','127 ch','Traction avant et boîte présélective à commande électro-pneumatique.'],
+      ['812 / 812 compresseur','1937','V8 4.7 Lycoming, compresseur centrifuge en option','172 ch (compresseur)','Tuyaux d\'échappement chromés sortant du capot pour les versions à compresseur. 2 972 Cord 810 et 812 au total avant la faillite du groupe Auburn-Cord-Duesenberg.'],
+    ],
+    'tucker-48': [
+      ['« Tin Goose » (prototype)','1947','flat-6 9.7 Tucker','','Présenté le 17 juin 1947 avec le moteur maison à injection, jamais mis au point.'],
+      ['Tucker 48 (série)','1947–1948','flat-6 5.5 Franklin (Air Cooled Motors), refroidi par eau, moteur arrière','','Un moteur d\'hélicoptère converti au refroidissement liquide ; Tucker finit par racheter son fabricant. 50 voitures de série, et 51 avec le prototype.'],
+    ],
+    'studebaker-avanti': [
+      ['Avanti R1 / R2','1962–1963','V8 4.7 (289) atmo (R1) ou à compresseur Paxton (R2)','','Carrosserie en polyester, freins à disque avant de série, une première américaine. 4 643 exemplaires avant l\'arrêt de la production de Studebaker aux États-Unis, fin 1963. Puissances d\'époque en SAE brute, non reprises.'],
+      ['Avanti R3','1963–1964','V8 5.0 (304) à compresseur','','Neuf exemplaires, préparés par les frères Granatelli.'],
+      ['Avanti II','1965–','V8 Chevrolet','','Des concessionnaires de South Bend rachètent l\'outillage et relancent la voiture sous une marque indépendante, qui passe ensuite de main en main.'],
+    ],
+    'cadillac-eldorado-59': [
+      ['Eldorado Biarritz / Seville','1959','V8 6.4 (390), trois carburateurs double corps','','Les ailerons les plus hauts de l\'histoire de Cadillac. 1 320 cabriolets Biarritz et 975 coupés Seville. Puissances d\'époque en SAE brute, non reprises.'],
+      ['Eldorado Brougham','1959–1960','V8 6.4 (390)','','Berline quatre portes carrossée à la main par Pininfarina en Italie. 99 exemplaires en 1959.'],
+    ],
+    'ford-thunderbird-55': [
+      ['Thunderbird 1955','1955','V8 4.8 (292)','','La réponse de Ford à la Corvette, en « personal luxury car ». 16 155 exemplaires.'],
+      ['Thunderbird 1956','1956','V8 4.8 et 5.1 (312)','','Roue de secours sortie du coffre et hublots dans le toit rigide. 15 631 exemplaires, le plus faible des trois millésimes.'],
+      ['Thunderbird 1957','1957','V8 4.8 et 5.1, compresseur en option (code F)','','Ailerons arrière et pare-chocs redessinés. 21 380 exemplaires, dont environ 200 à compresseur. Puissances d\'époque en SAE brute, non reprises.'],
+    ],
+    'facel-vega-facel2': [
+      ['Facel II','1962–1964','V8 Chrysler 6.3 (383) et 6.7 (413)','','Successeur de la HK500, plus bas et plus anguleux. Boîte manuelle Pont-à-Mousson ou automatique Chrysler. Environ 180 exemplaires, dont 26 à conduite à droite, avant la faillite de Facel en 1964.'],
+    ],
+    'bentley-blower': [
+      ['Blower (équipe Birkin)','1929–1930','4 cyl. 4.4 à compresseur Amherst Villiers','240 ch (course)','Quatre voitures de course engagées par Sir Tim Birkin, contre l\'avis de W.O. Bentley, hostile à la suralimentation.'],
+      ['Blower (route)','1929–1931','4 cyl. 4.4 à compresseur','','Cinquante exemplaires routiers, nécessaires à l\'homologation au Mans.'],
+      ['Blower Continuation Series','2021–2023','4 cyl. 4.4 à compresseur, reconstruit à l\'identique','','Douze exemplaires neufs construits par Bentley Mulliner à partir des plans et gabarits d\'origine, sur le modèle de la voiture d\'équipe de Birkin.'],
+    ],
+    'subaru-22b': [
+      ['Impreza 22B STI','1998','flat-4 2.2 turbo (EJ22)','280 ch','Coupé élargi en hommage à l\'Impreza WRC de 1997, pour les 40 ans de Subaru et le troisième titre constructeurs consécutif. 400 exemplaires pour le Japon, vendus en quelques jours, et une poignée pour l\'export : 424 au total.'],
+    ],
+    'ford-taurus-sho': [
+      ['SHO (1re gén.)','1989–1991','V6 Yamaha 3.0 24v','223 ch','Culasse à quatre soupapes par cylindre et boîte manuelle à cinq rapports imposée : pas d\'automatique.'],
+      ['SHO (2e gén.)','1992–1995','V6 Yamaha 3.0 (manuelle) ou 3.2 (automatique, dès 1993)','223 ch','Première boîte automatique en 1993, avec un moteur réalésé : même puissance, plus de couple.'],
+      ['SHO V8','1996–1999','V8 Ford-Yamaha 3.4','238 ch','Automatique seulement. Le calage des pignons d\'arbres à cames, sertis plutôt que clavetés, peut céder.'],
+    ],
     'toyota-century': [
       ['G20 / G30 / G40','1967–1997','V8 3.0, 3.4 puis 4.0','','Trente ans de production quasiment sans changement de ligne, réservée au marché japonais.'],
       ['G50','1997–2017','V12 5.0 (1GZ-FE)','280 ch','Le seul V12 jamais monté dans une voiture de série japonaise. Puissance plafonnée par l\'accord tacite des constructeurs japonais.'],
@@ -9901,7 +9966,14 @@
       re:/V12[\s\d.,]{0,10}(bi)?(turbo)?(diesel|TDI|HDi)|TDI jusqu'au V12/i,
       m:['Audi','Peugeot','Volkswagen'],
       d:'Le seul V12 diesel de l\'histoire de l\'automobile. Audi l\'a gagné au Mans avec la R10, puis l\'a mis dans un Q7 de série ; Peugeot a répondu avec le V12 HDi de la 908.' },
-    { c:'v8amerique', n:'V8 américain sous capot européen', re:/V8 (Chevrolet|Chrysler|Ford)/i,
+    /* Le texte seul ne suffit pas : « V8 Ford » désigne aussi le DFV Cosworth
+       des Lotus et Tyrrell (un moteur anglais), le V8 Ford-Yamaha de la Taurus
+       SHO, et le V8 d'origine de toute voiture américaine (Panoz, Studebaker).
+       Or la famille décrit un CROISEMENT : châssis européen, V8 américain.
+       Liste de marques fermée — la Shelby Cobra et la Daytona Coupé y ont leur
+       place, sur châssis AC anglais. */
+    { c:'v8amerique', n:'V8 américain sous capot européen', re:/V8 (Chevrolet|Chrysler|Ford)(?![\s-]*(Cosworth|Yamaha))/i,
+      m:['AC','Bizzarrini','De Tomaso','Facel Vega','Iso','Jensen','Shelby','TVR','Ultima'],
       d:'La recette anglo-italienne : châssis européen, gros V8 américain increvable et bon marché.' },
     { c:'v6maserati', n:'V6 Maserati',    re:/V6 Maserati/i,       d:'Le V6 de la Merak, aussi sous le capot de la Citroën SM et de la Ligier JS2.' },
     { c:'xk',     n:'Jaguar XK',         re:/6 en ligne XK/i,     d:'Double arbre à cames en tête dès 1949. Cinq victoires au Mans.' },
