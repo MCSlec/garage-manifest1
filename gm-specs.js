@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.148.0';
+  const VERSION_MODULE = '20.149.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -8057,6 +8057,116 @@
       ['C8 Spyder / Laviolette','2000–2009','V8 Audi 4.2 atmo','400 ch','Hélice d\'avion en guise de volant et levier de vitesses à tringlerie apparente : l\'héritage du constructeur aéronautique d\'origine.'],
       ['C8 Aileron','2009–2016','V8 Audi 4.2','','Carrosserie retravaillée en soufflerie, dont le nom rend hommage aux ailerons d\'avion.'],
       ['C8 Preliator','2016–2017','V8 Audi 4.2 compressé','525 ch','La dernière évolution de la C8.'],
+    ],
+
+    /* ---- Vague G4 --------------------------------------------------------- */
+    'bmw-x5m': [
+      ['E70','2009–2013','V8 4.4 biturbo','555 ch','Le premier SUV signé M, avec les turbos logés dans le V du moteur.'],
+      ['F85','2015–2018','V8 4.4 biturbo','575 ch',''],
+      ['F95','2020–','V8 4.4 biturbo','600–625 ch','Version Competition de série en Europe.'],
+    ],
+    'bmw-x5m-comp': [
+      ['E70 / E71','2009–2014','V8 4.4 biturbo','555 ch','X5 M et X6 M partagent tout, sauf la ligne de toit.'],
+      ['F85 / F86','2015–2019','V8 4.4 biturbo','575 ch',''],
+      ['F95 / F96','2020–','V8 4.4 biturbo','600–625 ch',''],
+    ],
+    'lambo-countach': [
+      ['LP400 « Periscopio »','1974–1978','V12 3.9 atmo','375 ch','150 exemplaires. Le toit creusé loge un rétroviseur à périscope : on ne voit rien derrière sans lui.'],
+      ['LP400 S','1978–1982','V12 3.9 atmo','','Ailes élargies et aileron en option : la Countach des posters.'],
+      ['LP500 S','1982–1985','V12 4.8 atmo','375 ch','323 exemplaires. La 5000 Quattrovalvole qui lui succède a sa propre entrée.'],
+      ['25th Anniversary','1988–1990','V12 5.2 quatre soupapes','455 ch','650 exemplaires, restylée par un jeune Horacio Pagani : la plus produite des Countach.'],
+    ],
+    'saab-93': [
+      ['I','1998–2002','4 cyl. 2.0 et 2.3, turbo','','Évolution de la 900 : hayon, clé de contact entre les sièges et Viggen à 230 ch.'],
+      ['II','2003–2014','4 cyl. turbo essence et diesel, V6 2.8 turbo','','Sur plateforme GM Epsilon. La dernière Saab produite à Trollhättan, en 2014, sous la propriété de NEVS.'],
+    ],
+    'citroen-gs': [
+      ['GS','1970–1979','flat-4 refroidi par air 1.0 à 1.3','55–66 ch','Suspension hydropneumatique sur une familiale moyenne : Voiture de l\'Année 1971. La GS Birotor à moteur rotatif Wankel, rachetée et détruite par Citroën, a été construite à 847 exemplaires.'],
+      ['GSA','1979–1986','flat-4 refroidi par air 1.1 à 1.3','','Hayon arrière, boîte à cinq rapports et commandes « satellites » autour du volant.'],
+    ],
+    'oldsmobile-442': [
+      ['Option F-85 / Cutlass','1964–1967','V8 5.4 puis 6.6','','« 4-4-2 » : carburateur quadruple corps, boîte quatre rapports, double échappement. Riposte d\'Oldsmobile à la Pontiac GTO.'],
+      ['Modèle à part entière','1968–1972','V8 6.6 puis 7.5 (455)','','L\'option W-30 et le 455 de 1970 en font l\'une des muscle cars les plus puissantes. Puissances d\'époque en SAE brute, non reprises.'],
+      ['Colonnade','1973–1977','V8 5.7 à 7.5','',''],
+      ['Carrosserie A réduite','1978–1980','V8 4.3 à 5.7','','Simple finition de la Cutlass, reflet de l\'après-crise pétrolière.'],
+    ],
+    'porsche-911-sport-classic': [
+      ['997','2010','flat-6 3.8 atmo','408 ch','250 exemplaires : aileron « queue de canard » et jantes façon Fuchs, en hommage à la Carrera RS 2.7 de 1972.'],
+      ['992','2022–2023','flat-6 3.7 biturbo','550 ch','1 250 exemplaires. Le moteur de la Turbo, en propulsion et boîte manuelle.'],
+    ],
+    'rr-silvershadow': [
+      ['Silver Shadow','1965–1976','V8 6.2 puis 6.75','','Première Rolls-Royce à caisse autoporteuse, avec la suspension hydraulique à correcteur d\'assiette de Citroën sous licence. Puissance jamais publiée : « suffisante », selon la maison.'],
+      ['Silver Shadow II / Silver Wraith II','1977–1980','V8 6.75','','Crémaillère de direction et climatisation automatique à deux zones. Plus de 30 000 Silver Shadow au total : la Rolls-Royce la plus produite.'],
+    ],
+    'ford-galaxie-500': [
+      ['1959','1959','6 cyl. et V8 FE','','Le nom naît de la course à l\'espace, en haut de gamme de la Fairlane 500.'],
+      ['1960–1964','1960–1964','V8 FE jusqu\'au 7.0 (427)','','La 427 domine les courses NASCAR du début des années 60.'],
+      ['1965–1968','1965–1968','V8 FE jusqu\'au 7.0 (428)','','La Galaxie 500 7-Litre de 1966 reçoit le 428 de série.'],
+      ['1969–1974','1969–1974','V8 5.0 à 7.5 (460)','','Le nom disparaît en 1974 au profit de LTD, après la crise pétrolière.'],
+    ],
+    'ds-4-moderne': [
+      ['Citroën DS4','2010–2015','4 cyl. 1.6 essence (PSA-BMW) et diesel','','Compacte surélevée aux vitres arrière fixes, qui ne descendent pas.'],
+      ['DS 4 (marque DS)','2015–2018','4 cyl. essence et diesel','','Le badge Citroën disparaît avec la création de la marque DS.'],
+      ['DS 4 (2e gén.)','2021–','3 et 4 cyl. PureTech, diesel, hybride rechargeable E-Tense','130–225 ch','Rebaptisée DS N°4 en 2025.'],
+    ],
+    'morgan-3wheeler': [
+      ['3 Wheeler','2011–2021','V-twin S&S 1983 cm³','','Le retour d\'une formule que Morgan avait fabriquée de 1910 à 1952 : deux roues à l\'avant, une à l\'arrière, et un bicylindre en V apparent devant le radiateur.'],
+      ['Super 3','2022–','3 cyl. Ford 1.5 atmo','120 ch','Le V-twin américain cède la place à un trois cylindres Ford, pour passer les normes antipollution.'],
+    ],
+    'volvo-amazon': [
+      ['120 / 130 / 220','1956–1970','4 cyl. B16, B18 puis B20','','667 791 exemplaires, en berline quatre portes, deux portes et break. Elle reçoit en 1959, avec la PV544, les premières ceintures de sécurité trois points de série au monde.'],
+      ['123GT','1967–1968','4 cyl. B18 haute compression','','La version sportive, avec boîte à surmultipliée et sièges inclinables.'],
+    ],
+    'autobianchi-a112': [
+      ['A112 (7 séries)','1969–1986','4 cyl. 0,9 à 1,05','','Plus de 1,2 million d\'exemplaires, assemblés à Desio près de Milan. Elle précède de deux ans la Fiat 127, dont elle annonce l\'architecture.'],
+      ['A112 Abarth','1971–1985','4 cyl. 1,0 puis 1,05','58–70 ch','Le nom annonce la puissance : Abarth 58, puis Abarth 70 en 1975. L\'une des premières petites sportives européennes.'],
+    ],
+    'ligier-js50': [
+      ['1re génération','2012–2024','bicylindre diesel, électrique','','Voiturette sans permis, bridée à 45 km/h, accessible dès 14 ans avec le permis AM.'],
+      ['2e génération','2024–','bicylindre diesel, électrique','','Premier éclairage d\'ambiance à LED sur une voiture sans permis.'],
+    ],
+    'vw-phaeton': [
+      ['Phaeton','2002–2016','V6, V8 4.2, W12 6.0, V10 et V6 TDI','224–450 ch','Voulue par Ferdinand Piëch pour prouver que VW savait faire une limousine : cahier des charges de 300 km/h tenus par 50 °C extérieurs avec 22 °C à bord. Assemblée dans la « Manufacture transparente » de Dresde, 84 253 exemplaires seulement.'],
+    ],
+    'fiat-600': [
+      ['600','1955–1960','4 cyl. 633 cm³ refroidi par eau, moteur arrière','','Dessinée par Dante Giacosa. La Multipla de 1956 loge six personnes sur 3,5 mètres.'],
+      ['600 D','1960–1969','4 cyl. 767 cm³','','Près de 2,7 millions d\'exemplaires à Turin. Produite sous licence en Espagne par Seat, où elle a motorisé tout le pays.'],
+    ],
+    'audi-s7': [
+      ['C7','2012–2018','V8 4.0 biturbo','420–450 ch','Coupé quatre portes à hayon, jumeau mécanique de la S6.'],
+      ['C8','2019–','V6 3.0 TDI (Europe), V6 2.9 biturbo essence (Amérique)','344–450 ch','Comme la S6, elle passe au diesel en Europe.'],
+    ],
+    'bmw-m135i': [
+      ['M135i (F20)','2012–2015','6 en ligne 3.0 turbo','320 ch','Propulsion et six cylindres en ligne dans une compacte : une anomalie que BMW était seul à proposer.'],
+      ['M140i (F20)','2016–2019','6 en ligne 3.0 turbo (B58)','340 ch','La dernière compacte BMW à propulsion et six cylindres.'],
+      ['M135i xDrive (F40)','2019–2024','4 cyl. 2.0 turbo','306 ch','Passage à la traction de base et à la transmission intégrale : les fidèles ne l\'ont pas pardonné.'],
+    ],
+    'opel-mokka': [
+      ['Mokka A / Mokka X','2012–2019','4 cyl. 1.4 turbo et 1.6 essence, diesels 1.6 et 1.7','115–152 ch','Codéveloppé avec General Motors, jumeau du Chevrolet Trax. Rebaptisé Mokka X au restylage de 2016.'],
+      ['Mokka B','2020–','3 cyl. 1.2 turbo, hybride léger, électrique (Mokka-e)','','Sur plateforme CMP du groupe PSA, et première Opel à porter la face avant « Vizor ». Le X disparaît du nom.'],
+    ],
+    'mazda-cx5': [
+      ['KE','2012–2017','4 cyl. Skyactiv-G essence et Skyactiv-D diesel','','Premier modèle entièrement conçu selon la philosophie Skyactiv et le style « Kodo ».'],
+      ['KF','2017–2025','4 cyl. Skyactiv-G, 2.5 turbo, Skyactiv-D','','Le modèle le plus vendu de Mazda dans le monde.'],
+      ['KM','2025–','4 cyl. 2.5 Skyactiv-G, hybride annoncé','','Empattement allongé et écran central géant.'],
+    ],
+    'bmw-serie2': [
+      ['F22 / F23','2014–2021','4 et 6 cyl. essence, diesel','','Le coupé Série 1 prend le nom de Série 2. Les M235i et M240i ont leur propre entrée.'],
+      ['G42','2021–','4 et 6 cyl. essence, diesel','','Reste fidèle à la propulsion, contrairement aux Série 2 Gran Coupé et Active Tourer à traction.'],
+    ],
+    'bmw-m235i': [
+      ['M235i (F22)','2014–2016','6 en ligne 3.0 turbo (N55)','326 ch','Coupé propulsion à six cylindres turbo.'],
+      ['M240i (F22)','2016–2021','6 en ligne 3.0 turbo (B58)','340 ch',''],
+      ['M240i xDrive (G42)','2021–','6 en ligne 3.0 turbo (B58)','374 ch','Transmission intégrale de série en Europe.'],
+    ],
+    'mercedes-cla': [
+      ['C117','2013–2019','4 cyl. essence et diesel','','Coupé quatre portes compact, sur la base de la Classe A. Cx de 0,22 en version BlueEFFICIENCY : record pour une voiture de série à sa sortie.'],
+      ['C118','2019–2025','4 cyl. essence et diesel, hybride rechargeable','',''],
+      ['C178 / C174','2025–','électrique, hybride','','Troisième génération conçue d\'abord comme électrique, avec le système d\'exploitation MB.OS.'],
+    ],
+    'mercedes-cla45': [
+      ['C117','2013–2019','4 cyl. 2.0 turbo (M133)','360–381 ch','Avec l\'A 45, première AMG sur une plateforme de traction avant, en transmission intégrale 4MATIC.'],
+      ['C118','2019–','4 cyl. 2.0 turbo (M139)','387–421 ch','Le M139 est monté à l\'envers, turbo côté cloison. La CLA 45 S atteint 421 ch, record pour un quatre cylindres de série à sa sortie.'],
     ],
     'toyota-century': [
       ['G20 / G30 / G40','1967–1997','V8 3.0, 3.4 puis 4.0','','Trente ans de production quasiment sans changement de ligne, réservée au marché japonais.'],
