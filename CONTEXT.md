@@ -554,12 +554,13 @@ de l'éditer.
 - [x] Bloc « Générations & motorisations » branché sur `GENS`/`MAP` — première vraie consommation de `gm-specs.js` par l'affichage
 - [x] Notes de variante affichées dans la fiche (« Cette version · … ») — étaient écrites depuis des sessions mais jamais rendues avant le 22/09
 - [x] Collections mécaniques (24), Distinctions (podium), navigation en réseau entre modèles
-- [x] ~994/1075 fiches techniques portées au « niveau Elise » (puissance, couple, poids, cylindrée, architecture, transmission, anecdote sourcée)
+- [x] **1 073/1 073 fiches techniques — couverture complète (24/09/2026).** Plus aucune entrée du catalogue n'ouvre sur un bloc vide. Neuf fiches sortent volontairement sans couple ou sans masse : chaque note dit laquelle et pourquoi, et `MANQUES.md` porte le détail du sourcing. Un champ absent est une information (« non communiqué »), pas un trou.
 
 ### En cours
 - [ ] **204 fiches multi-générations restent sans sélecteur `MOTOR_SPECS`** — répartition connue par catégorie : SUV (45), Sportive (57), Berline (31), Classique (13), Citadine (15), Supercar (10), Youngtimer (11), Roadster (7), Hypercar (3), GT (3), Course (0, **traité le 22/09** : 917, 956/962, 205 T16, Impreza WRC, Mitjet 2L restaient — à vérifier l'état exact au dépôt)
-- [ ] ~80 fiches techniques encore non remplies au niveau Elise
-- [ ] Chantier matching IA : sortie JSON structurée côté prompt Claude, `gm-matcher.js` séparé, `finalConfidence`/`NO_CONFIDENT_MATCH` — **pas commencé**, en attente de relire `ai-relay-worker.js`
+- [x] ~~fiches techniques non remplies~~ — **terminé le 24/09/2026**, voir ci-dessus
+- [x] ~~Chantier matching IA~~ — **`gm-matcher.js` livré** (22/09) : `finalConfidence`, `AUCUNE_CORRESPONDANCE_SURE`, catalogue injecté en paramètre, banc `node banc-matcher.js` 17/17. `matchCatalog()` reste en repli dans `identifyCar()`
+- [ ] **441 entrées sans bloc « Générations »** (632/1 073 couvertes). C'est désormais le plus gros gisement restant du catalogue — cadré, non entamé
 - [ ] Fiche à onglets (Fiche technique / Photos / Historique) — direction validée sur maquette, **pas implémentée**, périmètre élargi non couvert par le modèle de données actuel (dimensions, équipement, poids tractable, comparatif concurrents)
 - [ ] Vue cinématique du véhicule (caméra fluide autour de la voiture) — CSS/photos compositing **prouvé insuffisant** par test Playwright réel ; pistes restantes : vidéo en boucle non scrubbée, ou accepter des transitions photo statiques
 - [ ] Feature clan payante (freemium ~5€) — non commencée
@@ -654,6 +655,8 @@ sur 1 017 fiches. **Programme, pas session.**
 | 05/08/2026 | Documentation rétro (CONTEXT.md initial, 677 lignes), corpus de fixes v3.1→v3.4 (XSS, listener leak, PHOTO_SETS, endpoint IA codé en dur), exploration créative vue cinématique (abandonnée, CSS insuffisant) | 4 versions applicatives, `PROMPT_CLAUDE_DESIGN.md` produit pour Claude Design | `index.html`, `CONTEXT.md` |
 | 17-18/09/2026 | Enrichissement massif des fiches techniques (223→994/1075 « niveau Elise »), recalibrage rareté à 6 paliers, review externe vérifiée et partiellement confirmée, migration IA vers Claude Haiku confirmée | `gm-specs.js` v20.43.0→v20.115.0 | `index.html`, `gm-specs.js`, `sw.js` |
 | 21-22/09/2026 | Chantier `MOTOR_SPECS` (28→50 modèles, 84→164 variantes), fix critique IIFE (`window.GMSpecs`), verrou de collection, banc Playwright, fiches de course GT3 R/GT3 Cup, correctif du déploiement (`index.html` jamais poussé en prod), passage du projet vers Claude Code | `gm-specs.js` v20.116.0, `sw.js`, `index.html` (13 lignes de diff ciblé), `CLAUDE.md` créé sur le dépôt | `index.html`, `gm-specs.js`, `sw.js`, `CLAUDE.md` |
+| 22-23/09/2026 | `gm-matcher.js` (rapprochement IA→catalogue, 3 défauts réels corrigés dans le scoreur), `banc-audit.js` (56 anomalies → 0 : 50 clés dupliquées écrasées en silence, 67 déclarations fantômes, 1 fiche inatteignable, 7 fiches décrivant une autre voiture), `fichePourInterface()`, BoP sur les 69 fiches de course, refonte UI mobile étape 1 | `gm-specs.js` v20.136.0→v20.143.0 | `gm-matcher.js`, `banc-*.js`, `gm-specs.js`, `index.html`, `sw.js`, `CLAUDE.md`, `MANQUES.md` |
+| 24/09/2026 | **Comblement terminé : 96,2 % → 100,0 % (1 073/1 073).** 41 dernières fiches en six vagues par familles techniques. Trois arbitrages de norme tranchés (§4.4 ter) : Sportage 128 ch **ECE** contre 140 ch **JIS**, Shelby F-150 785 ch **SAE** → 796 ch (PS), Topolino 535 vs 740 kg (facteur 1,4 → deux grandeurs différentes, aucune reprise). Cas de règle : Rafale et Arkana E-Tech sortent **sans couple**, la boîte multimode à crabots n'additionnant pas les deux couples sur un arbre commun — même raisonnement que l'exception HSD. Citroën ZX 16v déparquée (les 163 ch pour 1,9 L qui bloquaient étaient une autre voiture). Nouveau `banc-rendu.js` : vérifie la puissance par ses **dérivées** et l'absence effective des champs non communiqués | `gm-specs.js` v20.144.0, `sw.js` `garage-v20.144.0` | `gm-specs.js`, `sw.js`, `MANQUES.md`, `banc-rendu.js`, `CONTEXT.md` |
 
 ---
 
