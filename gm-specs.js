@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.145.0';
+  const VERSION_MODULE = '20.146.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -7680,6 +7680,148 @@
       ['Testarossa','1984–1991','flat-12 4.9 atmo','390 ch','Les ouïes latérales, imposées par les radiateurs déportés, sont devenues son emblème.'],
       ['512 TR','1991–1994','flat-12 4.9 atmo','428 ch','Refonte profonde du châssis et de la boîte.'],
       ['F512 M','1994–1996','flat-12 4.9 atmo','440 ch','Phares fixes, 501 exemplaires. La plus rare et la plus cotée.'],
+    ],
+
+    /* ====================================================================
+       COMBLEMENT DES GÉNÉRATIONS — lignées longues d'abord
+       --------------------------------------------------------------------
+       ⚠️ Clé = id CATALOGUE (celle que lit gensHTML), pas la clé de fiche.
+       Voir CLAUDE.md §2.2.
+
+       Méthode : la structure (codes, années, familles de moteurs) est
+       vérifiée par recherche pour chaque modèle. Une fourchette de
+       puissance n'est écrite que si elle est recoupée ; sinon le champ
+       reste vide — gensHTML() l'omet proprement. Les puissances sont en ch
+       (PS) : les chiffres publiés en hp ou bhp sont convertis, jamais
+       recopiés tels quels (CLAUDE.md §4.4 ter).
+       ==================================================================== */
+
+    /* ---- Vague G1 : Porsche GT et Turbo, utilitaires, grandes berlines -- */
+    'porsche-911-turbo': [
+      ['930','1975–1989','flat-6 3.0 puis 3.3 turbo, refroidi par air','260–300 ch','La première 911 suralimentée, et le surnom de « faiseuse de veuves » : un seul turbo, un temps de réponse énorme, et tout le couple d\'un coup en appui.'],
+      ['964','1990–1994','flat-6 3.3 puis 3.6 turbo, refroidi par air','320–360 ch','La 3.6 Turbo de 1993 est la dernière 911 Turbo à propulsion.'],
+      ['993','1995–1998','flat-6 3.6 biturbo, refroidi par air','408–450 ch','Premier biturbo et première transmission intégrale : la Turbo devient une voiture de tous les jours. La dernière refroidie par air.'],
+      ['996','2000–2005','flat-6 3.6 biturbo Mezger, refroidi par eau','420–450 ch','Le bloc Mezger dérivé de la GT1 du Mans, que les puristes préfèrent aux moteurs de série.'],
+      ['997','2006–2013','flat-6 3.6 puis 3.8 biturbo','480–530 ch','Premiers turbos à géométrie variable sur un moteur essence de série.'],
+      ['991','2014–2019','flat-6 3.8 biturbo','520–580 ch','Roues arrière directrices et aérodynamique active de série.'],
+      ['992','2020–','flat-6 3.8 biturbo','580–650 ch','La Turbo S revendique 2,7 s de 0 à 100 km/h.'],
+    ],
+    'porsche-911-gt3': [
+      ['996','1999–2005','flat-6 3.6 atmo Mezger','360–381 ch','Née pour homologuer la voiture de course GT3 : un moteur de compétition, pas une 911 de série préparée.'],
+      ['997','2006–2012','flat-6 3.6 puis 3.8 atmo','415–435 ch','Premier amortissement piloté PASM sur une GT3. La RS 4.0 de 2011 a sa propre entrée.'],
+      ['991','2013–2019','flat-6 3.8 puis 4.0 atmo','475–500 ch','Scandale au lancement : PDK obligatoire. Porsche a cédé en 2017 et rendu la boîte manuelle à la 991.2.'],
+      ['992','2021–','flat-6 4.0 atmo','510 ch','Train avant à double triangulation, repris directement de la voiture de course. Rupteur à 9 000 tr/min.'],
+    ],
+    'porsche-911-gt3rs': [
+      ['996','2003–2004','flat-6 3.6 atmo Mezger','381 ch','Capot et aileron en carbone, lunette arrière en polycarbonate. Construite pour homologuer la GT3 RSR.'],
+      ['997','2006–2011','flat-6 3.6 puis 3.8 atmo','415–450 ch','La livrée orange ou verte à lettrage noir en fait la plus reconnaissable. La RS 4.0 de 2011 a sa propre entrée.'],
+      ['991','2015–2019','flat-6 4.0 atmo','500–520 ch','Ouïes sur les ailes avant, inspirées de la 918 Spyder, pour extraire l\'air des passages de roue.'],
+      ['992','2022–','flat-6 4.0 atmo','525 ch','Aileron actif avec DRS, un appui revendiqué de 860 kg à 285 km/h.'],
+    ],
+    'porsche-911-gt2rs': [
+      ['997','2010–2011','flat-6 3.6 biturbo','620 ch','Propulsion et boîte manuelle seulement : la 911 la plus puissante de son temps, sans filet.'],
+      ['991','2017–2019','flat-6 3.8 biturbo','700 ch','Record du Nürburgring pour une voiture de série en 2017. PDK imposée, contrairement à sa devancière.'],
+    ],
+    'vw-transporter': [
+      ['T1','1950–1967','flat-4 refroidi par air, moteur arrière','25–44 ch','Le « Combi » à pare-brise en deux parties, dessiné à partir d\'un croquis de Ben Pon sur une plateforme de Coccinelle.'],
+      ['T2','1967–1979','flat-4 refroidi par air, moteur arrière','47–70 ch','Pare-brise d\'une seule pièce. Produit au Brésil jusqu\'en 2013, bien après sa disparition en Europe.'],
+      ['T3','1979–1992','flat-4 à air puis « Wasserboxer » à eau, diesels','50–112 ch','Le dernier moteur arrière. La version Syncro à quatre roues motrices est devenue culte.'],
+      ['T4','1990–2003','4, 5 et VR6 essence, diesels et TDI','61–204 ch','Premier Transporter à moteur avant et traction : rupture complète avec quarante ans d\'architecture.'],
+      ['T5','2003–2015','TDI, essence et V6 3.2','','La California devient le camping-car de série de référence.'],
+      ['T6 / T6.1','2015–2024','2.0 TDI','','Évolution directe du T5. Son successeur utilitaire de 2024 est construit par Ford Otosan, jumeau du Transit Custom.'],
+      ['T7 (Multivan)','2021–','essence, diesel et hybride rechargeable','136–218 ch','Sur plateforme MQB, et plus un fourgon : le Multivan T7 n\'existe qu\'en version passagers.'],
+    ],
+    'ford-transit': [
+      ['Mk1','1965–1978','4 cyl. Kent, V4 Essex, diesel Perkins','','Conçu pour l\'Europe entière d\'emblée, avec une cabine avancée qui maximise le volume de chargement.'],
+      ['Mk2','1978–1986','4 cyl. Pinto, V6 Essex, diesel York','','Cabine repensée pour le confort du chauffeur, qui devient un argument de vente.'],
+      ['Mk3 (et restylages)','1986–2000','4 cyl., V6, 2.5 diesel à injection directe','','Face avant plongeante « fast front » : l\'aérodynamique s\'invite dans l\'utilitaire.'],
+      ['Mk6','2000–2006','Duratorq diesel, essence','','Première traction avant en option, à côté de la propulsion historique.'],
+      ['Mk7','2006–2013','Duratorq TDCi','','Style « Kinetic Design » emprunté aux voitures particulières de Ford.'],
+      ['Mk8','2013–','EcoBlue 2.0 diesel, électrique (E-Transit)','105–170 ch','Plateforme mondiale commune à l\'Europe et à l\'Amérique du Nord. L\'E-Transit électrique s\'y ajoute en 2022.'],
+    ],
+    'maserati-quattroporte': [
+      ['I (AM107)','1963–1969','V8 4.1 puis 4.7','260 ch (4.1)','La berline quatre portes la plus rapide du monde à sa sortie : Maserati invente la grande routière de sport.'],
+      ['II','1974–1978','V6 3.0 Maserati (Citroën SM)','','Traction avant et suspension hydropneumatique Citroën. La crise pétrolière la tue : treize exemplaires.'],
+      ['III','1979–1990','V8 4.2 et 4.9','','Dessinée par Giugiaro, et voiture officielle du président de la République italienne.'],
+      ['IV','1994–2001','V6 biturbo 2.0 et 2.8, V8 biturbo 3.2','','Le V6 2.0 biturbo existait pour contourner la taxe italienne sur les moteurs de plus de deux litres.'],
+      ['V','2003–2012','V8 4.2 et 4.7 atmo','400–440 ch','Dessinée par Pininfarina, avec un V8 d\'origine Ferrari.'],
+      ['VI','2013–','V6 biturbo, V8 3.8 biturbo, diesel','','Plus grande et plus longue : elle vise désormais la Classe S et la Série 7.'],
+    ],
+    'ford-mustang-mach1': [
+      ['1re génération','1969–1973','V8 5.0 à 7.0 (jusqu\'au 428 et 429 Cobra Jet)','','Puissances d\'époque en norme SAE brute, non comparables aux chiffres modernes : elles ne sont pas reprises ici.'],
+      ['Mustang II','1974–1978','V6 2.8, V8 5.0','','Le Mach 1 survit sur la petite Mustang II de l\'après-crise pétrolière — l\'épisode que les fans préfèrent oublier.'],
+      ['SN95 « New Edge »','2003–2004','V8 4.6 DOHC','','Écope de capot « Shaker » reprise de 1969, qui vibre avec le moteur.'],
+      ['S550','2021–2023','V8 5.0 Coyote','460 ch (Europe)','Pièces de la Shelby GT350 et de la GT500. 480 ch en norme SAE aux États-Unis, 460 ch homologués en Europe.'],
+    ],
+    'morgan-plus-8': [
+      ['Plus 8 (Rover V8)','1968–2004','V8 Rover 3.5 à 4.6','','Le V8 aluminium d\'origine Buick dans un châssis à longerons et une structure en frêne. La cylindrée passe de 3 528 à 4 555 cm³ en trente-six ans.'],
+      ['Plus 8 (BMW V8)','2012–2018','V8 BMW 4.8 (N62)','367 ch','Retour du nom sur le châssis aluminium de l\'Aero 8.'],
+    ],
+    'jaguar-xj': [
+      ['Series I à III','1968–1992','6 cyl. XK 2.8 à 4.2, V12 5.3','','La dernière Jaguar supervisée par William Lyons. La Series III V12 survit jusqu\'en 1992.'],
+      ['XJ40','1986–1994','6 cyl. AJ6 2.9 à 4.0','','Première XJ entièrement nouvelle en dix-huit ans.'],
+      ['X300','1994–1997','6 cyl. AJ16, 6 cyl. compressé, V12 6.0','','La XJR à compresseur inaugure la berline sportive Jaguar moderne.'],
+      ['X308','1997–2002','V8 AJ-V8 3.2 et 4.0, 4.0 compressé','243–375 ch','Le V8 remplace à la fois le six cylindres et le V12.'],
+      ['X350','2003–2009','V6, V8 3.5 à 4.2, V8 compressé, V6 diesel','','Caisse entièrement en aluminium, rivetée et collée.'],
+      ['X351','2009–2019','V6 compressé, V8 5.0, V8 5.0 compressé, V6 diesel','','Style de rupture signé Ian Callum. La dernière XJ thermique.'],
+    ],
+    'uaz-452': [
+      ['452 (carburateur)','1965–2010','4 cyl. UMZ 2.4 puis 2.9','75 ch','Surnommé « Boukhanka », la miche de pain, pour sa silhouette. Quatre roues motrices et une mécanique réparable au bord de la piste.'],
+      ['Modernisé','2011–','4 cyl. ZMZ-409 2.7 injection','112 ch','ABS, direction assistée et ceintures de série en 2011 — sans rien changer à une carrosserie dessinée en 1965.'],
+    ],
+    'hindustan-ambassador': [
+      ['Mark I','1958–1962','4 cyl. 1.5','50 ch','La Morris Oxford Series III britannique, produite sous licence près de Calcutta.'],
+      ['Mark II à IV','1962–1990','4 cyl. 1.5 essence et diesel','','Trois décennies d\'évolutions cosmétiques : la voiture officielle de l\'administration indienne et le taxi de Calcutta.'],
+      ['Nova, 1800 ISZ','1990–2003','4 cyl. 1.5 essence et diesel, Isuzu 1.8','37–76 ch','La 1800 ISZ de 1992 reçoit enfin un moteur moderne, d\'origine Isuzu.'],
+      ['Grand, Avigo, Encore','2003–2014','Isuzu 1.8, diesels 1.5 et 2.0','','Arrêt de production en 2014, après cinquante-six ans.'],
+    ],
+    'renault-trafic': [
+      ['I','1980–2001','4 cyl. essence et diesel','','Vingt et un ans de carrière, en fourgon, minibus et plateau.'],
+      ['II','2001–2014','dCi 1.9, 2.0 et 2.5','80–150 ch','Codéveloppé avec General Motors : jumeau de l\'Opel Vivaro et du Nissan Primastar.'],
+      ['III','2014–','dCi 1.6 puis 2.0','','Partagé avec Fiat (Talento) et Nissan (NV300) avant l\'arrivée de versions électriques.'],
+    ],
+    'vw-golf-gtd': [
+      ['Mk1','1982–1983','4 cyl. 1.6 turbodiesel','70 ch','Première diesel « sportive » de grande série : le principe GTI appliqué au gazole.'],
+      ['Mk2','1984–1991','4 cyl. 1.6 turbodiesel','70–80 ch','Un intercooler ajoute 10 ch en 1990.'],
+      ['Mk6','2009–2012','4 cyl. 2.0 TDI','170 ch','Retour du nom après dix-huit ans d\'absence, avec la carrosserie et le châssis de la GTI.'],
+      ['Mk7','2013–2020','4 cyl. 2.0 TDI','184 ch','Existe en break Variant, ce que la GTI n\'a jamais eu.'],
+      ['Mk8','2020–','4 cyl. 2.0 TDI','200 ch','Double injection d\'AdBlue pour passer les normes Euro 6d.'],
+    ],
+    'honda-civic-si': [
+      ['3e gén. (CRX Si, Civic Si)','1985–1987','4 cyl. 1.5 injection','92 ch','Le CRX Si inaugure le sigle aux États-Unis ; la Civic à hayon le reçoit en 1986.'],
+      ['4e gén.','1988–1991','4 cyl. 1.6 16v','106–110 ch','Culasse seize soupapes et 1 000 tr/min de plus que la précédente.'],
+      ['EG / EH','1992–1995','4 cyl. 1.6 VTEC SOHC','127 ch','Premier VTEC sur une Si. Au Japon, la SiR reçoit le B16A de 170 ch.'],
+      ['EK','1999–2000','4 cyl. 1.6 VTEC B16A2','162 ch','Le moteur de la SiR japonaise arrive enfin aux États-Unis.'],
+      ['EP3','2002–2005','4 cyl. 2.0 i-VTEC K20A3','162 ch','Hayon trois portes construit à Swindon, et levier de vitesses monté sur la planche de bord.'],
+      ['FA5 / FG2','2006–2011','4 cyl. 2.0 i-VTEC K20Z3','200 ch','Différentiel à glissement limité de série, rupteur à 8 000 tr/min.'],
+      ['FB / FG4','2012–2015','4 cyl. 2.4','204 ch','Plus de couple, moins de régime : le 2,4 litres divise les puristes.'],
+      ['FC','2017–2020','4 cyl. 1.5 turbo','208 ch','Premier turbo sur une Si.'],
+      ['FE','2022–','4 cyl. 1.5 turbo','203 ch','Uniquement en berline et en boîte manuelle.'],
+    ],
+    'holden-monaro': [
+      ['HK / HT / HG','1968–1971','6 en ligne, V8 Chevrolet 5.4 et 5.7, V8 Holden 4.2 et 5.0','','Les GTS 327 puis 350 remportent Bathurst en 1968 et 1969.'],
+      ['HQ à HZ','1971–1979','6 cyl. 2.8 et 3.3, V8 Holden 4.2 et 5.0','','Le V8 Chevrolet importé disparaît, remplacé par les V8 Holden.'],
+      ['V2 à VZ','2001–2006','V6 3.8, V8 5.7 puis 6.0 (GM LS)','','Exporté comme Pontiac GTO aux États-Unis et Vauxhall Monaro au Royaume-Uni.'],
+    ],
+    'subaru-legacy': [
+      ['BC / BF','1989–1994','flat-4 1.8 à 2.2, 2.0 turbo','','Un Legacy de série bat le record du monde d\'endurance à 223 km/h de moyenne sur 100 000 km en 1989.'],
+      ['BD / BG','1993–1998','flat-4 1.8 à 2.5, 2.0 biturbo','','Le break GT-B biturbo japonais atteint 250 ch.'],
+      ['BE / BH','1998–2003','flat-4, flat-6 3.0','','Premier six cylindres à plat dans un Legacy.'],
+      ['BL / BP','2003–2009','flat-4 2.0 à 2.5, turbo, flat-6 3.0','','Le Legacy le plus apprécié des amateurs, en version turbo.'],
+      ['BM / BR','2009–2014','flat-4 2.5, 2.5 turbo, flat-6 3.6','172–269 ch','Nettement agrandi pour le marché américain.'],
+      ['BN','2014–2019','flat-4 2.5, flat-6 3.6','172–260 ch','Plus de break : le Legacy s\'efface derrière l\'Outback et, au Japon, le Levorg.'],
+      ['BW','2019–','flat-4 2.5, 2.4 turbo','185–264 ch','Berline seulement, sur la plateforme globale Subaru.'],
+    ],
+    'porsche-911-speedster': [
+      ['3.2 Carrera (G)','1989','flat-6 3.2 atmo','231 ch','Environ 2 100 exemplaires, en caisse étroite ou « Turbo look ».'],
+      ['964','1993–1994','flat-6 3.6 atmo','250 ch','936 exemplaires. Sièges de la Carrera RS, ni climatisation ni vitres électriques.'],
+      ['997','2010','flat-6 3.8 atmo','408 ch','356 exemplaires, en hommage au numéro de la première Porsche.'],
+      ['991','2019','flat-6 4.0 atmo','510 ch','1 948 exemplaires, pour l\'année de fondation. Moteur de GT3 et boîte manuelle.'],
+    ],
+    'toyota-century': [
+      ['G20 / G30 / G40','1967–1997','V8 3.0, 3.4 puis 4.0','','Trente ans de production quasiment sans changement de ligne, réservée au marché japonais.'],
+      ['G50','1997–2017','V12 5.0 (1GZ-FE)','280 ch','Le seul V12 jamais monté dans une voiture de série japonaise. Puissance plafonnée par l\'accord tacite des constructeurs japonais.'],
+      ['G60','2018–','V8 5.0 hybride','431 ch (système)','Hybride Toyota : thermique et électrique reliés par un train épicycloïdal, si bien qu\'aucun couple système n\'est publié.'],
     ],
   };
 
