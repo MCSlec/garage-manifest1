@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.147.0';
+  const VERSION_MODULE = '20.148.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -7882,7 +7882,7 @@
       ['SL','2024–','flat-4 2.5, hybride','',''],
     ],
     'renault-4': [
-      ['4 / 4L (moteurs Billancourt)','1961–1978','4 cyl. 0,6 à 0,85','','Première traction avant Renault, levier de vitesses « trompe » sur la planche de bord.'],
+      ['4 / 4L (moteurs Billancourt)','1961–1978','4 cyl. 0,6 à 0,85','','Première voiture particulière Renault à traction avant — l\'Estafette l\'avait précédée chez les utilitaires. Levier de vitesses sur la planche de bord.'],
       ['4 GTL (moteur Cléon)','1978–1994','4 cyl. 0,96 et 1,1','','Plus de huit millions d\'exemplaires au total. La production finit en Slovénie en 1994.'],
     ],
     'citroen-type-h': [
@@ -7932,6 +7932,131 @@
       ['GTR','1999–2015','V8 Chevrolet small-block','','Vendue en kit ou assemblée : moteur central et boîte-pont Porsche ou Getrag, jusqu\'à 720 ch en version GTR720.'],
       ['Evolution','2015–2019','V8 Chevrolet','','Réingénierie complète : les noms GTR et Can-Am sont abandonnés.'],
       ['RS','2019–','V8 Chevrolet LT1, LT4 ou LT5','487–811 ch','Le châssis accepte toute la famille LT, jusqu\'au V8 compressé de la Corvette ZR1.'],
+    ],
+
+    /* ---- Vague G3 : grandes routières, muscle cars modernes ------------ */
+    'rr-phantom': [
+      ['Phantom VII','2003–2017','V12 6.75 atmo','460 ch','Premier modèle de l\'ère BMW, construit dans la nouvelle usine de Goodwood.'],
+      ['Phantom VIII','2017–','V12 6.75 biturbo','571 ch','Inaugure l\'« Architecture of Luxury », la structure aluminium commune aux Rolls-Royce suivantes.'],
+    ],
+    'rr-ghost': [
+      ['Ghost I','2009–2020','V12 6.6 biturbo','571 ch','La « petite » Rolls-Royce, dérivée de la BMW Série 7 de l\'époque.'],
+      ['Ghost II','2020–','V12 6.75 biturbo','571–600 ch','Structure aluminium propre à Rolls-Royce et transmission intégrale. La Black Badge atteint 600 ch.'],
+    ],
+    'bentley-flying-spur': [
+      ['Continental Flying Spur','2005–2013','W12 6.0 biturbo','','Version berline de la Continental GT, sur base Volkswagen Phaeton.'],
+      ['Flying Spur (2e gén.)','2013–2019','V8 4.0 et W12 6.0 biturbo','507–635 ch','Le nom Continental disparaît de la berline.'],
+      ['Flying Spur (3e gén.)','2019–','V6 hybride, V8, W12, puis V8 hybride','544–782 ch','Roues arrière directrices. La Speed hybride de 782 ch est la plus puissante Flying Spur jamais construite.'],
+    ],
+    'ford-shelby-gt500': [
+      ['S197','2007–2014','V8 5.4 puis 5.8 compressé','507–671 ch','Retour du nom GT500 quarante ans après l\'original. La 5.8 de 2013 est la première Mustang de série à dépasser 320 km/h.'],
+      ['S550','2020–2022','V8 5.2 compressé','770 ch','Boîte double embrayage imposée : pas de manuelle.'],
+    ],
+    'chrysler-300c': [
+      ['LX','2004–2010','V6 essence et diesel, V8 HEMI 5.7 et 6.1 (SRT8)','340–431 ch (V8)','Né de l\'alliance Daimler-Chrysler, sur des éléments de Mercedes Classe E.'],
+      ['LD','2011–2023','V6 3.6, V6 diesel, V8 HEMI 5.7 et 6.4','368–492 ch (V8)','La 300C de 2023 clôt la lignée avec le 6.4 de 485 ch SAE : la dernière berline HEMI de Chrysler.'],
+    ],
+    'dodge-charger-moderne': [
+      ['LX','2006–2010','V6, V8 HEMI 5.7 et 6.1 (SRT8)','','Le nom Charger revient, mais sur une berline quatre portes — sacrilège pour les puristes.'],
+      ['LD','2011–2023','V6 3.6, V8 HEMI 5.7 à 6.4, V8 6.2 compressé (Hellcat)','296–808 ch','La Hellcat Redeye en fait la berline de série la plus puissante du monde à sa sortie.'],
+    ],
+    'mitsubishi-eclipse': [
+      ['1G','1989–1994','4 cyl. 1.8 et 2.0, 2.0 turbo 4G63','','Construite dans l\'Illinois par Diamond-Star Motors, coentreprise avec Chrysler. La GSX turbo à quatre roues motrices est la version culte.'],
+      ['2G','1995–1999','4 cyl. 2.0, 2.0 turbo 4G63','','Celle du premier Fast and Furious.'],
+      ['3G','2000–2005','4 cyl. 2.4, V6 3.0','','Abandon du turbo et de la transmission intégrale.'],
+      ['4G','2006–2012','4 cyl. 2.4, V6 3.8','','La dernière : le nom sera repris en 2017 par un SUV.'],
+    ],
+    'toyota-soarer': [
+      ['Z10','1981–1985','6 en ligne 2.0 à 2.8','','Coupé de luxe japonais à l\'instrumentation électronique pionnière.'],
+      ['Z20','1986–1991','6 en ligne 2.0 biturbo à 3.0 turbo','','La rare Aerocabin à toit rigide escamotable, 500 exemplaires.'],
+      ['Z30','1991–2000','6 en ligne 2.5 biturbo (1JZ) et 3.0, V8 4.0','','Vendu Lexus SC hors du Japon. Le 1JZ biturbo est plafonné à 280 ch par l\'accord des constructeurs japonais.'],
+      ['Z40','2001–2005','V8 4.3','','Cabriolet à toit rigide rétractable, jumeau du Lexus SC 430.'],
+    ],
+    'jeep-compass': [
+      ['MK49','2006–2017','4 cyl. essence 2.0 et 2.4, diesels VW puis Mercedes','','Premier Jeep à traction avant, jumeau du Patriot.'],
+      ['MP','2017–2025','4 cyl. essence et diesel, hybride rechargeable 4xe','','Produit aussi à Melfi, en Italie, pour l\'Europe.'],
+      ['3e gén.','2025–','hybride, électrique','','Sur la plateforme STLA Medium de Stellantis.'],
+    ],
+    'ford-kuga': [
+      ['I','2008–2012','4 cyl. diesel 2.0, 5 cyl. 2.5 turbo','136–200 ch','Premier SUV compact de Ford Europe. Le 2.5 à cinq cylindres vient de la Focus ST.'],
+      ['II','2012–2019','4 cyl. EcoBoost et TDCi','','Jumeau européen du Ford Escape américain.'],
+      ['III','2019–','EcoBoost, EcoBlue, hybride, hybride rechargeable','','Le Kuga hybride rechargeable devient un temps l\'hybride rechargeable le plus vendu d\'Europe.'],
+    ],
+    'honda-jazz': [
+      ['GD','2001–2008','4 cyl. 1.2 à 1.5','','Réservoir sous les sièges avant : c\'est ce qui libère les « Magic Seats » rabattables et relevables.'],
+      ['GE','2008–2015','4 cyl. 1.2 à 1.5, hybride','',''],
+      ['GK','2013–2020','4 cyl. 1.3 et 1.5','',''],
+      ['GR','2020–','hybride e:HEV 1.5','','Uniquement hybride en Europe, avec le système à deux moteurs électriques de Honda.'],
+    ],
+    'citroen-traction': [
+      ['7','1934–1941','4 cyl. 1.3 à 1.6','32–36 ch','Première voiture de grande série à réunir traction avant et caisse autoporteuse soudée. Son coût de développement a ruiné André Citroën.'],
+      ['11 (Légère et Normale)','1934–1957','4 cyl. 1.9','46–56 ch','La voiture des « Tractions » de la Résistance et de la Gestapo, au cinéma comme dans l\'histoire.'],
+      ['15-Six','1938–1956','6 en ligne 2.9','78 ch','La « Reine de la route ». La 15-Six H de 1954 étrenne la suspension hydropneumatique arrière avant la DS.'],
+    ],
+    'renault-estafette': [
+      ['Estafette','1959–1980','4 cyl. 0,85 puis 1,1 et 1,3','','Premier utilitaire Renault à traction avant, et plus de 500 000 exemplaires. Le fourgon des gendarmes et des facteurs.'],
+    ],
+    'citroen-mehari': [
+      ['Méhari','1968–1988','2 cyl. à plat 602 cm³','','Carrosserie en plastique ABS teinté dans la masse, sur un châssis de Dyane. Environ 145 000 exemplaires.'],
+      ['Méhari 4×4','1980–1983','2 cyl. à plat 602 cm³','','Quatre roues motrices et réducteur : 1 313 exemplaires seulement.'],
+    ],
+    'delahaye-135': [
+      ['135 (3.2)','1935–1938','6 en ligne 3.2','','Châssis bas et moteur dérivé d\'un moteur de camion, rendu sportif par trois carburateurs.'],
+      ['135 M (3.6)','1936–1954','6 en ligne 3.6','','La version routière la plus répandue, carrossée par Figoni, Chapron ou Saoutchik.'],
+      ['135 MS','1938–1954','6 en ligne 3.6 à grosses soupapes','','Le haut de gamme d\'avant et d\'après-guerre. Les puissances d\'époque varient selon la carburation et ne sont pas reprises ici.'],
+    ],
+    'mg-midget': [
+      ['Mk I','1961–1964','4 cyl. série A 948 puis 1098 cm³','','Jumelle de l\'Austin-Healey Sprite, dont elle ne diffère que par la calandre.'],
+      ['Mk II','1964–1966','4 cyl. série A 1098 cm³','','Vitres descendantes et serrures de portes : enfin.'],
+      ['Mk III','1966–1974','4 cyl. série A 1275 cm³','','Le moteur de la Mini Cooper S, dégonflé.'],
+      ['1500','1974–1979','4 cyl. Triumph 1493 cm³','','Pare-chocs en caoutchouc noir et moteur de Triumph Spitfire, imposés par les normes américaines.'],
+    ],
+    'ford-model-t': [
+      ['Model T','1908–1927','4 cyl. 2.9','20 ch','Environ quinze millions d\'exemplaires. La chaîne d\'assemblage mobile de 1913 fait tomber son temps de fabrication de douze heures à une heure et demie.'],
+    ],
+    'vw-karmann-ghia': [
+      ['Type 14','1955–1974','flat-4 refroidi par air 1.2 à 1.6','','Dessin italien de Ghia, carrosserie soudée et polie à la main par Karmann à Osnabrück, mécanique de Coccinelle.'],
+      ['Type 34','1962–1969','flat-4 refroidi par air 1.5 et 1.6','','Sur base de VW Type 3, plus anguleuse et beaucoup plus rare.'],
+    ],
+    'audi-a5': [
+      ['8T','2007–2016','4 cyl. TFSI et TDI, V6 TDI','','Premier coupé Audi de taille moyenne depuis l\'Audi Coupé des années 90. Dessin de Walter de Silva. Les S5 et RS5 ont leur propre entrée.'],
+      ['F5','2016–2024','4 cyl. TFSI et TDI, V6 TDI','','Coupé, cabriolet et Sportback cinq portes.'],
+      ['B10','2024–','4 cyl. TFSI, V6 TDI, hybride léger','','Le nom A5 remplace celui d\'A4 : il désigne désormais aussi la berline et le break.'],
+    ],
+    'porsche-928': [
+      ['928','1977–1982','V8 4.5 atmo','240 ch','Voiture de l\'Année 1978 — la seule sportive à l\'avoir jamais été. Porsche la destinait à remplacer la 911.'],
+      ['928 S','1980–1986','V8 4.7 atmo','300–310 ch',''],
+      ['928 S4 / GT','1986–1991','V8 5.0 32 soupapes','320–330 ch','La S4 dépasse 270 km/h.'],
+      ['928 GTS','1992–1995','V8 5.4 32 soupapes','350 ch','Dernière et plus puissante, et la plus recherchée aujourd\'hui.'],
+    ],
+    'mg-mgb': [
+      ['Pare-chocs chromés','1962–1974','4 cyl. série B 1.8','','Caisse autoporteuse, une première chez MG. Le GT à hayon de 1965 est dessiné avec l\'aide de Pininfarina.'],
+      ['GT V8','1973–1976','V8 Rover 3.5','','Environ 2 600 exemplaires, en coupé seulement.'],
+      ['Pare-chocs caoutchouc','1974–1980','4 cyl. série B 1.8','','Garde au sol relevée et gros boucliers noirs, imposés par les normes américaines. Au total, plus de 520 000 MGB, MGC et V8.'],
+    ],
+    'mercedes-600': [
+      ['600 / Pullman','1963–1981','V8 6.3 M100 injection','250 ch','Suspension, sièges, vitres et toit ouvrant commandés par un circuit hydraulique à 200 bars. 2 677 exemplaires, dont 428 Pullman et 59 Landaulet : la voiture des chefs d\'État.'],
+    ],
+    'triumph-spitfire': [
+      ['Mk I / Mk II','1962–1967','4 cyl. 1147 cm³','','Dessin de Giovanni Michelotti, sur un châssis de Triumph Herald.'],
+      ['Mk III','1967–1970','4 cyl. 1296 cm³','','Pare-chocs avant relevé.'],
+      ['Mk IV','1970–1974','4 cyl. 1296 cm³','','Poupe tronquée inspirée de la Stag, et correction du train arrière à bras oscillants qui faisait sa mauvaise réputation.'],
+      ['1500','1974–1980','4 cyl. 1493 cm³','72 ch','Le même moteur équipe la MG Midget 1500 à la même époque.'],
+    ],
+    'alfa-alfasud': [
+      ['Alfasud','1971–1983','flat-4 1.2 à 1.5','','Usine neuve de Pomigliano d\'Arco, près de Naples : d\'où le nom. Dessin de Giugiaro, et un châssis salué comme le meilleur de sa catégorie — ruiné par la rouille.'],
+      ['Sprint','1976–1989','flat-4 1.3 et 1.5','','Coupé dérivé, prolongé sous le nom d\'Alfa Romeo Sprint. Au total, plus d\'un million d\'Alfasud.'],
+    ],
+    'wiesmann-mf3': [
+      ['Roadster (MF30 et MF3)','1993–2011','6 en ligne BMW 3.0 (M54) puis 3.2 (S54, M3 E46)','231–343 ch','Carrosserie en composite, assemblée à la main à Dülmen. Le logo au gecko dit ce que la voiture promet : coller à la route.'],
+    ],
+    'lada-2101': [
+      ['2101 (1200 / 1300)','1970–1988','4 cyl. 1.2 et 1.3','','La Fiat 124 construite sous licence à Togliatti, avec plus de 800 modifications pour l\'hiver et les routes soviétiques. Surnommée « Kopeïka », la petite pièce.'],
+    ],
+    'spyker-c8': [
+      ['C8 Spyder / Laviolette','2000–2009','V8 Audi 4.2 atmo','400 ch','Hélice d\'avion en guise de volant et levier de vitesses à tringlerie apparente : l\'héritage du constructeur aéronautique d\'origine.'],
+      ['C8 Aileron','2009–2016','V8 Audi 4.2','','Carrosserie retravaillée en soufflerie, dont le nom rend hommage aux ailerons d\'avion.'],
+      ['C8 Preliator','2016–2017','V8 Audi 4.2 compressé','525 ch','La dernière évolution de la C8.'],
     ],
     'toyota-century': [
       ['G20 / G30 / G40','1967–1997','V8 3.0, 3.4 puis 4.0','','Trente ans de production quasiment sans changement de ligne, réservée au marché japonais.'],
