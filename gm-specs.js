@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.153.0';
+  const VERSION_MODULE = '20.154.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -542,9 +542,9 @@
     'toyota-gr-corolla': { nom:'Toyota GR Corolla', an:[2022], pays:'Japon',
       ch:300, nm:370, kg:1470, cyl:1.6, arch:'3 cyl. G16E-GTS', adm:'turbo', pos:'avant', tx:'intégrale GR-Four', bv:'M6',
       note:"Le trois-cylindres turbo de la GR Yaris, mais dans la Corolla, avec trois sorties d\'échappement. Transmission intégrale à répartition variable, boîte manuelle. La compacte de rallye pour toute la famille, développée par Gazoo Racing." },
-    'mitsubishi-galant-vr4': { nom:'Mitsubishi Galant VR-4', an:[1987,2002], pays:'Japon',
-      ch:280, nm:363, kg:1500, cyl:2.0, arch:'4 cyl. 4G63', adm:'turbo', pos:'avant', tx:'intégrale', bv:'M5',
-      note:"La berline qui a servi de laboratoire à la future Lancer Evo : le moteur turbo 4G63 et la transmission intégrale y sont nés, avant d\'aller à la conquête du rallye. Championne du monde des rallyes 1988. Le sleeper japonais des débuts." },
+    'mitsubishi-galant-vr4': { nom:'Mitsubishi Galant VR-4 (E39A)', an:[1987,1992], pays:'Japon',
+      ch:240, nm:304, kg:1410, cyl:2.0, arch:'4 cyl. 4G63', adm:'turbo', pos:'avant', tx:'intégrale', bv:'M5',
+      note:"La berline qui a servi de laboratoire à la future Lancer Evo : son 4G63 turbo et sa transmission intégrale passent tels quels à la première Lancer Evolution, en 1992. Le sleeper japonais des débuts. Chiffres de la version manuelle de 1990, en norme japonaise." },
     'mitsubishi-fto': { nom:'Mitsubishi FTO', an:[1994,2000], pays:'Japon',
       ch:200, nm:275, kg:1200, cyl:2.0, arch:'V6 MIVEC', adm:'atmo', pos:'avant', tx:'traction', bv:'INVECS auto 4',
       note:"Un coupé japonais au V6 à calage variable MIVEC, hurlant à haut régime. Sa boîte automatique « INVECS » à apprentissage adaptatif était une nouveauté. Voiture de l\'Année au Japon 1994. Un coupé JDM élégant et sous-estimé en Europe." },
@@ -776,7 +776,7 @@
       ch:103, nm:120, kg:794, cyl:1.3, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
       note:"La version allégée et épurée de la 205 GTI, pensée pour la compétition : moins de 800 kg, sans fioritures, un petit 1.3 vif à double carburateur. Considérée par beaucoup comme la 205 la plus pure à conduire. Une youngtimer très recherchée." },
     'peugeot-106-rallye': { nom:'Peugeot 106 Rallye', an:[1993,1998], pays:'France',
-      ch:103, nm:121, kg:825, cyl:1.6, arch:'4 cyl. 16v', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
+      ch:103, nm:121, kg:825, cyl:1.6, arch:'4 cyl. 8v', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
       note:"Dans la lignée de la 205 Rallye : une 106 dépouillée, légère, sans direction assistée ni équipements superflus, pour un plaisir de conduite brut. Un petit moteur vif à haut régime. La sportive d\'accès culte pour débuter en compétition." },
     'peugeot-406-coupe': { nom:'Peugeot 406 Coupé', an:[1997,2004], pays:'France',
       ch:210, nm:290, kg:1470, cyl:3.0, arch:'V6', adm:'atmo', pos:'avant', tx:'traction', bv:'M6 / A4',
@@ -810,9 +810,9 @@
     'renault-vel-satis': { nom:'Renault Vel Satis', an:[2001,2009], pays:'France',
       ch:245, nm:350, kg:1700, cyl:3.5, arch:'V6', adm:'atmo', pos:'avant', tx:'traction', bv:'A5',
       note:"La tentative audacieuse de Renault dans le haut de gamme : une berline à la silhouette haute et atypique, misant sur le confort et l\'originalité plutôt que sur les codes allemands. Voiture présidentielle de Jacques Chirac. Un échec commercial devenu culte." },
-    'citroen-ax-gt': { nom:'Citroën AX GT / GTi', an:[1986,1998], pays:'France',
-      ch:100, nm:124, kg:722, cyl:1.4, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
-      note:"Environ 722 kg : « elle consommait moins qu\'elle ne pesait », disaient les essayeurs. Un rapport poids/puissance excellent grâce à une légèreté extrême. La sportive populaire des années 80, aujourd\'hui rare car peu ont survécu." },
+    'citroen-ax-gt': { nom:'Citroën AX GT', an:[1987,1991], pays:'France',
+      ch:85, nm:116, kg:720, cyl:1.4, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
+      note:"Environ 720 kg : « elle consommait moins qu\'elle ne pesait », disaient les essayeurs. Un rapport poids/puissance excellent grâce à une légèreté extrême. La sportive populaire des années 80, aujourd\'hui rare car peu ont survécu." },
     'citroen-xantia-activa': { nom:'Citroën Xantia Activa', an:[1994,2001], pays:'France',
       ch:190, nm:267, kg:1350, cyl:3.0, arch:'V6', adm:'atmo', pos:'avant', tx:'traction', bv:'A4',
       note:"Détentrice à ce jour du record du test de l\'élan (évitement à haute vitesse), devant toutes les supercars : son système hydraulique anti-roulis actif la maintient parfaitement à plat en virage. Un chef-d\'œuvre technique français méconnu." },
@@ -948,7 +948,7 @@
       ch:239, nm:388, kg:1900, cyl:4.6, arch:'V8', adm:'atmo', pos:'avant', tx:'propulsion', bv:'A4',
       note:"La grande berline de luxe américaine par excellence, reine des limousines d\'aéroport et des enterrements. Châssis séparé, V8 souple, confort de canapé. La voiture des chauffeurs et des personnalités, symbole d\'un luxe américain traditionnel aujourd\'hui disparu." },
     'pontiac-fiero': { nom:'Pontiac Fiero', an:[1984,1988], pays:'États-Unis',
-      ch:140, nm:220, kg:1200, cyl:2.8, arch:'V6', adm:'atmo', pos:'central', tx:'propulsion', bv:'M5',
+      ch:142, nm:220, kg:1200, cyl:2.8, arch:'V6', adm:'atmo', pos:'central', tx:'propulsion', bv:'M5',
       note:"La seule voiture de série américaine à moteur central de son époque, une audace pour Pontiac. Carrosserie en panneaux plastiques boulonnés sur un châssis. Handicapée par des problèmes de fiabilité à ses débuts, elle est devenue une base de kit-cars." },
     'oldsmobile-442': { nom:'Oldsmobile 442', an:[1964,1980], pays:'États-Unis',
       ch:370, nm:678, kg:1700, cyl:7.5, arch:'V8', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M4 / A3',
@@ -1031,8 +1031,8 @@
 
     /* ===== FICHES COMPLÈTES — vague AF (muscle cars + américaines) ======= */
     'chevrolet-c4-zr1': { nom:'Chevrolet Corvette ZR-1 (C4)', an:[1990,1995], pays:'États-Unis',
-      ch:405, nm:522, kg:1600, cyl:5.7, arch:'V8 LT5 (Lotus)', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M6',
-      note:"La « King of the Hill » : son V8 LT5 à double arbre à cames en tête fut conçu par Lotus et fabriqué par Mercury Marine. Une clé de bridage limitait la puissance pour les prêts à des tiers. Le sommet de la Corvette C4." },
+      ch:411, nm:522, kg:1600, cyl:5.7, arch:'V8 LT5 (Lotus)', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M6',
+      note:"La « King of the Hill » : son V8 LT5 à double arbre à cames en tête fut conçu par Lotus et fabriqué par Mercury Marine. Une clé de bridage limitait la puissance pour les prêts à des tiers. Le sommet de la Corvette C4. Chiffres de 1993–1995 : 405 hp SAE net, soit 411 ch." },
     'dodge-demon': { nom:'Dodge Challenger SRT Demon 170', an:[2023], pays:'États-Unis',
       ch:1025, nm:1281, kg:2000, cyl:6.2, arch:'V8 HEMI', adm:'compresseur, E85', pos:'avant', tx:'propulsion', bv:'A8',
       note:"1025 ch à l\'éthanol E85, conçue pour lever les roues avant au départ (un premier record homologué pour une voiture de série). Interdite de dragstrip NHRA sans arceau de sécurité, tant elle est rapide. Le bouquet final de l\'ère du V8 muscle car." },
@@ -1917,6 +1917,11 @@
     'mercedes-190e': { nom:'Mercedes-Benz 190 E 2.5-16', an:[1984,1993], pays:'Allemagne',
       ch:235, nm:245, kg:1120, cyl:2.5, arch:'4 cyl. Cosworth', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M5',
       note:"La « Baby-Benz » sportive à culasse Cosworth. La 2.5-16 Evolution II, à l\'aileron démesuré, était une homologation pour le DTM où elle affrontait la BMW M3 E30. Ayrton Senna a gagné une course de promotion à son volant en 1984." },
+    /* Fiche propre à la 2.3-16 : son entrée (1983–1988) pointait sur celle de
+       la 2.5-16, qui affiche les chiffres de l'Evolution II — 50 ch de trop. */
+    'mercedes-190e-23-16': { nom:'Mercedes-Benz 190 E 2.3-16', an:[1983,1988], pays:'Allemagne',
+      ch:185, nm:235, kg:1260, cyl:2.3, arch:'4 cyl. 16v Cosworth', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M5', flou:['kg'],
+      note:"Culasse à seize soupapes développée par Cosworth sur le bloc de la 190 E, boîte cinq rapports à grille « dogleg ». Avant sa présentation, trois exemplaires ont battu des records d\'endurance à Nardò en 1983. Masse selon Auto Bild Klassik ; d\'autres sources annoncent davantage." },
     'mercedes-classe-a': { nom:'Mercedes-Benz Classe A', an:[1997], pays:'Allemagne',
       ch:421, nm:500, kg:1480, cyl:2.0, arch:'4 cyl. (jadis 3 portes surélevée)', adm:'turbo', pos:'avant', tx:'traction / intégrale', bv:'DCT 8',
       note:"La première génération, monospace surélevé, a raté le « test de l\'élan » en 1997, forçant Mercedes à ajouter l\'ESP de série sur toute la production. Devenue une vraie compacte premium dès 2012." },
@@ -3017,11 +3022,11 @@
       ch:350, nm:500, kg:1600, cyl:5.4, arch:'V8', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M5 / A4',
       note:"Conçue pour remplacer la 911… ce qu\'elle n\'a jamais réussi. Seule Porsche à V8 avant. Voiture de l\'Année 1978, unique sportive à avoir remporté ce titre. Architecture transaxle." },
     'porsche-944': { nom:'Porsche 944', an:[1982,1991], pays:'Allemagne',
-      ch:250, nm:350, kg:1280, cyl:2.5, arch:'4 en ligne', adm:'atmo / turbo', pos:'avant', tx:'propulsion', bv:'M5',
-      note:"Évolution de la 924 avec un 4 cylindres maison, en réalité un demi-V8 de 928. La Turbo est redoutable. Longtemps la Porsche la plus vendue de l\'histoire avant la 911 moderne." },
+      ch:163, nm:205, kg:1180, cyl:2.5, arch:'4 en ligne', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M5',
+      note:"Évolution de la 924 avec un 4 cylindres maison, en réalité un demi-V8 de 928. Chiffres de la 944 2.5 de 1982 ; la Turbo est redoutable. Longtemps la Porsche la plus vendue de l\'histoire avant la 911 moderne." },
     'porsche-968': { nom:'Porsche 968', an:[1992,1995], pays:'Allemagne',
-      ch:305, nm:350, kg:1370, cyl:3.0, arch:'4 en ligne', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M6',
-      note:"Ultime évolution de la lignée transaxle 924/944. La Club Sport, allégée, est aujourd\'hui la plus cotée. Son 3.0 est l\'un des plus gros 4 cylindres de série de son époque." },
+      ch:240, nm:305, kg:1370, cyl:3.0, arch:'4 en ligne', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M6', prod:12776,
+      note:"Ultime évolution de la lignée transaxle 924/944. La Club Sport, allégée, est aujourd\'hui la plus cotée. Son 3.0 est l\'un des plus gros 4 cylindres de série de son époque. La Turbo S, à 305 ch, n\'a été construite qu\'à 14 exemplaires." },
     'porsche-911-r': { nom:'Porsche 911 R (991)', an:[2016], pays:'Allemagne',
       ch:500, nm:460, kg:1370, cyl:4.0, arch:'flat-6', adm:'atmo', pos:'arrière', tx:'propulsion', bv:'M6',
       prod:991, flou:['prod'],
@@ -3185,7 +3190,7 @@
       ch:124, nm:230, kg:1150, cyl:2.9, arch:'6 en ligne', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M4',
       note:"Surnommée « the Big Healey ». Redoutable en rallye dans les années 60 malgré sa garde au sol quasi nulle. Icône du roadster britannique musclé." },
     'bmw-850csi': { nom:'BMW 850CSi', an:[1992,1996], pays:'Allemagne',
-      ch:375, nm:550, kg:1865, cyl:5.6, arch:'V12', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M6',
+      ch:380, nm:550, kg:1865, cyl:5.6, arch:'V12', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M6',
       prod:1510,
       note:"La E31 fut la première voiture de série au monde avec un V12 accouplé à une boîte manuelle six rapports. Portes sans encadrement et phares escamotables. La CSi est la version sport affûtée par BMW M." },
     'bmw-m8': { nom:'BMW M8 Competition', an:[2019], pays:'Allemagne',
@@ -8595,6 +8600,180 @@
       ['SHO (2e gén.)','1992–1995','V6 Yamaha 3.0 (manuelle) ou 3.2 (automatique, dès 1993)','223 ch','Première boîte automatique en 1993, avec un moteur réalésé : même puissance, plus de couple.'],
       ['SHO V8','1996–1999','V8 Ford-Yamaha 3.4','238 ch','Automatique seulement. Le calage des pignons d\'arbres à cames, sertis plutôt que clavetés, peut céder.'],
     ],
+
+    /* ---- Vague G9 : youngtimers ------------------------------------------ */
+    'peugeot-205-gti': [
+      ['GTI 1.6','1984–1986','4 cyl. 1.6 8v à injection','105 ch','Freins à disque à l\'avant seulement.'],
+      ['GTI 1.6 (115)','1986–1990','4 cyl. 1.6 8v à injection','115 ch','Culasse revue, même cylindrée.'],
+      ['GTI 1.9','1986–1994','4 cyl. 1.9 8v à injection','130 ch','Quatre freins à disque. La version de référence ; puissance en baisse une fois catalysée.'],
+    ],
+    'porsche-944': [
+      ['944','1982–1988','4 cyl. 2.5 8v','163 ch','Moteur maison à arbres d\'équilibrage (brevet Mitsubishi), boîte-pont arrière héritée de la 924.'],
+      ['944 Turbo (951)','1985–1991','4 cyl. 2.5 turbo','220 puis 250 ch','Bouclier avant lisse et intercooler.'],
+      ['944 S','1986–1988','4 cyl. 2.5 16v','190 ch','Première culasse à quatre soupapes par cylindre du modèle.'],
+      ['944 S2','1989–1991','4 cyl. 3.0 16v','211 ch','Cylindrée portée à 3 litres, et carrosserie de la Turbo. Ce moteur, revu, anime ensuite la 968.'],
+    ],
+    'porsche-968': [
+      ['968','1991–1995','4 cyl. 3.0 16v, VarioCam','240 ch','Distribution variable et boîte six rapports. 12 776 exemplaires de 968, toutes versions.'],
+      ['968 Club Sport','1993–1995','4 cyl. 3.0 16v','240 ch','Allégée : sièges baquets, sans banquette arrière ni vitres électriques. 1 923 exemplaires selon Porsche ; le registre du club en compte moins.'],
+      ['968 Turbo S','1993–1994','4 cyl. 3.0 8v turbo','305 ch','Homologuée pour la course GT. 14 exemplaires.'],
+    ],
+    'nissan-180sx': [
+      ['Type I','1989–1991','4 cyl. 1.8 turbo (CA18DET)','175 ch','Même plateforme S13 que la Silvia, avec hayon et phares escamotables.'],
+      ['Type II','1991–1996','4 cyl. 2.0 turbo (SR20DET)','205 ch','Le SR20DET remplace le CA18.'],
+      ['Type III','1996–1998','4 cyl. 2.0 turbo (SR20DET)','205 ch','Feux arrière redessinés. Produite jusqu\'en 1998, en parallèle de la Silvia S14.'],
+    ],
+    'nissan-silvia-s13': [
+      ['S13 (CA18)','1988–1990','4 cyl. 1.8 turbo (CA18DET)','175 ch','Versions J\'s, Q\'s et K\'s : seule la K\'s reçoit le turbo.'],
+      ['S13 (SR20)','1991–1993','4 cyl. 2.0 turbo (SR20DET)','205 ch','Direction des roues arrière Super HICAS en option.'],
+    ],
+    'nissan-silvia-s14': [
+      ['S14 Zenki','1993–1996','4 cyl. 2.0 turbo (SR20DET)','220 ch','Caisse élargie, qui la fait passer en catégorie fiscale supérieure au Japon.'],
+      ['S14 Kouki','1996–1998','4 cyl. 2.0 turbo à roulement à billes (SR20DET)','250 ch','Phares à projecteurs plus agressifs.'],
+    ],
+    'peugeot-306-s16': [
+      ['S16 (phase 1)','1993–1996','4 cyl. 2.0 16v','155 ch','Boîte cinq rapports.'],
+      ['S16 (phase 2)','1997–2001','4 cyl. 2.0 16v','167 ch','Boîte six rapports et moteur plus souple. Vendue GTi-6 au Royaume-Uni.'],
+    ],
+    'subaru-impreza-gc8': [
+      ['WRX (GC8)','1992–2000','flat-4 2.0 turbo (EJ20)','','Berline, break puis coupé. Puissance relevée presque chaque année au Japon.'],
+      ['WRX STI Version I à VI','1994–2000','flat-4 2.0 turbo (EJ20)','250 puis 280 ch','Préparées par Subaru Tecnica International. La 280 ch arrive avec la Version III en 1996.'],
+    ],
+    'subaru-impreza-blob': [
+      ['GD « Bug-eye »','2000–2002','flat-4 2.0 turbo (EJ20)','280 ch','Phares ronds, très critiqués au lancement.'],
+      ['GD « Blob-eye »','2003–2005','flat-4 2.0 turbo (EJ20) ; 2.5 turbo (EJ25) à l\'export','280 ch (2.0)','Le 2.5 est réservé aux marchés d\'exportation.'],
+      ['GD « Hawk-eye »','2006–2007','flat-4 2.0 et 2.5 turbo','280 ch (2.0)','Calandre et phares effilés.'],
+    ],
+    'peugeot-405-mi16': [
+      ['Mi16 (phase 1)','1987–1992','4 cyl. 1.9 16v','160 ch','Le moteur de la 205 GTI coiffé d\'une culasse seize soupapes. Une version à transmission intégrale, la Mi16 x4, disparaît avec la phase 1.'],
+      ['Mi16 (phase 2)','1992–1995','4 cyl. 2.0 16v','155 ch','Cylindrée portée à 2 litres, mais catalyseur obligatoire : cinq chevaux de moins.'],
+    ],
+    'porsche-914': [
+      ['914/4 1.7','1969–1973','flat-4 VW 1.7 à injection, moteur central','80 ch','Développée avec Volkswagen, vendue en Europe sous la marque VW-Porsche.'],
+      ['914/6','1969–1972','flat-6 2.0 (911 T)','110 ch','3 332 exemplaires seulement : trop proche du prix d\'une 911.'],
+      ['914 2.0','1973–1976','flat-4 2.0','100 ch','Le quatre-cylindres le plus puissant de la gamme.'],
+      ['914 1.8','1974–1975','flat-4 1.8','85 ch','Remplace le 1.7. 115 646 914/4 au total.'],
+    ],
+    'peugeot-106-gti': [
+      ['106 GTI (phase 2)','1996–2003','4 cyl. 1.6 16v','120 ch','Née avec le restylage de 1996, jumelle de la Citroën Saxo VTS.'],
+    ],
+    'peugeot-106-rallye': [
+      ['Rallye (phase 1)','1993–1996','4 cyl. 1.3 8v à haut régime','100 ch','Moteur spécifique, qui tourne jusqu\'à plus de 7 000 tr/min.'],
+      ['Rallye (phase 2)','1996–1998','4 cyl. 1.6 8v','103 ch','Le 1.3 laisse la place au 1.6 de la gamme, plus coupleux mais moins pointu.'],
+    ],
+    'matra-bagheera': [
+      ['Bagheera (série 1)','1973–1976','4 cyl. Simca 1.3 puis 1.4 (Bagheera S), moteur central','84 puis 90 ch','Trois places de front, carrosserie en polyester. La série spéciale Courrèges date de cette première série.'],
+      ['Bagheera (série 2)','1976–1980','4 cyl. Simca 1.3 et 1.4','84 à 90 ch','Restylage. Construite à Romorantin, comme toutes les Matra.'],
+    ],
+    'matra-rancho': [
+      ['Rancho','1977–1984','4 cyl. Simca 1.4','80 ch','Deux roues motrices seulement, sur la base de la Simca 1100. Déclinée en Grand Raid. Un peu moins de 56 700 exemplaires.'],
+    ],
+    'vw-golf-gti-mk1': [
+      ['GTI 1.6','1976–1982','4 cyl. 1.6 à injection','110 ch','Projet mené presque en marge du service Développement de Volkswagen.'],
+      ['GTI 1.8','1982–1983','4 cyl. 1.8 à injection','112 ch','Boîte cinq rapports. La série spéciale Pirelli clôt la carrière. Environ 462 000 Golf GTI de première génération.'],
+    ],
+    'renault-fuego': [
+      ['Fuego (atmosphérique)','1980–1985','4 cyl. 1.4 à 2.2, et turbodiesel 2.1','','Premier coupé diesel vendu en Europe en 1982, le Turbo D.'],
+      ['Fuego Turbo','1983–1985','4 cyl. 1.6 turbo','132 ch','265 367 Fuego produites, surtout à Maubeuge ; la production continue en Argentine après l\'arrêt européen.'],
+    ],
+    'toyota-sera': [
+      ['Sera (EXY10)','1990–1996','4 cyl. 1.5 16v (5E-FHE)','110 ch','Réservée au Japon. Portes papillon vitrées jusque dans le toit.'],
+    ],
+    'renault-19-16s': [
+      ['19 16S (phase 1)','1990–1992','4 cyl. 1.8 16v','140 ch (137 catalysé)','Trois, quatre (Chamade) et cinq portes, et un cabriolet construit par Karmann dès 1991.'],
+      ['19 16S (phase 2)','1992–1996','4 cyl. 1.8 16v catalysé','137 ch','Restylage, catalyseur désormais généralisé.'],
+    ],
+    'lancia-beta-montecarlo': [
+      ['Beta Montecarlo (série 1)','1975–1978','4 cyl. 2.0 double arbre, moteur central','120 ch','Coupé et Spider à toit en toile, dessinés par Pininfarina.'],
+      ['Scorpion (États-Unis)','1976–1977','4 cyl. 1.8 dépollué','82 ch','Rebaptisée pour éviter la confusion avec la Chevrolet Monte Carlo. 1 805 exemplaires.'],
+      ['Montecarlo (série 2)','1980–1981','4 cyl. 2.0','120 ch','Le nom « Beta » disparaît. 1 940 exemplaires.'],
+    ],
+    'bmw-130i': [
+      ['130i (E87 puis E81)','2005–2011','6 en ligne 3.0 atmo (N52)','265 ch','Cinq portes, puis trois portes à partir de 2007. Propulsion et six-cylindres dans une compacte, sans équivalent chez ses rivales.'],
+    ],
+    'citroen-zx-16v': [
+      ['ZX Volcane','dès 1991','4 cyl. 1.9 8v (celui de la 205 GTI)','130 ch','La première ZX sportive, avant la seize soupapes.'],
+      ['ZX 16V','1992–1996','4 cyl. 2.0 16v','150 ch','Annoncée à 155 ch, homologuée à 150 ch quelques mois plus tard.'],
+      ['ZX 16V (167)','1996–1998','4 cyl. 2.0 16v','167 ch','Le moteur de la 306 S16 phase 2.'],
+    ],
+    'vw-lupo-gti': [
+      ['Lupo GTI','2000–2005','4 cyl. 1.6 16v','125 ch','Boîte six rapports de série à partir de 2001. Assemblée à Wolfsburg, puis à Bruxelles dès 2003.'],
+    ],
+    'chevrolet-c4-zr1': [
+      ['ZR-1 (LT5, 1re version)','1990–1992','V8 5.7 32 soupapes (LT5)','380 ch','Conçu par Lotus, assemblé par Mercury Marine à Stillwater, en Oklahoma.'],
+      ['ZR-1 (LT5, 2e version)','1993–1995','V8 5.7 32 soupapes (LT5)','411 ch','Distribution et culasses revues. 6 939 ZR-1 au total.'],
+    ],
+    'citroen-ax-gt': [
+      ['AX GT','1987–1991','4 cyl. 1.4 8v','85 ch','Environ 720 kg. Relayée par l\'AX GTi à injection, de 100 ch.'],
+    ],
+    'talbot-samba': [
+      ['Samba (berline)','1981–1986','4 cyl. 1.0 à 1.4','45 à 72 ch','Dérivée de la Peugeot 104.'],
+      ['Samba Cabriolet','1982–1986','4 cyl. 1.4','72 ch','Carrosserie construite par Pininfarina, 13 062 exemplaires.'],
+      ['Samba Rallye','1983–1985','4 cyl. 1.2','90 ch','Blanche ou rouge, écope sur le capot.'],
+    ],
+    'mitsubishi-galant-vr4': [
+      ['Galant VR-4 (E39A)','1987–1989','4 cyl. 2.0 turbo (4G63)','205 ch','Transmission intégrale et quatre roues directrices.'],
+      ['Galant VR-4 (E39A, évolution)','1990–1992','4 cyl. 2.0 turbo (4G63)','240 ch (manuelle)','210 ch en boîte automatique. Puissances en norme japonaise.'],
+    ],
+    'mercedes-190e-cosworth': [
+      ['190 E 2.3-16','1983–1988','4 cyl. 2.3 16v, culasse Cosworth','185 ch','En 1984, la course d\'inauguration du nouveau Nürburgring réunit des champions de F1 sur des 2.3-16 identiques : Ayrton Senna la gagne. La 2.5-16 lui succède (fiche 190 E 2.5-16).'],
+    ],
+    'vw-golf-16s': [
+      ['Golf GTI 16S (Mk2)','1986–1991','4 cyl. 1.8 16v (KR)','139 ch','Culasse à double arbre, sans suralimentation.'],
+    ],
+    'renault-clio-16s': [
+      ['Clio 16S','1991–1996','4 cyl. 1.8 16v (F7P)','137 ch','Le moteur de la 19 16S. La Clio Williams, en 2 litres, a sa propre fiche.'],
+    ],
+    'honda-integra-dc5': [
+      ['Integra Type R (DC5)','2001–2004','4 cyl. 2.0 i-VTEC (K20A)','220 ch','Boîte six rapports rapprochés et différentiel autobloquant hélicoïdal.'],
+      ['Integra Type R (DC5, restylée)','2004–2006','4 cyl. 2.0 i-VTEC (K20A)','220 ch','Phares, feux et réglages revus.'],
+    ],
+    'bmw-850csi': [
+      ['850CSi (E31)','1992–1996','V12 5.6 (S70)','380 ch','Le V12 de la 850i porté à 5,6 litres par BMW M. 1 510 exemplaires.'],
+    ],
+    'peugeot-309-gti16': [
+      ['309 GTI 16','1989–1993','4 cyl. 1.9 16v','160 ch','Le moteur de la 405 Mi16 dans la caisse de la 309 GTI.'],
+    ],
+    'pontiac-fiero': [
+      ['Fiero 4 cylindres','1984–1988','4 cyl. 2.5 « Iron Duke »','93 ch','Moteur central transversal, châssis en acier habillé de panneaux plastiques.'],
+      ['Fiero V6 (SE, GT)','1985–1988','V6 2.8','142 ch','Suspensions entièrement revues pour 1988, la dernière année. 370 168 Fiero au total.'],
+    ],
+    'peugeot-205-rallye': [
+      ['205 Rallye','1988–1992','4 cyl. 1.3, deux carburateurs double corps','103 ch','Dépouillée pour la compétition : moins de 800 kg.'],
+    ],
+    'renault-alpine-a610': [
+      ['A610 Turbo','1991–1995','V6 PRV 3.0 turbo, moteur arrière','250 ch','Évolution de la GTA : phares escamotables, boîte cinq rapports. Dernière Alpine construite à Dieppe avant la renaissance de 2017.'],
+    ],
+    'honda-city-turbo2': [
+      ['City Turbo II « Bulldog »','1983–1986','4 cyl. 1.2 turbo à intercooler','110 ch','Voies et ailes élargies. Le scooter pliant Motocompo tenait dans le coffre.'],
+    ],
+    'vw-golf-g60': [
+      ['Golf Rallye G60','1989–1991','4 cyl. 1.8 à compresseur G-Lader, transmission syncro','160 ch','Série d\'homologation pour le Groupe A, ailes élargies, 5 000 exemplaires.'],
+      ['Golf GTI G60','1990–1991','4 cyl. 1.8 à compresseur G-Lader','160 ch','Traction.'],
+      ['Golf Limited','1989–1990','4 cyl. 1.8 16v à compresseur G-Lader, syncro','210 ch','Préparée par Volkswagen Motorsport. 71 exemplaires.'],
+    ],
+    'peugeot-206-rc': [
+      ['206 RC','2003–2006','4 cyl. 2.0 16v','177 ch','Vendue 206 GTi 180 hors de France.'],
+    ],
+    'renault-avantime': [
+      ['Avantime V6','2001–2003','V6 3.0 24v','210 ch','Seule motorisation au lancement.'],
+      ['Avantime 2.0 T / 2.2 dCi','2002–2003','4 cyl. 2.0 turbo ou 2.2 turbodiesel','165 ch / 150 ch','8 557 exemplaires, assemblés par Matra à Romorantin — la dernière automobile de Matra.'],
+    ],
+    'nissan-pao': [
+      ['Pao','1989–1991','4 cyl. 1.0 (MA10S)','52 ch','Base de Micra K10. Commandes ouvertes trois mois seulement : 51 657 réservations.'],
+    ],
+    'bmw-z1': [
+      ['Z1','1989–1991','6 en ligne 2.5 (M20)','170 ch','Portes coulissant dans les bas de caisse, panneaux de carrosserie en plastique. 8 000 exemplaires.'],
+    ],
+    'audi-rs2': [
+      ['RS2 Avant','1994–1995','5 cyl. 2.2 turbo','315 ch','Assemblée par Porsche à Zuffenhausen. 2 891 exemplaires.'],
+    ],
+    'vw-golf-country': [
+      ['Golf Country','1990–1991','4 cyl. 1.8, transmission syncro','98 ch','Golf syncro surélevées et transformées par Steyr-Daimler-Puch à Graz. 7 735 exemplaires.'],
+    ],
+    'nissan-figaro': [
+      ['Figaro','1991–1992','4 cyl. 1.0 turbo (MA10ET), boîte automatique trois rapports','76 ch','Attribuée par tirage au sort. 20 073 exemplaires.'],
+    ],
     'toyota-century': [
       ['G20 / G30 / G40','1967–1997','V8 3.0, 3.4 puis 4.0','','Trente ans de production quasiment sans changement de ligne, réservée au marché japonais.'],
       ['G50','1997–2017','V12 5.0 (1GZ-FE)','280 ch','Le seul V12 jamais monté dans une voiture de série japonaise. Puissance plafonnée par l\'accord tacite des constructeurs japonais.'],
@@ -9311,7 +9490,7 @@
     'nissan-skyline-r32'      : 'nissan-skyline-r32',
     'nissan-skyline-r33'      : 'nissan-skyline-r33',
     'mclaren-p1'              : 'mclaren-p1',
-    'mercedes-190e-cosworth'  : 'mercedes-190e',
+    'mercedes-190e-cosworth'  : 'mercedes-190e-23-16',
     'peugeot-205'             : 'peugeot-205',
     'ford-sierra-cosworth'    : 'ford-sierra-cosworth',
     'opel-calibra'            : 'opel-calibra',
