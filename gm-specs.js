@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.150.0';
+  const VERSION_MODULE = '20.151.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -8280,6 +8280,141 @@
     ],
     'noble-m600': [
       ['M600 / CarbonSport / Speedster','2010–2018','V8 Volvo-Yamaha 4.4 biturbo','659 ch','Le V8 du Volvo XC90 porté à 659 ch, avec un bouton qui bride la puissance à 450 ou 550 ch selon la route. Assemblée à la main dans le Leicestershire.'],
+    ],
+
+    /* ---- Vague G6 : classiques à séries et versions --------------------- */
+    'lambo-miura': [
+      ['P400','1966–1968','V12 3.9 atmo transversal central','350 ch','Châssis dessiné par Gian Paolo Dallara, carrosserie de Marcello Gandini chez Bertone : la première supercar à moteur central de série.'],
+      ['P400 S','1969–1971','V12 3.9 atmo','370 ch','338 exemplaires.'],
+      ['P400 SV','1971–1973','V12 3.9 atmo','385 ch','150 exemplaires. Voies arrière élargies, et les « cils » autour des phares disparaissent.'],
+    ],
+    'lambo-diablo': [
+      ['Diablo','1990–1998','V12 5.7 atmo','492 ch','Dessin de Marcello Gandini, retouché par Chrysler, alors propriétaire de Lamborghini.'],
+      ['Diablo VT','1993–1998','V12 5.7 atmo','492 ch','Première supercar Lamborghini à quatre roues motrices — le tout-terrain LM002 l\'avait précédée.'],
+      ['Diablo SV','1995–1999','V12 5.7 atmo','','Propulsion seule, plus légère, et le grand aileron arrière.'],
+      ['Diablo GT','1999–2000','V12 6.0 atmo','575 ch','80 exemplaires, carrosserie en carbone.'],
+      ['Diablo 6.0 / VT 6.0','2000–2001','V12 6.0 atmo','550 ch','Dernière évolution, retouchée sous Audi. 2 903 Diablo au total.'],
+    ],
+    'lambo-espada': [
+      ['Série I','1968–1969','V12 3.9 atmo','','176 exemplaires. Quatre vraies places derrière un V12 : la GT familiale selon Ferruccio Lamborghini.'],
+      ['Série II','1970–1972','V12 3.9 atmo','','578 exemplaires, la plus produite.'],
+      ['Série III','1972–1978','V12 3.9 atmo','','472 exemplaires. 1 226 Espada au total : longtemps la Lamborghini la plus vendue.'],
+    ],
+    'lambo-jalpa': [
+      ['Jalpa P350','1981–1988','V8 3.5 atmo central','255 ch','La « petite » Lamborghini, à toit targa, née pendant la reprise de la marque par les frères Mimran. 410 exemplaires.'],
+    ],
+    'maserati-merak': [
+      ['Merak','1972–1983','V6 3.0 Maserati','','Le V6 de la Citroën SM, en position centrale, dans une carrosserie dérivée de la Bora.'],
+      ['Merak SS','1975–1983','V6 3.0 Maserati','','Version allégée et plus puissante, la plus produite.'],
+      ['Merak 2000 GT','1977–1983','V6 2.0 Maserati','','Pour échapper à la fiscalité italienne sur les moteurs de plus de deux litres. 200 exemplaires. Au total, un peu plus de 1 800 Merak.'],
+    ],
+    'maserati-bora': [
+      ['Bora 4.7','1971–1978','V8 4.7 atmo central','','Première Maserati de route à moteur central, dessinée par Giugiaro. Freins, pédalier réglable et phares escamotables commandés par l\'hydraulique Citroën.'],
+      ['Bora 4.9','1973–1978','V8 4.9 atmo central','','Pour le marché américain d\'abord. 564 Bora au total, dont 275 en 4.9.'],
+    ],
+    'jensen-interceptor': [
+      ['Mk I','1966–1969','V8 Chrysler 6.3','','Carrosserie dessinée par Touring, à la vaste lunette arrière bombée qui sert de hayon.'],
+      ['Mk II','1969–1971','V8 Chrysler 6.3','',''],
+      ['Mk III et SP','1971–1976','V8 Chrysler 7.2 (440)','','La SP reçoit trois carburateurs double corps. 6 408 Interceptor au total ; la FF à quatre roues motrices, 320 exemplaires, en dérive.'],
+    ],
+    'iso-grifo': [
+      ['Grifo GL','1965–1970','V8 Chevrolet 5.4 (327)','','Dessin de Giugiaro chez Bertone, mécanique de Corvette : l\'alliance du style italien et du V8 américain.'],
+      ['Série II, 7 Litri et Can Am','1970–1974','V8 Chevrolet 7.4 (454)','','Le capot gagne une bosse pour loger le gros V8.'],
+      ['IR8','1972–1974','V8 Ford 5.8 (351)','','GM cesse de fournir Iso : Ford prend le relais. 412 Grifo au total avant la faillite de la marque.'],
+    ],
+    'pontiac-gto': [
+      ['Tempest / LeMans GTO','1964–1967','V8 6.4 (389) puis 6.6 (400)','','Une option contournant la règle interne de GM qui interdisait les gros moteurs dans les intermédiaires : souvent citée comme la première muscle car.'],
+      ['2e gén. (et The Judge)','1968–1972','V8 6.6 à 7.5 (455)','','Pare-chocs avant « Endura » en plastique couleur caisse. The Judge de 1969 à 1971, avec ses bandes et son aileron. Puissances d\'époque en SAE brute, non reprises.'],
+      ['Colonnade','1973','V8 6.6 et 7.5','',''],
+      ['Ventura','1974','V8 5.7','','Dernière GTO de l\'époque, sur la compacte Ventura.'],
+    ],
+    'chevrolet-chevelle-ss': [
+      ['1re gén.','1964–1967','V8 5.4 (327) puis 6.5 (396)','','Le 396 devient le moteur de série de la SS en 1966.'],
+      ['2e gén.','1968–1972','V8 6.5 (396) et 7.4 (454)','','La SS 454 LS6 de 1970 est souvent tenue pour la plus puissante des muscle cars de série de l\'époque. Puissances d\'époque en SAE brute, non reprises.'],
+    ],
+    'mercedes-300sl': [
+      ['Coupé « Gullwing »','1954–1957','6 en ligne 3.0 à injection directe','215 ch','Les portes papillon ne sont pas un choix de style : le châssis tubulaire, haut sur les flancs, interdisait des portes classiques. Première voiture de série à injection directe d\'essence. 1 400 exemplaires.'],
+      ['Roadster','1957–1963','6 en ligne 3.0 à injection directe','215 ch','Portes classiques grâce à un châssis retravaillé, et freins à disque à partir de 1961. 1 858 exemplaires.'],
+    ],
+    'datsun-240z': [
+      ['240Z','1969–1973','6 en ligne 2.4 (L24)','','Le coupé sport japonais qui a conquis l\'Amérique, voulu par Yutaka Katayama, patron de Nissan aux États-Unis.'],
+      ['260Z','1974','6 en ligne 2.6 (L26)','','Apparition d\'une version 2+2.'],
+      ['280Z','1975–1978','6 en ligne 2.8 (L28) à injection','','Injection Bosch L-Jetronic pour tenir les normes antipollution américaines.'],
+    ],
+    'chevrolet-corvette-c1': [
+      ['6 cylindres','1953–1955','6 en ligne 3.9 « Blue Flame »','','Carrosserie en fibre de verre, et 300 exemplaires seulement la première année, tous blancs.'],
+      ['V8','1955–1962','V8 4.3 (265) puis 4.6 (283), injection Rochester en option','','L\'arrivée du V8 small-block sauve la Corvette. En 1957, le 283 à injection revendique un cheval par pouce cube.'],
+    ],
+    'duesenberg-model-j': [
+      ['Model J','1928–1937','8 en ligne 6.9 double arbre','','La voiture de luxe américaine la plus chère et la plus puissante de son temps, livrée en châssis nu à carrosser. 445 exemplaires.'],
+      ['SJ (compresseur)','1932–1937','8 en ligne 6.9 compressé','','Collecteurs d\'échappement chromés sortant du capot, signe distinctif des SJ. 36 exemplaires.'],
+    ],
+    'lotus-europa': [
+      ['S1','1966–1968','4 cyl. Renault 1.5','','Moteur central de Renault 16 retourné. D\'abord réservée à l\'exportation en Europe, d\'où le nom.'],
+      ['S2','1968–1971','4 cyl. Renault 1.5 et 1.6','','Commercialisée enfin au Royaume-Uni et aux États-Unis.'],
+      ['Twin Cam et Special','1971–1975','4 cyl. Lotus-Ford Twin Cam 1.6','','Le moteur de l\'Elan remplace celui de Renault. Environ 9 200 Europa au total.'],
+    ],
+    'jaguar-mk2': [
+      ['Mark 2','1959–1967','6 en ligne XK 2.4, 3.4 et 3.8','','La berline sportive des années 60, et la voiture préférée des braqueurs de banques londoniens — donc aussi de la police. 83 976 exemplaires.'],
+      ['240 / 340','1967–1969','6 en ligne XK 2.4 et 3.4','','Version simplifiée de fin de carrière, avec pare-chocs affinés.'],
+    ],
+    'austin-healey-3000': [
+      ['Mk I (BN7 / BT7)','1959–1961','6 en ligne BMC 2.9','','Freins à disque à l\'avant de série.'],
+      ['Mk II (BN7 / BT7 puis BJ7)','1961–1964','6 en ligne BMC 2.9, trois carburateurs','','Le cabriolet BJ7 de 1962 reçoit enfin des vitres descendantes.'],
+      ['Mk III (BJ8)','1964–1967','6 en ligne BMC 2.9','','La plus puissante et la plus luxueuse des « Big Healey ».'],
+    ],
+    'ferrari-512bb': [
+      ['512 BB','1976–1981','flat-12 5.0 carburateurs','','Moteur à douze cylindres à plat en position centrale, héritier de la 365 GT4/BB. 929 exemplaires.'],
+      ['512 BBi','1981–1984','flat-12 5.0 injection','','L\'injection Bosch K-Jetronic, imposée par les normes antipollution. Remplacée par la Testarossa.'],
+    ],
+    'porsche-959': [
+      ['959 Komfort','1986–1988','flat-6 2.85 biturbo séquentiel','450 ch','Transmission intégrale pilotée, suspension réglable en hauteur, pneus à capteurs de pression : un laboratoire roulant, vainqueur du Paris-Dakar 1986.'],
+      ['959 Sport','1987–1988','flat-6 2.85 biturbo','515 ch','Allégée d\'une centaine de kilos. Huit exemplaires supplémentaires assemblés en 1992-1993 avec des pièces de stock.'],
+    ],
+    'alfa-montreal': [
+      ['Montreal','1970–1977','V8 2.6 atmo à injection','200 ch','Née d\'un concept de Bertone pour l\'Exposition universelle de Montréal 1967. Le V8 dérive de celui de la voiture de course Tipo 33. 3 925 exemplaires.'],
+    ],
+    'lambo-lm002': [
+      ['LM002','1986–1993','V12 5.2 (Countach)','450 ch','Le « Rambo Lambo » : né d\'un projet militaire, avec des pneus Pirelli conçus pour le sable. 301 exemplaires, dont les 60 derniers en série LM American.'],
+    ],
+    'bmw-isetta': [
+      ['Isetta 250','1955–1962','1 cyl. 247 cm³ BMW','','Licence italienne d\'Iso, avec un moteur de moto BMW. La porte unique, à l\'avant, emporte la colonne de direction en s\'ouvrant.'],
+      ['Isetta 300','1956–1962','1 cyl. 298 cm³ BMW','','161 728 Isetta BMW : la voiture qui a maintenu BMW à flot dans les années 50.'],
+    ],
+    'lancia-aurelia': [
+      ['B20 GT (séries 1 à 3)','1951–1953','V6 2.0 puis 2.5','','Premier V6 de série au monde, et l\'un des premiers coupés « Gran Turismo ».'],
+      ['B20 GT (séries 4 à 6)','1954–1958','V6 2.5','','Essieu arrière De Dion. 3 871 B20 au total.'],
+    ],
+    'pegaso-z102': [
+      ['Z-102','1951–1958','V8 2.5 à 3.2 double arbre','','Construite par le fabricant de camions espagnol ENASA, sous la direction de Wifredo Ricart, ancien ingénieur d\'Alfa Romeo. 84 exemplaires, carrossés par Touring ou Saoutchik.'],
+    ],
+    'daf-33': [
+      ['DAF 33','1967–1974','2 cyl. à plat 746 cm³ refroidi par air','','Transmission à variation continue Variomatic par courroies : la voiture roule aussi vite en arrière qu\'en avant. 131 621 exemplaires.'],
+    ],
+    'mazda-rx3': [
+      ['RX-3 (Savanna)','1971–1978','birotor Wankel 10A puis 12A','','Berline, coupé et break à moteur rotatif. Au Japon, la Savanna met fin à la série de victoires des Nissan Skyline GT-R en course.'],
+    ],
+    'mazda-rx7-fb': [
+      ['Série 1','1978–1980','birotor Wankel 12A','','Première RX-7 : le moteur rotatif placé derrière l\'essieu avant, pour un équilibre des masses presque parfait.'],
+      ['Série 2','1981–1983','birotor Wankel 12A','','Boucliers en plastique, freins à disque arrière et différentiel autobloquant sur la GSL.'],
+      ['Série 3','1984–1985','birotor 12A, 13B à injection (GSL-SE)','','Environ 471 000 RX-7 de première génération au total.'],
+    ],
+    'renault-5-turbo': [
+      ['Turbo 1','1980–1982','4 cyl. 1.4 turbo, moteur central','160 ch','Une R5 dont la banquette arrière cède la place au moteur, pour homologuer la voiture de rallye du Groupe 4. Panneaux en aluminium.'],
+      ['Turbo 2','1983–1986','4 cyl. 1.4 turbo, moteur central','160 ch','Mêmes performances, plus de pièces en acier et un intérieur de R5 Alpine pour baisser le prix. Environ 5 000 R5 Turbo au total.'],
+    ],
+    'mclaren-f1': [
+      ['F1 (route)','1993–1998','V12 BMW 6.1 atmo (S70/2)','627 ch','Poste de conduite central, compartiment moteur tapissé de feuilles d\'or. 386 km/h en 1998, record de la voiture de série la plus rapide pendant sept ans. 64 exemplaires routiers.'],
+      ['F1 LM','1995','V12 BMW 6.1 atmo','680 ch','Cinq exemplaires, en hommage aux cinq F1 GTR à l\'arrivée du Mans 1995, que McLaren a remporté.'],
+      ['F1 GT','1997','V12 BMW 6.1 atmo','627 ch','Trois exemplaires à carrosserie allongée, construits pour homologuer la GTR « longtail ». 106 McLaren F1 au total, course comprise.'],
+    ],
+    'amc-javelin': [
+      ['1re gén. (et AMX)','1968–1970','6 cyl., V8 4.8 à 6.4 (390)','','La muscle car du petit constructeur indépendant American Motors. L\'AMX biplace en dérive, au châssis raccourci.'],
+      ['2e gén.','1971–1974','6 cyl., V8 5.0 à 6.6 (401)','','Le 401 est le plus gros moteur de l\'histoire d\'AMC. Voiture de police de l\'Alabama et championne de Trans-Am.'],
+    ],
+    'jaguar-xk120': [
+      ['XK120 Roadster (OTS)','1948–1954','6 en ligne XK 3.4 double arbre','','Plus de 190 km/h en 1949 : la voiture de série la plus rapide du monde à sa sortie. Les quelque 240 premiers exemplaires ont une carrosserie en aluminium sur armature en frêne.'],
+      ['Coupé (FHC) et cabriolet (DHC)','1951–1954','6 en ligne XK 3.4 double arbre','','Coupé fermé en 1951, cabriolet en 1953. Le moteur XK sera produit jusqu\'en 1992.'],
     ],
     'toyota-century': [
       ['G20 / G30 / G40','1967–1997','V8 3.0, 3.4 puis 4.0','','Trente ans de production quasiment sans changement de ligne, réservée au marché japonais.'],
