@@ -16,6 +16,29 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="Garage" />
 
+<script>
+/* Thème — appliqué AVANT le premier rendu, volontairement inline dans le
+   <head>. Le lire depuis IndexedDB (où vit META) serait asynchrone : la page
+   se peindrait en sombre puis basculerait en clair, un flash visible à chaque
+   ouverture. localStorage est synchrone, et c'est le seul usage qu'on lui
+   donne ici — la collection et les photos restent en IndexedDB (CLAUDE.md
+   §1.4). Une préférence d'affichage est propre à l'appareil : elle n'a rien à
+   faire dans l'export de collection.
+
+   Enveloppé dans un try/catch : en navigation privée ou avec les données de
+   site bloquées, l'accès lève. L'app doit alors démarrer en sombre, pas
+   planter avant d'avoir affiché quoi que ce soit. */
+(function () {
+  try {
+    var t = localStorage.getItem("gm-theme");
+    document.documentElement.setAttribute("data-theme",
+      (t === "light" || t === "dark" || t === "system") ? t : "dark");
+  } catch (e) {
+    document.documentElement.setAttribute("data-theme", "dark");
+  }
+})();
+</script>
+
 <style>
   :root{
     --bg:#0b0b0d; --panel:#161618; --panel2:#111113; --line:#27272a; --line2:#3f3f46;
@@ -88,39 +111,68 @@
 
   /* ---------- Filtres ---------- */
   .filters{ display:flex; flex-wrap:wrap; gap:8px; margin-top:16px; }
+  /* Les trois selects se dimensionnaient sur leur CONTENU : « Toutes marques »
+     et « Tous types » tenaient sur une ligne, « Tri : rareté » retombait seul
+     en dessous, avec des largeurs inegales. Ils se partagent desormais une
+     seule rangee a parts egales — une rangee entiere regagnee avant la
+     premiere voiture, et un alignement net. */
+  .filters select.sel{ flex:1 1 0; min-width:0; }
+  .filters .seg{ flex:1 1 100%; }
+  .filters .seg button{ flex:1; text-align:center; }
   .search{ position:relative; flex:1 1 100%; }
   .search .icon{ position:absolute; left:11px; top:50%; transform:translateY(-50%); color:var(--muted2); width:18px; height:18px; }
   .search input{ width:100%; padding:10px 12px 10px 36px; border:1px solid var(--line); background:var(--panel2);
     border-radius:9px; font-size:14px; }
   .search input::placeholder{ color:var(--dim); }
-  select.sel{ padding:10px 12px; border:1px solid var(--line); background:var(--panel2); border-radius:9px; font-size:13px; color:var(--muted); }
+  select.sel{ padding:10px 8px; border:1px solid var(--line); background:var(--panel2); border-radius:9px; font-size:12.5px; color:var(--muted); }
   .seg{ display:flex; border:1px solid var(--line); border-radius:9px; overflow:hidden; }
   .seg button{ padding:10px 12px; font-size:13px; color:var(--muted2); background:var(--panel2); }
-  .seg button.on{ background:var(--red2); color:#fff; }
+  /* L'onglet actif etait un aplat ROUGE pleine largeur. Or le rouge est
+     l'accent de l'ACTION principale — le bouton + de capture. Deux rouges de
+     cette taille sur le meme ecran se disputent l'attention et aucun ne
+     signale plus rien. L'etat actif passe donc en gris eleve, avec un simple
+     filet rouge : la selection reste evidente, le rouge reste rare. */
+  .seg button.on{ background:var(--line); color:var(--txt); font-weight:600; box-shadow:inset 0 -2px 0 var(--red2); }
   input:focus, select:focus, textarea:focus{ outline:none; border-color:var(--red); }
 
   /* ---------- Grille voitures ---------- */
-  .grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-top:16px; }
+  .grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-top:18px; }
   @media(min-width:520px){ .grid{ grid-template-columns:repeat(3,1fr); } }
   @media(min-width:760px){ .grid{ grid-template-columns:repeat(4,1fr); } }
   .card{ position:relative; border:1px solid var(--line); background:var(--panel); border-radius:11px; overflow:hidden; text-align:left; transition:transform .12s ease, border-color .12s ease; }
   .card:active{ transform:scale(.98); }
-  .card.have{ border-color:#3f3f46; }
+  /* La rareté se lit au HALO, jamais à la bordure néon : un liseré teinté et
+     une ombre portée très basse, sur la carte COLLECTÉE uniquement. Une
+     grille de 1 074 voitures dont on ne possède presque rien doit rester
+     calme — la couleur est la récompense de la prise, pas le décor. */
+  .card.have{
+    border-color:color-mix(in srgb, var(--rr) 26%, var(--line2));
+    box-shadow:0 0 0 1px color-mix(in srgb, var(--rr) 8%, transparent),
+               0 6px 18px color-mix(in srgb, var(--rr) 9%, transparent);
+  }
   .card.flash{ animation:flash 1.4s ease; }
   @keyframes flash{ 0%,100%{ box-shadow:0 0 0 0 transparent; } 20%{ box-shadow:0 0 0 3px var(--rr, var(--red)); } }
-  .thumb{ position:relative; aspect-ratio:4/3; background:#0e0e10; display:grid; place-items:center; overflow:hidden; }
+  /* Vignette verrouillee : fond plus profond et silhouette plus discrete.
+     Elle occupe 4/3 de la carte et se repete 1 000 fois — plus elle est
+     sourde, plus une vraie photo ressort a cote. */
+  .thumb{ position:relative; aspect-ratio:4/3; background:#0a0a0c; display:grid; place-items:center; overflow:hidden; }
   .thumb img{ width:100%; height:100%; object-fit:cover; }
-  .thumb .glyph{ opacity:.16; color:#fff; }
+  .thumb .glyph{ opacity:.11; color:#fff; }
   .thumb .lock{ position:absolute; color:#52525b; }
   .cdot{ position:absolute; left:8px; top:8px; width:10px; height:10px; border-radius:50%; box-shadow:0 0 0 2px var(--bg); }
   .cflag{ position:absolute; right:8px; top:6px; font-size:15px; filter:drop-shadow(0 1px 1px rgba(0,0,0,.6)); }
   .cchk{ position:absolute; right:8px; bottom:8px; width:20px; height:20px; border-radius:50%; background:var(--red2); display:grid; place-items:center; box-shadow:0 0 0 2px var(--bg); }
   .cchk .icon{ width:13px; height:13px; color:#fff; stroke-width:3; }
-  .cmeta{ padding:9px 10px; }
-  .cmeta .rr{ font:600 9px/1 var(--mono); letter-spacing:.06em; text-transform:uppercase; }
-  .cmeta .nm{ margin:4px 0 2px; font:600 13px/1.15 var(--sans); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .cmeta .nm.miss{ color:var(--muted2); }
-  .cmeta .br{ font:400 11px/1.2 var(--sans); color:var(--muted2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .cmeta{ padding:11px 12px 12px; }
+  /* Hierarchie remise a l'endroit : le NOM de la voiture domine. Le palier
+     de rarete redevient un micro-label gris — il criait plus fort que le
+     modele, alors que le point colore en haut de vignette suffit a le
+     reperer pendant la chasse. */
+  .cmeta .rr{ font:600 9px/1 var(--mono); letter-spacing:.08em; text-transform:uppercase; color:var(--dim); }
+  .card.have .cmeta .rr{ color:color-mix(in srgb, var(--rr) 60%, var(--muted)); }
+  .cmeta .nm{ margin:6px 0 3px; font:650 14px/1.15 var(--sans); letter-spacing:-.012em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .cmeta .nm.miss{ color:var(--muted); }
+  .cmeta .br{ font:400 11px/1.25 var(--sans); color:var(--dim); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .count-line{ margin:14px 2px 0; font:400 12px/1 var(--mono); color:var(--muted2); }
 
   /* progress rails (marques/pays) */
@@ -185,6 +237,14 @@
   .btn.red{ background:var(--red2); border-color:var(--red2); color:#fff; }
   .btn.red:active{ background:var(--red-dk); }
   .btn.ghost{ background:transparent; }
+  /* Action DESTRUCTIVE : neutre au repos, rouge au contact seulement.
+     Elle etait aussi accentuee que « Ajouter une photo », l'action
+     principale — deux rouges cote a cote, et le plus visible etait celui
+     qui efface une prise. L'icone suffit a annoncer ce qu'elle fait ;
+     le rouge n'apparait qu'au moment de l'appui, comme confirmation
+     visuelle du geste. */
+  .btn-danger{ color:var(--muted2); border-color:var(--line2); }
+  .btn-danger:active{ color:var(--red); border-color:var(--red-dk); background:rgba(239,68,68,.08); }
   .btn:disabled{ opacity:.4; }
   .meter{ height:8px; border-radius:6px; background:#232327; overflow:hidden; margin-top:8px; }
   .meter>i{ display:block; height:100%; background:var(--red); }
@@ -417,6 +477,132 @@
   .empty .s{ font:400 13px/1.4 var(--sans); color:var(--muted2); }
 
   @media (prefers-reduced-motion: reduce){ *{ transition:none !important; animation:none !important; } }
+
+/* ============================================================
+   FICHE UI V1 — accent constructeur + halo de rareté
+   ------------------------------------------------------------
+   `.detail-shell` s'ajoute AUTOUR de `.info-head`, jamais à sa
+   place : `.info-head h2` est le point d'accroche de gm-specs.js.
+   L'accent constructeur et le halo de rareté sont deux variables
+   DISTINCTES — la rareté ne doit jamais teinter l'identité de la
+   marque, ni l'inverse.
+   ============================================================ */
+.detail-shell{ --brand-accent:var(--red); --rarity-accent:var(--commun); width:100%; }
+
+.detail-shell[data-brand="Alfa Romeo"]   { --brand-accent:#b51f2d; }
+.detail-shell[data-brand="Porsche"]      { --brand-accent:#d8ad32; }
+.detail-shell[data-brand="BMW"]          { --brand-accent:#3f78c5; }
+.detail-shell[data-brand="Ferrari"]      { --brand-accent:#c9142b; }
+.detail-shell[data-brand="Lamborghini"]  { --brand-accent:#d6a928; }
+.detail-shell[data-brand="Mercedes-Benz"]{ --brand-accent:#aeb5bd; }
+.detail-shell[data-brand="Audi"]         { --brand-accent:#c8c8c8; }
+.detail-shell[data-brand="Renault"]      { --brand-accent:#f2c300; }
+.detail-shell[data-brand="Peugeot"]      { --brand-accent:#3f73b8; }
+
+.detail-shell[data-rarity="courant"]   { --rarity-accent:var(--courant); }
+.detail-shell[data-rarity="commun"]    { --rarity-accent:var(--commun); }
+.detail-shell[data-rarity="peucommun"] { --rarity-accent:var(--peucommun); }
+.detail-shell[data-rarity="rare"]      { --rarity-accent:var(--rare); }
+.detail-shell[data-rarity="epique"]    { --rarity-accent:var(--epique); }
+.detail-shell[data-rarity="legendaire"]{ --rarity-accent:var(--legendaire); }
+
+.detail-shell .info-head h2{ font:750 27px/1.05 var(--sans); letter-spacing:-.025em; }
+
+/* Filet d'accent constructeur sous le titre */
+.detail-shell .info-head::after{
+  content:""; display:block; width:26px; height:2px; border-radius:2px;
+  margin-top:10px; background:var(--brand-accent);
+}
+
+/* Sélecteur de motorisation : l'accent suit la marque, pas la rareté */
+.detail-shell .moto-select .h3{
+  color:var(--dim); font:700 10px/1 var(--mono);
+  letter-spacing:.14em; text-transform:uppercase;
+}
+
+/* Halo de rareté sur la photo de couverture. `color-mix` est natif
+   (Safari 16.2+, Chrome 111+) et dégrade proprement : sans lui la
+   photo s'affiche simplement sans halo. */
+.detail-shell .gm-photo-hero{
+  position:relative; aspect-ratio:4/3; overflow:hidden;
+  background:#09090b; border-radius:14px; border:1px solid var(--line);
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--rarity-accent) 8%,transparent),
+             0 12px 40px color-mix(in srgb,var(--rarity-accent) 10%,transparent);
+}
+.detail-shell .gm-photo-hero::after{
+  content:""; position:absolute; inset:0; pointer-events:none;
+  box-shadow:inset 0 0 35px color-mix(in srgb,var(--rarity-accent) 18%,transparent);
+}
+.detail-shell .gm-photo-hero img{ display:block; width:100%; height:100%; object-fit:cover; }
+
+.detail-shell[data-rarity="epique"] .gm-photo-hero,
+.detail-shell[data-rarity="legendaire"] .gm-photo-hero{ animation:gmRarityPulse 3.5s ease-in-out infinite; }
+
+/* Respect d'une préférence système : une animation permanente sur une
+   fiche qu'on lit est exactement ce que `reduced-motion` vise. */
+@media (prefers-reduced-motion:reduce){
+  .detail-shell .gm-photo-hero{ animation:none !important; }
+}
+
+@keyframes gmRarityPulse{
+  0%,100%{ box-shadow:0 0 0 1px color-mix(in srgb,var(--rarity-accent) 10%,transparent),
+                      0 12px 40px color-mix(in srgb,var(--rarity-accent) 10%,transparent); }
+  50%    { box-shadow:0 0 0 1px color-mix(in srgb,var(--rarity-accent) 22%,transparent),
+                      0 12px 48px color-mix(in srgb,var(--rarity-accent) 18%,transparent); }
+}
+
+.detail-shell .gm-captures{ margin-top:18px; }
+.detail-shell .gm-capture-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:7px; }
+.detail-shell .gm-capture-grid img{
+  width:100%; aspect-ratio:1; object-fit:cover;
+  border-radius:9px; border:1px solid var(--line);
+}
+
+
+/* ============================================================
+   THÈME CLAIR — un seul design, des variables redéfinies
+   ------------------------------------------------------------
+   Pas une seconde interface : exactement les mêmes règles, avec
+   d'autres valeurs pour les jetons de couleur. Les accents
+   (--red, raretés) ne changent PAS : ils portent du sens (rareté,
+   action), et les basculer casserait la lecture du jeu.
+
+   `[data-theme="system"]` suit la préférence de l'OS ; le mode
+   sombre reste le défaut quand rien n'est stocké.
+   ============================================================ */
+:root[data-theme="light"]{
+  --bg:#f4f4f5; --panel:#ffffff; --panel2:#fafafa;
+  --line:#dedee2; --line2:#c7c7ce;
+  --txt:#18181b; --fg:#18181b;
+  --muted:#52525b; --muted2:#71717a; --dim:#a1a1aa;
+}
+@media (prefers-color-scheme:light){
+  :root[data-theme="system"]{
+    --bg:#f4f4f5; --panel:#ffffff; --panel2:#fafafa;
+    --line:#dedee2; --line2:#c7c7ce;
+    --txt:#18181b; --fg:#18181b;
+    --muted:#52525b; --muted2:#71717a; --dim:#a1a1aa;
+  }
+}
+
+/* En clair, le blanc pur d'une carte active ne ressort plus : on
+   inverse le contraste de la variante sélectionnée plutôt que de
+   lui garder un texte blanc devenu illisible. */
+:root[data-theme="light"] .gsp-moto-actif,
+:root[data-theme="light"] [data-moto-variant] div[style*="color:#fff"],
+:root[data-theme="light"] .info-head h2{ color:var(--txt); }
+
+/* Choix du thème dans les réglages */
+.theme-pick{ display:flex; gap:6px; }
+.theme-pick button{
+  padding:8px 12px; border-radius:999px; border:1px solid var(--line);
+  background:var(--panel2); color:var(--muted);
+  font:600 11px/1 var(--sans); white-space:nowrap;
+}
+.theme-pick button.on{
+  color:#fff; background:var(--red2); border-color:var(--red2);
+}
+
 </style>
 </head>
 <body>
@@ -524,7 +710,7 @@ const CARS = [
   { id: "vw-tiguan", brand: "Volkswagen", model: "Tiguan", yr: "2007–", c: "🇩🇪", cat: "SUV", r: "commun" },
   { id: "vw-touareg", brand: "Volkswagen", model: "Touareg", yr: "2002–", c: "🇩🇪", cat: "SUV", r: "peucommun" },
   { id: "vw-id3", brand: "Volkswagen", model: "ID.3", yr: "2019–", c: "🇩🇪", cat: "Citadine", r: "commun" },
-  { id: "audi-quattro", brand: "Audi", model: "Sport Quattro", yr: "1980–1991", c: "🇩🇪", cat: "Classique", r: "legendaire" },
+  { id: "audi-quattro", brand: "Audi", model: "quattro", yr: "1980–1991", c: "🇩🇪", cat: "Classique", r: "legendaire" },
   { id: "audi-80", brand: "Audi", model: "80", yr: "1972–1996", c: "🇩🇪", cat: "Youngtimer", r: "commun" },
   { id: "audi-a1", brand: "Audi", model: "A1", yr: "2010–", c: "🇩🇪", cat: "Citadine", r: "commun" },
   { id: "audi-a3", brand: "Audi", model: "A3", yr: "1996–", c: "🇩🇪", cat: "Berline", r: "commun" },
@@ -932,11 +1118,11 @@ const CARS = [
   { id: "porsche-917", brand: "Porsche", model: "917", yr: "1969–1973", c: "🇩🇪", cat: "Course", r: "legendaire" },
   { id: "porsche-956-962", brand: "Porsche", model: "956 / 962", yr: "1982–1991", c: "🇩🇪", cat: "Course", r: "legendaire" },
   { id: "porsche-919", brand: "Porsche", model: "919 Hybrid", yr: "2014–2017", c: "🇩🇪", cat: "Course", r: "legendaire" },
-  { id: "porsche-963", brand: "Porsche", model: "963", yr: "2023–", c: "🇩🇪", cat: "Course", r: "epique" },
+  { id: "porsche-963", brand: "Porsche", model: "963", yr: "2023–", c: "🇩🇪", cat: "Course", r: "legendaire" },
   { id: "audi-r18", brand: "Audi", model: "R18 e-tron quattro", yr: "2012–2016", c: "🇩🇪", cat: "Course", r: "legendaire" },
   // Japon — Course
   { id: "toyota-ts050", brand: "Toyota", model: "TS050 Hybrid", yr: "2016–2020", c: "🇯🇵", cat: "Course", r: "legendaire" },
-  { id: "toyota-gr010", brand: "Toyota", model: "GR010 Hybrid", yr: "2021–", c: "🇯🇵", cat: "Course", r: "epique" },
+  { id: "toyota-gr010", brand: "Toyota", model: "GR010 Hybrid", yr: "2021–", c: "🇯🇵", cat: "Course", r: "legendaire" },
   // Italie — Course
   { id: "ferrari-330p4", brand: "Ferrari", model: "330 P4", yr: "1967", c: "🇮🇹", cat: "Course", r: "legendaire" },
   { id: "ferrari-499p", brand: "Ferrari", model: "499P", yr: "2023–", c: "🇮🇹", cat: "Course", r: "legendaire" },
@@ -945,30 +1131,30 @@ const CARS = [
   // France — Course
   { id: "peugeot-905", brand: "Peugeot", model: "905", yr: "1990–1993", c: "🇫🇷", cat: "Course", r: "legendaire" },
   { id: "peugeot-908", brand: "Peugeot", model: "908 HDi FAP", yr: "2007–2011", c: "🇫🇷", cat: "Course", r: "legendaire" },
-  { id: "peugeot-9x8", brand: "Peugeot", model: "9X8", yr: "2022–", c: "🇫🇷", cat: "Course", r: "epique" },
+  { id: "peugeot-9x8", brand: "Peugeot", model: "9X8", yr: "2022–", c: "🇫🇷", cat: "Course", r: "legendaire" },
   // Royaume-Uni — Course
   { id: "jaguar-xjr9", brand: "Jaguar", model: "XJR-9", yr: "1988", c: "🇬🇧", cat: "Course", r: "legendaire" },
   // France — Course
-  { id: "alpine-a424", brand: "Alpine", model: "A424", yr: "2024–", c: "🇫🇷", cat: "Course", r: "epique" },
+  { id: "alpine-a424", brand: "Alpine", model: "A424", yr: "2024–", c: "🇫🇷", cat: "Course", r: "legendaire" },
   // États-Unis — Course
-  { id: "cadillac-vseries-r", brand: "Cadillac", model: "V-Series.R", yr: "2023–", c: "🇺🇸", cat: "Course", r: "epique" },
+  { id: "cadillac-vseries-r", brand: "Cadillac", model: "V-Series.R", yr: "2023–", c: "🇺🇸", cat: "Course", r: "legendaire" },
   // Italie — Course
   { id: "ferrari-488-challenge", brand: "Ferrari", model: "488 Challenge", yr: "2017–2022", c: "🇮🇹", cat: "Course", r: "legendaire" },
-  { id: "ferrari-296-gt3", brand: "Ferrari", model: "296 GT3", yr: "2023–", c: "🇮🇹", cat: "Course", r: "epique" },
+  { id: "ferrari-296-gt3", brand: "Ferrari", model: "296 GT3", yr: "2023–", c: "🇮🇹", cat: "Course", r: "legendaire" },
   // Allemagne — Course
   { id: "porsche-911-cup", brand: "Porsche", model: "911 GT3 Cup", yr: "1998–", c: "🇩🇪", cat: "Course", r: "epique" },
-  { id: "porsche-911-rsr", brand: "Porsche", model: "911 RSR", yr: "2017–2022", c: "🇩🇪", cat: "Course", r: "epique" },
+  { id: "porsche-911-rsr", brand: "Porsche", model: "911 RSR", yr: "2017–2022", c: "🇩🇪", cat: "Course", r: "legendaire" },
   // Italie — Course
-  { id: "lambo-huracan-gt3", brand: "Lamborghini", model: "Huracán GT3", yr: "2015–", c: "🇮🇹", cat: "Course", r: "epique" },
+  { id: "lambo-huracan-gt3", brand: "Lamborghini", model: "Huracán GT3", yr: "2015–", c: "🇮🇹", cat: "Course", r: "legendaire" },
   // Allemagne — Course
-  { id: "mercedes-amg-gt3", brand: "Mercedes-AMG", model: "GT3", yr: "2015–", c: "🇩🇪", cat: "Course", r: "epique" },
-  { id: "bmw-m4-gt3", brand: "BMW", model: "M4 GT3", yr: "2022–", c: "🇩🇪", cat: "Course", r: "epique" },
+  { id: "mercedes-amg-gt3", brand: "Mercedes-AMG", model: "GT3", yr: "2015–", c: "🇩🇪", cat: "Course", r: "legendaire" },
+  { id: "bmw-m4-gt3", brand: "BMW", model: "M4 GT3", yr: "2022–", c: "🇩🇪", cat: "Course", r: "legendaire" },
   // Royaume-Uni — Course
-  { id: "aston-vantage-gt3", brand: "Aston Martin", model: "Vantage GT3", yr: "2018–", c: "🇬🇧", cat: "Course", r: "epique" },
+  { id: "aston-vantage-gt3", brand: "Aston Martin", model: "Vantage GT3", yr: "2018–", c: "🇬🇧", cat: "Course", r: "legendaire" },
   // États-Unis — Course
-  { id: "corvette-c8r", brand: "Chevrolet", model: "Corvette C8.R", yr: "2020–", c: "🇺🇸", cat: "Course", r: "epique" },
+  { id: "corvette-c8r", brand: "Chevrolet", model: "Corvette C8.R", yr: "2020–", c: "🇺🇸", cat: "Course", r: "legendaire" },
   // France — Course
-  { id: "alpine-a110-cup", brand: "Alpine", model: "A110 Cup", yr: "2018–", c: "🇫🇷", cat: "Course", r: "rare" },
+  { id: "alpine-a110-cup", brand: "Alpine", model: "A110 Cup", yr: "2018–", c: "🇫🇷", cat: "Course", r: "legendaire" },
   // Allemagne — Course
   { id: "audi-s1-e2", brand: "Audi", model: "Sport quattro S1 E2", yr: "1985–1986", c: "🇩🇪", cat: "Course", r: "legendaire" },
   // France — Course
@@ -984,7 +1170,7 @@ const CARS = [
   { id: "peugeot-206-wrc", brand: "Peugeot", model: "206 WRC", yr: "1999–2003", c: "🇫🇷", cat: "Course", r: "legendaire" },
   // Japon — Course
   { id: "subaru-impreza-wrc", brand: "Subaru", model: "Impreza WRC", yr: "1997–2008", c: "🇯🇵", cat: "Course", r: "legendaire" },
-  { id: "toyota-gr-yaris-rally1", brand: "Toyota", model: "GR Yaris Rally1", yr: "2022–", c: "🇯🇵", cat: "Course", r: "epique" },
+  { id: "toyota-gr-yaris-rally1", brand: "Toyota", model: "GR Yaris Rally1", yr: "2022–", c: "🇯🇵", cat: "Course", r: "legendaire" },
   // Italie — Course
   { id: "dallara-ir18", brand: "Dallara", model: "IR-18 (IndyCar)", yr: "2018–", c: "🇮🇹", cat: "Course", r: "epique" },
   // États-Unis — Course
@@ -992,7 +1178,7 @@ const CARS = [
   { id: "woo-sprintcar", brand: "World of Outlaws", model: "Sprint Car 410", yr: "1978–", c: "🇺🇸", cat: "Course", r: "rare" },
   { id: "nhra-topfuel", brand: "NHRA", model: "Top Fuel Dragster", yr: "1960s–", c: "🇺🇸", cat: "Course", r: "legendaire" },
   // Royaume-Uni — Course
-  { id: "radical-sr3", brand: "Radical", model: "SR3", yr: "2001–", c: "🇬🇧", cat: "Course", r: "rare" },
+  { id: "radical-sr3", brand: "Radical", model: "SR3", yr: "2001–", c: "🇬🇧", cat: "Course", r: "epique" },
   // France
   { id: "peugeot-104", brand: "Peugeot", model: "104", yr: "1972–1988", c: "🇫🇷", cat: "Youngtimer", r: "peucommun" },
   { id: "peugeot-404", brand: "Peugeot", model: "404", yr: "1960–1975", c: "🇫🇷", cat: "Classique", r: "rare" },
@@ -1002,10 +1188,10 @@ const CARS = [
   { id: "citroen-mehari", brand: "Citroën", model: "Méhari", yr: "1968–1988", c: "🇫🇷", cat: "Classique", r: "rare" },
   { id: "citroen-gs", brand: "Citroën", model: "GS / GSA", yr: "1970–1986", c: "🇫🇷", cat: "Youngtimer", r: "peucommun" },
   { id: "citroen-c6", brand: "Citroën", model: "C6", yr: "2005–2012", c: "🇫🇷", cat: "Berline", r: "rare" },
-  { id: "citroen-berlingo", brand: "Citroën", model: "Berlingo", yr: "1996–", c: "🇫🇷", cat: "SUV", r: "commun" },
+  { id: "citroen-berlingo", brand: "Citroën", model: "Berlingo", yr: "1996–", c: "🇫🇷", cat: "Utilitaire", r: "commun" },
   { id: "renault-fuego", brand: "Renault", model: "Fuego", yr: "1980–1986", c: "🇫🇷", cat: "Youngtimer", r: "rare" },
   { id: "renault-twizy", brand: "Renault", model: "Twizy", yr: "2012–2023", c: "🇫🇷", cat: "Citadine", r: "peucommun" },
-  { id: "renault-kangoo", brand: "Renault", model: "Kangoo", yr: "1997–", c: "🇫🇷", cat: "SUV", r: "commun" },
+  { id: "renault-kangoo", brand: "Renault", model: "Kangoo", yr: "1997–", c: "🇫🇷", cat: "Utilitaire", r: "commun" },
   { id: "simca-1000", brand: "Simca", model: "1000 Rallye 2", yr: "1970–1978", c: "🇫🇷", cat: "Classique", r: "rare" },
   { id: "facel-vega-hk500", brand: "Facel Vega", model: "HK500", yr: "1958–1961", c: "🇫🇷", cat: "Classique", r: "legendaire" },
   { id: "delahaye-135", brand: "Delahaye", model: "135", yr: "1935–1954", c: "🇫🇷", cat: "Classique", r: "legendaire" },
@@ -1060,12 +1246,12 @@ const CARS = [
   { id: "nissan-juke", brand: "Nissan", model: "Juke", yr: "2010–", c: "🇯🇵", cat: "SUV", r: "commun" },
   // États-Unis
   { id: "ford-model-t", brand: "Ford", model: "Model T", yr: "1908–1927", c: "🇺🇸", cat: "Classique", r: "legendaire" },
-  { id: "ford-escort-cosworth", brand: "Ford", model: "Escort RS Cosworth", yr: "1992–1996", c: "🇺🇸", cat: "Youngtimer", r: "legendaire" },
+  { id: "ford-escort-cosworth", brand: "Ford", model: "Escort RS Cosworth", yr: "1992–1996", c: "🇬🇧", cat: "Youngtimer", r: "legendaire" },
   { id: "ford-sierra-cosworth", brand: "Ford", model: "Sierra RS Cosworth", yr: "1986–1992", c: "🇺🇸", cat: "Youngtimer", r: "legendaire" },
   { id: "ford-fiesta", brand: "Ford", model: "Fiesta", yr: "1976–2023", c: "🇺🇸", cat: "Citadine", r: "commun" },
   { id: "ford-focus", brand: "Ford", model: "Focus", yr: "1998–", c: "🇺🇸", cat: "Berline", r: "commun" },
   { id: "ford-puma", brand: "Ford", model: "Puma", yr: "2019–", c: "🇺🇸", cat: "SUV", r: "commun" },
-  { id: "ford-transit", brand: "Ford", model: "Transit", yr: "1965–", c: "🇺🇸", cat: "SUV", r: "commun" },
+  { id: "ford-transit", brand: "Ford", model: "Transit", yr: "1965–", c: "🇺🇸", cat: "Utilitaire", r: "commun" },
   { id: "chevrolet-corvette-c1", brand: "Chevrolet", model: "Corvette (C1)", yr: "1953–1962", c: "🇺🇸", cat: "Classique", r: "legendaire" },
   { id: "chevrolet-impala-64", brand: "Chevrolet", model: "Impala (1964)", yr: "1961–1964", c: "🇺🇸", cat: "Classique", r: "rare" },
   { id: "buick-gnx", brand: "Buick", model: "GNX", yr: "1987", c: "🇺🇸", cat: "Youngtimer", r: "legendaire" },
@@ -1274,7 +1460,7 @@ const CARS = [
   { id: "peugeot-106-rallye", brand: "Peugeot", model: "106 Rallye", yr: "1993–1998", c: "🇫🇷", cat: "Youngtimer", r: "rare" },
   { id: "peugeot-207", brand: "Peugeot", model: "207", yr: "2006–2012", c: "🇫🇷", cat: "Citadine", r: "commun" },
   { id: "peugeot-j7", brand: "Peugeot", model: "J7", yr: "1965–1980", c: "🇫🇷", cat: "Classique", r: "rare" },
-  { id: "peugeot-partner", brand: "Peugeot", model: "Partner", yr: "1996–", c: "🇫🇷", cat: "SUV", r: "commun" },
+  { id: "peugeot-partner", brand: "Peugeot", model: "Partner", yr: "1996–", c: "🇫🇷", cat: "Utilitaire", r: "commun" },
   { id: "citroen-ami6", brand: "Citroën", model: "Ami 6", yr: "1961–1971", c: "🇫🇷", cat: "Classique", r: "rare" },
   { id: "citroen-dyane", brand: "Citroën", model: "Dyane", yr: "1967–1983", c: "🇫🇷", cat: "Classique", r: "peucommun" },
   { id: "citroen-visa", brand: "Citroën", model: "Visa", yr: "1978–1988", c: "🇫🇷", cat: "Youngtimer", r: "peucommun" },
@@ -1296,7 +1482,7 @@ const CARS = [
   { id: "renault-25", brand: "Renault", model: "25", yr: "1984–1992", c: "🇫🇷", cat: "Youngtimer", r: "rare" },
   { id: "renault-safrane", brand: "Renault", model: "Safrane", yr: "1992–2000", c: "🇫🇷", cat: "Berline", r: "rare" },
   { id: "renault-estafette", brand: "Renault", model: "Estafette", yr: "1959–1980", c: "🇫🇷", cat: "Classique", r: "rare" },
-  { id: "renault-trafic", brand: "Renault", model: "Trafic", yr: "1980–", c: "🇫🇷", cat: "SUV", r: "commun" },
+  { id: "renault-trafic", brand: "Renault", model: "Trafic", yr: "1980–", c: "🇫🇷", cat: "Utilitaire", r: "commun" },
   { id: "matra-530", brand: "Matra", model: "530", yr: "1967–1973", c: "🇫🇷", cat: "Classique", r: "rare" },
   { id: "matra-bagheera", brand: "Matra", model: "Bagheera", yr: "1973–1980", c: "🇫🇷", cat: "Youngtimer", r: "rare" },
   { id: "matra-rancho", brand: "Matra", model: "Rancho", yr: "1977–1984", c: "🇫🇷", cat: "Youngtimer", r: "rare" },
@@ -1320,8 +1506,8 @@ const CARS = [
   { id: "bmw-x1", brand: "BMW", model: "X1", yr: "2009–", c: "🇩🇪", cat: "SUV", r: "commun" },
   { id: "bmw-z1", brand: "BMW", model: "Z1", yr: "1989–1991", c: "🇩🇪", cat: "Youngtimer", r: "legendaire" },
   { id: "mercedes-190", brand: "Mercedes-Benz", model: "190 (W201)", yr: "1982–1993", c: "🇩🇪", cat: "Youngtimer", r: "peucommun" },
-  { id: "mercedes-vito", brand: "Mercedes-Benz", model: "Vito", yr: "1996–", c: "🇩🇪", cat: "SUV", r: "commun" },
-  { id: "mercedes-sprinter", brand: "Mercedes-Benz", model: "Sprinter", yr: "1995–", c: "🇩🇪", cat: "SUV", r: "commun" },
+  { id: "mercedes-vito", brand: "Mercedes-Benz", model: "Vito", yr: "1996–", c: "🇩🇪", cat: "Utilitaire", r: "commun" },
+  { id: "mercedes-sprinter", brand: "Mercedes-Benz", model: "Sprinter", yr: "1995–", c: "🇩🇪", cat: "Utilitaire", r: "commun" },
   { id: "opel-ascona", brand: "Opel", model: "Ascona", yr: "1970–1988", c: "🇩🇪", cat: "Youngtimer", r: "peucommun" },
   { id: "opel-tigra", brand: "Opel", model: "Tigra", yr: "1994–2009", c: "🇩🇪", cat: "Coupé", r: "peucommun" },
   { id: "opel-zafira", brand: "Opel", model: "Zafira", yr: "1999–2019", c: "🇩🇪", cat: "SUV", r: "commun" },
@@ -2150,6 +2336,7 @@ const VARIANTS = {
      VARIANTS (il les complète), mais AVANT la fonction principale ci-dessous, qui fige
      CARS_BY_ID et TOTAL au démarrage. Placé plus bas, ses ajouts au catalogue arriveraient
      trop tard : les modèles existeraient dans CARS mais resteraient invisibles pour l'app. -->
+<script src="./gm-matcher.js"></script>
 <script src="./gm-specs.js"></script>
 
 <script>
@@ -2424,6 +2611,33 @@ const VARIANTS = {
 
   /* ====================================================== HELPERS RENDU */
   const $ = (s, r=document) => r.querySelector(s);
+  /* --- Thème : lecture, barre système, état des boutons ----------------
+     Le thème est DÉJÀ appliqué par le script inline du <head> (avant le
+     premier rendu). Ces fonctions ne font que le refléter dans l'UI. */
+  const themeChoisi = () => { try { return localStorage.getItem("gm-theme") || "dark"; } catch { return "dark"; } };
+  const themeEffectif = () => {
+    const c = themeChoisi();
+    return c === "system"
+      ? (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark")
+      : c;
+  };
+  function majCouleurBarre() {
+    const m = document.querySelector('meta[name="theme-color"]');
+    if (m) m.setAttribute("content", themeEffectif() === "light" ? "#f4f4f5" : "#0b0b0d");
+  }
+  function majBoutonsTheme() {
+    const c = themeChoisi();
+    document.querySelectorAll("[data-theme-set]").forEach(b =>
+      b.classList.toggle("on", b.getAttribute("data-theme-set") === c));
+  }
+  /* En mode « système », l'OS peut basculer pendant que l'app est ouverte
+     (coucher du soleil, bascule manuelle). Sans cet écouteur, la barre
+     système resterait à l'ancienne teinte jusqu'au prochain lancement. */
+  try {
+    window.matchMedia("(prefers-color-scheme: light)")
+      .addEventListener("change", () => { if (themeChoisi() === "system") majCouleurBarre(); });
+  } catch {}
+
   const escapeHtml = (s) => String(s||"").replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
   const fmtDate = (iso) => { try { return new Date(iso).toLocaleDateString("fr-FR",{ day:"2-digit", month:"short", year:"numeric" }); } catch { return ""; } };
   const rColor = (r) => (RARITY[r] || RARITY.courant).color;
@@ -2495,7 +2709,7 @@ const VARIANTS = {
     else if (state.tab==="stats") v.innerHTML = subBackHTML("Statistiques & équipage") + viewStats(st) + crewHTML(st);
     else if (state.tab==="trophies") v.innerHTML = subBackHTML("Trophées") + viewTrophies(st);
     else if (state.tab==="settings") v.innerHTML = subBackHTML("Réglages") + viewSettings(st) + extraSettingsHTML();
-    if (state.tab==="settings") { refreshStorageInfo(); markSWCurrent(); }
+    if (state.tab==="settings") { refreshStorageInfo(); markSWCurrent(); majBoutonsTheme(); majCouleurBarre(); }
     window.scrollTo({ top:0 });
   }
 
@@ -2619,7 +2833,7 @@ const VARIANTS = {
         ${rec?.favorite ? `<span class="cfav">${icon("star")}</span>` : ""}
       </div>
       <div class="cmeta">
-        <div class="rr" style="color:${col}">${RARITY[c.r].label}</div>
+        <div class="rr">${RARITY[c.r].label}</div>
         <div class="nm${h?"":" miss"}">${escapeHtml(c.model)}</div>
         <div class="br">${escapeHtml(c.brand)} · ${escapeHtml(c.cat)}</div>
       </div>
@@ -2696,6 +2910,11 @@ const VARIANTS = {
         <div class="rows">
           ${installRow}
           <div class="srow"><div class="l"><b>Envoyer un retour</b><span>Bug, idée, ressenti — inclut la version pour que je m'y retrouve</span></div><button class="btn" data-act="feedback">${icon("upload","icon")}</button></div>
+          <div class="srow"><div class="l"><b>Thème</b><span>Sombre, clair, ou selon ton téléphone</span></div><div class="theme-pick" id="themePick">
+            <button data-theme-set="dark">Sombre</button>
+            <button data-theme-set="light">Clair</button>
+            <button data-theme-set="system">Système</button>
+          </div></div>
           <div class="srow"><div class="l"><b>Stockage utilisé</b><span id="storeInfo">Calcul…</span></div></div>
           <div class="srow"><div class="l"><b>Mode hors-ligne</b><span id="swInfo">Vérification…</span></div></div>
         </div>
@@ -2757,6 +2976,18 @@ const VARIANTS = {
   // et « voiture non reconnue » produisaient tous le même silence, rendant tout diagnostic
   // terrain impossible (DT-07).
   let lastAiError = null;
+  /* Dernier résultat complet du matcher (statut, marge, scores détaillés).
+     identifyCar() ne renvoie que {id, confidence} pour ne rien casser chez
+     ses appelants ; l'interface qui veut distinguer CONFIRME / AMBIGU /
+     AUCUNE_CORRESPONDANCE_SURE lit lastMatch. */
+  let lastMatch = null;
+  /* Accès au module par le global uniquement — jamais par un nom privé.
+     Le piège est documenté dans CLAUDE.md §2.1 : tester `typeof GMMatcher`
+     serait toujours faux depuis ce scope et échouerait EN SILENCE. */
+  function global_GMMatcher() {
+    return (typeof window !== "undefined" && window.GMMatcher && typeof window.GMMatcher.rapprocher === "function")
+      ? window.GMMatcher : null;
+  }
   async function identifyCar(thumbDataUrl) {
     lastAiError = null;
     const url = resolveAiEndpoint();
@@ -2769,12 +3000,29 @@ const VARIANTS = {
       if (!res.ok) { lastAiError = `Relais IA indisponible (HTTP ${res.status})`; return []; }
       const guesses = await res.json();
       if (!Array.isArray(guesses)) { lastAiError = "Réponse du relais IA inattendue"; return []; }
+      /* Rapprochement délégué à gm-matcher.js quand il est là : il sépare
+         aiConfidence / catalogScore / finalConfidence et expose la marge
+         entre les deux premiers candidats, ce que matchCatalog() ne sait
+         pas faire.
+
+         Le repli sur matchCatalog() n'est pas de la prudence décorative :
+         les modules gm-*.js sont servis RÉSEAU-D'ABORD (voir FRAIS dans
+         sw.js), donc au tout premier lancement hors ligne, ou si le réseau
+         lâche, gm-matcher.js peut ne pas être chargé au moment de la
+         capture. Sans repli, photographier une voiture ne renverrait rien
+         du tout — et l'app resterait muette sur la raison. */
+      if (global_GMMatcher()) {
+        const res = global_GMMatcher().rapprocher(guesses, { catalogue: [...CARS, ...customCars()] });
+        lastMatch = res;
+        return res.candidats.map(c => ({ id: c.id, confidence: c.finalConfidence }));
+      }
       const matched = new Map();
       for (const g of guesses) {
         if (!g || (!g.brand && !g.model)) continue;
         const m = matchCatalog(g.brand, g.model, typeof g.confidence==="number" ? g.confidence : 0.6);
         if (m && (!matched.has(m.id) || matched.get(m.id) < m.confidence)) matched.set(m.id, m.confidence);
       }
+      lastMatch = null;
       return [...matched.entries()].map(([id,confidence]) => ({ id, confidence })).sort((a,b) => b.confidence-a.confidence).slice(0,3);
     } catch (e) {
       lastAiError = (e && e.name === "AbortError")
@@ -3059,7 +3307,7 @@ const VARIANTS = {
     return `
       <div class="detail-hero" style="border-radius:12px;overflow:hidden">
         ${ph ? `<img src="${ph}" />` : `<svg viewBox="0 0 24 24" class="icon" style="width:64px;height:64px;color:${col}">${P.car}</svg>`}
-        <span class="chip" style="position:absolute;left:12px;top:12px;background:${col}22;color:${col}"><span style="width:8px;height:8px;border-radius:50%;background:${col}"></span>${RARITY[c.r].label}</span>
+        <span class="chip" style="position:absolute;left:12px;top:12px;background:rgba(9,9,11,.62);border:1px solid ${col}44;color:var(--muted);backdrop-filter:blur(6px)"><span style="width:8px;height:8px;border-radius:50%;background:${col};box-shadow:0 0 8px ${col}88"></span>${RARITY[c.r].label}</span>
       </div>
       ${strip}
       <div class="detail-title"><div><h2>${escapeHtml(c.model)}</h2><p class="muted">${c.c} ${escapeHtml(c.brand)}</p></div>
@@ -3078,18 +3326,29 @@ const VARIANTS = {
       <div style="display:flex;gap:10px;margin-top:14px">
         <button class="btn" data-addphoto="1" style="flex:1">${icon("camera","icon")}&nbsp; Ajouter une photo</button>
         <button class="btn ghost" data-act="sharecard" title="Partager la carte">${icon("star","icon")}</button>
-        <button class="btn ghost" data-release="${c.id}" style="color:var(--red);border-color:var(--red-dk)">${icon("trash","icon")}</button>
+        <button class="btn ghost btn-danger" data-release="${c.id}">${icon("trash","icon")}</button>
       </div>`;
   }
 
   function infoPageHTML(c, rec, h) {
     const col = rColor(c.r);
-    const motoData = (typeof MOTOR_SPECS !== "undefined") ? MOTOR_SPECS[c.id] : null;
     let info = INFO[c.id] || {};
     let motoHTML = "";
 
+    /* Données techniques : UNIQUEMENT via le contrat public
+       window.GMSpecs.fichePourInterface(). L'ancien code lisait
+       `MOTOR_SPECS` directement — or ce nom est privé à la clôture de
+       l'IIFE de gm-specs.js : la garde `typeof MOTOR_SPECS !== "undefined"`
+       était donc TOUJOURS fausse et le sélecteur ne s'affichait jamais,
+       sans la moindre erreur JS (CLAUDE.md §2.1). */
+    const sel = (state.motoSel && state.motoSel[c.id]) || {};
+    const GS = (typeof window !== "undefined" && window.GMSpecs
+                && typeof window.GMSpecs.fichePourInterface === "function") ? window.GMSpecs : null;
+    const fiche = GS ? GS.fichePourInterface(c.id, { typeId: sel.type, variantId: sel.variantId }) : null;
+    const motoData = (fiche && fiche.motorisations && fiche.motorisations.length)
+      ? { types: fiche.motorisations } : null;
+
     if (motoData) {
-      const sel = state.motoSel[c.id] || {};
       const type = motoData.types.find(t => t.id === sel.type) || motoData.types[0];
       const variant = type.variants.find(v => v.id === sel.variantId) || type.variants[0];
 
@@ -3097,8 +3356,14 @@ const VARIANTS = {
       // (rows plus bas) n'a rien à savoir de MOTOR_SPECS.
       info = { ...info, eng: `${variant.label} · ${variant.arch}`, hp: `${variant.ch} ch` };
 
+      /* [data-moto-actif] est le CONTRAT avec gm-specs.js (CLAUDE.md §3) :
+         sans ce marqueur, varianteActive() renvoie null et la fiche greffée
+         affiche les chiffres du modèle de base quelle que soit la
+         motorisation choisie — le bug « Giulia Diesel au couple de la 2.0
+         essence ». Il était posé dans index-1.html et n'avait jamais été
+         reporté ici. */
       motoHTML = `
-        <div class="moto-select" style="margin-top:16px">
+        <div class="moto-select" style="margin-top:16px" data-moto-actif="${escapeHtml(type.id)}|${escapeHtml(variant.id)}">
           <div class="h3" style="margin-bottom:8px">Motorisation</div>
           <div style="display:flex;gap:6px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:3px">
             ${motoData.types.map(t => `<button data-moto-type="${c.id}|${t.id}" style="flex:1;padding:9px 0;border-radius:7px;font:600 12px/1 var(--sans);border:none;background:${t.id===type.id?"var(--red2)":"transparent"};color:${t.id===type.id?"#fff":"var(--muted2)"}">${escapeHtml(t.label)}</button>`).join("")}
@@ -3134,50 +3399,34 @@ const VARIANTS = {
       : (desc ? `<div class="fact"><p>${escapeHtml(desc)}</p></div>` : "");
     const catLine = (info.fact && desc) ? `<p class="cat-desc">${escapeHtml(desc)}</p>` : "";
 
-    // Générations & motorisations — lecture seule de GENS (texte libre, non lié à MOTOR_SPECS).
-    // N'existait dans aucun rendu avant ce patch : gm-specs.js était chargé mais jamais consommé.
-    let gensHTML = "";
-    if (typeof GENS !== "undefined") {
-      const cle = (typeof MAP !== "undefined" && MAP[c.id]) || c.id;
-      const gens = GENS[cle];
-      if (gens && gens.length) {
-        const genCard = (titre, sousTitre, corps) => `
-          <div style="border:1px solid var(--line);background:var(--panel2);border-radius:10px;padding:12px 14px;margin-bottom:8px">
-            <div style="font:600 13px/1.2 var(--sans);color:#fff">${escapeHtml(titre)} <span style="color:var(--muted2);font-weight:400">· ${escapeHtml(sousTitre)}</span></div>
-            ${corps}
-          </div>`;
-        const cartesGen = gens.map(g => {
-          if (Array.isArray(g)) {
-            const [code, annees, meca, puiss, note] = g;
-            return genCard(code, annees, `
-              <div style="font:400 12px/1.3 var(--sans);color:var(--muted2);margin-top:3px">${escapeHtml(meca)} · ${escapeHtml(puiss)}</div>
-              ${note ? `<div style="font:400 11.5px/1.4 var(--sans);color:var(--muted2);margin-top:5px">${escapeHtml(note)}</div>` : ""}
-            `);
-          }
-          if (g && Array.isArray(g.m)) {
-            const lignes = g.m.map(mo => `
-              <div style="padding:8px 10px;background:var(--panel);border-radius:8px;margin-top:6px">
-                <div style="font:600 12px/1.2 var(--sans);color:#fff">${escapeHtml(mo[0])}</div>
-                <div style="font:400 11px/1.3 var(--sans);color:var(--muted2);margin-top:2px">${escapeHtml(mo[1])} · ${escapeHtml(mo[2])} · ${escapeHtml(mo[3])}</div>
-              </div>`).join("");
-            return genCard(g.c, g.a, lignes);
-          }
-          return "";
-        }).join("");
-        gensHTML = `<div style="margin-top:16px"><div class="h3" style="margin-bottom:8px">Générations &amp; motorisations</div>${cartesGen}</div>`;
-      }
-    }
+    /* Le bloc « Générations » vivait ici, derrière une garde
+       `typeof GENS !== "undefined"` — toujours fausse depuis index.html,
+       puisque GENS est privé à la clôture de l'IIFE de gm-specs.js
+       (CLAUDE.md §2.1). Il n'a donc JAMAIS rien affiché.
+       Il n'est pas réécrit ici : gm-specs.js greffe déjà ce bloc via
+       blocHTML(), et CLAUDE.md §3 interdit de le dupliquer. */
+
+    /* `.info-head` et son `h2` sont un CONTRAT, pas une mise en forme :
+       gm-specs.js identifie la voiture par `.info-head h2` en QUATRE
+       endroits. Les remplacer par une autre structure fait échouer toute la
+       greffe — en silence, sans erreur JS. Le conteneur `.detail-shell`
+       s'ajoute donc AUTOUR, il ne se substitue à rien.
+
+       `data-verrou` était posé dans index-1.html et n'avait jamais été
+       reporté ici : sans lui, greffer() ne sort pas et masse, couple et
+       ratios fuient sur les voitures non collectées (CLAUDE.md §3). */
     return `
+      <div class="detail-shell" data-brand="${escapeHtml(c.brand)}" data-rarity="${escapeHtml(c.r)}"${!h ? ' data-verrou="1"' : ''}>
       <div class="info-head">
-        <span class="chip" style="background:${col}22;color:${col}"><span style="width:8px;height:8px;border-radius:50%;background:${col}"></span>${RARITY[c.r].label}</span>
+        <span class="chip" style="background:${col}12;border:1px solid ${col}33;color:var(--muted)"><span style="width:8px;height:8px;border-radius:50%;background:${col};box-shadow:0 0 8px ${col}88"></span>${RARITY[c.r].label}</span>
         <h2>${escapeHtml(c.brand)} ${escapeHtml(c.model)}</h2>
         <p class="muted">${c.c} ${COUNTRY[c.c]||""} · ${escapeHtml(c.cat)}</p>
       </div>
       ${motoHTML}
       <div class="specs specs-info">${specHTML}</div>
       ${factCard}${catLine}
-      ${gensHTML}
       ${!h ? `<div class="panel" style="margin-top:14px;text-align:center"><p class="dim" style="font:400 13px/1.4 var(--sans);margin:0">Pas encore au garage. Croise-la, prends-la en photo, et enregistre la prise.</p></div>` : ""}
+      </div>
     `;
   }
 
@@ -3845,8 +4094,20 @@ const VARIANTS = {
 
   /* ====================================================== ÉVÉNEMENTS (délégation) */
   document.addEventListener("click", (e) => {
-    const t = e.target.closest("[data-tab],[data-fab],[data-rarity],[data-toggle],[data-status],[data-filter],[data-car],[data-close],[data-scrim],[data-cap],[data-pick],[data-var],[data-act],[data-setcover],[data-addphoto],[data-release],[data-dot],[data-favtoggle],[data-moto-type],[data-moto-variant]");
+    const t = e.target.closest("[data-tab],[data-fab],[data-rarity],[data-toggle],[data-status],[data-filter],[data-car],[data-close],[data-scrim],[data-cap],[data-pick],[data-var],[data-act],[data-setcover],[data-addphoto],[data-release],[data-dot],[data-favtoggle],[data-moto-type],[data-moto-variant],[data-theme-set]");
     if (!t) return;
+
+    /* Thème : on écrit l'attribut ET le stockage, puis on recale la couleur
+       de la barre système. Sans ce dernier point, iOS garde la teinte sombre
+       autour de l'app en mode clair — un détail visible sur écran encoché. */
+    if (t.hasAttribute("data-theme-set")) {
+      const choix = t.getAttribute("data-theme-set");
+      document.documentElement.setAttribute("data-theme", choix);
+      try { localStorage.setItem("gm-theme", choix); } catch {}
+      majCouleurBarre();
+      majBoutonsTheme();
+      return;
+    }
 
     if (t.dataset.scrim && e.target === t) return closeOverlay();
     if (t.dataset.close) return closeOverlay();
