@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.146.0';
+  const VERSION_MODULE = '20.147.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -7817,6 +7817,121 @@
       ['964','1993–1994','flat-6 3.6 atmo','250 ch','936 exemplaires. Sièges de la Carrera RS, ni climatisation ni vitres électriques.'],
       ['997','2010','flat-6 3.8 atmo','408 ch','356 exemplaires, en hommage au numéro de la première Porsche.'],
       ['991','2019','flat-6 4.0 atmo','510 ch','1 948 exemplaires, pour l\'année de fondation. Moteur de GT3 et boîte manuelle.'],
+    ],
+
+    /* ---- Vague G2 : Audi S, M5 Touring, utilitaires, populaires -------- */
+    'bmw-m5-touring': [
+      ['E34','1992–1995','6 en ligne 3.8 atmo (S38)','340 ch','Le premier break M : 891 exemplaires. Six cylindres dérivé de celui de la M1.'],
+      ['E61','2007–2010','V10 5.0 atmo (S85)','507 ch','1 009 exemplaires seulement, avec la boîte robotisée SMG à sept rapports.'],
+      ['G99','2024–','V8 4.4 biturbo hybride rechargeable','727 ch (système)','Retour du break après quatorze ans d\'absence, cette fois en hybride : près de 2,5 tonnes.'],
+    ],
+    'audi-s6': [
+      ['C4','1994–1997','5 cyl. 2.2 turbo, V8 4.2','230–326 ch','Le cinq cylindres turbo hérité de l\'Ur-quattro ouvre la lignée ; la S6 plus à V8 de 326 ch la clôt.'],
+      ['C5','1999–2004','V8 4.2 atmo','340 ch','Moteur cinq soupapes par cylindre.'],
+      ['C6','2006–2011','V10 5.2 atmo','435 ch','Le V10 de la Lamborghini Gallardo, recalibré pour une berline.'],
+      ['C7','2012–2018','V8 4.0 biturbo','420–450 ch','Désactivation de quatre cylindres à charge partielle.'],
+      ['C8','2019–','V6 3.0 TDI (Europe), V6 2.9 biturbo essence (Amérique)','','Scandale chez les puristes : en Europe, la S6 devient diesel.'],
+    ],
+    'audi-s8': [
+      ['D2','1996–2003','V8 4.2 atmo','340–360 ch','Caisse en aluminium « Audi Space Frame ». Rendue célèbre par la poursuite du film Ronin.'],
+      ['D3','2006–2010','V10 5.2 atmo','450 ch','Le V10 de la Gallardo, dégonflé de 50 ch.'],
+      ['D4','2012–2017','V8 4.0 biturbo','520–605 ch','La S8 plus de 2016 atteint 605 ch.'],
+      ['D5','2019–','V8 4.0 biturbo hybride léger','571 ch','Suspension active prédictive qui lit la route par caméra.'],
+    ],
+    'audi-s3-limo': [
+      ['8L','1999–2003','4 cyl. 1.8 turbo 20v','210–225 ch','Trois portes seulement, et transmission quattro Haldex.'],
+      ['8P','2006–2012','4 cyl. 2.0 TFSI','265 ch','La carrosserie cinq portes Sportback arrive en 2008.'],
+      ['8V','2013–2020','4 cyl. 2.0 TFSI','300–310 ch','Première S3 berline tricorps.'],
+      ['8Y','2020–','4 cyl. 2.0 TFSI','310–333 ch','Le restylage de 2024 lui ajoute un répartiteur de couple arrière.'],
+    ],
+    'mercedes-sprinter': [
+      ['T1N','1995–2006','4 et 5 cyl. diesel, essence','','Premier Sprinter : il a donné son nom à toute une catégorie de fourgons.'],
+      ['NCV3 (W906)','2006–2018','4 cyl. et V6 diesel','','Vendu aussi sous les marques Dodge, Freightliner et Volkswagen (Crafter).'],
+      ['VS30 (W907)','2018–','4 cyl. diesel, électrique (eSprinter)','','Première version électrique de série, et traction avant disponible à côté de la propulsion.'],
+    ],
+    'mercedes-vito': [
+      ['W638','1996–2003','4 cyl. essence et diesel, VR6','','Seul Vito à traction avant, construit à Vitoria en Espagne — d\'où son nom.'],
+      ['W639','2003–2014','4 cyl. CDI, V6 essence et diesel','','Retour à la propulsion.'],
+      ['W447','2014–','4 cyl. diesel, électrique (eVito)','','Trois architectures au choix : traction, propulsion ou quatre roues motrices.'],
+    ],
+    'citroen-berlingo': [
+      ['I (M59)','1996–2008','4 cyl. essence et diesel','','La version Multispace popularise le ludospace : un utilitaire vendu comme voiture de famille.'],
+      ['II (B9)','2008–2018','4 cyl. essence et HDi, électrique','','Une version électrique rejoint la gamme.'],
+      ['III (K9)','2018–','3 cyl. PureTech, 4 cyl. BlueHDi, électrique','','Plateforme partagée avec l\'Opel Combo et le Toyota ProAce City.'],
+    ],
+    'peugeot-partner': [
+      ['I','1996–2008','4 cyl. essence et diesel','','Jumeau du Berlingo, produit aussi en Argentine.'],
+      ['II (Tepee)','2008–2018','4 cyl. essence et HDi, électrique','','La version passagers prend le nom de Tepee.'],
+      ['III (Rifter)','2018–','3 cyl. PureTech, 4 cyl. BlueHDi, électrique','','Le Partner redevient purement utilitaire ; les passagers passent au Rifter.'],
+    ],
+    'peugeot-boxer': [
+      ['I','1994–2006','4 cyl. essence 2.0, diesels 1.9 à 2.8','','Produit par la coentreprise Sevel avec Fiat : triplé du Ducato et du Citroën Jumper.'],
+      ['II','2006–','4 cyl. HDi puis BlueHDi, électrique','','Toujours triplé du Ducato et du Jumper, et base de la majorité des camping-cars européens.'],
+    ],
+    'renault-kangoo': [
+      ['I','1997–2007','4 cyl. essence et diesel','','Porte latérale coulissante et hayon : le Kangoo popularise le ludospace chez Renault.'],
+      ['II','2007–2021','4 cyl. essence et dCi, électrique (Z.E.)','','Le Kangoo Z.E. de 2011 est l\'un des premiers utilitaires électriques de grande série. Revendu par Mercedes sous le nom Citan.'],
+      ['III','2021–','essence, diesel, électrique (E-Tech)','','Plateforme partagée avec le Nissan Townstar, production commune avec le Mercedes Citan.'],
+    ],
+    'subaru-forester': [
+      ['SF','1997–2002','flat-4 2.0 et 2.5, 2.0 turbo','','Un break surélevé plutôt qu\'un vrai SUV, sur base d\'Impreza.'],
+      ['SG','2002–2008','flat-4 2.0 et 2.5, turbo','','La Forester STi japonaise de 2004 reçoit le moteur de l\'Impreza WRX STI.'],
+      ['SH','2008–2013','flat-4 2.0 et 2.5, turbo, diesel boxer','','Reçoit le diesel à plat Subaru, le premier moteur boxer diesel de série.'],
+      ['SJ','2013–2018','flat-4 2.0 et 2.5, turbo, diesel boxer','',''],
+      ['SK','2018–2024','flat-4 2.0 et 2.5, hybride e-Boxer','','Plateforme globale Subaru.'],
+      ['SL','2024–','flat-4 2.5, hybride','',''],
+    ],
+    'renault-4': [
+      ['4 / 4L (moteurs Billancourt)','1961–1978','4 cyl. 0,6 à 0,85','','Première traction avant Renault, levier de vitesses « trompe » sur la planche de bord.'],
+      ['4 GTL (moteur Cléon)','1978–1994','4 cyl. 0,96 et 1,1','','Plus de huit millions d\'exemplaires au total. La production finit en Slovénie en 1994.'],
+    ],
+    'citroen-type-h': [
+      ['Type H / HY / HZ','1947–1981','4 cyl. 1.6 et 1.9 essence, diesels Perkins puis Indenor','','Tôle ondulée inspirée de l\'avion Junkers Ju 52 : rigide et bon marché à emboutir. 473 279 exemplaires.'],
+    ],
+    'alfa-duetto': [
+      ['Série 1 « Osso di seppia »','1966–1969','4 cyl. 1.6 puis 1.75 double arbre','','Dernier dessin supervisé par Battista Pininfarina. Rendue célèbre par Dustin Hoffman dans Le Lauréat.'],
+      ['Série 2 « Coda tronca »','1970–1982','4 cyl. 1.3 à 2.0 double arbre','','Arrière coupé net, plus aérodynamique et plus logeable.'],
+      ['Série 3 « Aerodinamica »','1983–1989','4 cyl. 1.6 et 2.0 double arbre','','Becquet et boucliers en caoutchouc, pour le marché américain.'],
+      ['Série 4','1990–1993','4 cyl. 1.6 et 2.0, injection Motronic','108–122 ch','Retour à des lignes épurées. Vingt-sept ans de carrière pour une même caisse.'],
+    ],
+    'vw-polo-gti': [
+      ['6N2','1998–2001','4 cyl. 1.6 16v','120–125 ch','Première Polo GTI, en trois portes seulement.'],
+      ['9N3','2005–2009','4 cyl. 1.8 turbo','150 ch','Première Polo GTI turbo.'],
+      ['6R','2010–2017','4 cyl. 1.4 TSI puis 1.8 TSI','180–192 ch','La 1.4 twincharger (compresseur et turbo) cède la place au 1.8 TSI en 2015.'],
+      ['AW','2018–','4 cyl. 2.0 TSI','200–207 ch','Première Polo GTI à moteur deux litres, comme la Golf GTI.'],
+    ],
+    'chevrolet-corvette-z06': [
+      ['C5','2001–2004','V8 5.7 LS6','390–411 ch','Le nom Z06 revient, emprunté à une option course de 1963 : coupé à toit fixe allégé, orienté piste.'],
+      ['C6','2006–2013','V8 7.0 LS7 atmo','512 ch','Carter sec, bielles en titane et sept litres de cylindrée.'],
+      ['C7','2015–2019','V8 6.2 LT4 compressé','659 ch','Premier compresseur d\'usine sur une Z06.'],
+      ['C8','2023–','V8 5.5 LT6 atmo à vilebrequin plat','679 ch','Moteur central, 8 600 tr/min : le V8 atmosphérique de série le plus puissant jamais construit.'],
+    ],
+    'aston-vanquish': [
+      ['V12 Vanquish','2001–2007','V12 5.9 atmo','466–527 ch','Boîte robotisée à palettes et structure en aluminium et carbone. La voiture de James Bond dans Meurs un autre jour.'],
+      ['Vanquish (2e gén.)','2012–2018','V12 6.0 atmo','','Carrosserie entièrement en fibre de carbone.'],
+      ['Vanquish (3e gén.)','2024–','V12 5.2 biturbo','835 ch','Le porte-drapeau le plus puissant de l\'histoire de la marque à sa sortie.'],
+    ],
+    'lincoln-navigator': [
+      ['I','1998–2002','V8 5.4','','Dérivé du Ford Expedition, dont il partage la base.'],
+      ['II','2003–2006','V8 5.4 trois soupapes','','Suspension arrière indépendante.'],
+      ['III','2007–2017','V8 5.4 puis V6 3.5 biturbo','','Arrivée de la version longue Navigator L. Le V8 cède la place au V6 EcoBoost en 2015.'],
+      ['IV','2018–2024','V6 3.5 biturbo','','Carrosserie en aluminium.'],
+      ['V','2025–','V6 3.5 biturbo','',''],
+    ],
+    'ford-ranger': [
+      ['I','1998–2006','4 cyl. diesel et essence','','Codéveloppé avec Mazda et produit en Thaïlande, jumeau du Mazda B-Series.'],
+      ['II','2006–2011','4 cyl. diesel','','Toujours jumeau d\'une Mazda, la BT-50.'],
+      ['III (T6)','2011–2022','4 et 5 cyl. diesel','','Conçu par Ford Australie. Le Raptor de 2018 reçoit un 2.0 biturbo diesel de 213 ch.'],
+      ['IV (T6.2)','2022–','4 cyl. et V6 diesel, V6 3.0 biturbo essence (Raptor), hybride rechargeable','','Le Raptor passe à l\'essence avec un V6 biturbo.'],
+    ],
+    'trabant-601': [
+      ['601','1964–1990','2 cyl. deux-temps 594 cm³','23–26 ch','Carrosserie en Duroplast, un plastique renforcé de fibres de coton. 2 818 547 exemplaires : la voiture la plus répandue d\'Allemagne de l\'Est.'],
+      ['1.1','1990–1991','4 cyl. quatre-temps VW 1.1','','Moteur de Polo après la chute du Mur. 39 474 exemplaires en un an, avant l\'arrêt définitif.'],
+    ],
+    'ultima-gtr': [
+      ['GTR','1999–2015','V8 Chevrolet small-block','','Vendue en kit ou assemblée : moteur central et boîte-pont Porsche ou Getrag, jusqu\'à 720 ch en version GTR720.'],
+      ['Evolution','2015–2019','V8 Chevrolet','','Réingénierie complète : les noms GTR et Can-Am sont abandonnés.'],
+      ['RS','2019–','V8 Chevrolet LT1, LT4 ou LT5','487–811 ch','Le châssis accepte toute la famille LT, jusqu\'au V8 compressé de la Corvette ZR1.'],
     ],
     'toyota-century': [
       ['G20 / G30 / G40','1967–1997','V8 3.0, 3.4 puis 4.0','','Trente ans de production quasiment sans changement de ligne, réservée au marché japonais.'],
