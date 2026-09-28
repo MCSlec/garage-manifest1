@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.180.0';
+  const VERSION_MODULE = '20.181.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -2252,12 +2252,12 @@
     'dodge-challenger': { nom:'Dodge Challenger', an:[2008], pays:'États-Unis',
       ch:485, nm:644, kg:1900, cyl:6.4, arch:'V6 et V8 HEMI', adm:'atmo', pos:'avant', tx:'propulsion / intégrale', bv:'A8',
       note:"Le muscle car le plus fidèle au style rétro des années 70. Le V8 HEMI et son claquement caractéristique. Les versions Hellcat et Demon (fiches dédiées) dépassent les 700 ch." },
-    'dodge-charger': { nom:'Dodge Charger', an:[1966], pays:'États-Unis',
-      ch:485, nm:644, kg:2000, cyl:6.4, arch:'V8 HEMI', adm:'atmo', pos:'avant', tx:'propulsion / intégrale', bv:'A8',
-      note:"La berline muscle à quatre portes, star de la série Shérif fais-moi peur (le « General Lee ») puis de Fast and Furious. Seule berline à proposer un V8 HEMI de plus de 700 ch en Hellcat." },
-    'chevrolet-corvette': { nom:'Chevrolet Corvette (C5–C7)', an:[1997,2019], pays:'États-Unis',
-      ch:659, nm:881, kg:1500, cyl:6.2, arch:'V8', adm:'atmo / compresseur', pos:'avant', tx:'propulsion', bv:'M7 / A8',
-      note:"Les dernières Corvette à moteur avant, avant la révolution de la C8 centrale. La Z06 C7 à compresseur et la ZR1 dépassaient les 650 ch, pour un rapport performance/prix imbattable." },
+    'dodge-charger': { nom:'Dodge Charger (berline)', an:[2006,2023], pays:'États-Unis',
+      ch:296, nm:353, kg:1795, cyl:3.6, arch:'V6 Pentastar', adm:'atmo', pos:'avant', tx:'propulsion', bv:'A8',
+      note:"La berline muscle à quatre portes qui a ressuscité le nom Charger en 2006. Seule berline à proposer un V8 HEMI de plus de 700 ch en Hellcat. Chiffres de la Charger SXT 3.6 V6 (292 hp et 260 lb-ft, norme SAE net) ; elle portait ceux de la SRT 392, et sa note lui attribuait le « General Lee », qui est la Charger de 1969." },
+    'chevrolet-corvette': { nom:'Chevrolet Corvette (C5)', an:[1997,2004], pays:'États-Unis',
+      ch:345, nm:483, kg:1548, cyl:5.7, arch:'V8 LS1', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M6 / A4', flou:['kg'],
+      note:"La C5 inaugure le V8 LS1 en aluminium et la boîte accolée au pont arrière, pour une répartition des masses proche de 50/50. Chiffres de la C5 LS1 ; la fiche portait ceux de la C7 Z06 (659 ch), qui relève de l\'entrée Corvette Z06." },
     'ford-f150': { nom:'Ford F-150', an:[1975], pays:'États-Unis',
       ch:450, nm:691, kg:2200, cyl:3.5, arch:'V6 EcoBoost, V8, électrique', adm:'turbo', pos:'avant', tx:'propulsion / 4x4', bv:'A10',
       note:"Le véhicule le plus vendu aux États-Unis depuis plus de quarante ans. La version Lightning est 100 % électrique et peut alimenter une maison entière en cas de coupure de courant." },
@@ -2311,9 +2311,9 @@
     'tesla-modely': { nom:'Tesla Model Y', an:[2020], pays:'États-Unis',
       ch:534, nm:660, kg:2000, cyl:0, arch:'deux moteurs électriques', adm:'électrique', pos:'avant/arrière', tx:'intégrale', bv:'A1',
       note:"Le véhicule le plus vendu au monde en 2023, toutes énergies confondues. SUV dérivé de la Model 3, dont il partage 75 % des pièces. La version Performance dépasse les 530 ch." },
-    'tesla-models': { nom:'Tesla Model S', an:[2012], pays:'États-Unis',
-      ch:1020, nm:1420, kg:2200, cyl:0, arch:'trois moteurs électriques', adm:'électrique', pos:'avant/arrière', tx:'intégrale', bv:'A1',
-      note:"La Plaid à trois moteurs abat le 0-100 en moins de 2,1 s, faisant d\'elle l\'une des voitures de série les plus rapides du monde. Le volant « yoke » en forme de manche d\'avion a fait débat." },
+    'tesla-models': { nom:'Tesla Model S Plaid', an:[2021], pays:'États-Unis',
+      ch:1020, nm:1420, kg:2200, cyl:0, arch:'trois moteurs électriques', adm:'électrique', pos:'avant/arrière', tx:'intégrale', bv:'A1', flou:['nm','kg'],
+      note:"La Plaid à trois moteurs abat le 0-100 en moins de 2,1 s, faisant d\'elle l\'une des voitures de série les plus rapides du monde. Le volant « yoke » en forme de manche d\'avion a fait débat. Tesla ne publie pas de couple : la valeur est une estimation d\'agrégateur." },
     'tesla-cybertruck': { nom:'Tesla Cybertruck', an:[2023], pays:'États-Unis',
       ch:845, nm:1170, kg:3009, cyl:0, arch:'trois moteurs électriques', adm:'électrique', pos:'avant/arrière', tx:'intégrale', bv:'A1',
       note:"Carrosserie en acier inoxydable non peint, pliée à froid. Architecture électrique 48 V, une première dans l\'automobile grand public. Sa vitre « incassable » brisée en direct lors de la présentation est restée célèbre." },
@@ -2338,9 +2338,9 @@
     'renault-zoe': { nom:'Renault Zoé', an:[2012,2024], pays:'France',
       ch:108, nm:225, kg:1502, cyl:0, arch:'moteur électrique', adm:'électrique', pos:'avant', tx:'traction', bv:'A1',
       note:"La première électrique de grande diffusion en France. Longtemps la plus vendue d\'Europe. Sa batterie était à l\'origine louée séparément pour abaisser le prix d\'achat, un modèle inédit. Chiffres de la Zoé II R110 52 kWh ; elle portait ceux de la R135." },
-    'fiat-500e': { nom:'Fiat 500e', an:[2020], pays:'Italie',
-      ch:118, nm:220, kg:1300, cyl:0, arch:'moteur électrique', adm:'électrique', pos:'avant', tx:'traction', bv:'A1',
-      note:"La 500 renaît en électrique sur une plateforme entièrement nouvelle, sans version thermique. Fidèle au charme de l\'originale de 1957, adaptée à la ville moderne." },
+    'fiat-500e': { nom:'Abarth 500e', an:[2023], pays:'Italie',
+      ch:155, nm:235, kg:1410, cyl:0, arch:'moteur électrique', adm:'électrique', pos:'avant', tx:'traction', bv:'A1', flou:['kg'],
+      note:"La 500 renaît en électrique sur une plateforme entièrement nouvelle, sans version thermique ; Abarth en tire sa première sportive électrique. Chiffres de l\'Abarth 500e (155 ch) ; la fiche portait ceux de la Fiat 500e de 118 ch." },
     'vw-id3': { nom:'Volkswagen ID.3', an:[2019], pays:'Allemagne',
       ch:204, nm:310, kg:1815, cyl:0, arch:'moteur électrique arrière', adm:'électrique', pos:'arrière', tx:'propulsion', bv:'A1', flou:['nm','kg'],
       note:"La première VW sur plateforme électrique dédiée MEB, présentée comme l\'héritière spirituelle de la Coccinelle et de la Golf pour l\'ère électrique. La GTX à 326 ch en est la version sportive. Chiffres de l\'ID.3 Pro 58 kWh (204 ch) ; elle portait ceux de la GTX. Couple selon millésime (310 Nm au lancement)." },
@@ -2426,8 +2426,8 @@
     'mazda-3': { nom:'Mazda 3', an:[2003], pays:'Japon',
       ch:186, nm:240, kg:1400, cyl:2.0, arch:'4 cyl. SkyActiv-X', adm:'atmo', pos:'avant', tx:'traction', bv:'M6 / A6',
       note:"Le SkyActiv-X est le premier moteur essence de série à allumage par compression (comme un diesel), une prouesse d\'ingénierie. Style « Kodo » très travaillé, ambiance intérieure soignée." },
-    'hyundai-i30': { nom:'Hyundai i30', an:[2007], pays:'Corée du Sud',
-      ch:280, nm:392, kg:1430, cyl:2.0, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M6 / DCT 8',
+    'hyundai-i30': { nom:'Hyundai i30 N', an:[2017], pays:'Corée du Sud',
+      ch:280, nm:392, kg:1430, cyl:2.0, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M6 / DCT 8', flou:['kg'],
       note:"La i30 N, première sportive de la division N de Hyundai, développée par Albert Biermann (ex-patron de BMW M). Un coup de maître qui a immédiatement placé la marque sur la carte des GTI." },
     'seat-leon': { nom:'SEAT León', an:[1999], pays:'Espagne',
       ch:150, nm:250, kg:1241, cyl:1.5, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M6 / DSG 7',
@@ -3463,9 +3463,9 @@
     'ford-puma-st': { nom:'Ford Puma ST', an:[2020], pays:'États-Unis',
       ch:200, nm:320, kg:1358, cyl:1.5, arch:'3 cyl. EcoBoost', adm:'turbo', pos:'avant', tx:'traction', bv:'M6',
       note:"Trois cylindres seulement pour 200 ch, avec le différentiel à glissement limité mécanique de la Fiesta ST et un châssis réglé par la même équipe. La preuve qu\'un petit SUV peut encore se conduire." },
-    'skoda-fabia-rs': { nom:'Škoda Fabia RS', an:[2010,2014], pays:'Rép. tchèque',
+    'skoda-fabia-rs': { nom:'Škoda Fabia RS', an:[2003,2014], pays:'Rép. tchèque',
       ch:180, nm:250, kg:1243, cyl:1.4, arch:'4 en ligne TSI', adm:'compresseur + turbo', pos:'avant', tx:'traction', bv:'DSG 7',
-      note:"Le bloc « twincharger » du groupe VW : un compresseur volumétrique pour le bas du régime, un turbo pour le haut. 180 ch d\'un 1,4 litre, sans trou à l\'accélération — une prouesse technique que VW a fini par abandonner pour sa complexité." },
+      note:"Le bloc « twincharger » du groupe VW : un compresseur volumétrique pour le bas du régime, un turbo pour le haut. 180 ch d\'un 1,4 litre, sans trou à l\'accélération — une prouesse technique que VW a fini par abandonner pour sa complexité. Chiffres de la RS II (5J, 2010-2014) ; la première RS (6Y, 2003-2007) était un diesel 1.9 TDI de 131 ch, au sélecteur." },
 
     /* ---- Vague 6 : compactes sportives européennes --------------------- */
     'cupra-formentor-vz5': { nom:'Cupra Formentor VZ5', an:[2022,2023], pays:'Espagne',
@@ -5575,7 +5575,8 @@
       ]},
     ],
     'skoda-fabia-rs': [
-      ['5J RS','2003–2010','1.9 TDI puis 1.4 TSI double suralimentation','130–180 ch','La RS 2010 combine turbo et compresseur sur 1,4 L.'],
+      ['6Y RS','2003–2007','1.9 TDI','131 ch','Une sportive diesel : 310 Nm dès 1 900 tr/min.'],
+      ['5J RS','2010–2014','1.4 TSI double suralimentation','180 ch','Combine turbo et compresseur sur 1,4 L.'],
     ],
     'seat-leon': [
       { c:'1M / 1P', a:'1999–2012', m:[
@@ -11007,7 +11008,7 @@
     { id:'vw-up-gti-mk', brand:'Volkswagen', model:'up! GTI', yr:'2018–2023', c:'🇩🇪', cat:'Sportive', r:'peucommun' },
     { id:'nissan-juke-nismo', brand:'Nissan', model:'Juke Nismo RS', yr:'2014–2019', c:'🇯🇵', cat:'Sportive', r:'rare' },
     { id:'ford-puma-st', brand:'Ford', model:'Puma ST', yr:'2020–', c:'🇬🇧', cat:'Sportive', r:'peucommun' },
-    { id:'skoda-fabia-rs', brand:'Škoda', model:'Fabia RS', yr:'2003–2010', c:'🇨🇿', cat:'Sportive', r:'peucommun' },
+    { id:'skoda-fabia-rs', brand:'Škoda', model:'Fabia RS', yr:'2003–2014', c:'🇨🇿', cat:'Sportive', r:'peucommun' },
     { id:'seat-leon-cupra', brand:'Cupra', model:'León Cupra', yr:'1999–', c:'🇪🇸', cat:'Sportive', r:'peucommun' },
     { id:'seat-ibiza-cupra', brand:'Cupra', model:'Ibiza Cupra / Bocanegra', yr:'2002–2015', c:'🇪🇸', cat:'Sportive', r:'peucommun' },
     { id:'renault-clio-rs16', brand:'Renault', model:'Clio R.S. 16 (concept)', yr:'2016', c:'🇫🇷', cat:'Concept', r:'legendaire' },
@@ -15929,6 +15930,27 @@
     },
 
     /* ---- Vague 15 ---------------------------------------------------- */
+
+    'skoda-fabia-rs': {
+      types: [
+        {
+          id: '6y', label: '6Y (2003–2007)',
+          variants: [
+            { id:'6y-1.9tdi-131', label:'1.9 TDI 131',
+              ch:131, nm:310, kg:1245, cyl:1.896, arch:'4 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 6',
+              note:"Injecteurs-pompes et 310 Nm dès 1 900 tr/min : la RS de la première génération était un diesel." },
+          ]
+        },
+        {
+          id: '5j', label: '5J (2010–2014)',
+          variants: [
+            { id:'5j-1.4tsi-180', label:'1.4 TSI 180',
+              ch:180, nm:250, kg:1243, cyl:1.390, arch:'4 cyl.', adm:'compresseur + turbo', pos:'avant transversal', tx:'traction', bv:'DSG 7',
+              note:"Le « twincharger » : compresseur volumétrique en bas du régime, turbo en haut." },
+          ]
+        }
+      ]
+    },
 
     'peugeot-504-coupe': {
       types: [
