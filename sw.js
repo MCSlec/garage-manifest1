@@ -4,12 +4,12 @@
    cache suffit à rendre toute l'app disponible hors-ligne. Les données (photos,
    collection) vivent dans IndexedDB côté page, pas ici.
 
-   v20.171.0 — MOTOR_SPECS vague E8 (Tucson IV, Sportage V, Arona) et 5 fiches corrigées.
+   v20.172.0 — 11 fiches courantes ramenées à leur version de base (règle GTA).
              Le numéro DOIT être incrémenté à chaque modification d'un fichier
              mis en cache, sinon l'ancienne copie est resservie indéfiniment.
 */
 
-const VERSION = "garage-v20.171.0";
+const VERSION = "garage-v20.172.0";
 
 /* ESSENTIEL : sans ces fichiers, l'app ne démarre pas hors-ligne.
    Mis en cache de façon atomique — si l'un manque, l'installation doit échouer
