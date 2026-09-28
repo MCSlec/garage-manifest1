@@ -363,6 +363,7 @@ compléter mécaniquement fige l'erreur. Cas réellement rencontrés et tranché
 **Le réflexe :** avant de chercher un chiffre manquant, vérifie que `ch` désigne
 bien la voiture nommée. Une incohérence ici est la racine des bugs
 Giulia/Quadrifoglio et M2 CS/M4 CSL — la fiche affiche une **autre voiture**.
+- **Sélecteurs rattachés à la bonne entrée** (28/09) : celui de la 205 (GTI seules) → 205 GTI ; celui de la 504 (coupé/cabriolet) → 504 Coupé ; celui de la Xantia (Activa seules) → Xantia Activa ; Rallye 1.3 retirée de la 106 → 106 Rallye, désormais en deux phases (1.3 / 1.6).
 - **Exclusions déjà appliquées** au titre de cette règle : 911 Turbo/GT3/GT2 RS,
   M3 CSL/Touring, Golf R/R32, Mégane R.S./R26.R, 206 WRC, séries d'homologation
   en très petit volume (ex. Alfa GTV6 3.0 sud-africaine, 212 ex.).
@@ -382,7 +383,7 @@ incrémenter conjointement :**
 2. `VERSION` (`"garage-v…"`) dans `sw.js` (ligne ~12).
 
 Ces deux numéros sont **tenus synchronisés** (au 28/09/2026 : `gm-specs.js` →
-`20.178.0`, `sw.js` → `garage-v20.178.0`). `VERSION_MODULE` s'affiche en outre
+`20.179.0`, `sw.js` → `garage-v20.179.0`). `VERSION_MODULE` s'affiche en outre
 dans l'UI via `grefferVersion()`, ce qui permet de vérifier de visu quelle version
 tourne réellement sur l'appareil.
 
@@ -418,6 +419,7 @@ Ce qu'il attrape, et que ni l'œil ni `node --check` ne voient :
 | **`FUSIONS`** | Une fusion dont la cible n'est pas au catalogue rend les prises du joueur invisibles ; une `declinaison` mal orthographiée coche une case qui n'existe pas. Vérifié par mutation : les deux fautes, et un retrait abusif, remontent en ERREUR. |
 | **Jumelles à distance** | Le contrôle « copie-voisine » ne compare que des fiches **adjacentes**. Étendu à toutes les paires, il a trouvé 30 groupes de fiches identiques au chiffre près (ch, Nm, L, kg). La majorité suivait un seul motif : une entrée **courante** (CLA, A3, Octavia, Polo, Panamera, X5, TT, Tiguan, Série 1…) affichait les chiffres de sa **version sportive**, qui a pourtant sa propre entrée — la règle GTA (§4.5 bis) violée en silence, avec des ratios faux et une rareté perçue absurde. Les vraies jumelles (Aygo/C1, Berlingo/Partner, ID.4/Enyaq) sont nommées dans `JUMELLES_AVEREES`, avec leur justification. |
 | **Champs manquants / hors plage** | Complétude par champ, et incohérences d'ordre de grandeur. |
+| **Règle GTA dans les sélecteurs** | Une variante `MOTOR_SPECS` dont le libellé nomme une déclinaison qui a **sa propre entrée** (même marque, modèle qui prolonge celui de base : « 206 » → « 206 RC ») doit sortir du sélecteur de base (§4.5). Le commentaire annonçant ce contrôle existait **sans code** : il a laissé passer la 206 RC, les 106 Rallye / GTI, les Xantia Activa et un sélecteur de 205 qui ne contenait **que** des GTI. Vérifié par mutation. |
 | **Divergences `CARS` / `CATALOGUE_PLUS`** | Un id déclaré des deux côtés : `CARS` fait autorité, l'autre déclaration est **perdue en silence**. |
 | **Fiche ↔ variante** | La fiche `SPECS` et une variante `MOTOR_SPECS` qui décrivent le **même moteur** (appariées sur la cylindrée ± 60 cm³ **et** la puissance ± 6 ch) doivent afficher les mêmes chiffres, sinon le joueur lit deux valeurs selon qu'il a touché au sélecteur. 25 cas au premier passage (206 : 111 / 120 Nm ; C6 : 240 ch avec la cylindrée du 2.7 ; MR2 : 1 100 / 1 270 kg). Un champ `flou` d'un côté est ignoré (l'écart est annoncé). Exemptions nominatives : `MEME_MOTEUR_AUTRE_GENERATION`. Vérifié par mutation. |
 

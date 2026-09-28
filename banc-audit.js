@@ -714,9 +714,32 @@ function auditer() {
         precedente = v;
       }
     }
-    /* Règle GTA : une déclinaison qui a sa propre fiche catalogue ne doit
-       pas réapparaître comme variante du modèle de base. Contrôle
-       indicatif — le rapprochement se fait sur le libellé. */
+    /* Règle GTA (§4.5) : une déclinaison qui a sa propre fiche catalogue
+       ne doit pas réapparaître comme variante du modèle de base. Contrôle
+       indicatif — le rapprochement se fait sur le libellé : une entrée de
+       la même marque dont le modèle PROLONGE celui-ci (« 206 » → « 206
+       RC ») est une déclinaison ; si son suffixe (« RC ») apparaît comme
+       mot entier dans le libellé d'une variante, la variante la décrit.
+       Ce commentaire existait sans code derrière : il a laissé passer la
+       206 RC, les 106 Rallye / GTI et les deux Xantia Activa, et un
+       sélecteur de 205 qui ne contenait QUE des GTI. */
+    const base = carsFusionnes.find(x => x.id === idCat);
+    if (base) {
+      const sansAccent = s => String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+      const declinaisons = carsFusionnes.filter(x => x.brand === base.brand && x.id !== idCat
+        && sansAccent(x.model).startsWith(sansAccent(base.model)) && x.model.length > base.model.length);
+      for (const d of declinaisons) {
+        const suffixe = sansAccent(d.model.slice(base.model.length)).trim();
+        if (suffixe.length < 2) continue;
+        const motEntier = new RegExp('(^|[^a-z0-9])' + suffixe.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '($|[^a-z0-9])');
+        for (const t of bloc.types) for (const v of (t.variants || [])) {
+          if (motEntier.test(sansAccent(`${t.label} ${v.label}`))) {
+            signaler('ALERTE', 'RÈGLE GTA',
+              `${idCat}/${t.id}/${v.id} (« ${v.label} ») décrit ${d.id} (« ${d.model} »), qui a sa propre fiche : à retirer du sélecteur de base (§4.5)`);
+          }
+        }
+      }
+    }
   }
 
   /* --- E bis. Fiche ↔ variante : même moteur, chiffres divergents ------

@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.178.0';
+  const VERSION_MODULE = '20.179.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -170,7 +170,7 @@
       ch:133, nm:177, kg:950, cyl:1.6, arch:'4 cyl.', adm:'turbo / atmo', pos:'avant', tx:'traction', bv:'M5',
       note:"Les Fiesta sportives des années 80-90 : la XR2i atmosphérique et la RS Turbo, plus vive, aux jantes spécifiques et au bandeau latéral caractéristique. Des youngtimers populaires et joueuses, aujourd\'hui de plus en plus rares et prisées." },
     'peugeot-206-rc': { nom:'Peugeot 206 RC / GTi 180', an:[2003,2007], pays:'France',
-      ch:177, nm:202, kg:1037, cyl:2.0, arch:'4 cyl. 16v', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
+      ch:177, nm:202, kg:1100, cyl:2.0, arch:'4 cyl. 16v', adm:'atmo', pos:'avant', tx:'traction', bv:'M5', flou:['kg'],
       note:"La 206 la plus poussée, à moteur 2.0 16v atmosphérique de 177 ch (une puissance spécifique élevée pour l\'époque sans turbo). Un châssis joueur qui perpétue la tradition des petites Peugeot sportives. Vendue GTi 180 hors de France." },
 
     /* ===== FICHES COMPLÈTES — vague AX (vans, SUV, chinoises, curiosités) = */
@@ -794,8 +794,8 @@
       ch:103, nm:120, kg:794, cyl:1.3, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
       note:"La version allégée et épurée de la 205 GTI, pensée pour la compétition : moins de 800 kg, sans fioritures, un petit 1.3 vif à double carburateur. Considérée par beaucoup comme la 205 la plus pure à conduire. Une youngtimer très recherchée." },
     'peugeot-106-rallye': { nom:'Peugeot 106 Rallye', an:[1993,1998], pays:'France',
-      ch:103, nm:121, kg:825, cyl:1.6, arch:'4 cyl. 8v', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
-      note:"Dans la lignée de la 205 Rallye : une 106 dépouillée, légère, sans direction assistée ni équipements superflus, pour un plaisir de conduite brut. Un petit moteur vif à haut régime. La sportive d\'accès culte pour débuter en compétition." },
+      ch:100, nm:108, kg:825, cyl:1.3, arch:'4 cyl. 8v', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
+      note:"Dans la lignée de la 205 Rallye : une 106 dépouillée, légère, sans direction assistée ni équipements superflus, pour un plaisir de conduite brut. Un petit moteur vif à haut régime. La sportive d\'accès culte pour débuter en compétition. Chiffres de la phase 1 (1.3, 1993-1996) ; la phase 2 à moteur 1.6 de 103 ch figure au sélecteur. La fiche mêlait la puissance de l\'une et la masse de l\'autre." },
     'peugeot-406-coupe': { nom:'Peugeot 406 Coupé', an:[1997,2004], pays:'France',
       ch:210, nm:290, kg:1470, cyl:3.0, arch:'V6', adm:'atmo', pos:'avant', tx:'traction', bv:'M6 / A4',
       note:"Souvent cité comme l\'un des plus beaux coupés français jamais produits, dessiné et assemblé par Pininfarina en Italie. Une ligne intemporelle qui n\'a pas pris une ride. Le V6 offre une sonorité feutrée digne d\'une GT." },
@@ -832,7 +832,7 @@
       ch:85, nm:116, kg:720, cyl:1.4, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
       note:"Environ 720 kg : « elle consommait moins qu\'elle ne pesait », disaient les essayeurs. Un rapport poids/puissance excellent grâce à une légèreté extrême. La sportive populaire des années 80, aujourd\'hui rare car peu ont survécu." },
     'citroen-xantia-activa': { nom:'Citroën Xantia Activa', an:[1994,2001], pays:'France',
-      ch:190, nm:267, kg:1350, cyl:3.0, arch:'V6', adm:'atmo', pos:'avant', tx:'traction', bv:'A4',
+      ch:190, nm:267, kg:1468, cyl:3.0, arch:'V6', adm:'atmo', pos:'avant', tx:'traction', bv:'M5', flou:['kg'],
       note:"A détenu pendant plus de vingt ans le record du test de l\'élan (évitement à haute vitesse), à 85 km/h, devant toutes les supercars : son système hydraulique anti-roulis actif la maintient parfaitement à plat en virage. Un chef-d\'œuvre technique français méconnu." },
     'citroen-c4-cactus': { nom:'Citroën C4 Cactus', an:[2014,2020], pays:'France',
       ch:110, nm:205, kg:1000, cyl:1.2, arch:'3 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M5 / A6',
@@ -1250,7 +1250,7 @@
       ch:150, nm:190, kg:930, cyl:2.0, arch:'4 cyl.', adm:'atmo', pos:'central', tx:'propulsion', bv:'M5',
       note:"Une barquette radicale sans pare-brise à l\'origine (juste un déflecteur), châssis aluminium, moteur central. Un jouet de circuit produit à faible échelle par Renault Sport. Un OVNI dans la gamme d\'un constructeur généraliste." },
     'peugeot-106-gti': { nom:'Peugeot 106 GTI', an:[1996,2003], pays:'France',
-      ch:120, nm:145, kg:925, cyl:1.6, arch:'4 cyl. 16v', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
+      ch:120, nm:145, kg:950, cyl:1.6, arch:'4 cyl. 16v', adm:'atmo', pos:'avant', tx:'traction', bv:'M5', flou:['kg'],
       note:"Moins de 950 kg et un 1.6 16v vif : la GTI d\'accès des années 90, jumelle de la Citroën Saxo VTS. Un châssis joueur qui a formé des générations de jeunes conducteurs au plaisir de conduire." },
     'peugeot-309-gti16': { nom:'Peugeot 309 GTI 16', an:[1990,1993], pays:'France',
       ch:160, nm:180, kg:1050, cyl:1.9, arch:'4 cyl. 16v', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
@@ -15665,13 +15665,13 @@
 
     /* ---- Vague 7 ----------------------------------------------------- */
 
-    'citroen-xantia': {
+    'citroen-xantia-activa': {
       types: [
         {
           id: 'essence', label: 'Essence',
           variants: [
             { id:'3.0-v6-190', label:'3.0 V6 24V 190 Activa',
-              ch:190, nm:267, kg:1543, cyl:2.946, arch:'V6', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 5',
+              ch:190, nm:267, kg:1468, cyl:2.946, arch:'V6', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 5', flou:['kg'],
               note:"Suspension Activa à correction de roulis active — la Xantia qui ne prend jamais de gîte, même en virage serré." },
           ]
         },
@@ -15819,19 +15819,29 @@
 
     /* ---- Vague 12 ---------------------------------------------------- */
 
-    'peugeot-106': {
+    'peugeot-106-rallye': {
       types: [
         {
-          id: 'sportives', label: 'Sportives',
+          id: 'phase1', label: 'Phase 1 (1.3)',
           variants: [
             { id:'rallye-1.3-100', label:'Rallye 1.3 100',
-              ch:100, nm:110, kg:825, cyl:1.294, arch:'4 cyl. 8s', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 5',
+              ch:100, nm:108, kg:825, cyl:1.294, arch:'4 cyl. 8s', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 5',
               note:"Version d'homologation pour la classe rallye 1 300 cm³ : ni direction assistée, ni vitres électriques, ni condamnation centralisée — 825 kg, rupteur à 7 200 tr/min." },
-            { id:'s16-gti-120', label:'S16 / GTI 1.6 16V 120',
-              ch:120, nm:145, kg:950, cyl:1.587, arch:'4 cyl. 16s', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 5',
-              note:"Arrivée au restylage 1996 — 205 km/h, la plus rapide de toute la gamme 106. Badgée S16 ou GTI selon les marchés." },
           ]
         },
+        {
+          id: 'phase2', label: 'Phase 2 (1.6)',
+          variants: [
+            { id:'rallye-1.6-103', label:'Rallye 1.6 103',
+              ch:103, nm:132, kg:900, cyl:1.587, arch:'4 cyl. 8s', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 5', flou:['kg'],
+              note:"Le 1.6 8 soupapes (TU5J2) remplace le 1.3 : plus de couple, puissance maxi atteinte 1 000 tr/min plus bas." },
+          ]
+        }
+      ]
+    },
+
+    'peugeot-106': {
+      types: [
         {
           id: 'gamme', label: 'Gamme',
           variants: [
@@ -16028,9 +16038,6 @@
             { id:'2.0-s16-138', label:'2.0 S16 / GTi 138',
               ch:138, nm:190, kg:1050, cyl:1.997, arch:'4 cyl.', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 5',
               note:"L'héritière des GTI à l'arrivée de la 206, freins à disque aux quatre roues." },
-            { id:'2.0-rc-177', label:'2.0 RC / GTi 180',
-              ch:177, nm:200, kg:1159, cyl:1.997, arch:'4 cyl.', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 5',
-              note:"Calage variable des soupapes, rupteur près de 7 000 tr/min — la 206 de série la plus rapide, 220 km/h." },
           ]
         },
         {
