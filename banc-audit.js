@@ -742,6 +742,35 @@ function auditer() {
     }
   }
 
+  /* --- E ter. Hybrides Toyota / Lexus : aucun couple (§4.4) -----------
+     Dans l'Hybrid Synergy Drive, thermique et électrique sont reliés par
+     un train épicycloïdal : leurs couples ne s'additionnent jamais sur un
+     arbre commun, et Toyota ne publie aucun couple système. Tout `nm` sur
+     une fiche ou une variante hybride de ces marques est donc soit le
+     couple du seul thermique, soit une addition inventée. La règle était
+     écrite ; elle a été violée en silence sur la Corolla (fiche ET deux
+     variantes, dont une note affirmant « couple cumulé ») et la Century.
+     Les voitures de course sont hors champ (couple jamais publié, §4.4 bis). */
+  const marqueDe = new Map(carsFusionnes.map(c => [c.id, c]));
+  const estHsd = (id, x) => {
+    const c = marqueDe.get(id);
+    return c && /^(Toyota|Lexus)$/.test(c.brand) && c.cat !== 'Course'
+      && /hybride|hybrid/i.test(`${x.arch || ''} ${x.adm || ''} ${x.label || ''}`);
+  };
+  for (const [idCat, cle] of Object.entries(MAP)) {
+    const f = SPECS[cle];
+    if (f && f.nm != null && estHsd(idCat, f)) {
+      signaler('ALERTE', 'HYBRIDE HSD', `${idCat} : fiche hybride Toyota/Lexus avec un couple (${f.nm} Nm) — aucun couple système n'existe (§4.4)`);
+    }
+  }
+  for (const [idCat, bloc] of Object.entries(MOTOR_SPECS)) {
+    for (const t of (bloc.types || [])) for (const v of (t.variants || [])) {
+      if (v.nm != null && estHsd(idCat, v)) {
+        signaler('ALERTE', 'HYBRIDE HSD', `${idCat}/${t.id}/${v.id} : variante hybride Toyota/Lexus avec un couple (${v.nm} Nm) (§4.4)`);
+      }
+    }
+  }
+
   /* --- E bis. Fiche ↔ variante : même moteur, chiffres divergents ------
      La fiche SPECS et une variante MOTOR_SPECS qui décrivent le MÊME
      moteur doivent afficher les mêmes chiffres : sinon le joueur lit deux

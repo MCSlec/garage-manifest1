@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.179.0';
+  const VERSION_MODULE = '20.180.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -261,7 +261,7 @@
       ch:133, nm:160, kg:1050, cyl:1.6, arch:'4 cyl. 16v', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
       note:"La petite Twingo réveillée par Renault Sport à Dieppe : un 1.6 16v atmosphérique vif, un châssis Cup joueur, un poids plume. La sportive d\'accès la plus abordable de Renault Sport, aujourd\'hui une youngtimer attachante et sous-cotée." },
     'renault-clio-rs-line': { nom:'Renault Clio R.S. Line', an:[2019], pays:'France',
-      ch:140, nm:260, kg:1250, cyl:1.3, arch:'4 cyl. / hybride', adm:'turbo', pos:'avant', tx:'traction', bv:'EDC 7',
+      ch:140, nm:260, kg:1250, cyl:1.3, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'EDC 7',
       note:"La finition sportive de la Clio après l\'arrêt des vraies R.S. : look dynamique, sièges baquets, sans la mécanique survitaminée des générations précédentes. Un compromis entre l\'apparence sportive et l\'usage quotidien économique." },
     'mazda-mx5-rf': { nom:'Mazda MX-5 RF', an:[2016], pays:'Japon',
       ch:184, nm:205, kg:1072, cyl:2.0, arch:'4 cyl. SkyActiv', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M6', flou:['kg'],
@@ -1346,8 +1346,8 @@
       ch:280, nm:378, kg:1500, cyl:2.5, arch:'6 en ligne 1JZ-GTE', adm:'turbo', pos:'avant', tx:'propulsion', bv:'M5',
       note:"La berline sleeper par excellence : allure de voiture de représentant, mais le fameux six-cylindres turbo 1JZ (cousin du 2JZ de la Supra) sous le capot. Une base de drift et de préparation adorée, propulsion et discrétion." },
     'toyota-century': { nom:'Toyota Century', an:[1967], pays:'Japon',
-      ch:431, nm:520, kg:2000, cyl:5.0, arch:'V8 hybride (jadis V12)', adm:'atmo + électrique', pos:'avant', tx:'propulsion', bv:'e-CVT',
-      note:"La limousine officielle du Japon, réservée à l\'empereur, aux dirigeants et aux grands patrons. Le seul V12 japonais de série équipait la génération précédente. Sièges en tissu (jugé plus noble que le cuir au Japon), portes à fermeture assistée. Le luxe discret nippon." },
+      ch:431, kg:2000, cyl:5.0, arch:'V8 hybride (jadis V12)', adm:'atmo + électrique', pos:'avant', tx:'propulsion', bv:'e-CVT',
+      note:"La limousine officielle du Japon, réservée à l\'empereur, aux dirigeants et aux grands patrons. Le seul V12 japonais de série équipait la génération précédente. Sièges en tissu (jugé plus noble que le cuir au Japon), portes à fermeture assistée. Le luxe discret nippon. Puissance cumulée du V8 hybride ; la fiche portait le couple du seul thermique, alors qu\'aucun couple système n\'existe sur un hybride Toyota (§4.4)." },
     'lambo-espada': { nom:'Lamborghini Espada', an:[1968,1978], pays:'Italie',
       ch:350, nm:400, kg:1635, cyl:3.9, arch:'V12', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M5',
       note:"Une vraie quatre places à moteur V12 avant, dessinée par Marcello Gandini chez Bertone. Sa ligne basse et large, sa lunette arrière verticale : un GT familial radical. La Lamborghini la plus vendue de sa décennie." },
@@ -1604,8 +1604,8 @@
       ch:1350, kg:1240, cyl:2.9, arch:'V8 hybride', adm:'biturbo + électrique', pos:'central', tx:'intégrale', bv:'séquentielle 7',
       note:"Deux places en tandem (conducteur devant, passager derrière), disposition inédite issue de contraintes aérodynamiques. Structure conçue et fabriquée par intelligence artificielle et impression 3D, une première industrielle." },
     'lexus-lc500': { nom:'Lexus LC 500', an:[2017], pays:'Japon',
-      ch:477, nm:540, kg:1935, cyl:5.0, arch:'V8 (ou hybride)', adm:'atmo', pos:'avant', tx:'propulsion', bv:'A10',
-      note:"Un grand coupé au design de concept-car passé en production quasi intact, chose rare. Le V8 5.0 atmosphérique à la sonorité travaillée, sur une boîte à dix rapports. La preuve que Lexus peut faire de l\'émotion." },
+      ch:477, nm:540, kg:1935, cyl:5.0, arch:'V8', adm:'atmo', pos:'avant', tx:'propulsion', bv:'A10',
+      note:"Un grand coupé au design de concept-car passé en production quasi intact, chose rare. Le V8 5.0 atmosphérique à la sonorité travaillée, sur une boîte à dix rapports. La preuve que Lexus peut faire de l\'émotion. Chiffres du LC 500 à V8 ; la LC 500h hybride, sans couple système publié, n\'est pas décrite ici." },
     'lexus-rcf': { nom:'Lexus RC F', an:[2014], pays:'Japon',
       ch:481, nm:530, kg:1765, cyl:5.0, arch:'V8', adm:'atmo', pos:'avant', tx:'propulsion', bv:'A8',
       note:"Le coupé sportif de Lexus et son V8 5.0 atmosphérique, à contre-courant du downsizing turbo ambiant. La Track Edition, allégée en carbone, affûte le tout pour la piste. Fiabilité et sonorité au rendez-vous." },
@@ -2418,8 +2418,8 @@
       ch:130, kg:1090, cyl:1.5, arch:'3 cyl. hybride', adm:'atmo + électrique', pos:'avant', tx:'traction', bv:'e-CVT',
       note:"Voiture de l\'Année 2021. Championne de la fiabilité et de la sobriété grâce à l\'hybride Toyota. À ne pas confondre avec la GR Yaris, sa cousine survitaminée de rallye (fiche dédiée). Chiffres de la Yaris 130h (2024) ; pas de couple affiché : dans l\'hybride Toyota, thermique et électrique sont reliés par un train épicycloïdal, et aucun couple système n\'est publié." },
     'toyota-corolla': { nom:'Toyota Corolla', an:[1966], pays:'Japon',
-      ch:196, nm:190, kg:1350, cyl:2.0, arch:'4 cyl. hybride', adm:'atmo + électrique', pos:'avant', tx:'traction', bv:'e-CVT',
-      note:"La voiture la plus vendue de l\'histoire de l\'automobile : plus de 50 millions d\'exemplaires depuis 1966. Symbole mondial de la fiabilité et du pragmatisme Toyota." },
+      ch:122, kg:1285, cyl:1.8, arch:'4 cyl. hybride', adm:'atmo + électrique', pos:'avant', tx:'traction', bv:'e-CVT', flou:['kg'],
+      note:"La voiture la plus vendue de l\'histoire de l\'automobile : plus de 50 millions d\'exemplaires depuis 1966. Symbole mondial de la fiabilité et du pragmatisme Toyota. Chiffres de la E210 1.8 Hybrid 122, puissance cumulée et sans couple (hybride Toyota) ; elle portait 196 ch et le couple du seul moteur thermique 2.0." },
     'honda-civic': { nom:'Honda Civic', an:[1972], pays:'Japon',
       ch:184, nm:240, kg:1400, cyl:2.0, arch:'4 cyl. hybride (Type R : turbo)', adm:'atmo + électrique', pos:'avant', tx:'traction', bv:'e-CVT',
       note:"Compacte fiable et innovante depuis 1972. La lignée culmine avec la Type R, référence des tractions sportives. La 8e génération, au style « vaisseau spatial », a marqué les années 2000." },
@@ -2721,8 +2721,8 @@
       ch:160, nm:260, kg:1400, cyl:1.3, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction / intégrale', bv:'M6 / EDC',
       note:"SUV compact cousin du Nissan Qashqai, avec lequel il partage sa plateforme. Grand succès commercial pour Renault sur le segment le plus disputé du marché." },
     'dacia-bigster': { nom:'Dacia Bigster', an:[2025], pays:'Roumanie',
-      ch:155, nm:250, kg:1450, cyl:1.8, arch:'4 cyl. hybride', adm:'atmo + électrique', pos:'avant', tx:'traction / intégrale', bv:'A',
-      note:"Le plus grand Dacia jamais produit : un SUV familial spacieux au prix caractéristique de la marque. La stratégie low-cost appliquée au segment C." },
+      ch:155, kg:1487, cyl:1.8, arch:'4 cyl. hybride', adm:'atmo + électrique', pos:'avant', tx:'traction', bv:'A', flou:['kg'],
+      note:"Le plus grand Dacia jamais produit : un SUV familial spacieux au prix caractéristique de la marque. La stratégie low-cost appliquée au segment C. Chiffres du Bigster Hybrid 155 (E-Tech) : thermique 1.8 de 170 Nm et moteur électrique de 205 Nm, sans couple système publié." },
     'peugeot-boxer': { nom:'Peugeot Boxer', an:[1994], pays:'France',
       ch:180, nm:400, kg:2000, cyl:2.2, arch:'4 cyl. diesel', adm:'turbo', pos:'avant', tx:'traction', bv:'M6',
       note:"Grand fourgon né du partenariat PSA-Fiat (Sevel), jumeau du Citroën Jumper et du Fiat Ducato. Base courante de camping-cars." },
@@ -16964,8 +16964,8 @@
           id: 'c5-hybride', label: 'Clio V — Hybride',
           variants: [
             { id:'c5-etech-145', label:'1.6 E-Tech 145',
-              ch:145, nm:250, kg:1238, cyl:1.598, arch:'4 cyl. + 2 moteurs électriques', adm:'atmo + hybride', pos:'avant transversal', tx:'traction', bv:'auto 4 (sans embrayage)',
-              note:"Boîte à crabots sans embrayage, inspirée de la Formule 1 — puissance cumulée, le thermique seul fait 91 ch." },
+              ch:145, kg:1238, cyl:1.598, arch:'4 cyl. + 2 moteurs électriques', adm:'atmo + hybride', pos:'avant transversal', tx:'traction', bv:'auto 4 (sans embrayage)',
+              note:"Boîte à crabots sans embrayage, inspirée de la Formule 1 — puissance cumulée, le thermique seul fait 91 ch (144 Nm), le moteur électrique 205 Nm. Renault ne publie pas de couple système : le champ reste vide, comme pour Arkana, Austral et Rafale." },
           ]
         },
         {
@@ -17123,10 +17123,10 @@
           id: 'e210', label: 'E210 (2019–) — Hybride',
           variants: [
             { id:'e210-1.8h-122', label:'1.8 Hybrid 122',
-              ch:122, nm:230, kg:1285, cyl:1.798, arch:'4 cyl. + moteur électrique', adm:'atmo + hybride', pos:'avant transversal', tx:'traction', bv:'e-CVT',
-              note:"Le retour du nom Corolla en Europe en 2019, après douze ans d'« Auris » — hybride non rechargeable, couple cumulé." },
+              ch:122, kg:1285, cyl:1.798, arch:'4 cyl. + moteur électrique', adm:'atmo + hybride', pos:'avant transversal', tx:'traction', bv:'e-CVT',
+              note:"Le retour du nom Corolla en Europe en 2019, après douze ans d'« Auris » — hybride non rechargeable ; pas de couple système publié, thermique et électrique étant reliés par un train épicycloïdal (§4.4)." },
             { id:'e210-2.0h-180', label:'2.0 Hybrid 180',
-              ch:180, nm:286, kg:1340, cyl:1.987, arch:'4 cyl. + moteur électrique', adm:'atmo + hybride', pos:'avant transversal', tx:'traction', bv:'e-CVT',
+              ch:180, kg:1340, cyl:1.987, arch:'4 cyl. + moteur électrique', adm:'atmo + hybride', pos:'avant transversal', tx:'traction', bv:'e-CVT',
               note:"Moteur Dynamic Force à taux de compression de 14:1 — un record pour un bloc essence de série à son lancement." },
           ]
         }
