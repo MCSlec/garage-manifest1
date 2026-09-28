@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.167.0';
+  const VERSION_MODULE = '20.168.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -514,8 +514,8 @@
       ch:90, nm:120, kg:915, cyl:1.2, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M5', flou:['kg'],
       note:"La citadine japonaise fiable et joueuse, dont la version Sport (moins d\'une tonne) est l\'une des GTI modernes les plus légères et abordables. Un châssis vif qui privilégie le plaisir. Chiffres de la Swift 1.2 Dualjet (2017) ; la Swift Sport a sa propre fiche." },
     'skoda-superb': { nom:'Škoda Superb', an:[2001], pays:'Tchéquie',
-      ch:280, nm:400, kg:1550, cyl:2.0, arch:'4 cyl., hybride', adm:'turbo', pos:'avant', tx:'traction / 4x4', bv:'DSG 7',
-      note:"L\'habitabilité arrière de référence, digne d\'une limousine, à prix contenu. Le coffre « TwinDoor » de la 2e génération (à la fois malle et hayon) était une astuce géniale. La grande routière familiale maligne du groupe VW." },
+      ch:150, nm:250, kg:1467, cyl:1.5, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'DSG 7', flou:['kg'],
+      note:"L\'habitabilité arrière de référence, digne d\'une limousine, à prix contenu. Le coffre « TwinDoor » de la 2e génération (à la fois malle et hayon) était une astuce géniale. La grande routière familiale maligne du groupe VW. Chiffres de la Superb III 1.5 TSI 150 ; elle portait ceux du 2.0 TSI 280 à quatre roues motrices, sommet de la gamme." },
     'peugeot-402': { nom:'Peugeot 402', an:[1935,1942], pays:'France',
       ch:63, kg:1150, cyl:2.0, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M3',
       note:"Le style aérodynamique « fuseau Sochaux » des années 30, avec ses phares intégrés derrière la calandre, une audace stylistique. La Éclipse à toit rigide escamotable électriquement était en avance de 60 ans sur les coupés-cabriolets modernes." },
@@ -714,8 +714,8 @@
 
     /* ===== FICHES COMPLÈTES — vague AM (populaires + curiosités) ========= */
     'dacia-logan': { nom:'Dacia Logan', an:[2004], pays:'Roumanie',
-      ch:100, nm:200, kg:1050, cyl:1.0, arch:'3 cyl., diesel, GPL', adm:'turbo', pos:'avant', tx:'traction', bv:'M6',
-      note:"La voiture qui a créé le segment low-cost moderne en Europe : conçue pour un budget serré avec de la mécanique Renault éprouvée. Un succès commercial phénoménal qui a sauvé Dacia et inspiré toute l\'industrie sur le marché de l\'entrée de gamme." },
+      ch:100, nm:170, kg:1121, cyl:1.0, arch:'3 cyl. bicarburation', adm:'turbo', pos:'avant', tx:'traction', bv:'M6', flou:['kg'],
+      note:"La voiture qui a créé le segment low-cost moderne en Europe : conçue pour un budget serré avec de la mécanique Renault éprouvée. Un succès commercial phénoménal qui a sauvé Dacia et inspiré toute l\'industrie sur le marché de l\'entrée de gamme. Chiffres de la Logan III ECO-G 100, essence et GPL." },
     'nissan-cube': { nom:'Nissan Cube', an:[1998,2019], pays:'Japon',
       ch:122, nm:172, kg:1200, cyl:1.8, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'CVT',
       note:"Style cubique totalement assumé, avec une lunette arrière asymétrique enveloppante (le pare-brise arrière déborde d\'un seul côté). Un objet de design urbain culte au Japon, aux antipodes des lignes fuyantes conventionnelles." },
@@ -1748,8 +1748,8 @@
       ch:590, nm:730, kg:2100, cyl:3.8, arch:'V8 (Ferrari) / V6', adm:'biturbo', pos:'avant', tx:'intégrale', bv:'A8',
       note:"Le premier SUV de Maserati, nommé d\'après un vent chaud de Méditerranée. La version Trofeo reçoit le V8 3.8 d\'origine Ferrari, à la sonorité magnifique. Un SUV pensé avant tout pour le plaisir de conduite." },
     'lancia-ypsilon': { nom:'Lancia Ypsilon', an:[1995], pays:'Italie',
-      ch:145, nm:230, kg:1300, cyl:1.2, arch:'4 cyl. / électrique', adm:'turbo', pos:'avant', tx:'traction', bv:'A6',
-      note:"Citadine chic, longtemps le seul modèle maintenant la marque Lancia en vie sur le seul marché italien. La dernière génération, électrique, marque le retour de Lancia à l\'international et en sport (HF)." },
+      ch:101, nm:205, kg:1282, cyl:1.2, arch:'3 cyl.', adm:'turbo + hybridation légère 48 V', pos:'avant', tx:'traction', bv:'DCT 6', flou:['kg'],
+      note:"Citadine chic, longtemps le seul modèle maintenant la marque Lancia en vie sur le seul marché italien. La dernière génération, électrique, marque le retour de Lancia à l\'international et en sport (HF). Chiffres de l\'Ypsilon IV (2024) Hybride 100." },
     'opel-astra': { nom:'Opel Astra', an:[1991], pays:'Allemagne',
       ch:130, nm:230, kg:1266, cyl:1.2, arch:'3 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M6 / A8',
       note:"La compacte de grande diffusion d\'Opel, rivale de la Golf, vendue Vauxhall au Royaume-Uni. Les versions OPC/GSi turbo ont apporté une touche sportive. La dernière génération partage sa base avec la Peugeot 308. Chiffres de l\'Astra L 1.2 Turbo 130." },
@@ -1791,8 +1791,8 @@
       ch:50, nm:100, kg:750, cyl:1.6, arch:'flat-4', adm:'atmo', pos:'arrière', tx:'propulsion', bv:'M4',
       note:"Plus de 21 millions d\'exemplaires sur un même concept pendant 65 ans, un record. Voulue par Ferdinand Porsche comme « la voiture du peuple ». Son moteur à plat refroidi par air, en porte-à-faux arrière, a inspiré la 911." },
     'smart-fortwo': { nom:'Smart Fortwo', an:[1998], pays:'Allemagne',
-      ch:109, nm:170, kg:750, cyl:0.9, arch:'3 cyl. / électrique', adm:'turbo', pos:'arrière', tx:'propulsion', bv:'robotisée 5',
-      note:"2,50 m de long : elle se gare en créneau perpendiculairement au trottoir. Cellule de sécurité « Tridion » apparente et colorée. Née d\'un projet commun entre Mercedes et l\'horloger Swatch (d\'où le « S » de Smart)." },
+      ch:71, nm:91, kg:880, cyl:1.0, arch:'3 cyl.', adm:'atmo', pos:'arrière', tx:'propulsion', bv:'M5', flou:['kg'],
+      note:"2,50 m de long : elle se gare en créneau perpendiculairement au trottoir. Cellule de sécurité « Tridion » apparente et colorée. Née d\'un projet commun entre Mercedes et l\'horloger Swatch (d\'où le « S » de Smart). Chiffres de la Fortwo 453 1.0 71 ; elle portait ceux de la Brabus 109." },
     'skoda-octavia-rs': { nom:'Škoda Octavia RS', an:[2001], pays:'Tchéquie',
       ch:265, nm:370, kg:1450, cyl:2.0, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction / 4x4', bv:'M6 / DSG',
       note:"La sportive discrète du groupe VW : la mécanique de la Golf GTI dans une carrosserie spacieuse, souvent en break. Le combo espace + performance + prix contenu en fait un favori des connaisseurs et des familles." },
@@ -1938,8 +1938,8 @@
       ch:18, nm:35, kg:500, cyl:0.5, arch:'2 cyl. refroidi par air', adm:'atmo', pos:'arrière', tx:'propulsion', bv:'M4',
       note:"La voiture qui a motorisé l\'Italie de l\'après-guerre, plus de 3,8 millions d\'exemplaires. Dessinée par Dante Giacosa. Sa bouille attachante en a fait un symbole national italien, comme la 2CV en France." },
     'fiat-panda': { nom:'Fiat Panda', an:[1980], pays:'Italie',
-      ch:100, nm:145, kg:850, cyl:0.9, arch:'2 à 4 cyl.', adm:'turbo / atmo', pos:'avant', tx:'traction / 4x4', bv:'M5/6',
-      note:"Dessinée par Giugiaro comme une « pièce à vivre » sur roues, d\'une simplicité assumée. La Panda 4x4, plus petite 4x4 du marché, est culte en montagne. Voiture de l\'Année 2004 pour la deuxième génération." },
+      ch:69, nm:102, kg:940, cyl:1.2, arch:'4 cyl. 8v', adm:'atmo', pos:'avant', tx:'traction', bv:'M5', flou:['kg'],
+      note:"Dessinée par Giugiaro comme une « pièce à vivre » sur roues, d\'une simplicité assumée. La Panda 4x4, plus petite 4x4 du marché, est culte en montagne. Voiture de l\'Année 2004 pour la deuxième génération. Chiffres de la Panda III 1.2 69 ; la Panda 4x4 a sa propre fiche." },
     'fiat-uno': { nom:'Fiat Uno', an:[1983,1995], pays:'Italie',
       ch:118, nm:180, kg:840, cyl:1.4, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M5',
       note:"Voiture de l\'Année 1984, dessinée par Giugiaro. La Turbo i.e., à 118 ch pour moins de 900 kg, était une petite bombe redoutable, rivale des GTI de l\'époque. Un immense succès populaire européen." },
@@ -16123,6 +16123,86 @@
               note:"Turbos plus gros, 280 km/h — même poids que la version de base." },
           ]
         }
+      ]
+    },
+
+    /* ---- Vague E6 (28/09/2026) : Panda III, Superb III, Fortwo 453, Ypsilon IV. */
+    'fiat-panda': {
+      types: [
+        {
+          id: 'p3-essence', label: 'Panda III — Essence',
+          variants: [
+            { id:'p3-1.2-69', label:'1.2 69',
+              ch:69, nm:102, kg:940, cyl:1.242, arch:'4 cyl. 8v', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 5', flou:['kg'],
+              note:"Le moteur Fire, le même que dans la 500." },
+            { id:'p3-hybrid-70', label:'1.0 Hybrid 70',
+              ch:70, nm:92, kg:1045, cyl:0.999, arch:'3 cyl.', adm:'atmo + hybridation légère 12 V', pos:'avant transversal', tx:'traction', bv:'manuelle 6', flou:['kg'],
+              note:"Alterno-démarreur à courroie (BSG) : assistance au démarrage, pas de roulage électrique." },
+          ]
+        },
+      ]
+    },
+
+    'skoda-superb': {
+      types: [
+        {
+          id: 'b8-essence', label: 'Superb III — Essence',
+          variants: [
+            { id:'b8-1.5tsi-150', label:'1.5 TSI 150 DSG7',
+              ch:150, nm:250, kg:1467, cyl:1.498, arch:'4 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'DSG 7', flou:['kg'],
+              note:"Désactivation de deux cylindres à faible charge (ACT)." },
+          ]
+        },
+        {
+          id: 'b8-diesel', label: 'Superb III — Diesel',
+          variants: [
+            { id:'b8-2.0tdi-150', label:'2.0 TDI 150 DSG7',
+              ch:150, nm:360, kg:1597, cyl:1.968, arch:'4 cyl. diesel', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'DSG 7', flou:['kg'],
+              note:"Le même 2.0 TDI que le Tiguan II et la Golf VIII, ici avec 360 Nm." },
+          ]
+        },
+      ]
+    },
+
+    'smart-fortwo': {
+      types: [
+        {
+          id: 'c453-essence', label: 'Fortwo 453 — Essence',
+          variants: [
+            { id:'c453-1.0-71', label:'1.0 71',
+              ch:71, nm:91, kg:880, cyl:0.999, arch:'3 cyl.', adm:'atmo', pos:'arrière', tx:'propulsion', bv:'manuelle 5', flou:['kg'],
+              note:"Moteur arrière d\'origine Renault, plateforme partagée avec la Twingo III." },
+          ]
+        },
+        {
+          id: 'c453-electrique', label: 'EQ Fortwo — Électrique',
+          variants: [
+            { id:'c453-eq82', label:'EQ 82',
+              ch:82, nm:160, kg:1085, cyl:0, arch:'moteur électrique', adm:'électrique', pos:'arrière', tx:'propulsion', bv:'A1', flou:['kg'],
+              note:"Batterie de 17 kWh, pensée pour la ville." },
+          ]
+        },
+      ]
+    },
+
+    'lancia-ypsilon': {
+      types: [
+        {
+          id: 'y4-hybride', label: 'Ypsilon IV — Hybride',
+          variants: [
+            { id:'y4-hyb100', label:'1.2 Hybride 100',
+              ch:101, nm:205, kg:1282, cyl:1.199, arch:'3 cyl.', adm:'turbo + hybridation légère 48 V', pos:'avant transversal', tx:'traction', bv:'DCT 6', flou:['kg'],
+              note:"Même base technique que la Peugeot 208, sous une robe Lancia." },
+          ]
+        },
+        {
+          id: 'y4-electrique', label: 'Ypsilon IV — Électrique',
+          variants: [
+            { id:'y4-e156', label:'Elettrica 156',
+              ch:156, nm:260, kg:1561, cyl:0, arch:'moteur électrique', adm:'électrique', pos:'avant transversal', tx:'traction', bv:'A1', flou:['kg'],
+              note:"Batterie de 51 kWh, 403 km en cycle mixte WLTP." },
+          ]
+        },
       ]
     },
 

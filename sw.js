@@ -4,12 +4,12 @@
    cache suffit à rendre toute l'app disponible hors-ligne. Les données (photos,
    collection) vivent dans IndexedDB côté page, pas ici.
 
-   v20.167.0 — MOTOR_SPECS vague E5 (Mokka B, Kona II, Picanto III, Vitara IV).
+   v20.168.0 — MOTOR_SPECS vague E6 (Panda III, Superb III, Fortwo 453, Ypsilon IV).
              Le numéro DOIT être incrémenté à chaque modification d'un fichier
              mis en cache, sinon l'ancienne copie est resservie indéfiniment.
 */
 
-const VERSION = "garage-v20.167.0";
+const VERSION = "garage-v20.168.0";
 
 /* ESSENTIEL : sans ces fichiers, l'app ne démarre pas hors-ligne.
    Mis en cache de façon atomique — si l'un manque, l'installation doit échouer
