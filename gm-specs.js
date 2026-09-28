@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.157.0';
+  const VERSION_MODULE = '20.158.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -1017,7 +1017,7 @@
       ch:233, nm:340, kg:1300, cyl:2.4, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M5',
       note:"Une compacte économique transformée en sleeper par la division SRT : un 2.4 turbo qui humiliait des sportives bien plus chères en ligne droite, pour un prix dérisoire. Le tuning américain d\'usine dans sa version la plus efficace." },
     'dodge-durango-srt': { nom:'Dodge Durango SRT Hellcat', an:[2021], pays:'États-Unis',
-      ch:717, nm:875, kg:2500, cyl:6.2, arch:'V8 HEMI', adm:'compresseur', pos:'avant', tx:'intégrale', bv:'A8',
+      ch:720, nm:875, kg:2500, cyl:6.2, arch:'V8 HEMI', adm:'compresseur', pos:'avant', tx:'intégrale', bv:'A8',
       note:"Le SUV familial sept places le plus puissant du monde à sa sortie, avec le V8 compressé de la Hellcat. Capable de tracter, d\'emmener toute la famille et d\'abattre le quart de mile plus vite que bien des sportives. L\'excès américain incarné." },
     'plymouth-road-runner': { nom:'Plymouth Road Runner', an:[1968,1980], pays:'États-Unis',
       ch:431, nm:664, kg:1600, cyl:7.0, arch:'V8 HEMI', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M4 / A3',
@@ -2265,8 +2265,8 @@
       ch:420, nm:624, kg:2300, cyl:6.2, arch:'V6, V8, Duramax diesel', adm:'atmo', pos:'avant', tx:'propulsion / 4x4', bv:'A10',
       note:"Le grand pick-up de Chevrolet, l\'un des véhicules les plus vendus des États-Unis, quasi absent ailleurs. Décliné en version électrique EV à grande autonomie." },
     'gmc-hummer-ev': { nom:'GMC Hummer EV', an:[2021], pays:'États-Unis',
-      ch:1000, nm:1485, kg:4100, cyl:0, arch:'trois moteurs électriques', adm:'électrique', pos:'avant/arrière', tx:'intégrale', bv:'A1',
-      note:"Résurrection électrique du Hummer, pesant plus de 4 tonnes. Le mode « CrabWalk » permet de rouler en crabe, les quatre roues directrices braquant dans le même sens. 1000 ch annoncés." },
+      ch:1014, nm:1485, kg:4100, cyl:0, arch:'trois moteurs électriques', adm:'électrique', pos:'avant/arrière', tx:'intégrale', bv:'A1',
+      note:"Résurrection électrique du Hummer, pesant plus de 4 tonnes. Le mode « CrabWalk » permet de rouler en crabe, les quatre roues directrices braquant dans le même sens. 1 000 hp annoncés, soit 1 014 ch." },
     'ford-bronco': { nom:'Ford Bronco', an:[1966], pays:'États-Unis',
       ch:418, nm:590, kg:2100, cyl:2.7, arch:'V6 EcoBoost (jadis V8)', adm:'turbo', pos:'avant', tx:'4x4', bv:'A10 / M7',
       note:"Grand 4x4 tout-terrain relancé en 2021 pour affronter le Jeep Wrangler. Portes et toit démontables, style rétro assumé. Le Bronco Raptor pousse les capacités de franchissement à l\'extrême." },
@@ -2741,9 +2741,11 @@
     'bmw-ix': { nom:'BMW iX', an:[2021], pays:'Allemagne',
       ch:619, nm:1100, kg:2585, cyl:0, arch:'moteurs électriques', adm:'électrique', pos:'avant / arrière', tx:'intégrale', bv:'A1',
       note:"SUV électrique vitrine technologique de BMW : structure carbone-aluminium, calandre fermée abritant les capteurs, matériaux durables à bord. La M60 dépasse les 600 ch." },
-    'audi-q8': { nom:'Audi Q8', an:[2018], pays:'Allemagne',
-      ch:600, nm:800, kg:2200, cyl:4.0, arch:'V6 / V8', adm:'turbo', pos:'avant', tx:'quattro', bv:'A8',
-      note:"Le SUV-coupé haut de gamme d\'Audi. La RS Q8 partage sa base avec le Lamborghini Urus et a détenu le record des SUV au Nürburgring." },
+    /* La fiche mêlait la puissance de la RS Q8 (qui a sa propre entrée,
+       audi-rsq8) et la masse du Q8 de base : ratios faux des deux côtés. */
+    'audi-q8': { nom:'Audi Q8 55 TFSI quattro', an:[2018], pays:'Allemagne',
+      ch:340, nm:500, kg:2200, cyl:3.0, arch:'V6', adm:'turbo + hybridation légère', pos:'avant', tx:'quattro', bv:'A8',
+      note:"Le SUV-coupé haut de gamme d\'Audi, sur la plateforme MLB du Q7. Chiffres du V6 55 TFSI ; la RS Q8, qui partage sa base avec le Lamborghini Urus, a sa propre fiche." },
     'vw-id4': { nom:'Volkswagen ID.4 / ID.5', an:[2020], pays:'Allemagne',
       ch:340, nm:545, kg:2100, cyl:0, arch:'moteurs électriques', adm:'électrique', pos:'arrière / intégrale', bv:'A1',
       note:"Le SUV électrique de grande diffusion de VW, élu Voiture Mondiale de l\'Année 2021. Pierre angulaire de la stratégie électrique du groupe sur plateforme MEB." },
@@ -2769,8 +2771,8 @@
       ch:194, nm:420, kg:1600, cyl:2.5, arch:'4 cyl. SkyActiv', adm:'atmo / diesel', pos:'avant', tx:'traction / intégrale', bv:'A6',
       note:"Best-seller mondial de Mazda. Le langage stylistique « Kodo » (l\'âme du mouvement) et la philosophie SkyActiv d\'optimisation mécanique y sont pleinement exprimés." },
     'mazda-cx60': { nom:'Mazda CX-60', an:[2022], pays:'Japon',
-      ch:327, nm:500, kg:2000, cyl:3.3, arch:'6 en ligne', adm:'turbo diesel / hybride', pos:'avant', tx:'propulsion / intégrale', bv:'A8',
-      note:"À contre-courant, Mazda lance un six-cylindres en ligne et une propulsion premium à l\'heure du tout-électrique et du downsizing. Le diesel 3.3 vise une efficience record." },
+      ch:254, nm:550, kg:1950, cyl:3.3, arch:'6 en ligne', adm:'turbo diesel + hybridation légère', pos:'avant', tx:'intégrale', bv:'A8',
+      note:"À contre-courant, Mazda lance un six-cylindres en ligne et une propulsion premium à l\'heure du tout-électrique et du downsizing. Le diesel 3.3 vise une efficience record. Chiffres du e-Skyactiv D 254 AWD ; les 327 ch sont ceux de l\'hybride rechargeable à quatre cylindres 2.5." },
     'kia-niro': { nom:'Kia Niro', an:[2016], pays:'Corée du Sud',
       ch:204, nm:265, kg:1500, cyl:1.6, arch:'4 cyl. hybride / électrique', adm:'atmo + électrique', pos:'avant', tx:'traction', bv:'DCT',
       note:"Décliné en hybride, hybride rechargeable et 100 % électrique sur une même carrosserie, cas rare. Un couteau suisse de l\'électrification pour tous les usages." },
@@ -2872,9 +2874,11 @@
     'mercedes-cla': { nom:'Mercedes-Benz CLA', an:[2013], pays:'Allemagne',
       ch:421, nm:500, kg:1550, cyl:2.0, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction / intégrale', bv:'A8',
       note:"« Coupé quatre portes » compact, au Cx parmi les plus bas du marché (0,22 à son lancement). La CLA 45 S et son 4 cylindres de plus de 420 ch." },
-    'mercedes-glc': { nom:'Mercedes-Benz GLC', an:[2015], pays:'Allemagne',
-      ch:680, nm:1020, kg:2100, cyl:2.0, arch:'4 cyl. hybride', adm:'turbo + électrique', pos:'avant', tx:'intégrale', bv:'A9',
-      note:"SUV compact best-seller de Mercedes. La GLC 63 S E Performance combine un 4 cylindres et l\'hybridation issue de la F1 pour dépasser les 670 ch." },
+    /* Fiche du GLC de base : elle portait jusqu'ici les chiffres de la
+       GLC 63 S E Performance, qui a sa propre entrée (mercedes-glc43). */
+    'mercedes-glc': { nom:'Mercedes-Benz GLC 250 4MATIC (X253)', an:[2015], pays:'Allemagne',
+      ch:211, nm:350, kg:1810, cyl:2.0, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'intégrale', bv:'A9', flou:['kg'],
+      note:"SUV compact best-seller de Mercedes, successeur du GLK. Chiffres de la GLC 250 4MATIC de lancement ; les versions AMG ont leur propre fiche." },
     'mg-mgb': { nom:'MG MGB', an:[1962,1980], pays:'Royaume-Uni',
       ch:95, nm:150, kg:920, cyl:1.8, arch:'4 en ligne', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M4',
       note:"L\'un des roadsters les plus produits de l\'histoire, plus d\'un demi-million d\'exemplaires. Symbole du plaisir de conduire abordable à l\'anglaise. La MGB GT V8 est la plus rare." },
@@ -2992,8 +2996,8 @@
       ch:571, nm:850, kg:2490, cyl:6.75, arch:'V12', adm:'biturbo', pos:'avant', tx:'propulsion', bv:'A8',
       note:"La Rolls « d\'entrée de gamme », plus discrète, souvent conduite par son propriétaire. Suspension « Planar » qui scanne la route pour anticiper les défauts avant même de les atteindre." },
     'rr-cullinan': { nom:'Rolls-Royce Cullinan', an:[2018], pays:'Royaume-Uni',
-      ch:600, nm:900, kg:2660, cyl:6.75, arch:'V12', adm:'biturbo', pos:'avant', tx:'intégrale', bv:'A8',
-      note:"Le premier SUV de Rolls-Royce, nommé d\'après le plus gros diamant brut jamais découvert. Hayon « Viewing Suite » : deux sièges en cuir se déploient dans le coffre ouvert." },
+      ch:571, nm:850, kg:2660, cyl:6.75, arch:'V12', adm:'biturbo', pos:'avant', tx:'intégrale', bv:'A8',
+      note:"Le premier SUV de Rolls-Royce, nommé d\'après le plus gros diamant brut jamais découvert. Chiffres du Cullinan ; la Black Badge monte à 600 ch et 900 Nm. Hayon « Viewing Suite » : deux sièges en cuir se déploient dans le coffre ouvert." },
     'rr-spectre': { nom:'Rolls-Royce Spectre', an:[2023], pays:'Royaume-Uni',
       ch:585, nm:900, kg:2890, cyl:0, arch:'deux moteurs électriques', adm:'électrique', pos:'avant/arrière', tx:'intégrale', bv:'A1',
       note:"La première Rolls-Royce 100 % électrique. Le silence électrique correspond enfin à l\'idéal que la marque poursuivait depuis toujours. Le coupé le plus lourd jamais produit par la firme." },
@@ -9270,6 +9274,138 @@
     ],
     '9ff-gt9': [
       ['GT9','2007–2012','flat-6 4.0 biturbo, moteur passé en position centrale','1 120 ch','Base de Porsche 911 (997) rallongée.'],
+    ],
+
+    /* ---- Vague G13 : SUV ---------------------------------------------------- */
+    'ds-7': [
+      ['DS 7 Crossback','2017–2022','4 cyl. essence et diesel ; hybride rechargeable E-Tense','jusqu\'à 300 ch','Premier modèle conçu pour DS en marque autonome. E-Tense 4x4 300 : puissance cumulée.'],
+      ['DS 7 (restylé)','2022–','4 cyl. ; hybrides rechargeables E-Tense','jusqu\'à 360 ch','Le nom « Crossback » disparaît.'],
+    ],
+    'mercedes-glc': [
+      ['GLC (X253)','2015–2022','4 cyl. essence et diesel, hybrides rechargeables','211 ch (GLC 250)','Successeur du GLK. Version coupé à partir de 2016.'],
+      ['GLC (X254)','2022–','4 cyl. à hybridation légère, hybrides rechargeables','','Toutes les motorisations sont électrifiées.'],
+    ],
+    'mercedes-glc43': [
+      ['AMG GLC 43 (X253)','2016–2022','V6 3.0 biturbo','367 puis 390 ch',''],
+      ['AMG GLC 63 / 63 S (X253)','2017–2022','V8 4.0 biturbo','jusqu\'à 510 ch',''],
+      ['AMG GLC 43 (X254)','2023–','4 cyl. 2.0 turbo à assistance électrique','421 ch',''],
+      ['AMG GLC 63 S E Performance (X254)','2023–','4 cyl. 2.0 turbo hybride rechargeable','680 ch','Le V8 laisse la place à un quatre-cylindres. Puissance et couple cumulés.'],
+    ],
+    'mercedes-gle63': [
+      ['AMG GLE 63 / 63 S (W166)','2015–2019','V8 5.5 biturbo','jusqu\'à 585 ch','Successeur du ML 63 AMG.'],
+      ['AMG GLE 53 (W167)','2019–','6 en ligne 3.0 turbo à hybridation légère','435 ch',''],
+      ['AMG GLE 63 S (W167)','2020–','V8 4.0 biturbo à hybridation légère','612 ch','Suspension pneumatique active anti-roulis.'],
+    ],
+    'ferrari-purosangue': [
+      ['Purosangue','2022–','V12 6.5 atmo, moteur avant','725 ch','Quatre portes, les arrière à ouverture antagoniste. Transmission intégrale héritée de la FF.'],
+    ],
+    'aston-dbx': [
+      ['DBX','2020–2024','V8 4.0 biturbo (base AMG)','550 ch','Premier SUV d\'Aston Martin, assemblé à St Athan au pays de Galles.'],
+      ['DBX707','2022–','V8 4.0 biturbo','707 ch','900 Nm.'],
+    ],
+    'bentley-bentayga': [
+      ['Bentayga W12','2015–2024','W12 6.0 biturbo','608 ch','Premier SUV de Bentley.'],
+      ['Bentayga V8','2018–','V8 4.0 biturbo','550 ch',''],
+      ['Bentayga Hybrid','2019–','V6 3.0 turbo hybride rechargeable','449 ch','Puissance cumulée.'],
+      ['Bentayga Speed (V8)','2024–','V8 4.0 biturbo','650 ch','Remplace la Speed W12, retirée avec le moteur en 2024.'],
+    ],
+    'rr-cullinan': [
+      ['Cullinan','2018–2024','V12 6.75 biturbo','571 ch','La Black Badge monte à 600 ch.'],
+      ['Cullinan Series II','2024–','V12 6.75 biturbo','571 ch','Calandre éclairée, une première pour la marque.'],
+    ],
+    'skoda-kodiaq': [
+      ['Kodiaq (1re gén.)','2016–2024','4 cyl. essence et diesel','jusqu\'à 245 ch','Cinq ou sept places. La Kodiaq RS passe d\'un diesel biturbo à l\'essence 2.0 TSI de 245 ch.'],
+      ['Kodiaq (2e gén.)','2024–','4 cyl. ; hybride rechargeable','',''],
+    ],
+    'skoda-enyaq': [
+      ['Enyaq','2020–','un ou deux moteurs électriques (MEB)','jusqu\'à 340 ch','Premier SUV électrique de Škoda. Version Coupé et versions RS.'],
+    ],
+    'hyundai-kona': [
+      ['Kona (1re gén.)','2017–2023','4 cyl. ; hybride ; électrique','jusqu\'à 280 ch (N)','La Kona N reprend le 2.0 turbo de l\'i30 N.'],
+      ['Kona (2e gén.)','2023–','4 cyl. ; hybride ; électrique','',''],
+    ],
+    'ram-trx': [
+      ['1500 TRX','2021–2024','V8 HEMI 6.2 compressé','712 ch','702 hp SAE. Suspension à grand débattement pour le désert.'],
+    ],
+    'bmw-xm': [
+      ['XM','2023–','V8 4.4 biturbo hybride rechargeable','653 ch','Premier modèle BMW M exclusif depuis la M1. Puissance cumulée.'],
+      ['XM Label Red','2023–','V8 4.4 biturbo hybride rechargeable','748 ch','1 000 Nm cumulés.'],
+    ],
+    'ford-mustang-mach-e': [
+      ['Mustang Mach-E','2021–','un ou deux moteurs électriques','jusqu\'à 487 ch','La GT à deux moteurs est la plus puissante.'],
+    ],
+    'dodge-durango-srt': [
+      ['Durango SRT 392','2018–','V8 HEMI 6.4 atmo','','Sept places.'],
+      ['Durango SRT Hellcat','2021, 2023–','V8 HEMI 6.2 compressé','720 ch','710 hp SAE : le moteur de la Challenger Hellcat.'],
+    ],
+    'gmc-hummer-ev': [
+      ['Hummer EV Pickup / SUV','2021–','deux ou trois moteurs électriques','jusqu\'à 1 014 ch','1 000 hp annoncés. Plus de 4 tonnes. Mode « CrabWalk » à quatre roues directrices.'],
+    ],
+    'tesla-model-x': [
+      ['Model X','2015–2021','deux moteurs électriques','','Portes arrière « Falcon Wing » à double articulation.'],
+      ['Model X (restylé) / Plaid','2021–','deux ou trois moteurs électriques','jusqu\'à 1 020 ch','Trois moteurs pour la Plaid. Volant en forme de manche.'],
+    ],
+    'isuzu-vehicross': [
+      ['VehiCROSS','1997–2001','V6 3.2 puis 3.5','','Passé du concept-car de 1993 à la série presque sans retouche. Panneaux de bas de caisse en plastique brut.'],
+    ],
+    'vw-id-buzz': [
+      ['ID. Buzz / ID. Buzz Cargo','2022–','moteur électrique (MEB), propulsion','204 ch','Réinterprétation électrique du Combi.'],
+      ['ID. Buzz GTX / empattement long','2024–','un ou deux moteurs électriques','jusqu\'à 340 ch','Version sept places à empattement allongé.'],
+    ],
+    'byd-atto3': [
+      ['Atto 3 (Yuan Plus en Chine)','2022–','moteur électrique, traction','204 ch','Batterie « Blade » au lithium-fer-phosphate.'],
+    ],
+    'brabus-900-g': [
+      ['900 Rocket Edition','2021–','V8 4.5 biturbo (base AMG G 63)','900 ch','Moteur réalésé par Brabus.'],
+    ],
+    'mansory-venatus': [
+      ['Venatus','2020–','V8 4.0 biturbo (base Lamborghini Urus)','900 ch','Carrosserie en carbone forgé.'],
+    ],
+    'renault-kadjar': [
+      ['Kadjar','2015–2022','4 cyl. essence et diesel','jusqu\'à 160 ch','Plateforme CMF-C/D partagée avec le Nissan Qashqai. Remplacé par l\'Austral.'],
+    ],
+    'dacia-bigster': [
+      ['Bigster','2025–','4 cyl. hybride, hybride léger ou bicarburation GPL','jusqu\'à 155 ch','Le plus grand Dacia, dérivé du Duster.'],
+    ],
+    'citroen-c3-aircross': [
+      ['C3 Aircross (1re gén.)','2017–2024','3 cyl. essence, 4 cyl. diesel','jusqu\'à 130 ch','Successeur du C3 Picasso.'],
+      ['C3 Aircross (2e gén.)','2024–','3 cyl. hybride léger ; électrique','','Sept places disponibles.'],
+    ],
+    'opel-grandland': [
+      ['Grandland X / Grandland','2017–2024','4 cyl. ; hybrides rechargeables','jusqu\'à 300 ch','Base du Peugeot 3008. Hybrid4 : puissance cumulée.'],
+      ['Grandland (2e gén.)','2024–','hybride léger ; électrique','',''],
+    ],
+    'bmw-ix': [
+      ['iX xDrive40 / xDrive50 / M60','2021–2025','deux moteurs électriques','326 à 619 ch','Structure mixte carbone et aluminium.'],
+      ['iX (restylé)','2025–','deux moteurs électriques','','Autonomie et puissance revues à la hausse.'],
+    ],
+    'audi-q8': [
+      ['Q8 (4M)','2018–','V6 3.0 TFSI et TDI ; V8 (SQ8) ; hybride rechargeable','340 ch (55 TFSI)','SUV-coupé sur la plateforme du Q7. La RS Q8 a sa propre fiche.'],
+    ],
+    'vw-id4': [
+      ['ID.4','2020–','un ou deux moteurs électriques (MEB)','jusqu\'à 340 ch (GTX)','Voiture mondiale de l\'année 2021.'],
+      ['ID.5','2021–','un ou deux moteurs électriques','jusqu\'à 340 ch (GTX)','Version coupé.'],
+    ],
+    'cupra-terramar': [
+      ['Terramar','2024–','4 cyl. ; hybrides rechargeables','jusqu\'à 272 ch','Nommé d\'après le circuit de Terramar, près de Barcelone.'],
+    ],
+    'toyota-bz4x': [
+      ['bZ4X','2022–','un ou deux moteurs électriques','jusqu\'à 218 ch','Développé avec Subaru, jumeau du Solterra.'],
+    ],
+    'nissan-ariya': [
+      ['Ariya','2022–','un ou deux moteurs électriques (e-4ORCE)','jusqu\'à 394 ch','Plateforme CMF-EV partagée avec la Renault Mégane E-Tech.'],
+    ],
+    'mazda-cx60': [
+      ['CX-60 PHEV','2022–','4 cyl. 2.5 hybride rechargeable','327 ch','Puissance cumulée.'],
+      ['CX-60 e-Skyactiv D','2022–','6 en ligne 3.3 diesel à hybridation légère','200 ou 254 ch','Propulsion ou transmission intégrale.'],
+    ],
+    'kia-niro': [
+      ['Niro (1re gén.)','2016–2022','hybride ; hybride rechargeable ; électrique','jusqu\'à 204 ch (e-Niro)','Trois motorisations sur la même carrosserie.'],
+      ['Niro (2e gén.)','2022–','hybride ; hybride rechargeable ; électrique','',''],
+    ],
+    'mg-zs': [
+      ['ZS (1re gén.) / ZS EV','2017–2024','3 et 4 cyl. essence ; électrique','','Premier grand succès européen de MG sous SAIC.'],
+      ['ZS (2e gén.)','2024–','4 cyl. hybride','',''],
     ],
     'toyota-century': [
       ['G20 / G30 / G40','1967–1997','V8 3.0, 3.4 puis 4.0','','Trente ans de production quasiment sans changement de ligne, réservée au marché japonais.'],
