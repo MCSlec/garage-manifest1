@@ -191,6 +191,17 @@ const JUMELLES_AVEREES = new Set([
   'skoda-enyaq+vw-id4'
 ]);
 
+/* Même moteur, AUTRE voiture : exemptions du contrôle E bis (fiche ↔
+   variante). Clé « idCatalogue/idType ». Le contrôle apparie sur la
+   cylindrée et la puissance ; il ne peut pas savoir qu'un même moteur
+   équipe deux générations de carrosserie de masses différentes.
+   - 308 II / 308 III : le 1.2 PureTech 130 équipe les deux ; la fiche
+     décrit la 308 III (1 258 kg, BVM6, L'argus), la variante la 308 II,
+     plus légère d'une génération. Les deux masses sont justes. */
+const MEME_MOTEUR_AUTRE_GENERATION = new Set([
+  'peugeot-308/p2'
+]);
+
 const anomalies = [];
 const signaler = (gravite, categorie, message) =>
   anomalies.push({ gravite, categorie, message });
@@ -706,6 +717,39 @@ function auditer() {
     /* Règle GTA : une déclinaison qui a sa propre fiche catalogue ne doit
        pas réapparaître comme variante du modèle de base. Contrôle
        indicatif — le rapprochement se fait sur le libellé. */
+  }
+
+  /* --- E bis. Fiche ↔ variante : même moteur, chiffres divergents ------
+     La fiche SPECS et une variante MOTOR_SPECS qui décrivent le MÊME
+     moteur doivent afficher les mêmes chiffres : sinon le joueur lit deux
+     valeurs selon qu'il a touché au sélecteur ou non, et l'une des deux
+     est fausse. 25 cas au premier passage (206 : 111 / 120 Nm ; C6 :
+     240 ch avec la cylindrée du 2.7 ; MR2 : 1 100 / 1 270 kg…).
+     Appariement sur la CYLINDRÉE (± 60 cm³) et la puissance (± 6 ch),
+     pas sur la puissance seule : deux moteurs de même puissance (1.2
+     PureTech 130 / 1.5 BlueHDi 130) ne sont pas le même moteur — c'est
+     exactement l'erreur d'appariement décrite au CLAUDE.md §5 bis.
+     Un champ déclaré `flou` d'un côté ou de l'autre est ignoré : l'écart
+     y est annoncé (≈), pas caché. */
+  for (const [idCat, bloc] of Object.entries(MOTOR_SPECS)) {
+    const fiche = SPECS[MAP[idCat]];
+    if (!fiche || fiche.cyl == null || !Array.isArray(bloc.types)) continue;
+    const flouF = new Set(fiche.flou || []);
+    for (const t of bloc.types) for (const v of (t.variants || [])) {
+      if (MEME_MOTEUR_AUTRE_GENERATION.has(`${idCat}/${t.id}`)) continue;
+      if (v.cyl == null || v.ch == null) continue;
+      if (Math.abs(v.cyl - fiche.cyl) > 0.06 || Math.abs(v.ch - fiche.ch) > 6) continue;
+      const flouV = new Set(v.flou || []);
+      const libre = champ => !flouF.has(champ) && !flouV.has(champ);
+      const ecarts = [];
+      if (libre('ch') && v.ch !== fiche.ch) ecarts.push(`ch ${fiche.ch} / ${v.ch}`);
+      if (libre('nm') && fiche.nm != null && v.nm != null && v.nm !== fiche.nm) ecarts.push(`Nm ${fiche.nm} / ${v.nm}`);
+      if (libre('kg') && fiche.kg != null && v.kg != null && Math.abs(v.kg - fiche.kg) > 30) ecarts.push(`kg ${fiche.kg} / ${v.kg}`);
+      if (ecarts.length) {
+        signaler('ALERTE', 'FICHE ↔ VARIANTE',
+          `${idCat} : la fiche et la variante « ${v.label} » décrivent le même moteur mais divergent (fiche / variante) : ${ecarts.join(' · ')}`);
+      }
+    }
   }
 
   /* ======================================================================

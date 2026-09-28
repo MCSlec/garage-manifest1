@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.177.0';
+  const VERSION_MODULE = '20.178.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -246,10 +246,10 @@
       ch:340, nm:500, kg:2017, cyl:3.0, arch:'V6', adm:'turbo + hybridation légère', pos:'avant', tx:'quattro', bv:'tiptronic 8',
       note:"La berline amirale d\'Audi, pionnière de la carrosserie tout aluminium (structure ASF) en 1994. Vitrine technologique de la marque. Chiffres de l\'A8 55 TFSI (D5, 2018) ; la S8 et son V8 biturbo ont leur propre fiche. Rendue célèbre par le film « Ronin »." },
     'audi-s4': { nom:'Audi S4', an:[1991], pays:'Allemagne',
-      ch:341, nm:500, kg:1700, cyl:3.0, arch:'V6 (jadis V8, biturbo V6)', adm:'compresseur / turbo', pos:'avant', tx:'quattro', bv:'tiptronic 8',
-      note:"La berline sportive intermédiaire d\'Audi, sous la RS4. Le V6 3.0 compressé puis turbo, transmission intégrale quattro : une routière rapide et discrète par tous les temps. La version B5 à V6 biturbo est un youngtimer recherché." },
+      ch:354, nm:500, kg:1630, cyl:3.0, arch:'V6 (jadis V8, biturbo V6)', adm:'compresseur / turbo', pos:'avant', tx:'quattro', bv:'tiptronic 8', flou:['kg'],
+      note:"La berline sportive intermédiaire d\'Audi, sous la RS4. Le V6 3.0 compressé puis turbo, transmission intégrale quattro : une routière rapide et discrète par tous les temps. La version B5 à V6 biturbo est un youngtimer recherché. Chiffres de la S4 B9 3.0 TFSI ; elle mêlait la puissance d\'une version et la masse d\'une autre." },
     'audi-s5': { nom:'Audi S5', an:[2007], pays:'Allemagne',
-      ch:354, nm:500, kg:1750, cyl:3.0, arch:'V6 (jadis V8)', adm:'turbo / compresseur', pos:'avant', tx:'quattro', bv:'tiptronic 8',
+      ch:354, nm:500, kg:1750, cyl:3.0, arch:'V6 (jadis V8)', adm:'turbo / compresseur', pos:'avant', tx:'quattro', bv:'tiptronic 8', flou:['kg'],
       note:"Le coupé sportif d\'Audi, sous la RS5. La première génération et son V8 4.2 atmosphérique, à la sonorité magnifique, est aujourd\'hui la plus recherchée avant le passage au V6 suralimenté plus efficient. Une GT élégante et intégrale." },
     'peugeot-307': { nom:'Peugeot 307', an:[2001,2008], pays:'France',
       ch:110, nm:147, kg:1204, cyl:1.6, arch:'4 cyl. 16 soupapes', adm:'atmo', pos:'avant', tx:'traction', bv:'M5', flou:['kg'],
@@ -264,7 +264,7 @@
       ch:140, nm:260, kg:1250, cyl:1.3, arch:'4 cyl. / hybride', adm:'turbo', pos:'avant', tx:'traction', bv:'EDC 7',
       note:"La finition sportive de la Clio après l\'arrêt des vraies R.S. : look dynamique, sièges baquets, sans la mécanique survitaminée des générations précédentes. Un compromis entre l\'apparence sportive et l\'usage quotidien économique." },
     'mazda-mx5-rf': { nom:'Mazda MX-5 RF', an:[2016], pays:'Japon',
-      ch:184, nm:205, kg:1045, cyl:2.0, arch:'4 cyl. SkyActiv', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M6',
+      ch:184, nm:205, kg:1072, cyl:2.0, arch:'4 cyl. SkyActiv', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M6', flou:['kg'],
       note:"La version « Retractable Fastback » de la MX-5 (ND) : un toit rigide escamotable à la ligne de coupé targa, plutôt que la capote souple. Le charme du roadster le plus vendu de l\'histoire, avec le raffinement d\'un toit dur électrique." },
 
     /* ===== FICHES COMPLÈTES — vague AV (électriques US + classiques + barquettes) */
@@ -408,8 +408,8 @@
       ch:292, nm:420, kg:1600, cyl:2.0, arch:'4 cyl. (330e : hybride)', adm:'turbo', pos:'avant', tx:'propulsion / intégrale', bv:'A8',
       note:"Le cœur de gamme sportif de la Série 3, référence de la berline dynamique. La 330e hybride rechargeable ajoute un mode électrique pour la ville, avec un bouton « XtraBoost » qui libère toute la puissance combinée. Le juste équilibre entre plaisir et raison." },
     'peugeot-206': { nom:'Peugeot 206', an:[1998,2012], pays:'France',
-      ch:75, nm:111, kg:950, cyl:1.4, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
-      note:"La Peugeot la plus vendue de l\'histoire (plus de 10 millions d\'exemplaires). La 206 WRC, aux voies très élargies, a remporté trois titres constructeurs consécutifs en rallye. La RC/GTi 180 est la version routière sportive. Un succès planétaire. Chiffres de la 206 1.4 ; la 206 RC a sa propre fiche." },
+      ch:75, nm:120, kg:950, cyl:1.4, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
+      note:"La Peugeot la plus vendue de l\'histoire (plus de 10 millions d\'exemplaires). La 206 WRC, aux voies très élargies, a remporté trois titres constructeurs consécutifs en rallye. La RC/GTi 180 est la version routière sportive. Un succès planétaire. Chiffres de la 206 1.4 75 (couple de 120 Nm, celui de la majorité des millésimes ; les premiers annonçaient 111 Nm) ; la 206 RC a sa propre fiche." },
 
     /* ===== FICHES COMPLÈTES — vague AS (préparateurs + Porsche) ========== */
     'brabus-rocket': { nom:'Brabus Rocket 1000', an:[2022], pays:'Allemagne',
@@ -800,8 +800,8 @@
       ch:210, nm:290, kg:1470, cyl:3.0, arch:'V6', adm:'atmo', pos:'avant', tx:'traction', bv:'M6 / A4',
       note:"Souvent cité comme l\'un des plus beaux coupés français jamais produits, dessiné et assemblé par Pininfarina en Italie. Une ligne intemporelle qui n\'a pas pris une ride. Le V6 offre une sonorité feutrée digne d\'une GT." },
     'peugeot-504-coupe': { nom:'Peugeot 504 Coupé', an:[1969,1983], pays:'France',
-      ch:144, nm:206, kg:1200, cyl:2.7, arch:'V6 PRV', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M4',
-      note:"Le sommet du raffinement Peugeot de l\'époque, dessiné par Pininfarina. Le coupé et le cabriolet 504 sont des classiques élégants, motorisés par le V6 PRV (Peugeot-Renault-Volvo) sur les versions ultimes. Un grand tourisme à la française." },
+      ch:144, nm:218, kg:1295, cyl:2.7, arch:'V6 PRV', adm:'injection', pos:'avant', tx:'propulsion', bv:'M5',
+      note:"Le sommet du raffinement Peugeot de l\'époque, dessiné par Pininfarina. Le coupé et le cabriolet 504 sont des classiques élégants, motorisés par le V6 PRV (Peugeot-Renault-Volvo) sur les versions ultimes. Un grand tourisme à la française. Chiffres du V6 Ti à injection K-Jetronic (1977, couple publié 22,2 mkg)." },
     'renault-25': { nom:'Renault 25', an:[1983,1992], pays:'France',
       ch:210, nm:290, kg:1300, cyl:2.5, arch:'V6 PRV', adm:'turbo', pos:'avant', tx:'traction', bv:'M5',
       note:"Le haut de gamme Renault des années 80, à la ligne fluide signée Gandini et Opron. La V6 Turbo Baccara, luxueuse, était la version d\'apparat, voiture présidentielle de François Mitterrand. Tableau de bord à synthèse vocale, une modernité folle." },
@@ -1409,14 +1409,14 @@
       ch:78, nm:115, kg:1070, cyl:1.4, arch:'4 cyl. 8 soupapes', adm:'atmo', pos:'avant', tx:'traction', bv:'M5', flou:['kg'],
       note:"La citadine sportive Alfa, dont le nom fusionne Milan (conception) et Turin (production). Face avant inspirée de la 8C Competizione. La Quadrifoglio Verde et son 1.4 MultiAir turbo de 170 ch est la version chaude, sur base de Fiat Punto. Chiffres de la MiTo 1.4 MPI 78, version d\'entrée ; elle portait ceux de la Quadrifoglio Verde." },
     'peugeot-504': { nom:'Peugeot 504', an:[1968,1983], pays:'France',
-      ch:144, nm:206, kg:1200, cyl:2.0, arch:'4 cyl. et V6 PRV', adm:'atmo / injection', pos:'avant', tx:'propulsion', bv:'M4',
-      note:"Voiture de l\'Année 1969. Increvable, elle a régné en Afrique et en Amérique du Sud, où elle fut produite des décennies. Le coupé et le cabriolet, signés Pininfarina, sont les plus élégants. Multiple vainqueur du rallye de l\'Est africain." },
+      ch:93, nm:168, kg:1180, cyl:2.0, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M4', flou:['kg'],
+      note:"Voiture de l\'Année 1969. Increvable, elle a régné en Afrique et en Amérique du Sud, où elle fut produite des décennies. Le coupé et le cabriolet, signés Pininfarina, sont les plus élégants. Multiple vainqueur du rallye de l\'Est africain. Chiffres de la berline 504 GL 2.0 à carburateur (couple publié 17,1 mkg) ; elle portait ceux du V6 PRV, réservé au coupé et au cabriolet (fiche 504 Coupé)." },
     'peugeot-405': { nom:'Peugeot 405', an:[1987,1997], pays:'France',
       ch:200, nm:290, kg:1200, cyl:1.9, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction / intégrale', bv:'M5',
       note:"Voiture de l\'Année 1988. La T16, à moteur turbo et transmission intégrale, a gagné le Paris-Dakar et grimpé la Pikes Peak en un temps record avec Ari Vatanen (immortalisé par le film « Climb Dance »). La Mi16 est la sportive de route." },
     'citroen-c6': { nom:'Citroën C6', an:[2005,2012], pays:'France',
-      ch:240, nm:450, kg:1750, cyl:2.7, arch:'V6 HDi', adm:'biturbo', pos:'avant', tx:'traction', bv:'A6',
-      note:"La dernière grande berline de prestige Citroën, héritière de la DS et de la CX. Suspension hydraulique active, lunette arrière concave, affichage tête haute. La voiture officielle de Jacques Chirac. Un échec commercial devenu objet de collection." },
+      ch:240, nm:450, kg:1873, cyl:3.0, arch:'V6 HDi', adm:'biturbo', pos:'avant', tx:'traction', bv:'A6',
+      note:"La dernière grande berline de prestige Citroën, héritière de la DS et de la CX. Suspension hydraulique active, lunette arrière concave, affichage tête haute. La voiture officielle de Jacques Chirac. Un échec commercial devenu objet de collection. Chiffres du 3.0 V6 HDi 240 ; la fiche lui prêtait la cylindrée du 2.7." },
     'lexus-is': { nom:'Lexus IS', an:[1999], pays:'Japon',
       ch:223, kg:1680, cyl:2.5, arch:'4 cyl. hybride', adm:'atmo + électrique', pos:'avant', tx:'propulsion', bv:'e-CVT', flou:['kg'],
       note:"La berline sportive compacte de Lexus, rivale japonaise fiable de la Série 3. La première génération (Altezza) a lancé la mode des feux arrière à LED transparents, copiés partout dans les années 2000. Chiffres de l\'IS III 300h, puissance cumulée ; Lexus ne publie pas de couple système pour son hybride à train épicycloïdal. Elle portait ceux de l\'IS 350 V6." },
@@ -1554,7 +1554,7 @@
       ch:204, nm:275, kg:1190, cyl:1.6, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M6',
       note:"La petite bombe coréenne, développée par la division N dirigée par Albert Biermann (ex-BMW M). Directement inspirée de la i20 championne du monde des rallyes WRC. Un franc-parler mécanique salué par la presse." },
     'kia-stinger': { nom:'Kia Stinger GT', an:[2017,2023], pays:'Corée du Sud',
-      ch:370, nm:510, kg:1780, cyl:3.3, arch:'V6', adm:'biturbo', pos:'avant', tx:'propulsion / intégrale', bv:'A8',
+      ch:370, nm:510, kg:1909, cyl:3.3, arch:'V6', adm:'biturbo', pos:'avant', tx:'propulsion / intégrale', bv:'A8', flou:['kg'],
       note:"Le grand coupé 4 portes sportif qui a surpris tout le monde par ses qualités dynamiques, développé en partie sous la houlette d\'Albert Biermann et testé au Nürburgring. La preuve que Kia pouvait viser les Allemandes." },
     'genesis-g70': { nom:'Genesis G70', an:[2017], pays:'Corée du Sud',
       ch:370, nm:510, kg:1700, cyl:3.3, arch:'4 cyl. et V6', adm:'turbo', pos:'avant', tx:'propulsion / intégrale', bv:'A8',
@@ -1733,8 +1733,8 @@
       ch:250, nm:275, kg:1240, cyl:2.0, arch:'4 cyl. SR20DET', adm:'turbo', pos:'avant', tx:'propulsion', bv:'M6',
       note:"La dernière et la plus aboutie des Silvia, sommet de la lignée pour les amateurs de drift et de tuning. Le SR20DET turbo et la propulsion équilibrée en font une base de préparation adorée dans le monde entier." },
     'nissan-300zx': { nom:'Nissan 300ZX (Z32)', an:[1989,2000], pays:'Japon',
-      ch:286, nm:388, kg:1560, cyl:3.0, arch:'V6 VG30DETT', adm:'biturbo', pos:'avant', tx:'propulsion', bv:'M5',
-      note:"GT japonaise des années 90 au style intemporel, bridée à 280 ch par l\'accord entre constructeurs japonais. Quatre roues directrices (Super HICAS) et technologie de pointe pour l\'époque." },
+      ch:283, nm:375, kg:1560, cyl:3.0, arch:'V6 VG30DETT', adm:'biturbo', pos:'avant', tx:'propulsion', bv:'M5', flou:['kg'],
+      note:"GT japonaise des années 90 au style intemporel, bridée à 280 ch par l\'accord entre constructeurs japonais. Quatre roues directrices (Super HICAS) et technologie de pointe pour l\'époque. Chiffres de la version européenne (283 ch ECE, 375 Nm)." },
     'nissan-350z': { nom:'Nissan 350Z', an:[2002,2009], pays:'Japon',
       ch:313, nm:358, kg:1470, cyl:3.5, arch:'V6 VQ35', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M6',
       note:"Le retour de la lignée Z après une décennie d\'absence, avec un V6 atmosphérique musclé et une propulsion accessible. A relancé l\'intérêt pour les coupés japonais abordables au début des années 2000." },
@@ -1882,7 +1882,7 @@
       ch:200, nm:330, kg:1429, cyl:1.995, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'propulsion', bv:'auto 8 ZF',
       note:"Le retour d\'Alfa à la vraie berline sportive à propulsion en 2016. Chiffres de la motorisation d\'entrée 2.0 Turbo 200 — la Quadrifoglio et son V6 2.9 biturbo (dérivé d\'un V8 Ferrari) ont leur propre fiche dédiée." },
     'alfa-giulietta': { nom:'Alfa Romeo Giulietta', an:[2010,2020], pays:'Italie',
-      ch:120, nm:206, kg:1280, cyl:1.4, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M6 / TCT',
+      ch:120, nm:215, kg:1280, cyl:1.4, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M6 / TCT',
       note:"Nommée d\'après la Giulietta de 1954, première Alfa de grande diffusion. Le système MultiAir de calage variable des soupapes. Chiffres de la Giulietta 1.4 TB 120 ; la Quadrifoglio Verde à 240 ch a sa propre fiche." },
     'alfa-brera': { nom:'Alfa Romeo Brera', an:[2005,2010], pays:'Italie',
       ch:260, nm:322, kg:1630, cyl:3.2, arch:'V6', adm:'atmo', pos:'avant', tx:'traction / Q4', bv:'M6',
@@ -1973,7 +1973,7 @@
       ch:300, nm:340, kg:1082, cyl:1.8, arch:'4 cyl.', adm:'turbo', pos:'central', tx:'propulsion', bv:'DCT 7',
       note:"La version circuit de l\'A110 moderne : jantes carbone, capot et toit allégés, environ 34 kg de moins que la S. Fidèle à la philosophie Alpine de légèreté héritée de la Berlinette." },
     'vw-polo': { nom:'Volkswagen Polo', an:[1975], pays:'Allemagne',
-      ch:95, nm:175, kg:1045, cyl:1.0, arch:'3 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M5 / DSG 7', flou:['kg'],
+      ch:95, nm:175, kg:1070, cyl:1.0, arch:'3 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M5 / DSG 7', flou:['kg'],
       note:"La citadine étalon du groupe VW depuis 1975, dérivée à l\'origine de l\'Audi 50. La Polo GTI perpétue l\'esprit de la Golf GTI dans un format plus compact, avec le même sérieux de fabrication. Chiffres de la Polo VI 1.0 TSI 95 ; la Polo GTI a sa propre fiche." },
     'vw-passat': { nom:'Volkswagen Passat', an:[1973], pays:'Allemagne',
       ch:150, nm:250, kg:1423, cyl:1.5, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M6 / DSG 7',
@@ -2071,8 +2071,8 @@
       ch:160, nm:210, kg:1210, cyl:2.5, arch:'V6 Busso', adm:'atmo', pos:'avant', tx:'propulsion', bv:'transaxle M5',
       note:"Le V6 Busso fait ici ses débuts, l\'un des moteurs les plus mélodieux jamais construits, avec son bruit d\'admission rauque caractéristique. Boîte transaxle pour l\'équilibre. Star du film « Le Solitaire » avec Belmondo." },
     'alfa-75': { nom:'Alfa Romeo 75', an:[1985,1992], pays:'Italie',
-      ch:190, nm:245, kg:1200, cyl:3.0, arch:'V6 Busso', adm:'atmo', pos:'avant', tx:'propulsion', bv:'transaxle M5',
-      note:"Nommée pour les 75 ans d\'Alfa Romeo. Dernière Alfa entièrement conçue avant le rachat par Fiat. Répartition des masses proche de 50/50 grâce à la boîte transaxle. La Turbo Evoluzione est une rareté d\'homologation." },
+      ch:188, nm:245, kg:1250, cyl:3.0, arch:'V6 Busso', adm:'atmo', pos:'avant', tx:'propulsion', bv:'transaxle M5', flou:['kg'],
+      note:"Nommée pour les 75 ans d\'Alfa Romeo. Dernière Alfa entièrement conçue avant le rachat par Fiat. Répartition des masses proche de 50/50 grâce à la boîte transaxle. La Turbo Evoluzione est une rareté d\'homologation. Chiffres de la 75 3.0 V6 America." },
     'alfa-147': { nom:'Alfa Romeo 147', an:[2000,2010], pays:'Italie',
       ch:120, nm:146, kg:1220, cyl:1.6, arch:'4 cyl. Twin Spark', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
       note:"Voiture de l\'Année 2001. Chiffres de la 147 1.6 TS 120 ; la GTA et son V6 Busso de 250 ch ont leur propre fiche." },
@@ -2086,7 +2086,7 @@
       ch:156, nm:210, kg:950, cyl:2.0, arch:'4 cyl. 16v', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
       note:"La réponse d\'Opel à la Golf GTI. La GSi 16v et son moteur à seize soupapes en faisaient l\'une des compactes les plus vives de la fin des années 80. Vendue Vauxhall Astra GTE au Royaume-Uni." },
     'fiat-coupe': { nom:'Fiat Coupé', an:[1993,2000], pays:'Italie',
-      ch:220, nm:310, kg:1250, cyl:2.0, arch:'5 en ligne', adm:'turbo', pos:'avant', tx:'traction', bv:'M6',
+      ch:220, nm:310, kg:1310, cyl:2.0, arch:'5 en ligne', adm:'turbo', pos:'avant', tx:'traction', bv:'M6', flou:['kg'],
       note:"Le dessin extérieur, signé Chris Bangle, aux passages de roues taillés à la lame, reste l\'un des plus audacieux des années 90. Le 5 cylindres turbo 20V en faisait l\'une des tractions les plus rapides de son temps." },
     'lancia-fulvia': { nom:'Lancia Fulvia', an:[1963,1976], pays:'Italie',
       ch:132, nm:150, kg:920, cyl:1.6, arch:'V4 étroit', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
@@ -2161,7 +2161,7 @@
       ch:160, nm:177, kg:1000, cyl:1.9, arch:'4 cyl.', adm:'atmo / turbo', pos:'avant', tx:'traction', bv:'M5',
       note:"Design anguleux signé Marcello Gandini (le père de la Countach), hydropneumatique, hayon en polyester. La BX 4TC de rallye Groupe B est une rareté absolue. La GTi 16v est la sportive de la gamme." },
     'peugeot-106': { nom:'Peugeot 106', an:[1991,2003], pays:'France',
-      ch:60, nm:88, kg:780, cyl:1.1, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
+      ch:60, nm:88, kg:835, cyl:1.1, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M5', flou:['kg'],
       note:"La citadine Peugeot des années 90, jumelle technique de la Citroën Saxo avec laquelle elle partage plancher et mécanique. Cette fiche décrit la 106 de grande diffusion ; les versions sportives Rallye et GTI, bien plus rares, ont chacune leur propre fiche." },
     'peugeot-309': { nom:'Peugeot 309', an:[1985,1993], pays:'France',
       ch:65, nm:103, kg:870, cyl:1.3, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M5', flou:['kg'],
@@ -2224,8 +2224,8 @@
 
     /* ===== FICHES COMPLÈTES — vague H (youngtimers & sportives 80-90-2000) = */
     'peugeot-205': { nom:'Peugeot 205', an:[1983,1998], pays:'France',
-      ch:130, nm:165, kg:880, cyl:1.9, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
-      note:"La voiture qui a sauvé Peugeot. La 205 GTI est LA référence de la GTI des années 80, légère et vive. La T16 de rallye, à moteur central et 4 roues motrices, a dominé le Groupe B." },
+      ch:50, nm:85, kg:750, cyl:1.1, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M4', flou:['kg'],
+      note:"La voiture qui a sauvé Peugeot. La 205 GTI est LA référence de la GTI des années 80, légère et vive. La T16 de rallye, à moteur central et 4 roues motrices, a dominé le Groupe B. Chiffres de la 205 GL 1.1 (1983-1987, couple publié 8,7 mkg) ; elle portait ceux de la GTI 1.9, qui a sa propre fiche, tout comme la Rallye et la T16." },
     'ford-sierra-cosworth': { nom:'Ford Sierra RS Cosworth', an:[1986,1992], pays:'États-Unis',
       ch:224, nm:280, kg:1240, cyl:2.0, arch:'4 cyl. Cosworth', adm:'turbo', pos:'avant', tx:'propulsion / intégrale', bv:'M5',
       note:"L\'aileron « baleine » (whale tail) est sa signature. Bête de course en Groupe A et en tourisme. La RS500, produite à 500 exemplaires pour l\'homologation, est extrêmement cotée." },
@@ -2239,11 +2239,11 @@
       ch:140, nm:180, kg:1175, cyl:1.9, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M5',
       note:"Le roadster de James Bond dans « GoldenEye ». La Z3 M Coupé, au style de « chaussure de clown » (breadvan), est devenue culte pour son audace stylistique et son moteur de M3. Chiffres du Z3 1.9 de 1996 ; le Z3 M Coupé a sa propre fiche." },
     'mazda-mx5': { nom:'Mazda MX-5', an:[1989], pays:'Japon',
-      ch:184, nm:205, kg:1000, cyl:2.0, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M6',
-      note:"Le roadster le plus vendu de l\'histoire (record Guinness). Renaissance du roadster léger et abordable à l\'anglaise, mais avec la fiabilité japonaise. « Jinba ittai » : le cheval et le cavalier ne font qu\'un." },
+      ch:131, nm:150, kg:975, cyl:1.5, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M6',
+      note:"Le roadster le plus vendu de l\'histoire (record Guinness). Renaissance du roadster léger et abordable à l\'anglaise, mais avec la fiabilité japonaise. « Jinba ittai » : le cheval et le cavalier ne font qu\'un. Chiffres de la ND 1.5 SkyActiv-G, alignés sur sa première motorisation ; elle associait la puissance du 2.0 184 à une masse qu\'aucune version n\'affiche." },
     'toyota-mr2': { nom:'Toyota MR2', an:[1984,2007], pays:'Japon',
-      ch:245, nm:304, kg:1100, cyl:2.0, arch:'4 cyl.', adm:'turbo / atmo', pos:'central', tx:'propulsion', bv:'M5',
-      note:"« Midship Runabout 2-seater » : une supercar à moteur central miniature et abordable. La deuxième génération (SW20) turbo évoquait une Ferrari en réduction, au point d\'inquiéter les débutants." },
+      ch:245, nm:304, kg:1270, cyl:2.0, arch:'4 cyl.', adm:'turbo', pos:'central', tx:'propulsion', bv:'M5',
+      note:"« Midship Runabout 2-seater » : une supercar à moteur central miniature et abordable. La deuxième génération (SW20) turbo évoquait une Ferrari en réduction, au point d\'inquiéter les débutants. Chiffres de la SW20 Turbo (3S-GTE, marché japonais)." },
 
     /* ===== FICHES COMPLÈTES — vague H (muscle cars & américaines) ======== */
     'chevrolet-camaro': { nom:'Chevrolet Camaro', an:[1966], pays:'États-Unis',
@@ -2377,7 +2377,7 @@
       ch:150, nm:250, kg:1538, cyl:1.6, arch:'4 cyl.', adm:'turbo + hybridation légère 48 V', pos:'avant', tx:'traction', bv:'M6', flou:['kg'],
       note:"Calandre « paramétrique » aux feux de jour intégrés qui disparaissent quand ils sont éteints, un effet visuel spectaculaire. Le SUV qui a fait décoller l\'image de Hyundai. Chiffres de la NX4 hybride rechargeable 1.6 T-GDi : 265 ch et 350 Nm cumulés, valeurs système publiées par Hyundai. Chiffres du Tucson IV 1.6 T-GDi 150 ; elle portait ceux de l\'hybride rechargeable de 265 ch." },
     'vw-tiguan': { nom:'Volkswagen Tiguan', an:[2007], pays:'Allemagne',
-      ch:150, nm:250, kg:1510, cyl:1.5, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M6 / DSG 7',
+      ch:150, nm:250, kg:1510, cyl:1.5, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M6 / DSG 7', flou:['kg'],
       note:"Le SUV compact le plus vendu de VW, best-seller mondial. Chiffres du Tiguan II 1.5 TSI ; le Tiguan R à 320 ch a sa propre fiche." },
     'vw-t-roc': { nom:'Volkswagen T-Roc', an:[2017], pays:'Allemagne',
       ch:150, nm:250, kg:1353, cyl:1.5, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M6 / DSG 7', flou:['kg'],
@@ -3342,7 +3342,7 @@
       ch:300, nm:400, kg:1306, cyl:1.8, arch:'4 en ligne', adm:'turbo', pos:'avant', tx:'traction', bv:'M6',
       prod:500, flou:['prod'], note:'Record du tour au Nürburgring pour une traction en 2019.' },
     'peugeot-205-gti-19': { nom:'Peugeot 205 GTI 1.9', an:[1986,1994], pays:'France',
-      ch:130, nm:161, kg:880, cyl:1.9, arch:'4 en ligne', adm:'atmosphérique', pos:'avant', tx:'traction', bv:'M5',
+      ch:130, nm:161, kg:880, cyl:1.9, arch:'4 en ligne', adm:'atmosphérique', pos:'avant', tx:'traction', bv:'M5', flou:['kg'],
       note:'Train arrière à bras tirés, réputé pour son comportement en levé de pied.' },
     'citroen-sm': { nom:'Citroën SM', an:[1970,1975], pays:'France',
       ch:170, nm:231, kg:1450, cyl:2.7, arch:'V6', adm:'atmosphérique', pos:'avant', tx:'traction', bv:'M5',
@@ -15411,7 +15411,7 @@
               arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'propulsion', bv:'auto 8',
               note:"Arrivé après coup en France — à l'origine réservé au marché américain." },
             { id:'3.3-v6-370', label:'3.3 V6 Biturbo 370 GT',
-              ch:370, nm:510, kg:1855, cyl:3.342, arch:'V6', adm:'biturbo', pos:'avant', tx:'intégrale', bv:'auto 8',
+              ch:370, nm:510, kg:1909, cyl:3.342, arch:'V6', adm:'biturbo', pos:'avant', tx:'intégrale', bv:'auto 8', flou:['kg'],
               note:"Le haut de gamme, exclusivement en transmission intégrale en France." },
           ]
         },
@@ -15440,7 +15440,7 @@
           id: 'turbo', label: 'Twin Turbo',
           variants: [
             { id:'3.0-v6-biturbo-283', label:'3.0 V6 Twin Turbo 283',
-              ch:283, nm:375, kg:1585, cyl:2.960, arch:'V6', adm:'biturbo', pos:'avant', tx:'propulsion', bv:'manuelle 5',
+              ch:283, nm:375, kg:1585, cyl:2.960, arch:'V6', adm:'biturbo', pos:'avant', tx:'propulsion', bv:'manuelle 5', flou:['kg'],
               note:"Deux turbos Garrett T25, direction et suspension 4 roues Super HICAS de série." },
           ]
         }
@@ -15543,7 +15543,7 @@
               ch:195, nm:296, kg:1320, cyl:1.995, arch:'4 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 5',
               note:"Le premier échelon turbo, avant l'arrivée du 5 cylindres." },
             { id:'2.0-20v-turbo-220', label:'2.0 20V Turbo 220',
-              ch:220, nm:310, kg:1310, cyl:1.998, arch:'5 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 6',
+              ch:220, nm:310, kg:1310, cyl:1.998, arch:'5 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 6', flou:['kg'],
               note:"Bloc 5 cylindres emprunté à la Lancia Delta/Fiat Bravo HGT — la version culte, saluée par la presse pour son agrément malgré un tarif très accessible." },
           ]
         }
@@ -15568,17 +15568,17 @@
 
     /* ---- Vague 5 ----------------------------------------------------- */
 
-    'peugeot-205': {
+    'peugeot-205-gti': {
       types: [
         {
           id: 'gti', label: 'GTI',
           variants: [
+            { id:'1.9-130', label:'GTI 1.9 130',
+              ch:130, nm:161, kg:890, cyl:1.905, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'manuelle 5', flou:['kg'],
+              note:"Freins à 4 disques, train arrière spécifique — considérée par beaucoup comme la meilleure GTI jamais produite." },
             { id:'1.6-105', label:'GTI 1.6 105',
               ch:105, nm:132, kg:875, cyl:1.580, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'manuelle 5',
               note:"La première GTI, celle qui a lancé la légende — freins à disque à l'avant seulement." },
-            { id:'1.9-130', label:'GTI 1.9 130',
-              ch:130, nm:161, kg:890, cyl:1.905, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'manuelle 5',
-              note:"Freins à 4 disques, train arrière spécifique — considérée par beaucoup comme la meilleure GTI jamais produite." },
           ]
         }
       ]
@@ -15627,7 +15627,7 @@
               ch:120, nm:140, kg:1265, cyl:1.598, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'manuelle 5',
               note:"Twin Spark — double allumage par cylindre, la signature moteur Alfa de l'époque." },
             { id:'2.0ts-155', label:'2.0 TS 155',
-              ch:155, nm:180, kg:1275, cyl:1.970, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'manuelle 5',
+              ch:155, nm:187, kg:1275, cyl:1.970, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'manuelle 5',
               note:"Le haut de gamme essence, avant l'arrivée du V6 24V." },
           ]
         },
@@ -15699,8 +15699,8 @@
         {
           id: 'v8', label: 'V8 AJP8',
           variants: [
-            { id:'4.5-ajp8-420', label:'4.5 AJP8 420',
-              ch:420, nm:515, kg:1100, cyl:4.475, arch:'V8', adm:'atmo', pos:'avant', tx:'propulsion', bv:'manuelle 5',
+            { id:'4.5-ajp8-420', label:'4.5 AJP8 420 bhp',
+              ch:426, nm:515, kg:1100, cyl:4.475, arch:'V8', adm:'atmo', pos:'avant', tx:'propulsion', bv:'manuelle 5',
               note:"Vilebrequin à plat comme une Ferrari, différentiel Hydratrak de série — l'un des V8 atmosphériques les plus performants au litre de sa génération." },
           ]
         }
@@ -15781,7 +15781,7 @@
           id: 'v6', label: 'V6',
           variants: [
             { id:'3.0-v6-188', label:'3.0 V6 188',
-              ch:188, nm:248, kg:1300, cyl:2.959, arch:'V6', adm:'atmo', pos:'avant', tx:'propulsion', bv:'transaxle 5',
+              ch:188, nm:245, kg:1250, cyl:2.959, arch:'V6', adm:'atmo', pos:'avant', tx:'propulsion', bv:'transaxle 5',
               note:"Le V6 Busso dans sa version America — boîte et embrayage à l'arrière (transaxle), d'où une répartition des masses quasi parfaite." },
           ]
         }
@@ -15836,7 +15836,7 @@
           id: 'gamme', label: 'Gamme',
           variants: [
             { id:'1.1-60', label:'1.1 60',
-              ch:60, nm:90, kg:815, cyl:1.124, arch:'4 cyl.', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 5',
+              ch:60, nm:88, kg:835, cyl:1.124, arch:'4 cyl.', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 5', flou:['kg'],
               note:"La 106 du quotidien, celle qu'on croise encore le plus souvent." },
             { id:'1.4-75', label:'1.4 75',
               ch:75, nm:120, kg:848, cyl:1.360, arch:'4 cyl.', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 5',
@@ -15905,7 +15905,7 @@
           id: 'moderne', label: 'Moderne (L663)',
           variants: [
             { id:'d250-249', label:'D250 249',
-              ch:249, nm:570, kg:2245, cyl:2.997, arch:'6 en ligne', adm:'turbo + MHEV', pos:'avant longitudinal', tx:'intégrale', bv:'auto 8',
+              ch:249, nm:570, kg:2245, cyl:2.997, arch:'6 en ligne', adm:'turbo + MHEV', pos:'avant longitudinal', tx:'intégrale', bv:'auto 8', flou:['kg'],
               note:"Six-en-ligne diesel semi-hybride — le Defender de 2020 n'a plus rien de commun avec son ancêtre sauf le nom." },
             { id:'p400-400', label:'P400 400',
               ch:400, nm:550, kg:2546, cyl:2.996, arch:'6 en ligne', adm:'turbo + MHEV', pos:'avant longitudinal', tx:'intégrale', bv:'auto 8',
@@ -15920,7 +15920,7 @@
 
     /* ---- Vague 15 ---------------------------------------------------- */
 
-    'peugeot-504': {
+    'peugeot-504-coupe': {
       types: [
         {
           id: '4cyl', label: '4 cylindres',
@@ -15940,7 +15940,7 @@
               ch:136, nm:205, kg:1290, cyl:2.664, arch:'V6 PRV', adm:'atmo', pos:'avant longitudinal', tx:'propulsion', bv:'manuelle 4 / auto 3',
               note:"Le V6 PRV à carburateurs, né de l'alliance Peugeot-Renault-Volvo — seulement 974 cabriolets produits." },
             { id:'2.7-v6-ti-144', label:'2.7 V6 Ti 144',
-              ch:144, nm:213, kg:1300, cyl:2.664, arch:'V6 PRV', adm:'atmo', pos:'avant longitudinal', tx:'propulsion', bv:'manuelle 5',
+              ch:144, nm:218, kg:1295, cyl:2.664, arch:'V6 PRV', adm:'atmo', pos:'avant longitudinal', tx:'propulsion', bv:'manuelle 5',
               note:"Injection Bosch K-Jetronic en 1977, boîte 5 réservée à ce modèle — moins de 1 800 coupés produits, carrosserie Pininfarina." },
           ]
         }
@@ -16891,7 +16891,7 @@
           id: 'b9', label: 'B9 (2016–2024)',
           variants: [
             { id:'b9-3.0tfsi-354', label:'3.0 TFSI 354',
-              ch:354, nm:500, kg:1630, cyl:2.995, arch:'V6', adm:'turbo', pos:'avant longitudinal', tx:'intégrale (quattro)', bv:'tiptronic 8',
+              ch:354, nm:500, kg:1630, cyl:2.995, arch:'V6', adm:'turbo', pos:'avant longitudinal', tx:'intégrale (quattro)', bv:'tiptronic 8', flou:['kg'],
               note:"Nouveau V6 turbo, plus léger que le compresseur qu'il remplace — +60 Nm." },
             { id:'b9-3.0tdi-347', label:'3.0 TDI 347',
               ch:347, nm:700, kg:1785, cyl:2.967, arch:'V6', adm:'turbo + compresseur électrique', pos:'avant longitudinal', tx:'intégrale (quattro)', bv:'tiptronic 8',
@@ -16923,7 +16923,7 @@
           id: 'b9', label: 'B9 (2017–2024)',
           variants: [
             { id:'b9-3.0tfsi-354', label:'3.0 TFSI 354',
-              ch:354, nm:500, kg:1615, cyl:2.995, arch:'V6', adm:'turbo', pos:'avant longitudinal', tx:'intégrale (quattro)', bv:'tiptronic 8',
+              ch:354, nm:500, kg:1615, cyl:2.995, arch:'V6', adm:'turbo', pos:'avant longitudinal', tx:'intégrale (quattro)', bv:'tiptronic 8', flou:['kg'],
               note:"Retour aux 354 ch du V8 d'origine, avec 100 kg de moins." },
             { id:'b9-3.0tdi-347', label:'3.0 TDI 347',
               ch:347, nm:700, kg:1770, cyl:2.967, arch:'V6', adm:'turbo + compresseur électrique', pos:'avant longitudinal', tx:'intégrale (quattro)', bv:'tiptronic 8',
@@ -17038,7 +17038,7 @@
           id: 'p5', label: '308 III (2021–)',
           variants: [
             { id:'p5-puretech-130', label:'1.2 PureTech 130',
-              ch:130, nm:230, kg:1349, cyl:1.199, arch:'3 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 6',
+              ch:130, nm:230, kg:1258, cyl:1.199, arch:'3 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 6', flou:['kg'],
               note:"Même moteur que la 308 II, mais 200 kg de plus avec la troisième génération." },
             { id:'p5-bluehdi-130', label:'1.5 BlueHDi 130',
               ch:130, nm:300, kg:1427, cyl:1.499, arch:'4 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 6',
@@ -17062,7 +17062,7 @@
           id: 'p2-essence', label: '3008 II (2016–2023) — Essence',
           variants: [
             { id:'p2-puretech-130', label:'1.2 PureTech 130',
-              ch:130, nm:230, kg:1250, cyl:1.199, arch:'3 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 6',
+              ch:130, nm:230, kg:1250, cyl:1.199, arch:'3 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 6', flou:['kg'],
               note:"Élu voiture de l'année 2017 en Europe — un SUV de 4,45 m mû par un trois-cylindres de 1,2 L." },
             { id:'p2-thp-165', label:'1.6 THP 165',
               ch:165, nm:240, kg:1300, cyl:1.598, arch:'4 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'auto 6',

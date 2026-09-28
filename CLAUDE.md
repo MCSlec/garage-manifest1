@@ -382,7 +382,7 @@ incrémenter conjointement :**
 2. `VERSION` (`"garage-v…"`) dans `sw.js` (ligne ~12).
 
 Ces deux numéros sont **tenus synchronisés** (au 28/09/2026 : `gm-specs.js` →
-`20.177.0`, `sw.js` → `garage-v20.177.0`). `VERSION_MODULE` s'affiche en outre
+`20.178.0`, `sw.js` → `garage-v20.178.0`). `VERSION_MODULE` s'affiche en outre
 dans l'UI via `grefferVersion()`, ce qui permet de vérifier de visu quelle version
 tourne réellement sur l'appareil.
 
@@ -419,6 +419,7 @@ Ce qu'il attrape, et que ni l'œil ni `node --check` ne voient :
 | **Jumelles à distance** | Le contrôle « copie-voisine » ne compare que des fiches **adjacentes**. Étendu à toutes les paires, il a trouvé 30 groupes de fiches identiques au chiffre près (ch, Nm, L, kg). La majorité suivait un seul motif : une entrée **courante** (CLA, A3, Octavia, Polo, Panamera, X5, TT, Tiguan, Série 1…) affichait les chiffres de sa **version sportive**, qui a pourtant sa propre entrée — la règle GTA (§4.5 bis) violée en silence, avec des ratios faux et une rareté perçue absurde. Les vraies jumelles (Aygo/C1, Berlingo/Partner, ID.4/Enyaq) sont nommées dans `JUMELLES_AVEREES`, avec leur justification. |
 | **Champs manquants / hors plage** | Complétude par champ, et incohérences d'ordre de grandeur. |
 | **Divergences `CARS` / `CATALOGUE_PLUS`** | Un id déclaré des deux côtés : `CARS` fait autorité, l'autre déclaration est **perdue en silence**. |
+| **Fiche ↔ variante** | La fiche `SPECS` et une variante `MOTOR_SPECS` qui décrivent le **même moteur** (appariées sur la cylindrée ± 60 cm³ **et** la puissance ± 6 ch) doivent afficher les mêmes chiffres, sinon le joueur lit deux valeurs selon qu'il a touché au sélecteur. 25 cas au premier passage (206 : 111 / 120 Nm ; C6 : 240 ch avec la cylindrée du 2.7 ; MR2 : 1 100 / 1 270 kg). Un champ `flou` d'un côté est ignoré (l'écart est annoncé). Exemptions nominatives : `MEME_MOTEUR_AUTRE_GENERATION`. Vérifié par mutation. |
 
 **Calibrage :** les bornes de plausibilité sont volontairement larges, calées sur
 les extrêmes **réels** du catalogue (Top Fuel 11 000 ch, Hummer EV 4 100 kg,
