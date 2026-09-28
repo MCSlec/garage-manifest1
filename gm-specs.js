@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.155.0';
+  const VERSION_MODULE = '20.156.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -815,7 +815,7 @@
       note:"Environ 720 kg : « elle consommait moins qu\'elle ne pesait », disaient les essayeurs. Un rapport poids/puissance excellent grâce à une légèreté extrême. La sportive populaire des années 80, aujourd\'hui rare car peu ont survécu." },
     'citroen-xantia-activa': { nom:'Citroën Xantia Activa', an:[1994,2001], pays:'France',
       ch:190, nm:267, kg:1350, cyl:3.0, arch:'V6', adm:'atmo', pos:'avant', tx:'traction', bv:'A4',
-      note:"Détentrice à ce jour du record du test de l\'élan (évitement à haute vitesse), devant toutes les supercars : son système hydraulique anti-roulis actif la maintient parfaitement à plat en virage. Un chef-d\'œuvre technique français méconnu." },
+      note:"A détenu pendant plus de vingt ans le record du test de l\'élan (évitement à haute vitesse), à 85 km/h, devant toutes les supercars : son système hydraulique anti-roulis actif la maintient parfaitement à plat en virage. Un chef-d\'œuvre technique français méconnu." },
     'citroen-c4-cactus': { nom:'Citroën C4 Cactus', an:[2014,2020], pays:'France',
       ch:110, nm:205, kg:1000, cyl:1.2, arch:'3 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M5 / A6',
       note:"Les « Airbump » sur les portières, coussins d\'air en polyuréthane protégeant des chocs de parking, sont sa signature visuelle unique. Un retour à la simplicité et à la légèreté cher à l\'esprit Citroën, au style décomplexé." },
@@ -2693,10 +2693,10 @@
       ch:374, nm:500, kg:1500, cyl:3.0, arch:'6 en ligne', adm:'turbo', pos:'avant', tx:'propulsion / intégrale', bv:'A8',
       note:"Coupé compact au 6 cylindres turbo. Format ramassé, propulsion disponible : l\'esprit de la BMW 2002 des années 70 remis au goût du jour." },
     'bmw-335i': { nom:'BMW 335i (N54/N55)', an:[2006,2015], pays:'Allemagne',
-      ch:340, nm:450, kg:1560, cyl:3.0, arch:'6 en ligne', adm:'turbo', pos:'avant', tx:'propulsion / intégrale', bv:'A8',
-      note:"Le N54 fut le premier 6 cylindres turbo BMW de l\'ère moderne, réputé pour son énorme potentiel de préparation : plus de 400 ch avec une simple reprogrammation." },
+      ch:306, nm:400, kg:1560, cyl:3.0, arch:'6 en ligne', adm:'turbo', pos:'avant', tx:'propulsion / intégrale', bv:'M6 / A8', flou:['kg'],
+      note:"Le N54 fut le premier 6 cylindres turbo BMW de l\'ère moderne, réputé pour son énorme potentiel de préparation : plus de 400 ch avec une simple reprogrammation. 306 ch sur toutes les générations, du N54 au N55 ; la masse varie selon la carrosserie et la transmission." },
     'bmw-m340i': { nom:'BMW M340i', an:[2019], pays:'Allemagne',
-      ch:387, nm:500, kg:1670, cyl:3.0, arch:'6 en ligne', adm:'turbo + mild hybrid', pos:'avant', tx:'propulsion / intégrale', bv:'A8',
+      ch:374, nm:500, kg:1670, cyl:3.0, arch:'6 en ligne', adm:'turbo + mild hybrid', pos:'avant', tx:'propulsion / intégrale', bv:'A8',
       note:"Le sommet de la Série 3 hors M3. Le six en ligne B58, hybridé léger, est considéré comme l\'un des meilleurs moteurs actuels, fiable et souple." },
     'bmw-130i': { nom:'BMW 130i', an:[2005,2011], pays:'Allemagne',
       ch:265, nm:315, kg:1450, cyl:3.0, arch:'6 en ligne', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M6',
@@ -3176,9 +3176,11 @@
       ch:335, nm:489, kg:1650, cyl:3.2, arch:'6 en ligne compressé puis V12', adm:'compresseur / atmo', pos:'avant', tx:'propulsion', bv:'M5',
       prod:7000,
       note:"La DB7 a sauvé Aston Martin de la faillite : plus produite que toutes les Aston précédentes réunies. La Vantage inaugure le V12 6.0. Dessinée par Ian Callum." },
-    'aston-dbs': { nom:'Aston Martin DBS', an:[2007,2012], pays:'Royaume-Uni',
-      ch:517, nm:570, kg:1695, cyl:5.9, arch:'V12', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M6',
-      note:"L\'Aston de James Bond dans « Casino Royale » et « Quantum of Solace ». Le tonneau spectaculaire de Casino Royale reste un record du monde de cascade homologué." },
+    /* L'entrée annonce la DBS de 2018 (et le son, un V12 5.2 biturbo) : la
+       fiche portait jusqu'ici la DBS V12 atmo de 2007, une autre voiture. */
+    'aston-dbs': { nom:'Aston Martin DBS Superleggera', an:[2018], pays:'Royaume-Uni',
+      ch:725, nm:900, kg:1693, cyl:5.2, arch:'V12', adm:'biturbo', pos:'avant', tx:'propulsion', bv:'A8', flou:['kg'],
+      note:"Reprend le nom de la DBS de James Bond (« Casino Royale », 2006), dont le tonneau reste un record de cascade homologué. 900 Nm dès 1 800 tr/min. Masse annoncée par Aston Martin à sec, d\'où l\'approximation." },
     'aston-vanquish': { nom:'Aston Martin Vanquish', an:[2001,2018], pays:'Royaume-Uni',
       ch:568, nm:630, kg:1739, cyl:5.9, arch:'V12', adm:'atmo', pos:'avant', tx:'propulsion', bv:'A8',
       note:"La première Vanquish (2001) est l\'Aston de James Bond dans « Meurs un autre jour ». Châssis en aluminium et fibre de carbone, une avancée majeure pour la marque." },
@@ -8951,6 +8953,193 @@
     ],
     'rwb-911': [
       ['RWB 911','1997–','flat-6 Porsche, selon la base','','Préparations d\'Akira Nakai sur des 911 anciennes (930, 964, 993), chacune réalisée par lui sur place.'],
+    ],
+
+    /* ---- Vague G11 : GT, berlines, breaks, roadsters, citadines ------------ */
+    'aston-db7': [
+      ['DB7 (i6)','1994–1999','6 en ligne 3.2 compressé','335 ch','Coupé puis Volante. Plateforme dérivée de la Jaguar XJS.'],
+      ['DB7 V12 Vantage','1999–2003','V12 5.9','420 ch','Premier V12 de série d\'Aston Martin.'],
+      ['DB7 GT / GTA','2003–2004','V12 5.9','','Dernière évolution, plus puissante. Une série Zagato de 99 exemplaires l\'accompagne. 7 000 DB7 au total, plus que toutes les Aston précédentes réunies.'],
+    ],
+    'aston-dbs': [
+      ['DBS Superleggera','2018–2023','V12 5.2 biturbo','725 ch','900 Nm dès 1 800 tr/min. Coupé et Volante.'],
+      ['DBS 770 Ultimate','2023','V12 5.2 biturbo','770 ch','La DBS la plus puissante, 499 exemplaires coupé et Volante confondus.'],
+    ],
+    'aston-db12': [
+      ['DB12 / DB12 Volante','2023–','V8 4.0 biturbo (base AMG)','680 ch','Successeur de la DB11, présentée comme une « Super Tourer ».'],
+    ],
+    'mclaren-gt': [
+      ['GT','2019–2023','V8 4.0 biturbo','620 ch','Coffre au-dessus du moteur.'],
+      ['GTS','2024–','V8 4.0 biturbo','635 ch','Dix kilos de moins, levée du nez plus rapide.'],
+    ],
+    'bmw-m8': [
+      ['M8 (F91, F92, F93)','2019–','V8 4.4 biturbo (S63)','600 ch','Cabriolet, coupé et Gran Coupé quatre portes.'],
+      ['M8 Competition','2019–','V8 4.4 biturbo (S63)','625 ch','Mêmes carrosseries, moteur plus poussé.'],
+    ],
+    'bmw-i8': [
+      ['i8 (coupé)','2014–2018','3 cyl. 1.5 turbo + moteur électrique, hybride rechargeable','362 ch','Portes papillon, structure en carbone. Puissance cumulée.'],
+      ['i8 / i8 Roadster','2018–2020','3 cyl. 1.5 turbo + moteur électrique','374 ch','Batterie plus grande. 20 465 i8 au total.'],
+    ],
+    'ferrari-ff': [
+      ['FF','2011–2016','V12 6.3 atmo, transmission intégrale','660 ch','Première Ferrari à quatre roues motrices, par une seconde boîte de vitesses entraînant les roues avant.'],
+      ['GTC4Lusso','2016–2020','V12 6.3 atmo','690 ch','Quatre roues directrices.'],
+      ['GTC4Lusso T','2016–2020','V8 3.9 biturbo, propulsion','610 ch','Version V8, sans transmission intégrale.'],
+    ],
+    'ferrari-f12': [
+      ['F12berlinetta','2012–2017','V12 6.3 atmo','740 ch','Aérodynamique active, conduits d\'air creusés dans le capot.'],
+      ['F12tdf','2015–2017','V12 6.3 atmo','780 ch','« Tour de France », en hommage à la 250 GT. Roues arrière directrices. 799 exemplaires.'],
+    ],
+    'ferrari-550': [
+      ['550 Maranello','1996–2002','V12 5.5 atmo','485 ch','Retour au V12 à l\'avant pour la berlinette Ferrari. 3 083 exemplaires.'],
+      ['550 Barchetta Pininfarina','2000–2001','V12 5.5 atmo','485 ch','Sans toit fixe, simple capote de secours. 448 exemplaires. La 575M Maranello succède au coupé.'],
+    ],
+    'ferrari-12cilindri': [
+      ['12Cilindri / 12Cilindri Spider','2024–','V12 6.5 atmo','830 ch','Rupteur à 9 500 tr/min. Successeur de la 812.'],
+    ],
+    'jaguar-xk8': [
+      ['XK8 4.0','1996–2002','V8 4.0 (AJ-V8)','294 ch','Premier V8 de Jaguar.'],
+      ['XKR 4.0','1998–2002','V8 4.0 compressé','375 ch','Version à compresseur.'],
+      ['XK8 / XKR 4.2','2002–2005','V8 4.2 atmo ou compressé','304 ch / 406 ch','Cylindrée portée à 4,2 litres.'],
+    ],
+    'rr-spectre': [
+      ['Spectre','2023–','deux moteurs électriques','585 ch','Première Rolls-Royce électrique de série.'],
+    ],
+    'polestar-1': [
+      ['Polestar 1','2019–2021','4 cyl. 2.0 turbo-compressé + moteurs électriques, hybride rechargeable','609 ch','Carrosserie en carbone. 1 500 exemplaires. Puissance et couple cumulés.'],
+    ],
+    'bentley-mulsanne': [
+      ['Mulsanne','2010–2020','V8 6.75 biturbo (série L)','512 ch','Moteur dont la lignée remonte à 1959.'],
+      ['Mulsanne Speed','2014–2020','V8 6.75 biturbo','537 ch','1 100 Nm.'],
+      ['Mulsanne 6.75 Edition by Mulliner','2020','V8 6.75 biturbo','537 ch','30 exemplaires pour les soixante ans du moteur, qui prend sa retraite avec la voiture.'],
+    ],
+    'ford-crown-victoria': [
+      ['Crown Victoria (EN114, 1re phase)','1992–1997','V8 4.6 (Modular)','','Le V8 4.6 remplace le vieux 5.0 culbuté.'],
+      ['Crown Victoria (2e phase)','1998–2011','V8 4.6 (Modular)','','Version Police Interceptor, dite P71, pour les forces de l\'ordre nord-américaines.'],
+    ],
+    'mercedes-500e': [
+      ['500 E','1990–1993','V8 5.0 32 soupapes','326 ch','Caisse élargie et assemblée chez Porsche à Zuffenhausen, peinte chez Mercedes, puis finie chez Porsche.'],
+      ['E 500','1993–1995','V8 5.0','326 ch','Renommée avec le restylage. Série finale E 500 Limited. 10 479 exemplaires en tout.'],
+    ],
+    'renault-vel-satis': [
+      ['Vel Satis','2002–2009','4 cyl. 2.0 turbo, V6 3.5 ; diesels 2.0 à 3.0 dCi','jusqu\'à 245 ch','Le V6 3.5 est d\'origine Nissan. 62 201 exemplaires à conduite à gauche.'],
+    ],
+    'citroen-xantia-activa': [
+      ['Xantia Activa','1995–1997','4 cyl. 2.0 turbo','150 ch','Barres antiroulis actives hydrauliques : la caisse reste à plat en virage.'],
+      ['Xantia V6 Activa','1997–2001','V6 3.0 24v','190 ch','85 km/h au test de l\'élan, un record tenu plus de vingt ans.'],
+    ],
+    'rover-75': [
+      ['75 (4 cyl., V6, diesel)','1999–2005','4 cyl. 1.8, V6 2.0 et 2.5 (KV6), diesel BMW 2.0','','Développée sous l\'ère BMW. Déclinée en MG ZT sportive.'],
+      ['75 V8 / MG ZT 260','2004–2005','V8 Ford 4.6, propulsion','260 ch','Conversion à la propulsion d\'une plateforme de traction. Très peu d\'exemplaires avant la faillite de MG Rover en 2005.'],
+    ],
+    'bmw-330i': [
+      ['330i / 330e (F30)','2016–2019','4 cyl. 2.0 turbo ; hybride rechargeable','252 ch','330e : puissance cumulée.'],
+      ['330i / 330e (G20)','2019–','4 cyl. 2.0 turbo ; hybride rechargeable','258 ch / 292 ch','La 330e atteint 292 ch en mode XtraBoost.'],
+    ],
+    'bmw-m550i': [
+      ['540i (G30)','2017–','6 en ligne 3.0 turbo (B58)','340 ch',''],
+      ['M550i (G30)','2017–2020','V8 4.4 biturbo','462 ch',''],
+      ['M550i (G30 restylée)','2020–2023','V8 4.4 biturbo','530 ch','Presque la puissance de la M5 de la génération précédente.'],
+    ],
+    'mercedes-c43': [
+      ['C 43 (W205)','2016–2018','V6 3.0 biturbo','367 ch','Transmission intégrale 4MATIC.'],
+      ['C 43 (W205 restylée)','2018–2021','V6 3.0 biturbo','390 ch',''],
+      ['C 43 (W206)','2022–','4 cyl. 2.0 turbo à assistance électrique','408 ch','Turbocompresseur électrique issu de la F1, et alterno-démarreur.'],
+    ],
+    'mercedes-gt63': [
+      ['AMG GT 63 / 63 S 4 portes','2018–','V8 4.0 biturbo','jusqu\'à 639 ch','Plateforme de Classe E, et non du coupé AMG GT. Une GT 53 à six-cylindres complète la gamme.'],
+      ['AMG GT 63 S E Performance','2021–','V8 4.0 biturbo hybride rechargeable','843 ch','Moteur électrique sur l\'essieu arrière. Puissance et couple cumulés, 1 470 Nm.'],
+    ],
+    'bmw-335i': [
+      ['335i (E90 à E93, N54)','2006–2010','6 en ligne 3.0 biturbo (N54)','306 ch','Berline, break, coupé et cabriolet.'],
+      ['335i (E90 à E93, N55)','2010–2012','6 en ligne 3.0 turbo twin-scroll (N55)','306 ch','Un seul turbo à double entrée remplace les deux.'],
+      ['335i (F30, F31, F34)','2012–2015','6 en ligne 3.0 turbo (N55)','306 ch','Remplacée par la 340i.'],
+    ],
+    'bmw-m340i': [
+      ['M340i (G20, G21)','2019–','6 en ligne 3.0 turbo (B58)','374 ch','Berline et Touring ; hybridation légère au restylage de 2022.'],
+    ],
+    'bmw-i4': [
+      ['i4 eDrive40','2021–','moteur électrique, propulsion','340 ch',''],
+      ['i4 M50','2021–','deux moteurs électriques','544 ch','Premier modèle BMW M électrique.'],
+    ],
+    'cadillac-ct5v-bw': [
+      ['CT5-V Blackwing','2022–','V8 6.2 compressé (LT4)','677 ch','668 hp SAE. Boîte manuelle Tremec à six rapports de série, automatique en option.'],
+    ],
+    'jaguar-xe-sv8': [
+      ['XE SV Project 8','2017–2019','V8 5.0 compressé','600 ch','Préparée par Special Vehicle Operations. Record des berlines au Nürburgring en 2017, en 7 min 21 s. 300 exemplaires.'],
+    ],
+    'bmw-m5-cs': [
+      ['M5 CS (F90)','2021–2022','V8 4.4 biturbo','635 ch','La BMW de série la plus puissante à son lancement. Quatre sièges baquets.'],
+    ],
+    'nissan-stagea-260rs': [
+      ['Stagea 260RS Autech Version (WGNC34)','1997–1998','6 en ligne 2.6 biturbo (RB26DETT)','280 ch','Moteur, boîte et transmission intégrale ATTESA de la Skyline GT-R R33, montés par Autech. 1 734 exemplaires.'],
+    ],
+    'bmw-m3-touring': [
+      ['M3 Competition Touring (G81)','2022–','6 en ligne 3.0 biturbo (S58)','510 ch','Première M3 break de série, transmission intégrale M xDrive.'],
+      ['M3 CS Touring','2025–','6 en ligne 3.0 biturbo (S58)','550 ch','Pression de suralimentation relevée.'],
+    ],
+    'abt-rs6-r': [
+      ['RS6-R','2020–','V8 4.0 biturbo (base Audi RS6 C8)','740 ch','Préparation ABT en série limitée.'],
+    ],
+    'porsche-911-gt1': [
+      ['911 GT1 (homologation)','1996','flat-6 3.2 biturbo, moteur central','544 ch','Un seul exemplaire routier pour homologuer la voiture de course.'],
+      ['911 GT1 Straßenversion','1997','flat-6 3.2 biturbo','544 ch','Une vingtaine d\'exemplaires, tableau de bord de 996.'],
+      ['911 GT1-98','1998','flat-6 3.2 biturbo','','Un exemplaire routier. La version course gagne les 24 Heures du Mans 1998.'],
+    ],
+    'plymouth-prowler': [
+      ['Prowler','1997','V6 3.5','221 ch','218 hp SAE. Boîte automatique uniquement, roues avant à découvert.'],
+      ['Prowler / Chrysler Prowler','1999–2002','V6 3.5 à bloc aluminium','257 ch','253 hp SAE. Rebaptisée Chrysler après la disparition de Plymouth. 11 702 exemplaires.'],
+    ],
+    'chrysler-crossfire': [
+      ['Crossfire','2003–2008','V6 3.2 (Mercedes)','218 ch','215 hp. Environ 80 % de pièces communes avec le premier Mercedes SLK. Assemblée par Karmann à Osnabrück.'],
+      ['Crossfire SRT-6','2005–2006','V6 3.2 compressé (AMG)','335 ch','330 hp. Le moteur de la SLK 32 AMG. 76 014 Crossfire au total.'],
+    ],
+    'subaru-svx': [
+      ['SVX (Alcyone SVX au Japon)','1991–1996','flat-6 3.3 (EG33)','','Dessinée par Giugiaro. Automatique uniquement. Près de 25 000 exemplaires.'],
+    ],
+    'smart-roadster': [
+      ['Roadster / Roadster Coupé','2003–2005','3 cyl. 0.7 turbo, moteur arrière','61 ou 82 ch','Propulsion, moins de 800 kg.'],
+      ['Roadster Brabus','2003–2005','3 cyl. 0.7 turbo','101 ch','43 091 smart roadster au total.'],
+    ],
+    'fiat-barchetta': [
+      ['Barchetta (Maggiora)','1995–2002','4 cyl. 1.8 16v','130 ch','Carrosserie assemblée par Maggiora, conduite à gauche uniquement.'],
+      ['Barchetta (Mirafiori)','2003–2005','4 cyl. 1.8 16v','130 ch','Production reprise à Mirafiori après la faillite de Maggiora, avec un léger restylage.'],
+    ],
+    'fiat-124-spider-2016': [
+      ['124 Spider','2016–2020','4 cyl. 1.4 turbo MultiAir','140 ch','Construite par Mazda à Hiroshima, sur la base du MX-5 ND.'],
+      ['Abarth 124 Spider','2016–2020','4 cyl. 1.4 turbo MultiAir','170 ch','Différentiel autobloquant et suspension revue.'],
+    ],
+    'mazda-mx5-rf': [
+      ['MX-5 RF (ND)','2016–','4 cyl. 1.5 et 2.0 atmo','131 à 184 ch','Toit rigide escamotable à arceau fixe. Le 2.0 passe à 184 ch en 2019.'],
+    ],
+    'honda-beat': [
+      ['Beat (PP1)','1991–1996','3 cyl. 0.66, un papillon par cylindre (MTREC), moteur central','64 ch','Plafond de puissance des kei cars, atteint sans turbo, à 8 100 tr/min. Environ 33 600 exemplaires, tous pour le Japon.'],
+    ],
+    'honda-s660': [
+      ['S660 (JW5)','2015–2022','3 cyl. 0.66 turbo (S07A), moteur central','64 ch','Héritière de la Beat. La série Modulo X Version Z clôt la production en 2022.'],
+    ],
+    'mg-cyberster': [
+      ['Cyberster (propulsion)','2024–','un moteur électrique','340 ch','Portes en élytre à ouverture électrique.'],
+      ['Cyberster (intégrale)','2024–','deux moteurs électriques','510 ch','Premier roadster MG depuis la TF.'],
+    ],
+    'renault-twizy': [
+      ['Twizy 45','2012–2023','moteur électrique','5 ch','Quadricycle léger, limité à 45 km/h, accessible sans permis en France.'],
+      ['Twizy 80','2012–2023','moteur électrique','17 ch','Deux places en tandem. Relayé par le Mobilize Duo.'],
+    ],
+    'tata-nano': [
+      ['Nano','2008–2018','2 cyl. 0.6, moteur arrière','38 ch','Conçue pour remplacer le deux-roues des familles indiennes. Une version GenX à boîte robotisée arrive en 2015.'],
+    ],
+    'renault-clio-rs-line': [
+      ['Clio R.S. Line (Clio V)','2019–','4 cyl. 1.3 turbo ; hybride E-Tech','140 à 145 ch','Finition sportive, sans mécanique Renault Sport.'],
+    ],
+    'cupra-born': [
+      ['Born','2021–','moteur électrique, propulsion','150 à 231 ch','Cousine de la Volkswagen ID.3.'],
+      ['Born VZ','2024–','moteur électrique, propulsion','326 ch','Batterie de 79 kWh et châssis affermi.'],
+    ],
+    'honda-e': [
+      ['Honda e','2020–2024','moteur électrique, propulsion','136 ou 154 ch','Rétroviseurs caméras, planche de bord en écrans de bout en bout.'],
+    ],
+    'renault-megane-etech': [
+      ['Mégane E-Tech Electric','2022–','moteur électrique, traction','130 ou 220 ch','Plateforme CMF-EV dédiée ; moteur à rotor bobiné, sans terres rares.'],
     ],
     'toyota-century': [
       ['G20 / G30 / G40','1967–1997','V8 3.0, 3.4 puis 4.0','','Trente ans de production quasiment sans changement de ligne, réservée au marché japonais.'],
