@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.161.0';
+  const VERSION_MODULE = '20.162.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -333,9 +333,6 @@
     'bmw-m4-cs': { nom:'BMW M4 CS', an:[2017], pays:'Allemagne',
       ch:550, nm:650, kg:1835, cyl:2.993, arch:'6 en ligne S58', adm:'biturbo', pos:'avant', tx:'propulsion', bv:'A8',
       note:"L\'échelon intermédiaire entre la M4 Competition et la radicale CSL. La première M4 CS (F82, 2017) a ouvert la voie aux versions CS modernes chez BMW M ; la seconde (G82) reprend la calibration 550 ch de la CSL tout en conservant quatre places." },
-    'audi-s3-limo': { nom:'Audi S3 Sportback / Berline', an:[1999], pays:'Allemagne',
-      ch:333, nm:420, kg:1540, cyl:2.0, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'quattro', bv:'S tronic 7',
-      note:"La compacte premium ultra-efficace, à transmission intégrale quattro de série, déclinée en berline tricorps sur les derniers modèles. Discrète mais redoutable sur route mouillée, elle partage sa base et sa mécanique avec la Golf R." },
     'vw-golf-gti-clubsport': { nom:'Volkswagen Golf GTI Clubsport', an:[2016], pays:'Allemagne',
       ch:300, nm:400, kg:1400, cyl:2.0, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'DSG 7',
       note:"La GTI la plus affûtée, entre la GTI standard et la Golf R intégrale. Différentiel avant à glissement limité, châssis durci, aérodynamique revue. La Clubsport S, deux places allégée, a signé un record du Nürburgring pour une traction en 2016." },
@@ -475,9 +472,6 @@
     'ferrari-mondial': { nom:'Ferrari Mondial', an:[1980,1993], pays:'Italie',
       ch:300, nm:324, kg:1450, cyl:3.4, arch:'V8', adm:'atmo', pos:'central', tx:'propulsion', bv:'transaxle M5',
       note:"La seule Ferrari quatre places à moteur V8 central, longtemps la Ferrari la plus accessible et donc mal-aimée. Aujourd\'hui redécouverte comme une vraie Ferrari V8 abordable, pratique (quatre vraies places) et au son magnifique. Un cabriolet en dérive." },
-    'maserati-ghibli-m157': { nom:'Maserati Ghibli (2013)', an:[2013,2024], pays:'Italie',
-      ch:580, nm:730, kg:1810, cyl:3.0, arch:'V6 (V8 sur Trofeo)', adm:'biturbo', pos:'avant', tx:'propulsion / intégrale', bv:'A8',
-      note:"La berline sportive de Maserati, rivale des Série 5 et Classe E. Les V6 sont construits par Ferrari à Maranello, et la version Trofeo reçoit un V8 à la sonorité magnifique. Une alternative latine et exclusive aux berlines allemandes." },
 
     /* ===== FICHES COMPLÈTES — vague AR (Le Mans GT1 + F1 + chinoises) ==== */
     'toyota-gt-one': { nom:'Toyota GT-One (TS020)', an:[1998,1999], pays:'Japon',
@@ -644,8 +638,8 @@
       ch:54, nm:88, kg:730, cyl:1.1, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
       note:"Remplaçante de la Cinquecento. La Schumacher Edition célébrait le champion du monde alors chez Ferrari. La version Sporting/Abarth reste la plus vive. Une citadine d\'entrée de gamme populaire du tournant des années 2000." },
     'fiat-124-spider-2016': { nom:'Fiat 124 Spider (2016)', an:[2016,2020], pays:'Italie',
-      ch:170, nm:250, kg:1050, cyl:1.4, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'propulsion', bv:'M6',
-      note:"La résurrection du roadster 124 des années 60, sur base de Mazda MX-5 (ND) mais avec un moteur turbo Fiat et un style italien. La version Abarth, plus poussée, est la plus recherchée. Le mariage réussi de l\'italien et du japonais." },
+      ch:140, nm:240, kg:1050, cyl:1.4, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'propulsion', bv:'M6',
+      note:"La résurrection du roadster 124 des années 60, sur base de Mazda MX-5 (ND) mais avec un moteur turbo Fiat et un style italien. La version Abarth, plus poussée, est la plus recherchée. Le mariage réussi de l\'italien et du japonais. Chiffres du 1.4 MultiAir 140 ; l\'Abarth en tire 170 ch et 250 Nm, pour 1 060 kg." },
     'fiat-ducato': { nom:'Fiat Ducato', an:[1981], pays:'Italie',
       ch:180, nm:450, kg:2000, cyl:2.2, arch:'4 cyl. diesel, électrique', adm:'turbo', pos:'avant', tx:'traction', bv:'M6',
       note:"L\'un des utilitaires les plus vendus d\'Europe, et surtout la base de l\'immense majorité des camping-cars du continent. Né du partenariat PSA-Fiat (Sevel), jumeau des Peugeot Boxer et Citroën Jumper. Le van de la liberté pour des millions de vacanciers." },
@@ -755,8 +749,8 @@
       ch:138, nm:320, kg:1561, cyl:2.0, arch:'4 cyl. diesel', adm:'turbo', pos:'avant', tx:'traction', bv:'M6',
       note:"L\'une des dernières Citroën à suspension hydraulique (Hydractive III), perpétuant le confort magique de la marque. La berline familiale française par excellence des années 2000. Le V6 HDi biturbo en haut de gamme. Chiffres de la C5 II 2.0 HDi (2008)." },
     'opel-ascona': { nom:'Opel Ascona', an:[1970,1988], pays:'Allemagne',
-      ch:144, nm:180, kg:1050, cyl:2.0, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'propulsion / traction', bv:'M5',
-      note:"La berline familiale d\'Opel, dont la version 400 de rallye fut championne du monde des rallyes en 1982 avec Walter Röhrl, la dernière propulsion à décrocher ce titre avant l\'ère des 4x4 turbo du Groupe B." },
+      ch:100, nm:153, kg:1000, cyl:2.0, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M4',
+      note:"La berline familiale d\'Opel, dont la version 400 de rallye fut championne du monde des rallyes en 1982 avec Walter Röhrl, la dernière propulsion à décrocher ce titre avant l\'ère des 4x4 turbo du Groupe B. Chiffres de l\'Ascona B 2.0 S : la 400 (2.4 16 soupapes, 144 ch) n\'était qu\'une série d\'homologation." },
     'opel-tigra': { nom:'Opel Tigra', an:[1994,2009], pays:'Allemagne',
       ch:125, nm:165, kg:1000, cyl:1.8, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
       note:"Un petit coupé au style tendu (A), puis un coupé-cabriolet à toit rigide escamotable (B), sur base de Corsa. Un objet de mode accessible, misant sur le design plutôt que sur la performance. Le plaisir du coupé à petit prix." },
@@ -1005,8 +999,8 @@
 
     /* ===== FICHES COMPLÈTES — vague AG (Chevrolet + Dodge/Plymouth) ====== */
     'chevrolet-chevelle-ss': { nom:'Chevrolet Chevelle SS', an:[1964,1973], pays:'États-Unis',
-      ch:454, nm:678, kg:1700, cyl:7.4, arch:'V8 big-block', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M4 / A3',
-      note:"La SS 454 LS6 de 1970, avec ses 450 ch officiels (sous-évalués), est l\'une des muscle cars les plus puissantes de l\'âge d\'or. La bande de capot et les jantes SS sont iconiques. Un monstre de ligne droite très recherché." },
+      ch:456, nm:678, kg:1720, cyl:7.4, arch:'V8 big-block', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M4 / A3',
+      note:"La SS 454 LS6 de 1970, avec ses 450 ch officiels (sous-évalués), est l\'une des muscle cars les plus puissantes de l\'âge d\'or. La bande de capot et les jantes SS sont iconiques. Un monstre de ligne droite très recherché. Chiffres de la SS 454 LS6 en norme SAE brute, la seule publiée avant 1972 ; masse arrondie d\'une SS 454 à boîte manuelle.", flou:['kg'] },
     'chevrolet-nova-ss': { nom:'Chevrolet Nova SS', an:[1962,1979], pays:'États-Unis',
       ch:375, nm:542, kg:1450, cyl:6.6, arch:'V8', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M4 / A3',
       note:"La compacte qui pouvait recevoir de gros V8, base de « sleeper » redoutable. Légende urbaine tenace (et fausse) : son nom « no va » signifierait « ne roule pas » en espagnol, expliquant son échec latino-américain." },
@@ -1014,8 +1008,8 @@
       ch:250, nm:445, kg:1600, cyl:5.7, arch:'V6 et V8', adm:'atmo', pos:'avant', tx:'propulsion', bv:'A3 / A4',
       note:"Le grand coupé « personal luxury » de Chevrolet, longtemps porte-étendard de la marque en NASCAR. La SS des années 80 dominait les ovales. Un pilier de la culture automobile américaine et de la scène lowrider." },
     'chevrolet-el-camino': { nom:'Chevrolet El Camino', an:[1959,1987], pays:'États-Unis',
-      ch:454, nm:678, kg:1700, cyl:7.4, arch:'V6 et V8', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M4 / A3',
-      note:"Mi-berline mi-pick-up : une carrosserie coupé avec une benne à l\'arrière. La version SS 454 embarque l\'un des plus gros V8 jamais montés dans un utilitaire léger. Un concept typiquement américain, culte auprès des amateurs." },
+      ch:456, nm:678, kg:1740, cyl:7.4, arch:'V8 big-block', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M4 / A3',
+      note:"Mi-berline mi-pick-up : une carrosserie coupé avec une benne à l\'arrière. La version SS 454 embarque l\'un des plus gros V8 jamais montés dans un utilitaire léger. Un concept typiquement américain, culte auprès des amateurs. Chiffres de l\'El Camino SS 454 LS6 de 1970, en norme SAE brute : le même moteur que la Chevelle SS, dont elle partage la plateforme A-body.", flou:['kg'] },
     'chevrolet-c10': { nom:'Chevrolet C10', an:[1960,1987], pays:'États-Unis',
       ch:165, nm:346, kg:1800, cyl:5.7, arch:'6 en ligne et V8', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M4 / A3',
       note:"Le pick-up devenu une base culte de la scène custom et lowrider américaine. Ses lignes épurées des années 60-70 en font l\'un des pick-up classiques les plus restaurés et personnalisés aux États-Unis. Chiffres du V8 5.7 en norme SAE net ; les cotations SAE gross d\'avant 1972, bien plus flatteuses, ne sont pas comparables." },
@@ -1032,8 +1026,8 @@
       ch:647, nm:819, kg:1470, cyl:7.0, arch:'V8', adm:'atmo / compresseur', pos:'avant', tx:'propulsion', bv:'M6',
       note:"La première Corvette à phares fixes depuis 1962. La Z06 et son V8 7.0 atmosphérique (LS7), et surtout la ZR1 à V8 6.2 compressé de 647 ch, plaçaient la Corvette au niveau des supercars européennes pour la moitié du prix." },
     'dodge-charger-daytona-69': { nom:'Dodge Charger Daytona (1969)', an:[1969], pays:'États-Unis',
-      ch:431, nm:664, kg:1800, cyl:7.0, arch:'V8 HEMI', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M4 / A3',
-      note:"L\'« aero warrior » : nez conique et aileron arrière géant pour la course NASCAR, où elle fut la première à dépasser les 320 km/h sur un ovale. Jumelle de la Plymouth Superbird. Une des muscle cars les plus extrêmes et cotées." },
+      ch:431, nm:664, kg:1770, cyl:7.0, arch:'V8 HEMI', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M4 / A3',
+      note:"L\'« aero warrior » : nez conique et aileron arrière géant pour la course NASCAR, où elle fut la première à dépasser les 320 km/h sur un ovale. Jumelle de la Plymouth Superbird. Une des muscle cars les plus extrêmes et cotées. Chiffres du 426 HEMI optionnel, en norme SAE brute.", flou:['kg'] },
     'dodge-neon-srt4': { nom:'Dodge Neon SRT-4', an:[2003,2005], pays:'États-Unis',
       ch:233, nm:340, kg:1300, cyl:2.4, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M5',
       note:"Une compacte économique transformée en sleeper par la division SRT : un 2.4 turbo qui humiliait des sportives bien plus chères en ligne droite, pour un prix dérisoire. Le tuning américain d\'usine dans sa version la plus efficace." },
@@ -1061,8 +1055,8 @@
       ch:677, nm:893, kg:1920, cyl:6.2, arch:'V8', adm:'compresseur', pos:'avant', tx:'propulsion', bv:'M6 / A10',
       note:"La Cadillac de série la plus puissante de l\'histoire, et l\'une des dernières grandes berlines sportives à proposer une boîte manuelle. La réponse américaine aux M5 et E63, avec un V8 compressé à l\'ancienne. Un chant du cygne salué par la presse." },
     'plymouth-superbird': { nom:'Plymouth Superbird', an:[1970], pays:'États-Unis',
-      ch:431, nm:664, kg:1800, cyl:7.0, arch:'V8 HEMI', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M4 / A3',
-      note:"L\'aileron arrière géant et le nez pointu, conçus pour la course NASCAR où elle dépassait 320 km/h. Une « aero car » extrême, construite pour homologuer sa version de course et faire revenir Richard Petty chez Plymouth. Icône absolue et cotée." },
+      ch:431, nm:664, kg:1742, cyl:7.0, arch:'V8 HEMI', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M4 / A3',
+      note:"L\'aileron arrière géant et le nez pointu, conçus pour la course NASCAR où elle dépassait 320 km/h. Une « aero car » extrême, construite pour homologuer sa version de course et faire revenir Richard Petty chez Plymouth. Icône absolue et cotée. Chiffres du 426 HEMI optionnel, en norme SAE brute ; même moteur que la Charger Daytona." },
     'pontiac-gto': { nom:'Pontiac GTO', an:[1964,1974], pays:'États-Unis',
       ch:370, nm:583, kg:1700, cyl:6.6, arch:'V8', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M4 / A3',
       note:"Souvent créditée d\'avoir inventé le concept même de la muscle car en 1964 : glisser un gros V8 dans une intermédiaire légère. Nom emprunté à la Ferrari 250 GTO, ce qui fit scandale. Le « Judge » est la version la plus recherchée." },
@@ -1136,8 +1130,8 @@
       ch:344, nm:371, kg:1496, cyl:3.7, arch:'V6 VQ37', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M6',
       note:"Le coupé propulsion abordable qui a perpétué la lignée Z. Le VQ37 atmosphérique, le système SynchroRev Match qui réalise les talon-pointe automatiquement à la rétrogradation, une première mondiale. Produite plus de dix ans sans grand changement." },
     'nissan-180sx': { nom:'Nissan 180SX', an:[1989,1998], pays:'Japon',
-      ch:205, nm:264, kg:1200, cyl:2.0, arch:'4 cyl. SR20DET', adm:'turbo', pos:'avant', tx:'propulsion', bv:'M5',
-      note:"La sœur à hayon et phares escamotables de la Silvia S13, vendue aux États-Unis en 240SX. Le SR20DET turbo et la propulsion en font une base de drift adorée dans le monde entier, aux côtés de la Silvia." },
+      ch:205, nm:275, kg:1190, cyl:2.0, arch:'4 cyl. SR20DET', adm:'turbo', pos:'avant', tx:'propulsion', bv:'M5',
+      note:"La sœur à hayon et phares escamotables de la Silvia S13, vendue aux États-Unis en 240SX. Le SR20DET turbo et la propulsion en font une base de drift adorée dans le monde entier, aux côtés de la Silvia. Chiffres de la Type II SR20DET (1991)." },
     'toyota-celica-gt4': { nom:'Toyota Celica GT-Four', an:[1986,1999], pays:'Japon',
       ch:242, nm:304, kg:1300, cyl:2.0, arch:'4 cyl. 3S-GTE', adm:'turbo', pos:'avant', tx:'intégrale', bv:'M5',
       note:"La version turbo intégrale de la Celica, championne du monde des rallyes (WRC) avec Carlos Sainz. La ST185 est la plus victorieuse. Une affaire de triche à l\'aérodynamique en 1995 a valu à Toyota une exclusion retentissante du WRC." },
@@ -1431,9 +1425,6 @@
     'ford-focus-rs': { nom:'Ford Focus RS', an:[2002,2018], pays:'États-Unis',
       ch:350, nm:470, kg:1524, cyl:2.3, arch:'4 cyl. (jadis 5 cyl.)', adm:'turbo', pos:'avant', tx:'intégrale', bv:'M6',
       note:"La Mk3 (2016) fut la première Focus RS à transmission intégrale, dotée d\'un mode Drift qui envoie le couple à l\'arrière. La Mk2 et son cinq-cylindres turbo d\'origine Volvo, uniquement en traction, reste culte." },
-    'ford-shelby-gt500': { nom:'Ford Mustang Shelby GT500', an:[1967], pays:'États-Unis',
-      ch:770, nm:847, kg:1900, cyl:5.2, arch:'V8', adm:'compresseur', pos:'avant', tx:'propulsion', bv:'DCT 7',
-      note:"La Mustang de série la plus puissante de l\'histoire (770 ch), avec un compresseur Eaton logé dans le V du moteur. Le nom remonte à Carroll Shelby et à la GT500 originelle de 1967, la « Eleanor » du film 60 secondes chrono." },
     'chevrolet-corvette-z06': { nom:'Chevrolet Corvette Z06 (C8)', an:[2023], pays:'États-Unis',
       ch:679, nm:623, kg:1560, cyl:5.5, arch:'V8 à vilebrequin plat', adm:'atmo', pos:'central', tx:'propulsion', bv:'DCT 8',
       note:"Le V8 5.5 à vilebrequin plat (« flat-plane ») hurle jusqu\'à 8 600 tr/min, du jamais-vu sur une Corvette, avec une sonorité proche d\'une Ferrari. Dérivé du moteur de la Corvette C8.R de course. Le moteur atmosphérique de série le plus puissant du monde à sa sortie." },
@@ -1851,9 +1842,9 @@
       ch:1070, nm:1150, kg:1430, cyl:4.0, arch:'V8 hybride', adm:'biturbo + électrique', pos:'central', tx:'propulsion', bv:'DCT 7',
       prod:106,
       note:"Héritière directe de la F1 : trois places avec conducteur au centre. 403 km/h, la McLaren la plus rapide jamais construite. Les rétroviseurs sont des caméras rétractables pour l\'aérodynamique. 106 exemplaires." },
-    'maserati-ghibli': { nom:'Maserati Ghibli', an:[1967], pays:'Italie',
-      ch:580, nm:730, kg:1810, cyl:3.0, arch:'V6 / V8', adm:'biturbo', pos:'avant', tx:'propulsion / intégrale', bv:'A8',
-      note:"La Ghibli originelle de 1967 était un grand coupé Ghia à V8. La renaissance moderne (2013) est une berline sportive dont les versions V8 Trofeo sont construites avec l\'aide de Ferrari." },
+    'maserati-ghibli': { nom:'Maserati Ghibli', an:[2013,2024], pays:'Italie',
+      ch:350, nm:500, kg:1810, cyl:3.0, arch:'V6', adm:'biturbo', pos:'avant', tx:'propulsion', bv:'A8',
+      note:"La berline sportive de Maserati, rivale des Série 5 et Classe E, dont les V6 biturbo sont assemblés par Ferrari à Maranello. Le nom vient du grand coupé Ghia à V8 de 1967. Chiffres de la Ghibli 3.0 V6 350 ; la Trofeo, à V8 3.8, atteint 580 ch." },
     'maserati-3200gt': { nom:'Maserati 3200 GT', an:[1998,2002], pays:'Italie',
       ch:370, nm:491, kg:1590, cyl:3.2, arch:'V8', adm:'biturbo', pos:'avant', tx:'propulsion', bv:'M6 / A4',
       note:"Les feux arrière en forme de boomerang à LED, une première mondiale, sont sa signature (abandonnés ensuite pour le marché américain). Dessin de Giugiaro. Le retour de Maserait sur le devant de la scène après des années difficiles." },
@@ -1926,12 +1917,6 @@
     'vw-arteon': { nom:'Volkswagen Arteon', an:[2017,2023], pays:'Allemagne',
       ch:190, nm:320, kg:1619, cyl:2.0, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'DSG 7',
       note:"Le fastback haut de gamme de VW, successeur spirituel de la CC. La version R à 320 ch et transmission intégrale en fait la plus puissante des VW à cinq portes hors utilitaires. Chiffres de l\'Arteon 2.0 TSI 190 de lancement." },
-    'porsche-718-boxster': { nom:'Porsche 718 Boxster', an:[1996], pays:'Allemagne',
-      ch:400, nm:420, kg:1405, cyl:4.0, arch:'flat-6 (GTS/Spyder) / flat-4', adm:'atmo / turbo', pos:'central', tx:'propulsion', bv:'M6 / PDK 7',
-      note:"Le roadster à moteur central qui a sauvé Porsche dans les années 90. Le retour du flat-6 atmosphérique sur la GTS 4.0 et la Spyder a réconcilié les puristes après l\'épisode du flat-4 turbo." },
-    'porsche-718-cayman': { nom:'Porsche 718 Cayman', an:[2005], pays:'Allemagne',
-      ch:420, nm:420, kg:1405, cyl:4.0, arch:'flat-6 (GT4) / flat-4', adm:'atmo / turbo', pos:'central', tx:'propulsion', bv:'M6 / PDK 7',
-      note:"Le coupé, plus rigide que le Boxster dont il dérive. La GT4, à flat-6 4.0 atmosphérique, est si aboutie que Porsche a dû la brider pour ne pas concurrencer la 911. Le châssis à moteur central est un régal." },
     'mercedes-pagode': { nom:'Mercedes-Benz 280 SL « Pagode »', an:[1963,1971], pays:'Allemagne',
       ch:170, nm:240, kg:1360, cyl:2.8, arch:'6 en ligne', adm:'injection', pos:'avant', tx:'propulsion', bv:'M4 / A4',
       note:"Son toit rigide au galbe concave, évoquant une pagode asiatique, lui a donné son surnom. Icône du style Mercedes des années 60, symbole de l\'élégance discrète. Structure à zones de déformation programmée, une avancée sécurité." },
@@ -1955,9 +1940,6 @@
     'fiat-uno': { nom:'Fiat Uno', an:[1983,1995], pays:'Italie',
       ch:118, nm:180, kg:840, cyl:1.4, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M5',
       note:"Voiture de l\'Année 1984, dessinée par Giugiaro. La Turbo i.e., à 118 ch pour moins de 900 kg, était une petite bombe redoutable, rivale des GTI de l\'époque. Un immense succès populaire européen." },
-    'fiat-124-spider': { nom:'Fiat 124 Spider', an:[1966], pays:'Italie',
-      ch:170, nm:250, kg:1050, cyl:1.4, arch:'4 cyl. (moderne : turbo)', adm:'turbo / atmo', pos:'avant', tx:'propulsion', bv:'M6',
-      note:"Le roadster Pininfarina des années 60, ressuscité en 2016 sur base de Mazda MX-5 mais avec un moteur turbo Fiat et un caractère plus « latin ». L\'Abarth en est la version la plus affûtée." },
     'alfa-156': { nom:'Alfa Romeo 156', an:[1997,2007], pays:'Italie',
       ch:155, nm:187, kg:1250, cyl:2.0, arch:'4 cyl. Twin Spark', adm:'atmo', pos:'avant', tx:'traction', bv:'M5 / Selespeed',
       note:"Voiture de l\'Année 1998. Ses poignées de porte arrière dissimulées dans le montant lui donnaient une allure de coupé. Chiffres de la 156 2.0 Twin Spark ; la GTA et son V6 Busso 3.2 ont leur propre fiche." },
@@ -2095,8 +2077,8 @@
       ch:520, nm:600, kg:1830, cyl:2.9, arch:'V6', adm:'biturbo', pos:'avant', tx:'intégrale', bv:'A8',
       note:"Le SUV qui partage le V6 2.9 biturbo (dérivé d\'un V8 Ferrari) de la Giulia Quadrifoglio. La version QV a battu le record du Nürburgring pour un SUV à sa sortie. Nommé d\'après le col alpin mythique." },
     'opel-manta': { nom:'Opel Manta', an:[1970,1988], pays:'Allemagne',
-      ch:144, nm:180, kg:1050, cyl:2.0, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M5',
-      note:"Coupé populaire à propulsion, redoutable en rallye (la 400 Group B). En Allemagne, elle est devenue un objet culte ironique, héroïne de comédies et symbole d\'une époque insouciante." },
+      ch:110, nm:162, kg:1000, cyl:2.0, arch:'4 cyl.', adm:'injection', pos:'avant', tx:'propulsion', bv:'M4', flou:['kg'],
+      note:"Coupé populaire à propulsion, redoutable en rallye (la 400 Group B). En Allemagne, elle est devenue un objet culte ironique, héroïne de comédies et symbole d\'une époque insouciante. Chiffres de la Manta B GT/E 2.0 : la 400 (2.4 16 soupapes, 144 ch) n\'a été construite qu\'à 245 exemplaires, pour homologuer la voiture de rallye." },
     'opel-kadett-gsi': { nom:'Opel Kadett GSi', an:[1984,1991], pays:'Allemagne',
       ch:156, nm:210, kg:950, cyl:2.0, arch:'4 cyl. 16v', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
       note:"La réponse d\'Opel à la Golf GTI. La GSi 16v et son moteur à seize soupapes en faisaient l\'une des compactes les plus vives de la fin des années 80. Vendue Vauxhall Astra GTE au Royaume-Uni." },
@@ -3060,8 +3042,8 @@
       ch:165, nm:166, kg:1065, cyl:1.1, arch:'birotor Wankel', adm:'atmo / turbo', pos:'avant', tx:'propulsion', bv:'M5',
       note:"Première génération de la RX-7. Phares escamotables, moteur rotatif compact permettant un centre de gravité très bas. A démocratisé le rotatif sportif dans le monde entier." },
     'nissan-silvia-s13': { nom:'Nissan Silvia (S13)', an:[1988,1994], pays:'Japon',
-      ch:205, nm:264, kg:1200, cyl:2.0, arch:'4 en ligne', adm:'turbo', pos:'avant', tx:'propulsion', bv:'M5',
-      note:"Icône absolue du drift. Le moteur SR20DET et la propulsion en ont fait la base la plus populaire de la discipline. Connue aussi en 180SX et 240SX selon les marchés." },
+      ch:205, nm:275, kg:1150, cyl:2.0, arch:'4 en ligne', adm:'turbo', pos:'avant', tx:'propulsion', bv:'M5',
+      note:"Icône absolue du drift. Le moteur SR20DET et la propulsion en ont fait la base la plus populaire de la discipline. Connue aussi en 180SX et 240SX selon les marchés. Chiffres de la K\'s SR20DET (1991)." },
     'nissan-silvia-s14': { nom:'Nissan Silvia (S14)', an:[1993,1998], pays:'Japon',
       ch:220, nm:274, kg:1230, cyl:2.0, arch:'4 en ligne', adm:'turbo', pos:'avant', tx:'propulsion', bv:'M5',
       note:"Version élargie et affinée de la S13. Le SR20DET gagne un turbo à roulement à billes. Reine des circuits de drift japonais des années 90, toujours recherchée aujourd\'hui." },
@@ -3443,9 +3425,6 @@
       note:"Le retour du six cylindres atmosphérique dans le 718, après la fronde des clients contre le flat-4 turbo. Quatre litres, 400 ch, et le châssis à moteur central que beaucoup jugent supérieur à celui de la 911. La réponse de Porsche à sa propre erreur." },
 
     /* ---- Vague 3 : sportives allemandes -------------------------------- */
-    'mercedes-a45-amg': { nom:'Mercedes-AMG A 45 S', an:[2019], pays:'Allemagne',
-      ch:421, nm:500, kg:1625, cyl:2.0, arch:'4 en ligne', adm:'turbo', pos:'avant', tx:'intégrale', bv:'DCT 8',
-      note:"Le quatre cylindres de série le plus puissant du monde à sa sortie : 421 ch d\'un seul bloc de deux litres, soit plus de 210 ch par litre. Chaque moteur est assemblé à la main par un seul technicien, dont la plaque est vissée dessus." },
     'vw-tiguan-r': { nom:'Volkswagen Tiguan R', an:[2021], pays:'Allemagne',
       ch:320, nm:420, kg:1700, cyl:2.0, arch:'4 en ligne', adm:'turbo', pos:'avant', tx:'intégrale', bv:'DSG 7',
       flou:['kg'],
@@ -3458,10 +3437,6 @@
     /* ---- Vague 4 : muscle cars américaines -----------------------------
        Chiffres en norme SAE NET, convertis en ch (PS) pour rester
        homogènes avec le reste du catalogue — voir CLAUDE.md §4.4 ter. */
-    'dodge-challenger-hellcat': { nom:'Dodge Challenger SRT Hellcat', an:[2015,2023], pays:'États-Unis',
-      ch:727, nm:889, kg:2003, cyl:6.2, arch:'V8 HEMI', adm:'compresseur', pos:'avant', tx:'propulsion', bv:'M6 / A8',
-      son:'V8 compressé',
-      note:"Deux tonnes, 727 ch et une clé rouge qui débride la pleine puissance — la noire la limite à 500 ch. Le sifflement du compresseur Lysholm est devenu sa signature sonore. Chiffres du Hellcat en norme SAE net ; la Demon qui partage l\'entrée va encore plus loin." },
     'ford-mustang-shelby': { nom:'Shelby Mustang GT500 (2020)', an:[2020,2022], pays:'États-Unis',
       ch:771, nm:848, kg:1897, cyl:5.2, arch:'V8 Predator', adm:'compresseur', pos:'avant', tx:'propulsion', bv:'DCT 7',
       son:'V8 compressé',
@@ -3774,9 +3749,6 @@
     'porsche-356': [
       ['1948–1965','1948–1965','flat-4 1.1–2.0 refroidi par air, moteur arrière','40–130 ch','La toute première Porsche de série. La 356 Carrera reçoit le moteur Fuhrmann à quatre arbres à cames.'],
     ],
-    'porsche-718-cayman': [
-      ['982','2016–','flat-4 turbo, flat-6 atmo (GTS 4.0/GT4)','300–420 ch','Le retour du flat-6 atmosphérique sur la GTS 4.0 a réconcilié les puristes après le passage au flat-4 turbo.'],
-    ],
     'rivian-r1t': [
       ['2021–','2021–','quatre moteurs électriques','600–850 ch','Premier pick-up électrique arrivé sur le marché. Un « tunnel » de rangement traverse la caisse derrière la cabine.'],
     ],
@@ -3989,9 +3961,7 @@
     ],
     'maserati-ghibli': [
       ['I / II','1967–1998','V8 4.7–4.9 et V6 biturbo','255–335 ch','La Ghibli originale (1967) est un grand coupé Ghia à moteur V8 avant.'],
-    ],
-    'maserati-ghibli-m157': [
-      ['M157','2013–2024','V6 3.0 biturbo, V8, diesel','250–580 ch','Berline sport, la Trofeo à V8 dépasse les 570 ch.'],
+      ['M157','2013–2024','V6 3.0 biturbo, V8 3.8 (Trofeo), diesel','250–580 ch','Berline sport, rivale des Série 5 et Classe E ; la Trofeo à V8 atteint 580 ch.'],
     ],
     'maserati-grecale': [
       ['2022–','2022–','4 cyl. mild hybrid, V6 Nettuno, électrique','300–530 ch','SUV intermédiaire. La Trofeo reprend le V6 Nettuno de la MC20.'],
@@ -4068,9 +4038,6 @@
     ],
     'fiat-topolino-500a': [
       ['500 « Topolino »','1936–1955','4 cyl. 0.6 atmo','13–16 ch','L\'une des plus petites voitures de série au monde à sa sortie. « Topolino » = Mickey en italien.'],
-    ],
-    'fiat-124-spider': [
-      ['1966–1985 / 2016–2020','1966–','4 cyl. atmo puis 1.4 turbo','90–170 ch','Le roadster Pininfarina des années 60, ressuscité en 2016 sur base de Mazda MX-5.'],
     ],
     'fiat-ducato': [
       ['1981–','1981–','4 cyl. diesel, électrique','110–180 ch','L\'un des utilitaires les plus vendus d\'Europe, base de la majorité des camping-cars du continent.'],
@@ -5704,12 +5671,6 @@
         ['SRT 392 / Scat Pack','V8 6.4 HEMI atmo','485 ch','propulsion · manuelle 6 / auto 8','Le dernier grand V8 atmosphérique américain de grande diffusion.'],
       ]},
     ],
-    'dodge-challenger-hellcat': [
-      { c:'Hellcat', a:'2015–2023', m:[
-        ['SRT Hellcat','V8 6.2 HEMI à compresseur','717–807 ch','propulsion · manuelle 6 / auto 8','Livrée avec deux clés : la rouge débloque la pleine puissance, la noire la limite à 500 ch.'],
-        ['SRT Demon 170','V8 6.2 compressé, E85','1 025 ch','propulsion · auto 8','Conçue pour lever les roues avant au départ. Interdite de compétition NHRA sans arceau.'],
-      ]},
-    ],
     'ford-gt': [
       { c:'1re gén.', a:'2004–2006', m:[
         ['Ford GT','V8 5.4 à compresseur','550 ch','moteur central · manuelle 6','Hommage à la GT40 pour le centenaire de Ford. 4 038 exemplaires.'],
@@ -6950,15 +6911,6 @@
         ['A 180 – A 250','4 cyl. turbo, hybride rechargeable','116–224 ch','traction ou 4Matic · DCT 7/8','Système MBUX à commande vocale.'],
       ]},
     ],
-    'mercedes-a45-amg': [
-      { c:'W176 A45 AMG', a:'2013–2018', m:[
-        ['A 45 AMG','M133 2.0 turbo','360–381 ch','4Matic · DCT 7','Le 4 cylindres turbo de série le plus puissant au monde à son lancement.'],
-      ]},
-      { c:'W177 A35 / A45', a:'2018–', m:[
-        ['A 35','2.0 turbo','306 ch','4Matic · DCT 7','L\'AMG d\'accès, mécanique proche de la Golf R mais châssis raffermi façon AMG.'],
-        ['A 45 S','2.0 turbo','421 ch','4Matic+ · DCT 8','Toujours le record du 4 cylindres de série le plus puissant.'],
-      ]},
-    ],
 
     /* ================= LOT 3 — Alfa Romeo ============================== */
     'alfa-giulia': [
@@ -7094,28 +7046,6 @@
         ['GT3 / GT3 Touring','flat-6 4.0 atmo','510 ch','propulsion · manuelle 6 / PDK 7','Suspension avant à double triangulation issue de la course. 9 000 tr/min.'],
         ['GT3 RS','flat-6 4.0 atmo','525 ch','propulsion · PDK 7','Aérodynamique active. Appui supérieur à certaines voitures de course.'],
         ['S/T','flat-6 4.0 atmo','525 ch','propulsion · manuelle 6','1 963 exemplaires pour les 60 ans du modèle. Volant moteur allégé.'],
-      ]},
-    ],
-    'porsche-718-boxster': [
-      { c:'986', a:'1996–2004', m:[
-        ['Boxster 2.5 / 2.7','flat-6 atmo','204–228 ch','propulsion · manuelle 5/6 / Tiptronic','Le roadster qui a sauvé Porsche financièrement.'],
-        ['Boxster S 3.2','flat-6 3.2 atmo','252–264 ch','propulsion · manuelle 6','La version S qui a établi le Boxster comme une vraie sportive, pas un simple roadster d\'accès.'],
-      ]},
-      { c:'987', a:'2004–2012', m:[
-        ['Boxster / Cayman 2.7–2.9','flat-6 atmo','240–265 ch','propulsion · manuelle 5/6 / PDK 7','L\'arrivée du coupé Cayman en 2005 complète la gamme à moteur central.'],
-        ['S 3.4','flat-6 3.4 atmo','295–320 ch','propulsion · manuelle 6 / PDK 7','La cavalerie qui rapproche dangereusement le Boxster S des performances de la 911.'],
-        ['Cayman R / Boxster Spyder','flat-6 3.4 atmo','320–330 ch','propulsion · manuelle 6','Allégées de 55 kg, sans climatisation ni autoradio de série.'],
-      ]},
-      { c:'981', a:'2012–2016', m:[
-        ['Boxster / Cayman','flat-6 2.7 atmo','265 ch','propulsion · manuelle 6 / PDK 7','La 981 gagne en rigidité et adopte une direction électromécanique.'],
-        ['S / GTS','flat-6 3.4 atmo','315–340 ch','propulsion · manuelle 6 / PDK 7','La GTS 981, dernier cri du flat-6 atmo avant le passage au turbo.'],
-        ['Cayman GT4 / Boxster Spyder','flat-6 3.8 atmo (de la 911 Carrera S)','375 ch','propulsion · manuelle 6','Le premier GT4 : moteur et freins de 911, boîte manuelle imposée.'],
-      ]},
-      { c:'718 (982)', a:'2016–', m:[
-        ['718 / 718 S','flat-4 2.0–2.5 turbo','300–365 ch','propulsion · manuelle 6 / PDK 7','Le passage au flat-4 turbo a fait scandale : couple en hausse, son en effondrement.'],
-        ['GTS 4.0','flat-6 4.0 atmo','400 ch','propulsion · manuelle 6 / PDK 7','Le retour du six cylindres atmosphérique après la fronde des clients.'],
-        ['GT4 / Spyder','flat-6 4.0 atmo','420 ch','propulsion · manuelle 6 / PDK 7','Le retour d\'un vrai flat-6 haut de gamme dans la gamme 718.'],
-        ['GT4 RS','flat-6 4.0 atmo (de la 911 GT3)','500 ch','propulsion · PDK 7','Admissions placées derrière les oreilles du conducteur. 9 000 tr/min.'],
       ]},
     ],
 
@@ -7381,7 +7311,7 @@
         ['2.0 TFSI','4 cyl. 2.0 turbo','265 ch','quattro · manuelle 6 / S tronic 6','Apparition de la carrosserie Sportback en 2008.'],
       ]},
       { c:'8V', a:'2013–2020', m:[
-        ['2.0 TFSI','4 cyl. 2.0 turbo','300 ch','quattro · S tronic 6/7','La S3 8V, compacte discrète mais redoutablement efficace grâce au quattro.'],
+        ['2.0 TFSI','4 cyl. 2.0 turbo','300 ch','quattro · S tronic 6/7','La S3 8V, compacte discrète mais redoutablement efficace grâce au quattro. Première S3 déclinée en berline tricorps.'],
         ['2.0 TFSI (2016+)','4 cyl. 2.0 turbo','310 ch','quattro · S tronic 7','Restylage : filtre à particules et puissance revue.'],
       ]},
       { c:'8Y', a:'2020–', m:[
@@ -7874,12 +7804,6 @@
       ['D4','2012–2017','V8 4.0 biturbo','520–605 ch','La S8 plus de 2016 atteint 605 ch.'],
       ['D5','2019–','V8 4.0 biturbo hybride léger','571 ch','Suspension active prédictive qui lit la route par caméra.'],
     ],
-    'audi-s3-limo': [
-      ['8L','1999–2003','4 cyl. 1.8 turbo 20v','210–225 ch','Trois portes seulement, et transmission quattro Haldex.'],
-      ['8P','2006–2012','4 cyl. 2.0 TFSI','265 ch','La carrosserie cinq portes Sportback arrive en 2008.'],
-      ['8V','2013–2020','4 cyl. 2.0 TFSI','300–310 ch','Première S3 berline tricorps.'],
-      ['8Y','2020–','4 cyl. 2.0 TFSI','310–333 ch','Le restylage de 2024 lui ajoute un répartiteur de couple arrière.'],
-    ],
     'mercedes-sprinter': [
       ['T1N','1995–2006','4 et 5 cyl. diesel, essence','','Premier Sprinter : il a donné son nom à toute une catégorie de fourgons.'],
       ['NCV3 (W906)','2006–2018','4 cyl. et V6 diesel','','Vendu aussi sous les marques Dodge, Freightliner et Volkswagen (Crafter).'],
@@ -7983,10 +7907,6 @@
       ['Continental Flying Spur','2005–2013','W12 6.0 biturbo','','Version berline de la Continental GT, sur base Volkswagen Phaeton.'],
       ['Flying Spur (2e gén.)','2013–2019','V8 4.0 et W12 6.0 biturbo','507–635 ch','Le nom Continental disparaît de la berline.'],
       ['Flying Spur (3e gén.)','2019–','V6 hybride, V8, W12, puis V8 hybride','544–782 ch','Roues arrière directrices. La Speed hybride de 782 ch est la plus puissante Flying Spur jamais construite.'],
-    ],
-    'ford-shelby-gt500': [
-      ['S197','2007–2014','V8 5.4 puis 5.8 compressé','507–671 ch','Retour du nom GT500 quarante ans après l\'original. La 5.8 de 2013 est la première Mustang de série à dépasser 320 km/h.'],
-      ['S550','2020–2022','V8 5.2 compressé','770 ch','Boîte double embrayage imposée : pas de manuelle.'],
     ],
     'chrysler-300c': [
       ['LX','2004–2010','V6 essence et diesel, V8 HEMI 5.7 et 6.1 (SRT8)','340–431 ch (V8)','Né de l\'alliance Daimler-Chrysler, sur des éléments de Mercedes Classe E.'],
@@ -8221,7 +8141,8 @@
     ],
     'toyota-celica-gt4': [
       ['ST165','1986–1989','4 cyl. 2.0 turbo 3S-GTE','','Première Celica à transmission intégrale, construite pour homologuer la voiture du championnat du monde des rallyes.'],
-      ['ST205','1994–1999','4 cyl. 2.0 turbo 3S-GTE','242–255 ch','Dernière GT-Four. L\'équipe Toyota est exclue du championnat 1995 pour une bride de turbo truquée. La ST185, entre les deux, a sa propre entrée.'],
+      ['ST185','1989–1993','4 cyl. 2.0 turbo 3S-GTE','225 ch','Titre pilotes 1992 avec Carlos Sainz, doublé pilotes-constructeurs 1993 avec Juha Kankkunen. Vendue en Europe en série « Carlos Sainz », au Japon en GT-Four RC.'],
+      ['ST205','1994–1999','4 cyl. 2.0 turbo 3S-GTE','242–255 ch','Dernière GT-Four. L\'équipe Toyota est exclue du championnat 1995 pour une bride de turbo truquée.'],
     ],
     'maserati-biturbo': [
       ['Biturbo (carburateurs)','1981–1987','V6 biturbo 2.0 et 2.5, 18 soupapes','','Premier moteur à deux turbocompresseurs monté sur une voiture de série. Une Maserati vendue au prix d\'une BMW Série 3 : le pari qui a sauvé la marque, et ruiné sa réputation de fiabilité.'],
@@ -8947,9 +8868,6 @@
     'mercedes-clk63-bs': [
       ['CLK 63 AMG Black Series','2007–2009','V8 6.2 atmo (M156)','507 ch','Voies élargies, ailes bombées. Environ 700 exemplaires.'],
     ],
-    'toyota-celica-gt-four': [
-      ['Celica GT-Four (ST185)','1989–1993','4 cyl. 2.0 turbo (3S-GTE)','242 ch','Titre pilotes 1992 avec Carlos Sainz, doublé pilotes-constructeurs 1993 avec Juha Kankkunen.'],
-    ],
     'nissan-pulsar-gtir': [
       ['Pulsar GTI-R (N14)','1990–1994','4 cyl. 2.0 turbo (SR20DET)','230 ch','Transmission intégrale ATTESA, homologation Groupe A.'],
     ],
@@ -9583,7 +9501,6 @@
     'bmw-m4-csl'              : 'bmw-m4-csl',
     'bmw-m3-cs'               : 'bmw-m3-cs',
     'bmw-m4-cs'               : 'bmw-m4-cs',
-    'audi-s3-limo'            : 'audi-s3-limo',
     'vw-golf-gti-clubsport'   : 'vw-golf-gti-clubsport',
     'vw-t-roc-r'              : 'vw-t-roc-r',
     'renault-megane-etech'    : 'renault-megane-etech',
@@ -9629,7 +9546,6 @@
     'porsche-boxster'         : 'porsche-boxster',
     'porsche-cayman'          : 'porsche-cayman',
     'ferrari-mondial'         : 'ferrari-mondial',
-    'maserati-ghibli-m157'    : 'maserati-ghibli-m157',
     'toyota-gt-one'           : 'toyota-gt-one',
     'nissan-r390'             : 'nissan-r390',
     'bentley-speed8'          : 'bentley-speed8',
@@ -9838,7 +9754,6 @@
     'nissan-370z'             : 'nissan-370z',
     'nissan-180sx'            : 'nissan-180sx',
     'toyota-celica-gt4'       : 'toyota-celica-gt4',
-    'toyota-celica-gt-four'   : 'toyota-celica-gt4',
     'porsche-911-gt3-r'       : 'porsche-911-gt3-r',
     'mercedes-500e'           : 'mercedes-500e',   // ST185 = une génération de la fiche GT-Four (audit 18/09)
     'honda-s660'              : 'honda-s660',
@@ -9934,7 +9849,6 @@
     'lexus-is'                : 'lexus-is',
     'mitsubishi-3000gt'       : 'mitsubishi-3000gt',
     'ford-focus-rs'           : 'ford-focus-rs',
-    'ford-shelby-gt500'       : 'ford-shelby-gt500',
     'chevrolet-corvette-z06'  : 'chevrolet-corvette-z06',
     'dodge-hellcat'           : 'dodge-hellcat',
     'ferrari-296-gt3'         : 'ferrari-296-gt3',
@@ -10087,15 +10001,12 @@
     'bugatti-bolide'          : 'bugatti-bolide',
     'vw-touareg'              : 'vw-touareg',
     'vw-arteon'               : 'vw-arteon',
-    'porsche-718-boxster'     : 'porsche-718-boxster',
-    'porsche-718-cayman'      : 'porsche-718-cayman',
     'mercedes-pagode'         : 'mercedes-pagode',
     'mercedes-190e'           : 'mercedes-190e',
     'mercedes-classe-a'       : 'mercedes-classe-a',
     'fiat-500-classic'        : 'fiat-500-classic',
     'fiat-panda'              : 'fiat-panda',
     'fiat-uno'                : 'fiat-uno',
-    'fiat-124-spider'         : 'fiat-124-spider',
     'alfa-156'                : 'alfa-156',
     'renault-5'               : 'renault-5',
     'renault-super5-gt'       : 'renault-super5-gt',
@@ -10282,11 +10193,9 @@
     'porsche-911-sport-classic': 'porsche-911-sport-classic',
     'porsche-cayman-gts'      : 'porsche-cayman-gts',
     /* Vague 3 : sportives allemandes. */
-    'mercedes-a45-amg'        : 'mercedes-a45-amg',
     'vw-tiguan-r'             : 'vw-tiguan-r',
     'vw-passat-r36'           : 'vw-passat-r36',
     /* Vague 4 : muscle cars americaines. */
-    'dodge-challenger-hellcat': 'dodge-challenger-hellcat',
     'ford-mustang-shelby'     : 'ford-mustang-shelby',
     'ford-mustang-boss'       : 'ford-mustang-boss',
     /* Vague 5 : japonaises et compactes sportives. */
@@ -11027,7 +10936,6 @@
     { id:'bmw-m3-cs', brand:'BMW', model:'M3 CS', yr:'2018–2024', c:'🇩🇪', cat:'Berline', r:'epique' },
     { id:'bmw-m4-cs', brand:'BMW', model:'M4 CS', yr:'2017–2025', c:'🇩🇪', cat:'Sportive', r:'epique' },
 
-    { id:'audi-s3-limo', brand:'Audi', model:'S3 Sportback / Berline', yr:'1999–', c:'🇩🇪', cat:'Sportive', r:'peucommun' },
     { id:'audi-rsq3-moderne', brand:'Audi', model:'RS Q3', yr:'2013–', c:'🇩🇪', cat:'SUV', r:'peucommun' },
 
     { id:'vw-golf-gti-clubsport', brand:'Volkswagen', model:'Golf GTI Clubsport', yr:'2016–', c:'🇩🇪', cat:'Sportive', r:'rare' },
@@ -11067,7 +10975,6 @@
     { id:'tvr-speed12', brand:'TVR', model:'Cerbera Speed 12', yr:'1997–2000', c:'🇬🇧', cat:'Hypercar', r:'legendaire' },
     { id:'cupra-formentor-vz5', brand:'Cupra', model:'Formentor VZ5', yr:'2022–2023', c:'🇪🇸', cat:'Sportive', r:'rare' },
     { id:'bmw-1m-m140i', brand:'BMW', model:'1M Coupé / M140i', yr:'2011–2019', c:'🇩🇪', cat:'Sportive', r:'epique' },
-    { id:'mercedes-a45-amg', brand:'Mercedes-AMG', model:'A 45 AMG / A 45 S', yr:'2013–', c:'🇩🇪', cat:'Sportive', r:'rare' },
     { id:'vw-tiguan-r', brand:'Volkswagen', model:'Tiguan R', yr:'2021–', c:'🇩🇪', cat:'SUV', r:'rare' },
     { id:'honda-civic-classique', brand:'Honda', model:'Civic (1972–1995)', yr:'1972–1995', c:'🇯🇵', cat:'Classique', r:'peucommun' },
     { id:'honda-civic-vti', brand:'Honda', model:'Civic VTi (EG/EK)', yr:'1991–2000', c:'🇯🇵', cat:'Sportive', r:'rare' },
@@ -11078,7 +10985,6 @@
     { id:'ford-mustang-boss', brand:'Ford', model:'Mustang Boss 302 / 429', yr:'1969–2013', c:'🇺🇸', cat:'Sportive', r:'epique' },
     { id:'chevrolet-camaro-z28', brand:'Chevrolet', model:'Camaro Z/28', yr:'1967–2015', c:'🇺🇸', cat:'Sportive', r:'epique' },
     { id:'chevrolet-camaro-zl1', brand:'Chevrolet', model:'Camaro ZL1', yr:'2012–2024', c:'🇺🇸', cat:'Sportive', r:'rare' },
-    { id:'dodge-challenger-hellcat', brand:'Dodge', model:'Challenger Hellcat / Demon', yr:'2015–2023', c:'🇺🇸', cat:'Sportive', r:'epique' },
     { id:'vw-golf-mk1', brand:'Volkswagen', model:'Golf Mk1', yr:'1974–1983', c:'🇩🇪', cat:'Classique', r:'rare' },
     { id:'ford-fiesta-xr2i', brand:'Ford', model:'Fiesta XR2i / RS Turbo', yr:'1984–1994', c:'🇬🇧', cat:'Classique', r:'rare' },
     { id:'vw-passat-classique', brand:'Volkswagen', model:'Passat (B1–B4)', yr:'1973–1996', c:'🇩🇪', cat:'Classique', r:'peucommun' },
@@ -11602,41 +11508,84 @@
      vidant la liste ci-dessous.
      ====================================================================== */
 
-  const DOUBLONS_A_RETIRER = [
-    'audi-s1-sportback',   // doublon exact de 'audi-s1' — mêmes specs, noms inversés
-    'bmw-serie-1',         // doublon de 'bmw-serie1', sans fiche technique
-    'bmw-serie-3',         // doublon de 'bmw-serie3', sans fiche technique
-    'bmw-serie-5',         // doublon de 'bmw-serie5', sans fiche technique
-    'fiat-500-2007',       // doublon de 'fiat-500', sans fiche technique
-    'land-rover-evoque',    // doublon de 'landrover-evoque', sans fiche technique
-    'land-rover-discovery', // doublon de 'landrover-discovery', sans fiche technique
-    'simca-1000-rallye2',   // doublon de 'simca-1000', sans fiche technique
-    'vw-t2',                // doublon de 'vw-combi' (qui couvre T1/T2), sans fiche technique
-    'bmw-x3-moderne',       // doublon de 'bmw-x3'
-    'mg4',                  // doublon de 'mg-4'
-    'suzuki-vitara-moderne',// doublon de 'suzuki-vitara'
-    'porsche-911-gt3-cup',  // doublon de 'porsche-911-cup'
-    'gma-t50',                // doublon de 'gordonmurray-t50' (même T.50) — audit du 18/09
-    'ford-fiesta-st-moderne', // doublon de 'ford-fiesta-st'
-    'audi-rsq3-moderne',      // doublon de 'audi-rsq3'
-    'vw-up-gti-mk',           // doublon de 'vw-up-gti'
+  /* FUSIONS — où va la collection d'un id retiré
+     ----------------------------------------------------------------------
+     Retirer un id du catalogue ne supprime pas les prises enregistrées sous
+     cet id : elles restent dans IndexedDB, mais index.html ne charge au
+     démarrage que les prises dont l'id existe (`CARS_BY_ID[rec.carId]`).
+     Sans cette table, chaque doublon retiré faisait donc disparaître des
+     voitures de la collection du joueur, sans message.
+
+     Chaque entrée dit vers quel id la prise est rattachée (`vers`) et,
+     quand l'entrée retirée désignait une génération précise, quelle case
+     de déclinaison cocher (`declinaison`, libellé EXACT de VARIANTS[vers]).
+     La migration elle-même vit dans index.html (init, importJSON) : ce
+     module ne touche jamais à IndexedDB.
+
+     DOUBLONS_A_RETIRER est DÉRIVÉ de cette table : un id ne peut plus être
+     retiré sans qu'on ait dit où va sa collection. */
+  const FUSIONS = {
+    'audi-s1-sportback':   { vers:'audi-s1' },            // doublon exact — mêmes specs, noms inversés
+    'bmw-serie-1':         { vers:'bmw-serie1' },         // doublon sans fiche technique
+    'bmw-serie-3':         { vers:'bmw-serie3' },         // doublon sans fiche technique
+    'bmw-serie-5':         { vers:'bmw-serie5' },         // doublon sans fiche technique
+    'fiat-500-2007':       { vers:'fiat-500' },           // doublon sans fiche technique
+    'land-rover-evoque':   { vers:'landrover-evoque' },   // doublon sans fiche technique
+    'land-rover-discovery':{ vers:'landrover-discovery' },// doublon sans fiche technique
+    'simca-1000-rallye2':  { vers:'simca-1000' },         // doublon sans fiche technique
+    'vw-t2':               { vers:'vw-combi' },           // 'vw-combi' couvre T1/T2
+    'bmw-x3-moderne':      { vers:'bmw-x3' },
+    'mg4':                 { vers:'mg-4' },
+    'suzuki-vitara-moderne':{ vers:'suzuki-vitara' },
+    'porsche-911-gt3-cup': { vers:'porsche-911-cup' },
+    'gma-t50':             { vers:'gordonmurray-t50' },   // même T.50 — audit du 18/09
+    'ford-fiesta-st-moderne':{ vers:'ford-fiesta-st' },
+    'audi-rsq3-moderne':   { vers:'audi-rsq3' },
+    'vw-up-gti-mk':        { vers:'vw-up-gti' },
     /* Détectés par banc-audit.js (22/09) : même voiture présente deux fois
        dans la grille, donc collectionnable deux fois et comptée double dans
        la complétion. On conserve à chaque fois l'entrée qui porte la fiche
        technique et/ou l'INFO d'index.html. */
-    'audi-rs2-avant-b4',      // doublon de 'audi-rs2' (CARS + INFO) — fiches SPECS identiques : 315 ch / 410 Nm / 1 595 kg
-    'mercedes-c43-amg',       // doublon de 'mercedes-c43' — déclarés deux fois dans CATALOGUE_PLUS, champs identiques ; seul 'mercedes-c43' a une fiche SPECS
-    'citroen-ami-2020',       // doublon de 'citroen-ami' — « Ami (2020) » et « Ami » désignent le même quadricycle 8 ch / 485 kg (à ne pas confondre avec 'citroen-ami6', la vraie Ami 6 de 1961)
+    'audi-rs2-avant-b4':   { vers:'audi-rs2' },           // fiches SPECS identiques : 315 ch / 410 Nm / 1 595 kg
+    'mercedes-c43-amg':    { vers:'mercedes-c43' },       // déclarés deux fois dans CATALOGUE_PLUS, champs identiques
+    'citroen-ami-2020':    { vers:'citroen-ami' },        // même quadricycle 8 ch / 485 kg (≠ 'citroen-ami6', l'Ami 6 de 1961)
     /* Révélé le 23/09 en comblant les fiches manquantes : 'bmw-1m-m140i'
        (CATALOGUE_PLUS, « 1M Coupé / M140i ») décrit la MÊME voiture que
-       'bmw-1m' (CARS, legendaire, fiche complète). Le 1M apparaissait donc
-       deux fois dans la grille, et se collectionnait deux fois.
-       Le doublon existait avant : il était invisible au banc parce que
-       'bmw-1m-m140i' n'avait aucune fiche, donc aucun NOM à comparer.
-       Écrire la fiche manquante a suffi à le faire apparaître — c'est la
-       raison pour laquelle on comble plutôt que d'ignorer. */
-    'bmw-1m-m140i',           // doublon de 'bmw-1m' — CARS fait autorité (§2.3)
-  ];
+       'bmw-1m' (CARS, legendaire, fiche complète). Le doublon était
+       invisible au banc tant que 'bmw-1m-m140i' n'avait aucune fiche, donc
+       aucun NOM à comparer — c'est la raison pour laquelle on comble
+       plutôt que d'ignorer. */
+    'bmw-1m-m140i':        { vers:'bmw-1m' },             // CARS fait autorité (§2.3)
+    /* Fusions du 28/09 : la même voiture sous deux entrées. Plutôt que de
+       supprimer l'une, on la replie dans l'autre comme GÉNÉRATION (une case
+       de déclinaison) quand elle désignait une génération précise ; sinon
+       comme simple alias. Les chiffres de l'entrée conservée ont été
+       vérifiés au passage (§4.5 bis). */
+    'audi-s3-limo':        { vers:'audi-s3' },            // Sportback / Berline = carrosseries de la S3, pas une autre voiture
+    'maserati-ghibli-m157':{ vers:'maserati-ghibli', declinaison:'M157' }, // « Ghibli (2013) » = la génération M157 de 'maserati-ghibli' (2013–)
+    'fiat-124-spider':     { vers:'fiat-124-spider-2016' },// même 2016–2020 ; l'entrée conservée porte l'INFO d'index.html
+    'mercedes-a45-amg':    { vers:'mercedes-a45' },       // W176 et W177 déjà décrites dans les générations de 'mercedes-a45'
+    'dodge-challenger-hellcat':{ vers:'dodge-hellcat' },  // la Demon a sa propre entrée ('dodge-demon', règle GTA)
+    'toyota-celica-gt-four':{ vers:'toyota-celica-gt4', declinaison:'ST185' }, // la ST185 est une génération de la GT-Four
+    'porsche-718-cayman':  { vers:'porsche-cayman', declinaison:'718 (982)' }, // 718 = génération 982 ; GT4 et GTS ont leurs entrées
+    'porsche-718-boxster': { vers:'porsche-boxster', declinaison:'718' },      // idem ; son sélecteur de motorisations passe au Boxster
+    'ford-shelby-gt500':   { vers:'ford-mustang-shelby' },// GT500 2007– = générations S197/S550 de la Shelby Mustang
+  };
+  const DOUBLONS_A_RETIRER = Object.keys(FUSIONS);
+
+  /* Résout un id retiré vers l'id conservé. Suit les chaînes (un id
+     conservé peut lui-même être fusionné plus tard) ; la borne protège
+     d'une boucle introduite par erreur. Renvoie null pour un id actif. */
+  function fusionDe(id) {
+    if (!Object.prototype.hasOwnProperty.call(FUSIONS, id)) return null;
+    let vers = id, declinaison = null;
+    for (let n = 0; n < 8 && Object.prototype.hasOwnProperty.call(FUSIONS, vers); n++) {
+      const f = FUSIONS[vers];
+      if (declinaison == null && f.declinaison) declinaison = f.declinaison;
+      vers = f.vers;
+    }
+    return { vers, declinaison };
+  }
 
   function retirerDoublons() {
     try {
@@ -11909,7 +11858,6 @@
     'bmw-330i':'4 cyl. 2.0 turbo et hybride rechargeable propulsion 184–292 ch',
     'bmw-m550i':'V8 4.4 biturbo et 6 en ligne 3.0 turbo xDrive 333–530 ch',
     'bmw-x5m-comp':'V8 S63 4.4 biturbo xDrive 555–625 ch',
-    'audi-s3-limo':'4 cyl. 2.0 TFSI quattro 265–333 ch',
     'audi-rsq3-moderne':'5 en ligne 2.5 TFSI turbo quattro 310–400 ch',
     'cupra-leon':'4 cyl. 2.0 TSI et hybride rechargeable traction 150–333 ch',
     'renault-clio-rs-line':'3 et 4 cyl. TCe et E-Tech hybride traction 90–145 ch',
@@ -12045,7 +11993,6 @@
     'honda-prelude':'4 cyl. H22A 2.2 VTEC atmo traction quatre roues directrices',
     'toyota-gr-supra':'6 en ligne B58 3.0 turbo BMW propulsion',
     'toyota-celica-gt4':'4 cyl. 3S-GTE 2.0 turbo intégrale homologation',
-    'toyota-celica-gt-four':'4 cyl. 3S-GTE 2.0 turbo intégrale homologation',
     'toyota-gr-corolla':'3 cyl. G16E 1.6 turbo intégrale',
     'toyota-chaser':'6 en ligne 1JZ-GTE 2.5 turbo propulsion',
     'toyota-soarer':'6 en ligne 1JZ et 2JZ turbo et V8 propulsion',
@@ -12061,7 +12008,6 @@
     'ford-taurus-sho':'V6 Yamaha 3.0 atmo traction',
     'ford-focus-rs':'4 cyl. 2.3 EcoBoost turbo intégrale',
     'ford-mustang-gt':'V8 Coyote 5.0 atmo propulsion',
-    'ford-shelby-gt500':'V8 5.2 compressé propulsion vilebrequin plat',
     'chevrolet-corvette-c5':'V8 LS1 5.7 atmo transaxle',
     'chevrolet-corvette-c6':'V8 LS2 LS3 et LS7 atmo transaxle',
     'chevrolet-corvette-c7':'V8 LT1 6.2 atmo transaxle',
@@ -16169,7 +16115,26 @@
       ]
     },
 
-    'porsche-718-boxster': {
+    /* 124 Spider : un seul moteur (1.4 MultiAir turbo), deux réglages.
+       L'Abarth n'a pas d'entrée propre : même carrosserie, même moteur,
+       d'où le sélecteur plutôt qu'une fiche séparée (règle GTA, §4.5). */
+    'fiat-124-spider-2016': {
+      types: [
+        {
+          id: '1.4-multiair', label: '1.4 MultiAir turbo',
+          variants: [
+            { id:'fiat-140', label:'124 Spider 140',
+              ch:140, nm:240, kg:1050, cyl:1.368, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'propulsion', bv:'manuelle 6',
+              note:"Construite par Mazda à Hiroshima sur la base du MX-5 ND, mais avec le moteur turbo Fiat à la place du 2.0 atmosphérique." },
+            { id:'abarth-170', label:'Abarth 124 Spider 170',
+              ch:170, nm:250, kg:1060, cyl:1.368, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'propulsion', bv:'manuelle 6',
+              note:"Différentiel autobloquant et suspension revue : 6,8 s de 0 à 100 km/h annoncées." },
+          ]
+        },
+      ]
+    },
+
+    'porsche-boxster': {
       types: [
         {
           id: '982-4cyl', label: '982 — 4 cylindres turbo',
@@ -16177,9 +16142,6 @@
             { id:'982-2.0-300', label:'2.0 Turbo 300',
               ch:300, nm:380, kg:1335, cyl:1.988, arch:'4 cyl. à plat', adm:'turbo', pos:'central arrière', tx:'propulsion', bv:'manuelle 6',
               note:"Retour au flat-4 chez Porsche pour la première fois depuis la fin des années 1960 — +100 Nm par rapport à l'ancien six atmo." },
-            { id:'982-s-2.5-350', label:'S 2.5 Turbo 350',
-              ch:350, nm:420, kg:1355, cyl:2.497, arch:'4 cyl. à plat', adm:'turbo VTG', pos:'central arrière', tx:'propulsion', bv:'manuelle 6',
-              note:"Turbo à géométrie variable, technologie jusque-là réservée à la 911 Turbo sur un moteur essence de série." },
           ]
         },
         {
@@ -16706,7 +16668,7 @@
     definirRegion: (r) => { REGION_COURANTE = r; },
     grefferFloutage, pixelliser, grefferSuppressionPhoto, supprimerPhoto,
     appliquerCorrectifsRarete, CORRECTIFS_RARETE,
-    retirerDoublons, DOUBLONS_A_RETIRER,
+    retirerDoublons, DOUBLONS_A_RETIRER, FUSIONS, fusionDe,
     rechargerSurFiche, retournerSurFiche, idDepuisPhoto,
     initSignalement, scannerEtEnvoyer, definirConsentement,
     definirEndpointSignalement: (u) => { NOTIFY_ENDPOINT = u || ''; },

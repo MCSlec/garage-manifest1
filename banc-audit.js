@@ -68,6 +68,29 @@ function extraireCars(html) {
   return vm.runInNewContext('(' + litteral + ')');
 }
 
+/* VARIANTS (cases de déclinaison) : même extraction par équilibrage, pour
+   un littéral d'objet. Sert au contrôle des FUSIONS : la case à cocher
+   pendant la migration doit exister, au caractère près. */
+function extraireVariants(html) {
+  const ancre = html.indexOf('const VARIANTS = {');
+  if (ancre === -1) return {};
+  const debut = html.indexOf('{', ancre);
+  let profondeur = 0, i = debut, dansChaine = null, echappe = false;
+  for (; i < html.length; i++) {
+    const c = html[i];
+    if (dansChaine) {
+      if (echappe) { echappe = false; continue; }
+      if (c === '\\') { echappe = true; continue; }
+      if (c === dansChaine) dansChaine = null;
+      continue;
+    }
+    if (c === '"' || c === "'" || c === '`') { dansChaine = c; continue; }
+    if (c === '{') profondeur++;
+    else if (c === '}') { profondeur--; if (profondeur === 0) break; }
+  }
+  return vm.runInNewContext('(' + html.slice(debut, i + 1) + ')');
+}
+
 /* ----------------------------------------------------------------------
    2. Chargement de gm-specs.js dans un DOM simulé
    ----------------------------------------------------------------------
@@ -611,6 +634,30 @@ function auditer() {
       survivant
         ? `GENS['${cle}'] : aucune entrée catalogue de cet id, jamais affiché — or « ${survivant} » pointe sur cette fiche et n'a PAS de générations : renommer la clé en '${survivant}'`
         : `GENS['${cle}'] : aucune entrée catalogue de cet id, jamais affiché. Id d'un doublon retiré ? Reporter le contenu utile sur l'entrée survivante, puis supprimer.`);
+  }
+
+  /* --- D quater. FUSIONS : où va la collection d'un id retiré ---------
+     Un id retiré garde ses prises dans IndexedDB ; index.html les rattache
+     à FUSIONS[id].vers au démarrage. Une cible absente du catalogue, et la
+     prise redevient invisible — exactement le défaut que la table corrige.
+     Une déclinaison mal orthographiée, et la case cochée ne s'affiche pas. */
+  const variantsIndex = extraireVariants(html);
+  const casesDe = id => (Array.isArray(variantsIndex[id]) && variantsIndex[id].length)
+    ? variantsIndex[id]
+    : (GENS[id] || []).flatMap(g => (g && !Array.isArray(g) && Array.isArray(g.m))
+        ? g.m.map(mo => `${g.c} ${mo[0]}`) : [g[0]]);   // même dérivation qu'etendreVariants()
+  for (const [retire, f] of Object.entries(GMSpecs.FUSIONS || {})) {
+    if (idsCatalogue.has(retire)) {
+      signaler('ERREUR', 'FUSIONS', `${retire} : déclaré fusionné mais toujours présent dans le catalogue`);
+    }
+    const cible = GMSpecs.fusionDe(retire);
+    if (!cible || !idsCatalogue.has(cible.vers)) {
+      signaler('ERREUR', 'FUSIONS', `${retire} → ${f.vers} : cible absente du catalogue, les prises resteraient invisibles`);
+      continue;
+    }
+    if (f.declinaison && !casesDe(cible.vers).includes(f.declinaison)) {
+      signaler('ERREUR', 'FUSIONS', `${retire} → ${cible.vers} : déclinaison « ${f.declinaison} » absente des cases de ${cible.vers} (${casesDe(cible.vers).join(' | ') || 'aucune'})`);
+    }
   }
 
   /* --- E. MOTOR_SPECS ------------------------------------------------- */

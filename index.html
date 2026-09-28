@@ -3504,6 +3504,26 @@ const VARIANTS = {
              c:"🏳️", cat:"Non classé",
              r: RARITY_ORDER.includes(raw.r) ? raw.r : "commun", custom:true };
   }
+  /* Fusion de doublons — contrat avec gm-specs.js (GMSpecs.fusionDe).
+     Un id retiré du catalogue laisse ses prises dans IndexedDB, mais `init`
+     ne charge que les ids connus : sans rattachement, la voiture disparaît
+     de la collection sans message. La prise conservée fait autorité (date,
+     lieu, couverture) ; l'autre lui apporte ses photos, sa note et ses
+     déclinaisons. Idempotent : une photo déjà présente n'est pas redoublée,
+     si bien qu'un `del` raté puis rejoué au démarrage suivant ne duplique rien. */
+  function fusionVers(carId) {
+    const f = window.GMSpecs?.fusionDe?.(carId);
+    return (f && CARS_BY_ID[f.vers]) ? f : null;
+  }
+  function fusionnerPrise(rec, f) {
+    const cible = state.spots.get(f.vers);
+    const variants = [...new Set([...(cible?.variants || []), ...(rec.variants || []), ...(f.declinaison ? [f.declinaison] : [])])];
+    if (!cible) return { ...rec, carId: f.vers, variants };
+    const photos = [...(cible.photos || [])];
+    for (const p of (rec.photos || [])) if (!photos.includes(p)) photos.push(p);
+    const note = (rec.note && !(cible.note || "").includes(rec.note)) ? [cible.note, rec.note].filter(Boolean).join("\n") : cible.note;
+    return { ...cible, photos, note, variants, favorite: !!(cible.favorite || rec.favorite) };
+  }
   function sanitizeSpot(rec) {
     if (!rec || typeof rec !== "object" || !CARS_BY_ID[rec.carId]) return null;
     const at = (rec.at && !isNaN(new Date(rec.at).getTime())) ? rec.at : new Date().toISOString();
@@ -3548,7 +3568,9 @@ const VARIANTS = {
         const spots = Array.isArray(data.spots) ? data.spots : [];
         let n = 0, rejected = 0;
         for (const rec of spots) {
-          const clean = sanitizeSpot(rec);
+          let clean = sanitizeSpot(rec);
+          const f = !clean && rec && typeof rec === "object" ? fusionVers(rec.carId) : null;
+          if (f) { const c2 = sanitizeSpot({ ...rec, carId: f.vers }); if (c2) clean = fusionnerPrise(c2, f); }
           if (!clean) { rejected++; continue; }
           await Store.put(clean); state.spots.set(clean.carId, clean); n++;
         }
@@ -4220,6 +4242,14 @@ const VARIANTS = {
       for (const rec of all) {
         if (rec.carId === "__meta__" || rec.carId === "__customcars__") continue;
         if (CARS_BY_ID[rec.carId]) state.spots.set(rec.carId, rec);
+      }
+      // Prises rangées sous un id fusionné par gm-specs.js : rattachées à l'id conservé.
+      // Second passage, pour que la prise déjà présente sous l'id conservé soit chargée avant.
+      for (const rec of all) {
+        if (!rec || CARS_BY_ID[rec.carId] || rec.carId === "__meta__" || rec.carId === "__customcars__") continue;
+        const f = fusionVers(rec.carId); if (!f) continue;
+        const m = fusionnerPrise(rec, f);
+        try { await Store.put(m); await Store.del(rec.carId); state.spots.set(m.carId, m); } catch {}
       }
       // Purge des « Non classé » orphelines (créées mais jamais enregistrées, ou prise supprimée)
       const before = CUSTOM_REG.list.length;

@@ -155,6 +155,28 @@ regardé que `CARS`.
   **quatre** structures cohérentes : `CATALOGUE_PLUS` (existence + identité),
   `SPECS` (fiche technique), `GENS` (générations) et `MAP` (correspondance).
 
+### 2.4 — Retirer une entrée = déclarer une fusion (INVARIANT)
+Un id retiré du catalogue **ne supprime pas** les prises enregistrées sous cet
+id : elles restent dans IndexedDB, mais `init()` ne charge que les ids connus
+(`CARS_BY_ID[rec.carId]`). La voiture disparaît donc de la collection du joueur,
+**sans message**. Ce défaut a touché les 21 doublons retirés avant le 28/09.
+
+- **Le seul moyen de retirer un id est `FUSIONS`** (gm-specs.js) :
+  `'id-retire': { vers:'id-conserve', declinaison:'…' }`. `DOUBLONS_A_RETIRER`
+  en est **dérivé** — on ne peut plus retirer sans dire où va la collection.
+- `declinaison` (facultatif) est le libellé **exact** d'une case de
+  `VARIANTS[vers]` : quand l'entrée retirée désignait une génération
+  (« Celica GT-Four (ST185) »), le joueur la retrouve cochée.
+- **La migration vit dans `index.html`** (`fusionVers` / `fusionnerPrise`,
+  appelées au démarrage et à l'import), via `window.GMSpecs.fusionDe()`.
+  La prise conservée fait autorité (date, lieu, couverture) ; l'autre apporte
+  photos, note et déclinaisons. Idempotente : relancée, elle ne double rien.
+- **Fusionner plutôt que supprimer.** Deux entrées qui décrivent la même voiture
+  deviennent une entrée + une **génération** (`GENS`, donc une case de
+  déclinaison) ou une **motorisation** (`MOTOR_SPECS`), selon la règle GTA.
+- Contrôles : `banc-audit.js` (cible existante, déclinaison existante) et
+  `banc-fusions.js` (migration réelle dans Chromium + IndexedDB, 19 tests).
+
 ---
 
 ## 3. Contrat DOM entre `index.html` et `gm-specs.js`
@@ -352,8 +374,8 @@ incrémenter conjointement :**
 1. `VERSION_MODULE` dans `gm-specs.js` (ligne ~22).
 2. `VERSION` (`"garage-v…"`) dans `sw.js` (ligne ~12).
 
-Ces deux numéros sont **tenus synchronisés** (au 22/09/2026 : `gm-specs.js` →
-`20.128.0`, `sw.js` → `garage-v20.128.0`). `VERSION_MODULE` s'affiche en outre
+Ces deux numéros sont **tenus synchronisés** (au 28/09/2026 : `gm-specs.js` →
+`20.162.0`, `sw.js` → `garage-v20.162.0`). `VERSION_MODULE` s'affiche en outre
 dans l'UI via `grefferVersion()`, ce qui permet de vérifier de visu quelle version
 tourne réellement sur l'appareil.
 
@@ -386,6 +408,7 @@ Ce qu'il attrape, et que ni l'œil ni `node --check` ne voient :
 | **`MAP` orphelines** | Correspondance pointant vers une fiche ou un id inexistant → fiche technique muette. |
 | **Fiches `SPECS` inatteignables** | `ficheHTML()` résout par `MAP[idCatalogue]` **strictement** — il n'y a **aucun repli** sur `SPECS[idCatalogue]`. Une fiche qu'aucune entrée `MAP` ne désigne est donc écrite, versionnée, relue… et **jamais affichée**, sans le moindre signal. 19 fiches étaient dans ce cas, dont celle de la Mégane R.S. Trophy-R alors que la voiture figurait bien au catalogue : il manquait une seule ligne dans `MAP`. |
 | **Blocs `GENS` morts** | Même angle mort pour les générations, mais par l'autre bout : `gensHTML()` lit `GENS[idCatalogue]` directement. Un bloc rangé sous un id qui n'est pas au catalogue n'est jamais affiché. 3 cas trouvés, tous issus de doublons retirés par `DOUBLONS_A_RETIRER` — leurs générations restaient attachées à l'id supprimé, et la up! GTI s'affichait sans les siennes. |
+| **`FUSIONS`** | Une fusion dont la cible n'est pas au catalogue rend les prises du joueur invisibles ; une `declinaison` mal orthographiée coche une case qui n'existe pas. Vérifié par mutation : les deux fautes, et un retrait abusif, remontent en ERREUR. |
 | **Jumelles à distance** | Le contrôle « copie-voisine » ne compare que des fiches **adjacentes**. Étendu à toutes les paires, il a trouvé 30 groupes de fiches identiques au chiffre près (ch, Nm, L, kg). La majorité suivait un seul motif : une entrée **courante** (CLA, A3, Octavia, Polo, Panamera, X5, TT, Tiguan, Série 1…) affichait les chiffres de sa **version sportive**, qui a pourtant sa propre entrée — la règle GTA (§4.5 bis) violée en silence, avec des ratios faux et une rareté perçue absurde. Les vraies jumelles (Aygo/C1, Berlingo/Partner, ID.4/Enyaq) sont nommées dans `JUMELLES_AVEREES`, avec leur justification. |
 | **Champs manquants / hors plage** | Complétude par champ, et incohérences d'ordre de grandeur. |
 | **Divergences `CARS` / `CATALOGUE_PLUS`** | Un id déclaré des deux côtés : `CARS` fait autorité, l'autre déclaration est **perdue en silence**. |
@@ -458,6 +481,7 @@ modification n'impose aucun bump de version.
 8. **`node banc-audit.js` repasse à 0 erreur** (§5 bis) — obligatoire dès qu'on
    touche aux données. C'est la garde mécanique contre les doublons silencieux,
    les correspondances mortes et la contamination entre fiches voisines.
+   Si un id est retiré : il passe par `FUSIONS`, et `banc-fusions.js` repasse (§2.4).
 9. **Vérification comportementale, pas seulement syntaxique** : `node --check`
    ne prouve rien sur le câblage DOM. Un test d'exécution réelle (banc Playwright
    qui écrit des spots dans IndexedDB, ouvre les fiches, lit le DOM) est
