@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.176.0';
+  const VERSION_MODULE = '20.177.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -214,8 +214,8 @@
       ch:250, kg:2100, cyl:2.5, arch:'4 cyl. hybride', adm:'atmo + électrique', pos:'avant', tx:'intégrale', bv:'e-CVT', flou:['ch','kg'],
       note:"Le SUV qui a inventé le segment du SUV premium hybride et fait le succès de Lexus dans le monde. Confort, silence et fiabilité légendaires. Un best-seller qui a converti des générations d\'acheteurs au luxe japonais et à l\'hybride. Chiffres du RX V 350h, puissance cumulée, sans couple système publié (hybride Lexus) ; elle portait ceux du 450h+ hybride rechargeable." },
     'hyundai-santa-fe': { nom:'Hyundai Santa Fe', an:[2000], pays:'Corée du Sud',
-      ch:265, nm:350, kg:1900, cyl:1.6, arch:'4 cyl. hybride', adm:'turbo + électrique', pos:'avant', tx:'intégrale', bv:'A6',
-      note:"Le grand SUV familial de Hyundai, nommé d\'après la ville américaine. La dernière génération au style anguleux très marqué, aux immenses portes arrière, sept places. Un familial spacieux qui a fait grimper l\'image de la marque coréenne." },
+      ch:215, kg:1965, cyl:1.6, arch:'4 cyl. hybride', adm:'turbo + électrique', pos:'avant', tx:'traction / intégrale', bv:'A6', flou:['kg'],
+      note:"Le grand SUV familial de Hyundai, nommé d\'après la ville américaine. La dernière génération au style anguleux très marqué, aux immenses portes arrière, sept places. Un familial spacieux qui a fait grimper l\'image de la marque coréenne. Chiffres du Santa Fe V 1.6 T-GDi HEV 215 ; couple système non retenu faute de publication concordante (les fiches donnent celui du thermique). Elle portait ceux de l\'hybride rechargeable du Santa Fe IV." },
     'kia-picanto': { nom:'Kia Picanto', an:[2004], pays:'Corée du Sud',
       ch:67, nm:96, kg:903, cyl:1.0, arch:'3 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M5', flou:['kg'],
       note:"La citadine d\'entrée de gamme de Kia, appréciée pour son rapport prix/équipement et sa garantie 7 ans. La version GT-Line turbo lui donne un look sportif. Une puce urbaine maligne, l\'une des dernières vraies petites voitures abordables du marché. Chiffres de la Picanto III 1.0 67." },
@@ -252,8 +252,8 @@
       ch:354, nm:500, kg:1750, cyl:3.0, arch:'V6 (jadis V8)', adm:'turbo / compresseur', pos:'avant', tx:'quattro', bv:'tiptronic 8',
       note:"Le coupé sportif d\'Audi, sous la RS5. La première génération et son V8 4.2 atmosphérique, à la sonorité magnifique, est aujourd\'hui la plus recherchée avant le passage au V6 suralimenté plus efficient. Une GT élégante et intégrale." },
     'peugeot-307': { nom:'Peugeot 307', an:[2001,2008], pays:'France',
-      ch:177, nm:202, kg:1350, cyl:2.0, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
-      note:"Voiture de l\'Année 2002. Une compacte au gabarit généreux, déclinée en berline, break SW à toit vitré panoramique et coupé-cabriolet CC à toit rigide escamotable. Un best-seller familial des années 2000, remplaçante de la 306." },
+      ch:110, nm:147, kg:1204, cyl:1.6, arch:'4 cyl. 16 soupapes', adm:'atmo', pos:'avant', tx:'traction', bv:'M5', flou:['kg'],
+      note:"Voiture de l\'Année 2002. Une compacte au gabarit généreux, déclinée en berline, break SW à toit vitré panoramique et coupé-cabriolet CC à toit rigide escamotable. Un best-seller familial des années 2000, remplaçante de la 306. Chiffres de la 307 1.6 16V 110 (5 portes) ; elle portait ceux de la 2.0 16V 180, moteur de la 206 RC." },
     'peugeot-5008': { nom:'Peugeot 5008', an:[2009], pays:'France',
       ch:131, nm:230, kg:1430, cyl:1.2, arch:'3 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'EAT8', flou:['kg'],
       note:"Le grand SUV sept places de Peugeot, doté de l\'i-Cockpit et d\'une présentation soignée. La première génération était un monospace avant la bascule vers le SUV en 2017. Le familial haut de gamme accessible de la marque. Chiffres du 5008 II 1.2 PureTech 130 (131 ch réels)." },
@@ -1639,8 +1639,8 @@
       ch:340, nm:450, kg:2159, cyl:3.0, arch:'6 en ligne', adm:'turbo', pos:'avant', tx:'intégrale', bv:'A8',
       note:"L\'inventeur du segment SUV-coupé en 2008, un pari sur le style contre la practicité, très copié depuis. Chiffres du X6 xDrive40i (G06, 2019) ; le X6 M figure sur la fiche X5 M / X6 M." },
     'bmw-i3': { nom:'BMW i3', an:[2013,2022], pays:'Allemagne',
-      ch:184, nm:270, kg:1300, cyl:0, arch:'moteur électrique (+ prolongateur option)', adm:'électrique', pos:'arrière', tx:'propulsion', bv:'A1',
-      note:"Cellule passagers en fibre de carbone sur une voiture de grande série, une première mondiale. Portes arrière antagonistes, intérieur en matériaux recyclés et fibres naturelles. Option prolongateur d\'autonomie à moteur essence de scooter." },
+      ch:170, nm:250, kg:1195, cyl:0, arch:'moteur électrique (+ prolongateur option)', adm:'électrique', pos:'arrière', tx:'propulsion', bv:'A1', flou:['kg'],
+      note:"Cellule passagers en fibre de carbone sur une voiture de grande série, une première mondiale. Portes arrière antagonistes, intérieur en matériaux recyclés et fibres naturelles. Option prolongateur d\'autonomie à moteur essence de scooter. Chiffres de l\'i3 170 ch (60 Ah, sans prolongateur) ; elle portait ceux de l\'i3s de 184 ch." },
     'fiat-126': { nom:'Fiat 126', an:[1972,2000], pays:'Italie',
       ch:26, nm:49, kg:600, cyl:0.7, arch:'2 cyl. refroidi par air', adm:'atmo', pos:'arrière', tx:'propulsion', bv:'M4',
       note:"Remplaçante de la 500. Produite massivement en Pologne (« Maluch », le petit), où elle a motorisé tout le pays et reste une icône populaire et affective, comme la 2CV en France." },
@@ -2164,8 +2164,8 @@
       ch:60, nm:88, kg:780, cyl:1.1, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
       note:"La citadine Peugeot des années 90, jumelle technique de la Citroën Saxo avec laquelle elle partage plancher et mécanique. Cette fiche décrit la 106 de grande diffusion ; les versions sportives Rallye et GTI, bien plus rares, ont chacune leur propre fiche." },
     'peugeot-309': { nom:'Peugeot 309', an:[1985,1993], pays:'France',
-      ch:130, nm:165, kg:950, cyl:1.9, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
-      note:"Devait initialement s\'appeler Talbot Arizona avant l\'abandon de la marque. La GTI 16 reprend le cœur mécanique de la 205 GTI, dans une carrosserie plus discrète et sous-estimée." },
+      ch:65, nm:103, kg:870, cyl:1.3, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M5', flou:['kg'],
+      note:"Devait initialement s\'appeler Talbot Arizona avant l\'abandon de la marque. La GTI reprend le 1.9 de la 205 GTI, dans une carrosserie plus discrète et sous-estimée. Chiffres de la 309 GL 1.3 (1986-1989, couple publié 10,5 mkg) ; elle portait ceux de la GTI 1.9." },
     'peugeot-406': { nom:'Peugeot 406', an:[1995,2004], pays:'France',
       ch:135, nm:180, kg:1290, cyl:2.0, arch:'4 cyl. 16v', adm:'atmo', pos:'avant', tx:'traction', bv:'M5 / A4',
       note:"Le coupé 406, dessiné par Pininfarina, reste l\'un des plus beaux coupés français jamais produits. La berline a joué un rôle central dans le film « Taxi » de Luc Besson. Chiffres de la 406 2.0 16v ; le coupé V6 a sa propre fiche." },
@@ -2984,8 +2984,8 @@
       ch:265, nm:350, kg:1450, cyl:2.5, arch:'flat-4 / flat-6', adm:'turbo / atmo', pos:'avant', tx:'intégrale', bv:'M6 / A',
       note:"En 1989, une Legacy a couvert 100 000 km à plus de 223 km/h de moyenne, un record d\'endurance FIA. La transmission intégrale symétrique est la signature de la marque." },
     'subaru-forester': { nom:'Subaru Forester', an:[1997], pays:'Japon',
-      ch:241, nm:350, kg:1450, cyl:2.0, arch:'flat-4', adm:'turbo / atmo', pos:'avant', tx:'intégrale', bv:'M / CVT',
-      note:"Break surélevé avant l\'heure. La version 2.0 XT turbo, discrète, offrait des performances de sportive dans une carrosserie de baroudeur familial." },
+      ch:150, nm:194, kg:1682, cyl:2.0, arch:'flat-4 hybride (e-Boxer)', adm:'atmo + électrique', pos:'avant', tx:'intégrale', bv:'CVT', flou:['kg'],
+      note:"Break surélevé avant l\'heure. La version 2.0 XT turbo, discrète, offrait des performances de sportive dans une carrosserie de baroudeur familial. Chiffres du Forester V 2.0 e-Boxer 150 : puissance et couple du moteur thermique, Subaru ne publiant pas de valeur système. Elle portait ceux de la XT." },
     'mitsubishi-eclipse': { nom:'Mitsubishi Eclipse', an:[1989,2012], pays:'Japon',
       ch:265, nm:353, kg:1400, cyl:2.0, arch:'4 en ligne', adm:'turbo', pos:'avant', tx:'traction / intégrale', bv:'M5',
       note:"Rendue célèbre par le premier film « Fast and Furious » (l\'Eclipse verte de Brian). Les deux premières générations turbo intégrales sont les plus recherchées." },
