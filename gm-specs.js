@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.160.0';
+  const VERSION_MODULE = '20.161.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -427,6 +427,27 @@
     'techart-gtstreet-r': { nom:'TechArt GTstreet R', an:[2019], pays:'Allemagne',
       ch:800, nm:950, kg:1550, cyl:3.8, arch:'flat-6 (base Porsche 911 Turbo)', adm:'biturbo', pos:'arrière', tx:'intégrale', bv:'PDK 8',
       note:"Le préparateur TechArt, spécialiste de Porsche, transforme la 911 Turbo S en une bête de 800 ch à l\'aérodynamique agressive. Kit carrosserie complet homologué, intérieur sur mesure. Le raffinement du tuning Porsche allemand, en séries limitées." },
+    'porsche-911-gt2': { nom:'Porsche 911 GT2 (997)', an:[2007,2010], pays:'Allemagne',
+      ch:530, nm:680, kg:1440, cyl:3.6, arch:'flat-6', adm:'biturbo', pos:'arrière', tx:'propulsion', bv:'M6', prod:1242,
+      note:"La 911 Turbo privée de ses quatre roues motrices et allégée : propulsion seule, boîte manuelle, pour les puristes du « widowmaker ». Chiffres de la 997 GT2 ; les 993 et 996 figurent dans ses générations, la GT2 RS a sa propre fiche." },
+    'porsche-911-st': { nom:'Porsche 911 S/T (992)', an:[2023,2024], pays:'Allemagne',
+      ch:525, nm:465, kg:1380, cyl:4.0, arch:'flat-6', adm:'atmo', pos:'arrière', tx:'propulsion', bv:'M6', prod:1963,
+      note:"Le moteur de la GT3 RS dans la caisse d\'une GT3 Touring, boîte manuelle et sans roues arrière directrices : la 992 la plus légère. 1 963 exemplaires, pour les 60 ans de la 911." },
+    'ruf-ctr3': { nom:'RUF CTR3', an:[2007,2012], pays:'Allemagne',
+      ch:700, nm:890, kg:1400, cyl:3.7, arch:'flat-6', adm:'biturbo', pos:'central', tx:'propulsion',
+      note:"La première RUF sur une plateforme propre, développée avec Multimatic : le flat-6 passe en position centrale. Héritière du CTR « Yellowbird »." },
+    'ruf-scr': { nom:'RUF SCR (2018)', an:[2018], pays:'Allemagne',
+      ch:510, nm:471, kg:1250, cyl:4.0, arch:'flat-6', adm:'atmo', pos:'arrière', tx:'propulsion', bv:'M6',
+      note:"Un flat-6 atmosphérique de 4 litres dans une monocoque et une carrosserie en carbone conçues par RUF : l\'allure d\'une 911 ancienne, sans plus rien lui devoir." },
+    'gemballa-avalanche': { nom:'Gemballa Avalanche', an:[2019], pays:'Allemagne',
+      ch:800, nm:950, cyl:3.8, arch:'flat-6 (base Porsche 911 Turbo S)', adm:'biturbo', pos:'arrière', tx:'intégrale', bv:'PDK 7',
+      note:"Présentée au salon de Genève sur base de 911 Turbo S (991) : double aileron en carbone, capot ventilé. Masse non communiquée." },
+    'gemballa-marsien': { nom:'Marc Philipp Gemballa Marsien', an:[2022], pays:'Allemagne',
+      ch:750, nm:930, cyl:3.8, arch:'flat-6 (base Porsche 911 Turbo S)', adm:'biturbo', pos:'arrière', tx:'intégrale', bv:'PDK 8', prod:40,
+      note:"Une 911 Turbo S (992) de tout-terrain, dans l\'esprit de la 959 Paris-Dakar : suspension à double triangulation, jusqu\'à 250 mm de garde au sol. 830 ch en option avec des turbos plus gros. Masse non communiquée." },
+    'guntherwerks-400r': { nom:'Gunther Werks 400R', an:[2019], pays:'États-Unis',
+      ch:437, nm:434, kg:1134, cyl:4.0, arch:'flat-6 refroidi par air (base Porsche 993)', adm:'atmo', pos:'arrière', tx:'propulsion', bv:'M6', prod:25, flou:['kg'],
+      note:"Une 993 recarrossée en carbone, au flat-6 refroidi par air porté à 4 litres : 431 hp et 320 lb-ft, soit 437 ch et 434 Nm. Masse annoncée d\'environ 2 500 lb. 25 exemplaires." },
     'gemballa-mirage-gt': { nom:'Gemballa Mirage GT', an:[2006], pays:'Allemagne',
       ch:670, nm:760, kg:1500, cyl:5.7, arch:'V10 (base Porsche Carrera GT)', adm:'atmo', pos:'central', tx:'propulsion', bv:'M6',
       note:"Basée sur la Porsche Carrera GT, l\'une des transformations les plus radicales et rares jamais réalisées, à quelques exemplaires. L\'une d\'elles fut détruite dans un accident tristement célèbre à Los Angeles. Le tuning d\'exception à l\'état artisanal." },
@@ -5429,7 +5450,7 @@
     ],
     'techart-gtstreet-r': [
       { c:'GTstreet R', a:'2016–', m:[
-        ['GTstreet R','flat-6 3.8 biturbo','800 ch','intégrale · PDK','Base 911 Turbo S. Kit carrosserie carbone intégral et aéro fonctionnelle.'],
+        ['GTstreet R','flat-6 3.8 biturbo','800 ch','intégrale · PDK','Base 911 Turbo S. Kit carrosserie carbone intégral et aéro fonctionnelle. Sur base 992, série limitée à 87 exemplaires.'],
       ]},
     ],
     'mclaren-senna': [
@@ -7722,16 +7743,20 @@
       ['997','2006–2012','flat-6 3.6 puis 3.8 atmo','415–435 ch','Premier amortissement piloté PASM sur une GT3. La RS 4.0 de 2011 a sa propre entrée.'],
       ['991','2013–2019','flat-6 3.8 puis 4.0 atmo','475–500 ch','Scandale au lancement : PDK obligatoire. Porsche a cédé en 2017 et rendu la boîte manuelle à la 991.2.'],
       ['992','2021–','flat-6 4.0 atmo','510 ch','Train avant à double triangulation, repris directement de la voiture de course. Rupteur à 9 000 tr/min.'],
+      ['992 + kit Manthey (MR)','2022–','flat-6 4.0 atmo','510 ch','Kit aérodynamique et châssis développé par Manthey Racing avec Weissach, vendu par Porsche. 6 min 55,737 s au Nürburgring avec Kévin Estre ; 6 min 50,863 s pour la 992.2 équipée.'],
     ],
     'porsche-911-gt3rs': [
       ['996','2003–2004','flat-6 3.6 atmo Mezger','381 ch','Capot et aileron en carbone, lunette arrière en polycarbonate. Construite pour homologuer la GT3 RSR.'],
       ['997','2006–2011','flat-6 3.6 puis 3.8 atmo','415–450 ch','La livrée orange ou verte à lettrage noir en fait la plus reconnaissable. La RS 4.0 de 2011 a sa propre entrée.'],
       ['991','2015–2019','flat-6 4.0 atmo','500–520 ch','Ouïes sur les ailes avant, inspirées de la 918 Spyder, pour extraire l\'air des passages de roue.'],
       ['992','2022–','flat-6 4.0 atmo','525 ch','Aileron actif avec DRS, un appui revendiqué de 860 kg à 285 km/h.'],
+      ['991.2 + kit Manthey (MR)','2019','flat-6 4.0 atmo','520 ch','Appendices en carbone, suspension de circuit. 6 min 54,340 s au Nürburgring avec Kévin Estre en 2021.'],
+      ['992 + kit Manthey (MR)','2024–','flat-6 4.0 atmo','525 ch','Plus de 1 000 kg d\'appui à 285 km/h, aileron DRS en deux éléments et jantes carénées « aerodisc ».'],
     ],
     'porsche-911-gt2rs': [
       ['997','2010–2011','flat-6 3.6 biturbo','620 ch','Propulsion et boîte manuelle seulement : la 911 la plus puissante de son temps, sans filet.'],
       ['991','2017–2019','flat-6 3.8 biturbo','700 ch','Record du Nürburgring pour une voiture de série en 2017. PDK imposée, contrairement à sa devancière.'],
+      ['991.2 + kit Manthey (MR)','2021','flat-6 3.8 biturbo','700 ch','Appui porté de 93 à 200 kg sur l\'essieu arrière à 200 km/h. 6 min 43,300 s au Nürburgring par Lars Kern, le 14 juin 2021 : record annoncé par Porsche pour une voiture de route.'],
     ],
     'vw-transporter': [
       ['T1','1950–1967','flat-4 refroidi par air, moteur arrière','25–44 ch','Le « Combi » à pare-brise en deux parties, dessiné à partir d\'un croquis de Ben Pon sur une plateforme de Coccinelle.'],
@@ -9276,6 +9301,31 @@
       ['GT9','2007–2012','flat-6 4.0 biturbo, moteur passé en position centrale','1 120 ch','Base de Porsche 911 (997) rallongée.'],
     ],
 
+    /* ---- Déclinaisons Porsche et préparateurs (28/09/2026) ----------------- */
+    'porsche-911-gt2': [
+      ['993 GT2','1995–1998','flat-6 3.6 biturbo','430 ch','Propulsion, ailes rivetées : la route pour homologuer la course en catégorie GT2. 57 exemplaires routiers.'],
+      ['996 GT2','2001–2005','flat-6 3.6 biturbo (Mezger)','462 puis 483 ch','Freins carbone-céramique de série. 1 287 exemplaires.'],
+      ['997 GT2','2007–2010','flat-6 3.6 biturbo (Mezger)','530 ch','680 Nm, boîte manuelle. 1 242 exemplaires. La GT2 RS de 2010 a sa propre entrée.'],
+    ],
+    'porsche-911-st': [
+      ['S/T (992)','2023–2024','flat-6 4.0 atmo (moteur de la GT3 RS)','525 ch','Caisse de GT3 Touring, boîte manuelle six rapports, sans roues arrière directrices. 1 963 exemplaires, pour les 60 ans de la 911.'],
+    ],
+    'ruf-ctr3': [
+      ['CTR3','2007–2012','flat-6 3.7 biturbo, moteur central','700 ch','Première RUF sur plateforme propre, développée avec Multimatic.'],
+    ],
+    'ruf-scr': [
+      ['SCR (2018)','2018–','flat-6 4.0 atmo, moteur arrière','510 ch','Monocoque et carrosserie en carbone conçues par RUF.'],
+    ],
+    'gemballa-avalanche': [
+      ['Avalanche','2019–','flat-6 3.8 biturbo (base 911 Turbo S 991)','800 ch','Présentée au salon de Genève. 950 Nm.'],
+    ],
+    'gemballa-marsien': [
+      ['Marsien','2022–','flat-6 3.8 biturbo (base 911 Turbo S 992)','750 ou 830 ch','911 de tout-terrain, jusqu\'à 250 mm de garde au sol. 40 exemplaires.'],
+    ],
+    'guntherwerks-400r': [
+      ['400R','2019–','flat-6 4.0 atmo refroidi par air (base 993)','437 ch','Carrosserie en carbone. 25 exemplaires.'],
+    ],
+
     /* ---- Vague G13 : SUV ---------------------------------------------------- */
     'ds-7': [
       ['DS 7 Crossback','2017–2022','4 cyl. essence et diesel ; hybride rechargeable E-Tense','jusqu\'à 300 ch','Premier modèle conçu pour DS en marque autonome. E-Tense 4x4 300 : puissance cumulée.'],
@@ -9563,6 +9613,13 @@
     'mansory-venatus'         : 'mansory-venatus',
     'abt-rs6-r'               : 'abt-rs6-r',
     'techart-gtstreet-r'      : 'techart-gtstreet-r',
+    'porsche-911-gt2'         : 'porsche-911-gt2',
+    'porsche-911-st'          : 'porsche-911-st',
+    'ruf-ctr3'                : 'ruf-ctr3',
+    'ruf-scr'                 : 'ruf-scr',
+    'gemballa-avalanche'      : 'gemballa-avalanche',
+    'gemballa-marsien'        : 'gemballa-marsien',
+    'guntherwerks-400r'       : 'guntherwerks-400r',
     'gemballa-mirage-gt'      : 'gemballa-mirage-gt',
     '9ff-gt9'                 : '9ff-gt9',
     'singer-911'              : 'singer-911',
@@ -11073,6 +11130,14 @@
     { id:'renault-rafale', brand:'Renault', model:'Rafale', yr:'2023–', c:'🇫🇷', cat:'SUV', r:'peucommun' },
     { id:'renault-austral', brand:'Renault', model:'Austral', yr:'2022–', c:'🇫🇷', cat:'SUV', r:'commun' },
     { id:'renault-arkana', brand:'Renault', model:'Arkana', yr:'2019–', c:'🇫🇷', cat:'SUV', r:'commun' },
+    /* Déclinaisons Porsche et préparateurs (28/09/2026). */
+    { id:'porsche-911-gt2', brand:'Porsche', model:'911 GT2', yr:'1995–2010', c:'🇩🇪', cat:'Supercar', r:'epique' },
+    { id:'porsche-911-st', brand:'Porsche', model:'911 S/T', yr:'2023–2024', c:'🇩🇪', cat:'Supercar', r:'legendaire' },
+    { id:'ruf-ctr3', brand:'RUF', model:'CTR3', yr:'2007–2012', c:'🇩🇪', cat:'Supercar', r:'legendaire' },
+    { id:'ruf-scr', brand:'RUF', model:'SCR (2018)', yr:'2018–', c:'🇩🇪', cat:'Supercar', r:'legendaire' },
+    { id:'gemballa-avalanche', brand:'Gemballa', model:'Avalanche', yr:'2019–', c:'🇩🇪', cat:'Supercar', r:'legendaire' },
+    { id:'gemballa-marsien', brand:'Gemballa', model:'Marsien', yr:'2022–', c:'🇩🇪', cat:'Supercar', r:'legendaire' },
+    { id:'guntherwerks-400r', brand:'Gunther Werks', model:'400R', yr:'2019–', c:'🇺🇸', cat:'Supercar', r:'legendaire' },
     { id:'renault-kadjar', brand:'Renault', model:'Kadjar', yr:'2015–2022', c:'🇫🇷', cat:'SUV', r:'commun' },
     { id:'renault-4-etech', brand:'Renault', model:'R4 E-Tech', yr:'2025–', c:'🇫🇷', cat:'SUV', r:'peucommun' },
     { id:'dacia-jogger', brand:'Dacia', model:'Jogger', yr:'2022–', c:'🇷🇴', cat:'Monospace', r:'commun' },
@@ -12047,6 +12112,13 @@
     'porsche-956-962':'flat-6 2.65 biturbo moteur central',
     'ruf-ctr':'flat-6 3.4 biturbo moteur arrière',
     'techart-gtstreet-r':'flat-6 3.8 biturbo intégrale',
+    'porsche-911-gt2':'flat-6 3.6 biturbo Mezger moteur arrière propulsion',
+    'porsche-911-st':'flat-6 4.0 atmo moteur arrière',
+    'ruf-ctr3':'flat-6 3.7 biturbo moteur central',
+    'ruf-scr':'flat-6 4.0 atmo moteur arrière',
+    'gemballa-avalanche':'flat-6 3.8 biturbo intégrale',
+    'gemballa-marsien':'flat-6 3.8 biturbo intégrale',
+    'guntherwerks-400r':'flat-6 4.0 atmo refroidi par air moteur arrière',
     'gemballa-mirage-gt':'V10 5.7 atmo moteur central',
     '9ff-gt9':'flat-6 4.0 biturbo moteur central',
     'singer-911':'flat-6 4.0 atmo moteur arrière',

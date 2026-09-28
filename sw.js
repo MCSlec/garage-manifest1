@@ -4,12 +4,12 @@
    cache suffit à rendre toute l'app disponible hors-ligne. Les données (photos,
    collection) vivent dans IndexedDB côté page, pas ici.
 
-   v20.160.0 — gm-specs.js : 32 autres fiches génériques ramenées à leur version de base.
+   v20.161.0 — gm-specs.js : 911 GT2, 911 S/T, kits Manthey, RUF, Gemballa, Gunther Werks.
              Le numéro DOIT être incrémenté à chaque modification d'un fichier
              mis en cache, sinon l'ancienne copie est resservie indéfiniment.
 */
 
-const VERSION = "garage-v20.160.0";
+const VERSION = "garage-v20.161.0";
 
 /* ESSENTIEL : sans ces fichiers, l'app ne démarre pas hors-ligne.
    Mis en cache de façon atomique — si l'un manque, l'installation doit échouer
