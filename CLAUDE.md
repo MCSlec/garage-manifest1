@@ -375,7 +375,7 @@ incrémenter conjointement :**
 2. `VERSION` (`"garage-v…"`) dans `sw.js` (ligne ~12).
 
 Ces deux numéros sont **tenus synchronisés** (au 28/09/2026 : `gm-specs.js` →
-`20.162.0`, `sw.js` → `garage-v20.162.0`). `VERSION_MODULE` s'affiche en outre
+`20.163.0`, `sw.js` → `garage-v20.163.0`). `VERSION_MODULE` s'affiche en outre
 dans l'UI via `grefferVersion()`, ce qui permet de vérifier de visu quelle version
 tourne réellement sur l'appareil.
 

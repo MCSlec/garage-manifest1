@@ -4,12 +4,12 @@
    cache suffit à rendre toute l'app disponible hors-ligne. Les données (photos,
    collection) vivent dans IndexedDB côté page, pas ici.
 
-   v20.162.0 — fusion de 9 doublons du catalogue, migration des collections (FUSIONS).
+   v20.163.0 — MOTOR_SPECS vague E1 (Golf VIII, Yaris XP210), flou des variantes affiché.
              Le numéro DOIT être incrémenté à chaque modification d'un fichier
              mis en cache, sinon l'ancienne copie est resservie indéfiniment.
 */
 
-const VERSION = "garage-v20.162.0";
+const VERSION = "garage-v20.163.0";
 
 /* ESSENTIEL : sans ces fichiers, l'app ne démarre pas hors-ligne.
    Mis en cache de façon atomique — si l'un manque, l'installation doit échouer

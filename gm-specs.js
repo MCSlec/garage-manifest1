@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.162.0';
+  const VERSION_MODULE = '20.163.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -2412,8 +2412,8 @@
       ch:130, nm:230, kg:1100, cyl:1.2, arch:'3 cyl. / électrique', adm:'turbo', pos:'avant', tx:'traction', bv:'M6 / A8',
       note:"La citadine de grande diffusion d\'Opel, vendue Vauxhall au Royaume-Uni. La dernière génération partage sa base avec la Peugeot 208 après le rachat d\'Opel par PSA." },
     'toyota-yaris': { nom:'Toyota Yaris', an:[1999], pays:'Japon',
-      ch:130, nm:185, kg:1100, cyl:1.5, arch:'3 cyl. hybride', adm:'atmo + électrique', pos:'avant', tx:'traction', bv:'e-CVT',
-      note:"Voiture de l\'Année 2021. Championne de la fiabilité et de la sobriété grâce à l\'hybride Toyota. À ne pas confondre avec la GR Yaris, sa cousine survitaminée de rallye (fiche dédiée)." },
+      ch:130, kg:1090, cyl:1.5, arch:'3 cyl. hybride', adm:'atmo + électrique', pos:'avant', tx:'traction', bv:'e-CVT',
+      note:"Voiture de l\'Année 2021. Championne de la fiabilité et de la sobriété grâce à l\'hybride Toyota. À ne pas confondre avec la GR Yaris, sa cousine survitaminée de rallye (fiche dédiée). Chiffres de la Yaris 130h (2024) ; pas de couple affiché : dans l\'hybride Toyota, thermique et électrique sont reliés par un train épicycloïdal, et aucun couple système n\'est publié." },
     'toyota-corolla': { nom:'Toyota Corolla', an:[1966], pays:'Japon',
       ch:196, nm:190, kg:1350, cyl:2.0, arch:'4 cyl. hybride', adm:'atmo + électrique', pos:'avant', tx:'traction', bv:'e-CVT',
       note:"La voiture la plus vendue de l\'histoire de l\'automobile : plus de 50 millions d\'exemplaires depuis 1966. Symbole mondial de la fiabilité et du pragmatisme Toyota." },
@@ -10620,7 +10620,12 @@
       ? { ...(base || { nom: idCatalogue }),
           ch: variante.ch, nm: variante.nm, kg: variante.kg, cyl: variante.cyl,
           arch: variante.arch, adm: variante.adm, pos: variante.pos,
-          tx: variante.tx, bv: variante.bv, rupteur: undefined, flou: [] }
+          tx: variante.tx, bv: variante.bv, rupteur: undefined,
+          /* Le flou de la VARIANTE, pas celui du modèle : ses chiffres sont
+             ceux qu'on affiche. Il était forcé à [] — une masse approximative
+             de variante s'affichait donc comme ferme, alors que
+             fichePourInterface() l'annonçait bien (§4.1). */
+          flou: Array.isArray(variante.flou) ? variante.flou : [] }
       : base;
 
     const r = rarete(f.prod);
@@ -16112,6 +16117,53 @@
               note:"Turbos plus gros, 280 km/h — même poids que la version de base." },
           ]
         }
+      ]
+    },
+
+    /* ---- Étape B, vague E1 (28/09/2026) : les « courantes » les plus vues.
+       Masses marquées ≈ quand les sources mêlent masse DIN et masse UE
+       (conducteur compris) : l'écart, ~75 kg, fausserait les ratios. Les
+       GTI, GTD, GTE, R et GR ont leurs propres entrées (règle GTA). */
+    'vw-golf': {
+      types: [
+        {
+          id: 'mk8-essence', label: 'Golf VIII — Essence',
+          variants: [
+            { id:'mk8-1.0tsi-110', label:'1.0 TSI 110',
+              ch:110, nm:200, kg:1257, cyl:0.999, arch:'3 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 6', flou:['kg'],
+              note:"Le trois-cylindres d'entrée de gamme, déjà présent sur la Polo." },
+            { id:'mk8-1.5etsi-150', label:'1.5 eTSI 150',
+              ch:150, nm:250, kg:1365, cyl:1.498, arch:'4 cyl.', adm:'turbo + hybridation légère 48 V', pos:'avant transversal', tx:'traction', bv:'DSG 7', flou:['kg'],
+              note:"Alterno-démarreur 48 V : le moteur thermique se coupe en roue libre." },
+          ]
+        },
+        {
+          id: 'mk8-diesel', label: 'Golf VIII — Diesel',
+          variants: [
+            { id:'mk8-2.0tdi-115', label:'2.0 TDI 115',
+              ch:115, nm:300, kg:1384, cyl:1.968, arch:'4 cyl. diesel', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 6', flou:['kg'],
+              note:"Double injection d'AdBlue (« twin dosing ») pour les oxydes d'azote." },
+            { id:'mk8-2.0tdi-150', label:'2.0 TDI 150',
+              ch:150, nm:360, kg:1428, cyl:1.968, arch:'4 cyl. diesel', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'DSG 7', flou:['kg'],
+              note:"Même bloc que le 115, avec 60 Nm de plus." },
+          ]
+        },
+      ]
+    },
+
+    'toyota-yaris': {
+      types: [
+        {
+          id: 'xp210-hybride', label: 'XP210 — Hybride',
+          variants: [
+            { id:'xp210-116h', label:'1.5 Hybride 116h',
+              ch:116, kg:1085, cyl:1.490, arch:'3 cyl. hybride', adm:'atmo + électrique', pos:'avant transversal', tx:'traction', bv:'e-CVT', flou:['kg'],
+              note:"Puissance système ; pas de couple système, que Toyota ne publie pas (train épicycloïdal). Masse à vide la plus basse de la gamme." },
+            { id:'xp210-130h', label:'1.5 Hybride 130h',
+              ch:130, kg:1090, cyl:1.490, arch:'3 cyl. hybride', adm:'atmo + électrique', pos:'avant transversal', tx:'traction', bv:'e-CVT',
+              note:"Restylage 2024 : puissance système portée à 130 ch, même 1.5 trois-cylindres." },
+          ]
+        },
       ]
     },
 
