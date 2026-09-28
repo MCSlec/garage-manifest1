@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.156.0';
+  const VERSION_MODULE = '20.157.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -843,8 +843,8 @@
       ch:280, nm:475, kg:1600, cyl:4.3, arch:'V6', adm:'turbo', pos:'avant', tx:'intégrale', bv:'A4',
       note:"Un pick-up qui accélérait plus vite qu\'une Ferrari 348 en 1991 : un magazine l\'a prouvé, à la stupeur générale. V6 turbo, transmission intégrale, sur une base d\'utilitaire. Le sleeper ultime, produit une seule année à faible échelle." },
     'hennessey-venom-gt': { nom:'Hennessey Venom GT', an:[2010,2017], pays:'États-Unis',
-      ch:1244, nm:1566, kg:1244, cyl:7.0, arch:'V8', adm:'biturbo', pos:'central', tx:'propulsion', bv:'M6',
-      note:"Sur base de Lotus Exige rallongée, elle a atteint 435 km/h en 2014, un temps la voiture la plus rapide du monde (record non homologué faute de deuxième passage). Le préparateur texan Hennessey dans sa version la plus extrême." },
+      ch:1261, nm:1566, kg:1244, cyl:7.0, arch:'V8', adm:'biturbo', pos:'central', tx:'propulsion', bv:'M6',
+      note:"Sur base de Lotus Exige rallongée, elle a atteint 435 km/h en 2014, un temps la voiture la plus rapide du monde (record non homologué faute de deuxième passage). Le préparateur texan Hennessey dans sa version la plus extrême. 1 244 bhp pour 1 244 kg, soit 1 261 ch." },
     'shelby-daytona-coupe': { nom:'Shelby Daytona Coupé', an:[1964,1965], pays:'États-Unis',
       ch:390, nm:451, kg:1010, cyl:4.7, arch:'V8 Ford', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M4',
       prod:6,
@@ -1583,8 +1583,8 @@
       ch:1842, nm:1617, kg:1360, cyl:6.6, arch:'V8', adm:'biturbo', pos:'central', tx:'propulsion', bv:'séquentielle 7',
       note:"Le V8 « Fury » de plus de 1800 ch vise plus de 500 km/h, un record du monde jamais officiellement homologué à ce jour. Nommée d\'après l\'échelle des tornades F5, les plus violentes. Hypercar artisanale texane." },
     'ssc-tuatara': { nom:'SSC Tuatara', an:[2020], pays:'États-Unis',
-      ch:1750, nm:1735, kg:1247, cyl:5.9, arch:'V8', adm:'biturbo', pos:'central', tx:'propulsion', bv:'séquentielle 7',
-      note:"Conçue pour battre le record de vitesse, avec un Cx de seulement 0,279. Sa première tentative de record a été contestée puis invalidée, mais des runs ultérieurs l\'ont placée parmi les plus rapides. Roule à l\'E85 pour sa pleine puissance." },
+      ch:1774, nm:1735, kg:1247, cyl:5.9, arch:'V8', adm:'biturbo', pos:'central', tx:'propulsion', bv:'séquentielle 7',
+      note:"Conçue pour battre le record de vitesse, avec un Cx de seulement 0,279. Sa première tentative de record a été contestée puis invalidée, mais des runs ultérieurs l\'ont placée parmi les plus rapides. Roule à l\'E85 pour sa pleine puissance : 1 750 hp, soit 1 774 ch (1 350 hp à l\'essence)." },
     'czinger-21c': { nom:'Czinger 21C', an:[2023], pays:'États-Unis',
       ch:1350, kg:1240, cyl:2.9, arch:'V8 hybride', adm:'biturbo + électrique', pos:'central', tx:'intégrale', bv:'séquentielle 7',
       note:"Deux places en tandem (conducteur devant, passager derrière), disposition inédite issue de contraintes aérodynamiques. Structure conçue et fabriquée par intelligence artificielle et impression 3D, une première industrielle." },
@@ -1709,8 +1709,8 @@
       ch:400, nm:480, kg:1275, cyl:4.2, arch:'V8 Audi', adm:'atmo', pos:'central', tx:'propulsion', bv:'M6',
       note:"L\'artisan néerlandais au style aviation : tringlerie de boîte de vitesses exposée et fraisée comme une horlogerie, boutons d\'hélice d\'avion. Chaque C8 est une œuvre d\'artisanat, produite en quantité infime." },
     'zenvo-tsrs': { nom:'Zenvo TSR-S', an:[2018], pays:'Danemark',
-      ch:1177, nm:1100, kg:1495, cyl:5.8, arch:'V8', adm:'biturbo', pos:'central', tx:'propulsion', bv:'séquentielle 7',
-      note:"Son aileron « Centripetal » pivote en virage pour agir comme un aileron d\'avion et augmenter l\'appui côté extérieur, un système unique au monde. Hypercar artisanale danoise produite à quelques exemplaires par an." },
+      ch:1193, nm:1100, kg:1495, cyl:5.8, arch:'V8', adm:'double compresseur', pos:'central', tx:'propulsion', bv:'séquentielle 7',
+      note:"Son aileron « Centripetal » pivote en virage pour agir comme un aileron d\'avion et augmenter l\'appui côté extérieur, un système unique au monde. Hypercar artisanale danoise produite à quelques exemplaires par an. 1 177 hp annoncés, soit 1 193 ch." },
     'datsun-240z': { nom:'Datsun 240Z', an:[1969,1978], pays:'Japon',
       ch:151, nm:198, kg:1050, cyl:2.4, arch:'6 en ligne', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M5',
       note:"Le coupé qui a fait entrer le Japon dans la cour des sportives, avec un six-cylindres et un style de GT européenne à prix cassé. Immense succès aux États-Unis, elle a lancé la lignée des Nissan Z." },
@@ -9140,6 +9140,136 @@
     ],
     'renault-megane-etech': [
       ['Mégane E-Tech Electric','2022–','moteur électrique, traction','130 ou 220 ch','Plateforme CMF-EV dédiée ; moteur à rotor bobiné, sans terres rares.'],
+    ],
+
+    /* ---- Vague G12 : hypercars ---------------------------------------------- */
+    'bugatti-divo': [
+      ['Divo','2018–2021','W16 8.0 quadriturbo','1 500 ch','Dérivée de la Chiron, réglée pour l\'appui plutôt que la vitesse de pointe. 40 exemplaires.'],
+    ],
+    'bugatti-bolide': [
+      ['Bolide','2024–','W16 8.0 quadriturbo','1 600 ch','Version de piste du W16. 40 exemplaires.'],
+    ],
+    'bugatti-tourbillon': [
+      ['Tourbillon','2026–','V16 8.3 atmo (Cosworth) + trois moteurs électriques','1 800 ch','Succède à la Chiron. Puissance cumulée. 250 exemplaires.'],
+    ],
+    'mercedes-amg-one': [
+      ['AMG ONE','2022–','V6 1.6 turbo hybride, issu de la F1','1 063 ch','Quatre moteurs électriques, dont un sur le turbo. Puissance cumulée ; aucun couple système publié. 275 exemplaires.'],
+    ],
+    'porsche-carrera-gt': [
+      ['Carrera GT (980)','2004–2007','V10 5.7 atmo','612 ch','Moteur né d\'un projet Le Mans abandonné, embrayage céramique, boîte manuelle. 1 270 exemplaires.'],
+    ],
+    'ferrari-enzo': [
+      ['Enzo','2002–2004','V12 6.0 atmo','660 ch','399 exemplaires sur invitation, et un 400e offert au Vatican. Base de la Maserati MC12 et de la FXX.'],
+    ],
+    'ferrari-daytona-sp3': [
+      ['Daytona SP3','2021–','V12 6.5 atmo, moteur central','840 ch','Troisième « Icona », inspirée des prototypes du triplé de Daytona en 1967. 599 exemplaires.'],
+    ],
+    'ferrari-monza-sp': [
+      ['Monza SP1 / SP2','2019–2023','V12 6.5 atmo','810 ch','Barquettes sans pare-brise, monoplace (SP1) ou biplace (SP2). 499 exemplaires au total.'],
+    ],
+    'ferrari-f80': [
+      ['F80','2024–','V6 3.0 biturbo hybride','1 200 ch','Succède à la LaFerrari. Puissance cumulée. 799 exemplaires.'],
+    ],
+    'lambo-sian': [
+      ['Sián FKP 37','2019–2021','V12 6.5 atmo + supercondensateur','819 ch','Première Lamborghini hybride. 63 coupés, en écho à 1963.'],
+      ['Sián Roadster','2020–2021','V12 6.5 atmo + supercondensateur','819 ch','19 exemplaires.'],
+    ],
+    'lambo-revuelto': [
+      ['Revuelto','2023–','V12 6.5 atmo + trois moteurs électriques, hybride rechargeable','1 015 ch','Succède à l\'Aventador. Puissance cumulée.'],
+    ],
+    'maserati-mc12': [
+      ['MC12 (route)','2004–2005','V12 6.0 atmo','630 ch','Dérivée de l\'Enzo pour homologuer la MC12 GT1 en FIA GT. 50 exemplaires.'],
+      ['MC12 Versione Corse','2006','V12 6.0 atmo','','Version de piste non homologuée, sans bride de course. 12 exemplaires.'],
+    ],
+    'pagani-utopia': [
+      ['Utopia (coupé)','2022–','V12 AMG 6.0 biturbo','864 ch','Boîte manuelle disponible, sans hybridation. 99 exemplaires.'],
+      ['Utopia Roadster','2024–','V12 AMG 6.0 biturbo','864 ch','130 exemplaires.'],
+    ],
+    'pininfarina-battista': [
+      ['Battista','2021–','quatre moteurs électriques','1 900 ch','Batterie et groupe motopropulseur Rimac. 150 exemplaires prévus.'],
+    ],
+    'aston-one77': [
+      ['One-77','2009–2012','V12 7.3 atmo','750 ch','Châssis monocoque en carbone. 77 exemplaires.'],
+    ],
+    'mclaren-speedtail': [
+      ['Speedtail','2020–2021','V8 4.0 biturbo hybride','1 070 ch','Trois places, conducteur au centre. 403 km/h. 106 exemplaires, comme la McLaren F1.'],
+    ],
+    'mclaren-w1': [
+      ['W1','2025–','V8 4.0 biturbo hybride','1 275 ch','Succède à la P1. Puissance cumulée. 399 exemplaires.'],
+    ],
+    'gordonmurray-t50': [
+      ['T.50','2022–','V12 Cosworth 3.9 atmo','663 ch','Rupteur à 12 100 tr/min, ventilateur arrière d\'effet de sol. Moins d\'une tonne. 100 exemplaires.'],
+      ['T.50s Niki Lauda','2023–','V12 Cosworth 3.9 atmo','735 ch','Version de piste, avec prise d\'air dynamique. 25 exemplaires.'],
+    ],
+    'koenigsegg-cc8s': [
+      ['CC8S','2002–2004','V8 4.7 compressé','655 ch','Première Koenigsegg de série. 6 exemplaires.'],
+    ],
+    'koenigsegg-one1': [
+      ['One:1','2014–2015','V8 5.0 biturbo','1 360 ch','Un cheval par kilo. 6 exemplaires de série et un prototype.'],
+    ],
+    'koenigsegg-cc850': [
+      ['CC850','2022–','V8 5.0 biturbo','1 385 ch','Pour les 50 ans du fondateur et les 20 ans de la CC8S. Boîte « Engage Shift System », manuelle ou automatique. Production portée de 50 à 70 exemplaires.'],
+    ],
+    'koenigsegg-gemera': [
+      ['Gemera','2020–','V8 5.0 biturbo hybride, ou 3 cyl. 2.0 biturbo hybride à l\'origine','2 300 ch (V8)','Quatre places, quatre portes. Le V8 et le moteur électrique « Dark Matter » remplacent le trois-cylindres prévu au lancement.'],
+    ],
+    'zenvo-tsrs': [
+      ['TSR-S','2018–','V8 5.8 à double compresseur','1 193 ch','Aileron « Centripetal » qui s\'incline en virage.'],
+    ],
+    'hennessey-venom-gt': [
+      ['Venom GT','2010–2017','V8 7.0 biturbo, base Lotus Exige','1 261 ch','1 244 bhp. 435 km/h en 2014 au Kennedy Space Center.'],
+      ['Venom GT Spyder','2016–2017','V8 7.0 biturbo','','1 451 hp au millésime 2016. Une Final Edition clôt la série : douze Venom GT construites, prototype non compris.'],
+    ],
+    'hennessey-venom-f5': [
+      ['Venom F5 (coupé)','2020–','V8 6.6 biturbo « Fury »','1 842 ch','1 817 hp. Châssis en carbone conçu en interne.'],
+      ['Venom F5 Roadster','2023–','V8 6.6 biturbo','1 842 ch','30 exemplaires prévus.'],
+      ['Venom F5 Revolution','2023–','V8 6.6 biturbo','1 842 ch','Aérodynamique et suspension revues pour la piste. 24 coupés.'],
+    ],
+    'ssc-tuatara': [
+      ['Tuatara','2020–','V8 5.9 biturbo à vilebrequin plat','1 774 ch (E85)','1 750 hp à l\'éthanol, 1 350 hp à l\'essence. 100 exemplaires prévus.'],
+    ],
+    'czinger-21c': [
+      ['21C','2020–','V8 2.9 biturbo hybride','','Pièces imprimées en 3D, deux places en tandem. 80 exemplaires. Puissance relevée au fil des versions ; aucun couple publié.'],
+    ],
+    'mercedes-clk-gtr': [
+      ['CLK GTR (route)','1998–1999','V12 6.9 atmo','612 ch','Homologation de la voiture de FIA GT1. 20 coupés et 5 ou 6 roadsters selon les sources.'],
+    ],
+    'italdesign-zerouno': [
+      ['Zerouno','2017–2018','V10 5.2 atmo (base Audi R8)','610 ch','Première voiture de série sous la marque Italdesign. 5 exemplaires.'],
+      ['Zerouno Duerta','2018–2019','V10 5.2 atmo','610 ch','Version roadster, 5 exemplaires.'],
+    ],
+    'detomaso-p72': [
+      ['P72','2023–','V8 Ford 5.0 compressé','700 ch','Boîte manuelle à grille apparente, aucun écran à bord. 72 exemplaires.'],
+    ],
+    'mazzanti-evantra': [
+      ['Evantra','2013–','V8 7.0 (base américaine)','701 ch','Construite à la main à Pontedera, en Toscane, à quelques exemplaires par an.'],
+    ],
+    'praga-bohema': [
+      ['Bohema','2023–','6 en ligne 3.8 biturbo (Nissan GT-R)','700 ch','Moins d\'une tonne. 89 exemplaires.'],
+    ],
+    'hispano-suiza-carmen': [
+      ['Carmen','2019–','deux moteurs électriques','1 019 ch','Style inspiré de l\'H6C Dubonnet Xenia de 1938. Couple non retenu : les sources divergent sur sa définition.'],
+    ],
+    'aspark-owl': [
+      ['Owl','2020–','quatre moteurs électriques','2 012 ch','1 985 hp. 0 à 60 mph annoncé en 1,69 s. 50 exemplaires.'],
+    ],
+    'nio-ep9': [
+      ['EP9','2016–2018','quatre moteurs électriques','1 360 ch','Record du Nürburgring pour une électrique en 2017.'],
+    ],
+    'wmotors-lykan': [
+      ['Lykan HyperSport','2013–2017','flat-6 3.7 biturbo (base Porsche, RUF)','780 ch','Première hypercar du monde arabe. 7 exemplaires.'],
+    ],
+    'gtaspano-spano': [
+      ['Spano','2013–2018','V10 8.0 biturbo','925 ch','Carrosserie intégrant du graphène.'],
+    ],
+    'apollo-ie': [
+      ['Intensa Emozione','2017–','V12 6.3 atmo (base Ferrari)','780 ch','Monocoque carbone. 10 exemplaires.'],
+    ],
+    'gemballa-mirage-gt': [
+      ['Mirage GT','2005–2010','V10 5.7 atmo (Porsche Carrera GT)','670 ch','Transformation de la Carrera GT.'],
+    ],
+    '9ff-gt9': [
+      ['GT9','2007–2012','flat-6 4.0 biturbo, moteur passé en position centrale','1 120 ch','Base de Porsche 911 (997) rallongée.'],
     ],
     'toyota-century': [
       ['G20 / G30 / G40','1967–1997','V8 3.0, 3.4 puis 4.0','','Trente ans de production quasiment sans changement de ligne, réservée au marché japonais.'],
