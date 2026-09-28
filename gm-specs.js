@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.170.0';
+  const VERSION_MODULE = '20.171.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -299,11 +299,11 @@
       ch:332, nm:400, kg:580, cyl:2.5, arch:'4 cyl.', adm:'atmo', pos:'central', tx:'propulsion', bv:'séquentielle 6',
       note:"Une monoplace de route homologuée : un seul siège, au centre, position de F1. Moins de 580 kg, châssis et carrosserie carbone. L\'expérience de conduite la plus proche d\'une voiture de course qu\'on puisse acheter, construite à la main à Liverpool." },
     'ford-focus': { nom:'Ford Focus', an:[1998], pays:'États-Unis',
-      ch:280, nm:420, kg:1400, cyl:2.3, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction / intégrale', bv:'M6',
-      note:"La compacte au châssis salué comme une référence dynamique de son segment dès 1998, grâce à sa suspension arrière multibras « Control Blade ». La lignée culmine avec les RS et ST (fiches dédiées). Un best-seller mondial." },
+      ch:125, nm:210, kg:1344, cyl:1.0, arch:'3 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M6', flou:['kg'],
+      note:"La compacte au châssis salué comme une référence dynamique de son segment dès 1998, grâce à sa suspension arrière multibras « Control Blade ». La lignée culmine avec les RS et ST (fiches dédiées). Un best-seller mondial. Chiffres de la Focus IV 1.0 EcoBoost 125 ; elle portait ceux de la Focus ST 2.3 de 280 ch. La RS a sa propre fiche." },
     'ford-puma': { nom:'Ford Puma', an:[1997], pays:'États-Unis',
-      ch:170, nm:320, kg:1280, cyl:1.0, arch:'3 cyl. hybride', adm:'turbo + électrique', pos:'avant', tx:'traction', bv:'M6 / A7',
-      note:"Deux vies : un joli petit coupé sportif à la fin des années 90 (dont Steve McQueen faisait la pub, ressuscité numériquement), puis un SUV urbain best-seller à partir de 2019. La version ST, sur trois cylindres turbo, est la sportive de la gamme." },
+      ch:125, nm:210, kg:1205, cyl:1.0, arch:'3 cyl.', adm:'turbo + hybridation légère 48 V', pos:'avant', tx:'traction', bv:'M6', flou:['kg'],
+      note:"Deux vies : un joli petit coupé sportif à la fin des années 90 (dont Steve McQueen faisait la pub, ressuscité numériquement), puis un SUV urbain best-seller à partir de 2019. La version ST, sur trois cylindres turbo, est la sportive de la gamme. Chiffres de la Puma 1.0 EcoBoost 125 mHEV ; la Puma ST a sa propre fiche." },
     'chevrolet-impala-64': { nom:'Chevrolet Impala (1964)', an:[1958,1970], pays:'États-Unis',
       ch:425, nm:664, kg:1800, cyl:6.5, arch:'V8', adm:'atmo', pos:'avant', tx:'propulsion', bv:'A3 / M4',
       note:"L\'icône absolue de la scène lowrider de la côte Ouest américaine, omniprésente dans la culture hip-hop et les clips. Le modèle 1964 (« 64 Impala ») est le plus emblématique. La SS 409 est la version musclée. Un monument de la culture populaire US." },
@@ -1651,8 +1651,8 @@
       ch:80, nm:93, kg:1111, cyl:1.0, arch:'3 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M5', flou:['kg'],
       note:"Les premières générations étaient dessinées par Giugiaro avec une mécanique développée avec Porsche (mention « System Porsche » sur les caches-culbuteurs). La Cupra et la Bocanegra sont les sportives de la lignée. Chiffres de l\'Ibiza V 1.0 MPI 80 ; la Cupra a sa propre fiche." },
     'seat-arona': { nom:'SEAT Arona', an:[2017], pays:'Espagne',
-      ch:150, nm:250, kg:1200, cyl:1.5, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'DSG 7',
-      note:"Petit SUV urbain dérivé de l\'Ibiza, best-seller de SEAT. Toit contrasté personnalisable et esprit jeune, sur la plateforme MQB A0 du groupe VW partagée avec la Polo." },
+      ch:95, nm:175, kg:1191, cyl:1.0, arch:'3 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M5', flou:['kg'],
+      note:"Petit SUV urbain dérivé de l\'Ibiza, best-seller de SEAT. Toit contrasté personnalisable et esprit jeune, sur la plateforme MQB A0 du groupe VW partagée avec la Polo. Chiffres de l\'Arona 1.0 TSI 95." },
     'cupra-formentor': { nom:'Cupra Formentor', an:[2020], pays:'Espagne',
       ch:310, nm:400, kg:1569, cyl:2.0, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'intégrale', bv:'DSG 7', flou:['kg'],
       note:"Premier modèle conçu spécifiquement pour Cupra, sans équivalent SEAT. La VZ5 reprend le cinq-cylindres turbo de l\'Audi RS3, à la sonorité inimitable, produite en série limitée. Chiffres de la Formentor VZ 2.0 TSI 310 ; la VZ5 a sa propre fiche." },
@@ -2371,11 +2371,11 @@
       ch:223, kg:1500, cyl:2.0, arch:'4 cyl. hybride', adm:'atmo + électrique', pos:'avant', tx:'traction / intégrale', bv:'e-CVT',
       note:"« Coupe High Rider ». Design très clivant, poignées arrière dissimulées dans le montant pour une allure de coupé. Un pari stylistique payant sur le segment." },
     'kia-sportage': { nom:'Kia Sportage', an:[1993], pays:'Corée du Sud',
-      ch:265, nm:350, kg:1805, cyl:1.6, arch:'4 cyl. hybride', adm:'turbo + électrique', pos:'avant', tx:'traction / intégrale', bv:'DCT 7',
-      note:"Design avant audacieux à signature lumineuse en boomerang. La première génération (1993) était un vrai 4x4 à châssis séparé, à mille lieues des crossovers actuels. Chiffres de la 5e génération hybride rechargeable 1.6 T-GDi : 265 ch et 350 Nm cumulés, valeurs système publiées par Kia." },
+      ch:150, nm:250, kg:1561, cyl:1.6, arch:'4 cyl.', adm:'turbo + hybridation légère 48 V', pos:'avant', tx:'traction', bv:'M6', flou:['kg'],
+      note:"Design avant audacieux à signature lumineuse en boomerang. La première génération (1993) était un vrai 4x4 à châssis séparé, à mille lieues des crossovers actuels. Chiffres de la 5e génération hybride rechargeable 1.6 T-GDi : 265 ch et 350 Nm cumulés, valeurs système publiées par Kia. Chiffres du Sportage V 1.6 T-GDi 150 ; elle portait ceux de l\'hybride rechargeable de 265 ch." },
     'hyundai-tucson': { nom:'Hyundai Tucson', an:[2004], pays:'Corée du Sud',
-      ch:265, nm:350, kg:1814, cyl:1.6, arch:'4 cyl. hybride', adm:'turbo + électrique', pos:'avant', tx:'traction / intégrale', bv:'DCT 7',
-      note:"Calandre « paramétrique » aux feux de jour intégrés qui disparaissent quand ils sont éteints, un effet visuel spectaculaire. Le SUV qui a fait décoller l\'image de Hyundai. Chiffres de la NX4 hybride rechargeable 1.6 T-GDi : 265 ch et 350 Nm cumulés, valeurs système publiées par Hyundai." },
+      ch:150, nm:250, kg:1538, cyl:1.6, arch:'4 cyl.', adm:'turbo + hybridation légère 48 V', pos:'avant', tx:'traction', bv:'M6', flou:['kg'],
+      note:"Calandre « paramétrique » aux feux de jour intégrés qui disparaissent quand ils sont éteints, un effet visuel spectaculaire. Le SUV qui a fait décoller l\'image de Hyundai. Chiffres de la NX4 hybride rechargeable 1.6 T-GDi : 265 ch et 350 Nm cumulés, valeurs système publiées par Hyundai. Chiffres du Tucson IV 1.6 T-GDi 150 ; elle portait ceux de l\'hybride rechargeable de 265 ch." },
     'vw-tiguan': { nom:'Volkswagen Tiguan', an:[2007], pays:'Allemagne',
       ch:150, nm:250, kg:1510, cyl:1.5, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M6 / DSG 7',
       note:"Le SUV compact le plus vendu de VW, best-seller mondial. Chiffres du Tiguan II 1.5 TSI ; le Tiguan R à 320 ch a sa propre fiche." },
@@ -16123,6 +16123,67 @@
               note:"Turbos plus gros, 280 km/h — même poids que la version de base." },
           ]
         }
+      ]
+    },
+
+    /* ---- Vague E8 (28/09/2026) : Tucson IV, Sportage V (même chaîne de
+       traction Hyundai-Kia), Arona. Couple de l'hybride 230 non repris : les
+       sources hésitent entre le couple du thermique seul et le couple système. */
+    'hyundai-tucson': {
+      types: [
+        {
+          id: 'nx4-essence', label: 'Tucson IV — Essence',
+          variants: [
+            { id:'nx4-150', label:'1.6 T-GDi 150',
+              ch:150, nm:250, kg:1538, cyl:1.598, arch:'4 cyl.', adm:'turbo + hybridation légère 48 V', pos:'avant transversal', tx:'traction', bv:'manuelle 6', flou:['kg'],
+              note:"Hybridation légère 48 V, boîte manuelle « intelligente » qui débraye en roue libre." },
+          ]
+        },
+        {
+          id: 'nx4-hybride', label: 'Tucson IV — Hybride',
+          variants: [
+            { id:'nx4-hev230', label:'1.6 T-GDi Hybrid 230',
+              ch:230, kg:1639, cyl:1.598, arch:'4 cyl. hybride', adm:'turbo + électrique', pos:'avant transversal', tx:'traction', bv:'automatique 6', flou:['kg'],
+              note:"Puissance cumulée ; couple système non repris, faute de source concordante." },
+          ]
+        },
+      ]
+    },
+
+    'kia-sportage': {
+      types: [
+        {
+          id: 'nq5-essence', label: 'Sportage V — Essence',
+          variants: [
+            { id:'nq5-150', label:'1.6 T-GDi 150',
+              ch:150, nm:250, kg:1561, cyl:1.598, arch:'4 cyl.', adm:'turbo + hybridation légère 48 V', pos:'avant transversal', tx:'traction', bv:'manuelle 6', flou:['kg'],
+              note:"Même 1.6 T-GDi que le Tucson IV, jumeau technique chez Kia." },
+          ]
+        },
+        {
+          id: 'nq5-hybride', label: 'Sportage V — Hybride',
+          variants: [
+            { id:'nq5-hev230', label:'1.6 T-GDi Hybrid 230',
+              ch:230, kg:1649, cyl:1.598, arch:'4 cyl. hybride', adm:'turbo + électrique', pos:'avant transversal', tx:'traction', bv:'automatique 6', flou:['kg'],
+              note:"Puissance cumulée ; couple système non repris, faute de source concordante." },
+          ]
+        },
+      ]
+    },
+
+    'seat-arona': {
+      types: [
+        {
+          id: 'kj7-essence', label: 'Arona — Essence',
+          variants: [
+            { id:'kj7-tsi95', label:'1.0 TSI 95',
+              ch:95, nm:175, kg:1191, cyl:0.999, arch:'3 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 5', flou:['kg'],
+              note:"Même trois-cylindres que l\'Ibiza V, sur la même plateforme MQB A0." },
+            { id:'kj7-tsi110', label:'1.0 TSI 110 DSG7',
+              ch:110, nm:200, kg:1233, cyl:0.999, arch:'3 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'DSG 7', flou:['kg'],
+              note:"Même bloc, 25 Nm de plus." },
+          ]
+        },
       ]
     },
 
