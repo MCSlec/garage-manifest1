@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.168.0';
+  const VERSION_MODULE = '20.169.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -225,8 +225,8 @@
       ch:550, nm:700, kg:1900, cyl:5.0, arch:'V8 (SVR) / 6 cyl.', adm:'compresseur', pos:'avant', tx:'intégrale', bv:'A8',
       note:"Le premier SUV de Jaguar, best-seller de la marque. La version SVR et son V8 5.0 compressé, à la sonorité tonitruante, en fait l\'un des SUV les plus sportifs et sonores du marché. La bouée de sauvetage commerciale de Jaguar." },
     'volvo-xc40': { nom:'Volvo XC40', an:[2017], pays:'Suède',
-      ch:408, nm:660, kg:1900, cyl:2.0, arch:'4 cyl. / électrique', adm:'turbo', pos:'avant', tx:'intégrale', bv:'A8',
-      note:"Le SUV compact premium de Volvo, Voiture de l\'Année 2018. Décliné en version électrique (ex-Recharge, puis EX40), l\'un des premiers Volvo 100 % électriques. Design scandinave épuré et sécurité maison en étendard." },
+      ch:163, nm:265, kg:1688, cyl:2.0, arch:'4 cyl.', adm:'turbo + hybridation légère 48 V', pos:'avant', tx:'traction', bv:'DCT 7', flou:['kg'],
+      note:"Le SUV compact premium de Volvo, Voiture de l\'Année 2018. Décliné en version électrique (ex-Recharge, puis EX40), l\'un des premiers Volvo 100 % électriques. Design scandinave épuré et sécurité maison en étendard. Chiffres du XC40 B3 ; elle portait ceux de la Recharge à deux moteurs électriques." },
     'volvo-xc60': { nom:'Volvo XC60', an:[2008], pays:'Suède',
       ch:455, nm:709, kg:2000, cyl:2.0, arch:'4 cyl. hybride', adm:'turbo + compresseur + él.', pos:'avant', tx:'intégrale', bv:'A8',
       note:"Le SUV le plus vendu de Volvo, Voiture Mondiale de l\'Année 2018. La T8 hybride rechargeable cumule turbo, compresseur et moteur électrique pour dépasser les 450 ch. Bardé de systèmes de sécurité, fidèle à l\'ADN de la marque." },
@@ -733,8 +733,8 @@
       prod:8000,
       note:"Les portières qui coulissent verticalement dans les bas de caisse plutôt que de s\'ouvrir, permettant de rouler portes ouvertes. Un laboratoire technologique BMW (le train arrière multibras y est né). 8 000 exemplaires, une rareté recherchée." },
     'bmw-x1': { nom:'BMW X1', an:[2009], pays:'Allemagne',
-      ch:313, nm:400, kg:1600, cyl:2.0, arch:'4 cyl., électrique', adm:'turbo', pos:'avant', tx:'traction / intégrale', bv:'A7',
-      note:"Le plus petit SUV de BMW. La première génération (E84) était encore à propulsion et disponible en 6 cylindres. La dernière (U11) est déclinée en version 100 % électrique (iX1). La M35i, sportive, dépasse les 300 ch." },
+      ch:136, nm:230, kg:1500, cyl:1.5, arch:'3 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'DCT 7', flou:['kg'],
+      note:"Le plus petit SUV de BMW. La première génération (E84) était encore à propulsion et disponible en 6 cylindres. La dernière (U11) est déclinée en version 100 % électrique (iX1). La M35i, sportive, dépasse les 300 ch. Chiffres du X1 U11 sDrive18i ; elle mêlait les chiffres de plusieurs versions." },
     'facel-vega-facel2': { nom:'Facel Vega Facel II', an:[1962,1964], pays:'France',
       ch:390, nm:624, kg:1775, cyl:6.3, arch:'V8 Chrysler', adm:'atmo', pos:'avant', tx:'propulsion', bv:'A / M4',
       note:"La dernière et la plus aboutie des grandes Facel Vega, l\'ultime luxe français d\'après-guerre avant la disparition de la marque. Un gros V8 américain dans une carrosserie élégante et racée. La GT des célébrités et des têtes couronnées de l\'époque." },
@@ -2450,8 +2450,8 @@
       ch:69, nm:102, kg:865, cyl:1.2, arch:'4 cyl. 8v', adm:'atmo', pos:'avant', tx:'traction', bv:'M5', flou:['kg'],
       note:"Réinterprétation moderne de l\'icône de 1957, elle joue à fond la carte du charme rétro et de la personnalisation. Le petit bicylindre TwinAir est un clin d\'œil direct à la 500 d\'origine. Chiffres de la 500 1.2 69, la plus diffusée ; le TwinAir est dans le sélecteur." },
     'mini-cooper': { nom:'Mini Cooper', an:[2001], pays:'Royaume-Uni',
-      ch:178, nm:280, kg:1200, cyl:2.0, arch:'3 et 4 cyl. / électrique', adm:'turbo / électrique', pos:'avant', tx:'traction', bv:'M6 / A',
-      note:"La renaissance sous BMW en 2001, hommage moderne à l\'originale de 1959 d\'Alec Issigonis. Le « go-kart feeling » — direction directe, châssis rivé au sol — est sa marque de fabrique." },
+      ch:136, nm:230, kg:1215, cyl:1.5, arch:'3 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M6', flou:['kg'],
+      note:"La renaissance sous BMW en 2001, hommage moderne à l\'originale de 1959 d\'Alec Issigonis. Le « go-kart feeling » — direction directe, châssis rivé au sol — est sa marque de fabrique. Chiffres de la Cooper F56 1.5 136 ; elle portait ceux de la Cooper S, qui a sa propre fiche." },
 
     /* ===== FICHES COMPLÈTES — vague D (berlines & SUV premium) =========== */
     'bmw-serie3': { nom:'BMW Série 3', an:[1975], pays:'Allemagne',
@@ -2774,14 +2774,14 @@
       ch:394, nm:600, kg:2200, cyl:0, arch:'moteurs électriques', adm:'électrique', pos:'avant / intégrale', bv:'A1',
       note:"SUV coupé électrique au design intérieur épuré d\'inspiration japonaise (« ma », l\'espace vide). La transmission intégrale e-4ORCE gère finement le couple des deux essieux." },
     'mazda-cx5': { nom:'Mazda CX-5', an:[2012], pays:'Japon',
-      ch:194, nm:420, kg:1600, cyl:2.5, arch:'4 cyl. SkyActiv', adm:'atmo / diesel', pos:'avant', tx:'traction / intégrale', bv:'A6',
-      note:"Best-seller mondial de Mazda. Le langage stylistique « Kodo » (l\'âme du mouvement) et la philosophie SkyActiv d\'optimisation mécanique y sont pleinement exprimés." },
+      ch:165, nm:213, kg:1360, cyl:2.0, arch:'4 cyl. Skyactiv-G', adm:'atmo', pos:'avant', tx:'traction', bv:'M6', flou:['kg'],
+      note:"Best-seller mondial de Mazda. Le langage stylistique « Kodo » (l\'âme du mouvement) et la philosophie SkyActiv d\'optimisation mécanique y sont pleinement exprimés. Chiffres du CX-5 II 2.0 Skyactiv-G 165 ; elle mêlait la puissance du 2.5 essence et le couple du 2.2 diesel." },
     'mazda-cx60': { nom:'Mazda CX-60', an:[2022], pays:'Japon',
       ch:254, nm:550, kg:1950, cyl:3.3, arch:'6 en ligne', adm:'turbo diesel + hybridation légère', pos:'avant', tx:'intégrale', bv:'A8',
       note:"À contre-courant, Mazda lance un six-cylindres en ligne et une propulsion premium à l\'heure du tout-électrique et du downsizing. Le diesel 3.3 vise une efficience record. Chiffres du e-Skyactiv D 254 AWD ; les 327 ch sont ceux de l\'hybride rechargeable à quatre cylindres 2.5." },
     'kia-niro': { nom:'Kia Niro', an:[2016], pays:'Corée du Sud',
-      ch:204, nm:265, kg:1500, cyl:1.6, arch:'4 cyl. hybride / électrique', adm:'atmo + électrique', pos:'avant', tx:'traction', bv:'DCT',
-      note:"Décliné en hybride, hybride rechargeable et 100 % électrique sur une même carrosserie, cas rare. Un couteau suisse de l\'électrification pour tous les usages." },
+      ch:141, nm:265, kg:1474, cyl:1.6, arch:'4 cyl. hybride', adm:'atmo + électrique', pos:'avant', tx:'traction', bv:'DCT 6', flou:['kg'],
+      note:"Décliné en hybride, hybride rechargeable et 100 % électrique sur une même carrosserie, cas rare. Un couteau suisse de l\'électrification pour tous les usages. Chiffres du Niro II HEV 141, puissance et couple cumulés (hybride parallèle, publié par Kia)." },
     'jeep-compass': { nom:'Jeep Compass', an:[2006], pays:'États-Unis',
       ch:240, nm:520, kg:1600, cyl:1.3, arch:'4 cyl. hybride', adm:'turbo + électrique', pos:'avant', tx:'traction / 4x4', bv:'A6',
       note:"SUV compact portant les codes Jeep (calandre à sept fentes) sur une base de grande diffusion. La version 4xe hybride rechargeable conserve des capacités tout-terrain." },
@@ -16126,6 +16126,65 @@
       ]
     },
 
+    /* ---- Vague E7 (28/09/2026) : Mini F56, CX-5 II, X1 U11. */
+    'mini-cooper': {
+      types: [
+        {
+          id: 'f56-essence', label: 'F56 — Essence',
+          variants: [
+            { id:'f56-one-102', label:'One 1.5 102',
+              ch:102, nm:190, kg:1155, cyl:1.499, arch:'3 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 6', flou:['kg'],
+              note:"Même trois-cylindres que la Cooper, calibré plus bas." },
+            { id:'f56-cooper-136', label:'Cooper 1.5 136',
+              ch:136, nm:230, kg:1215, cyl:1.499, arch:'3 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 6', flou:['kg'],
+              note:"Le moteur BMW B38. La Cooper S a sa propre fiche." },
+          ]
+        },
+      ]
+    },
+
+    'mazda-cx5': {
+      types: [
+        {
+          id: 'kf-essence', label: 'CX-5 II — Essence',
+          variants: [
+            { id:'kf-g165', label:'2.0 Skyactiv-G 165',
+              ch:165, nm:213, kg:1360, cyl:1.998, arch:'4 cyl.', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 6', flou:['kg'],
+              note:"Atmosphérique à fort taux de compression, sans turbo : un choix à contre-courant." },
+          ]
+        },
+        {
+          id: 'kf-diesel', label: 'CX-5 II — Diesel',
+          variants: [
+            { id:'kf-d150', label:'2.2 Skyactiv-D 150',
+              ch:150, nm:380, kg:1420, cyl:2.191, arch:'4 cyl. diesel', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 6', flou:['kg'],
+              note:"Diesel à taux de compression bas (14:1), inhabituel pour un diesel." },
+          ]
+        },
+      ]
+    },
+
+    'bmw-x1': {
+      types: [
+        {
+          id: 'u11-essence', label: 'X1 U11 — Essence',
+          variants: [
+            { id:'u11-18i', label:'sDrive18i 136',
+              ch:136, nm:230, kg:1500, cyl:1.499, arch:'3 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'DCT 7', flou:['kg'],
+              note:"Le trois-cylindres B38, partagé avec la Mini." },
+          ]
+        },
+        {
+          id: 'u11-diesel', label: 'X1 U11 — Diesel',
+          variants: [
+            { id:'u11-18d', label:'sDrive18d 150',
+              ch:150, nm:360, kg:1650, cyl:1.995, arch:'4 cyl. diesel', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'DCT 7', flou:['kg'],
+              note:"Le diesel quatre-cylindres B47." },
+          ]
+        },
+      ]
+    },
+
     /* ---- Vague E6 (28/09/2026) : Panda III, Superb III, Fortwo 453, Ypsilon IV. */
     'fiat-panda': {
       types: [
@@ -16158,7 +16217,7 @@
           variants: [
             { id:'b8-2.0tdi-150', label:'2.0 TDI 150 DSG7',
               ch:150, nm:360, kg:1597, cyl:1.968, arch:'4 cyl. diesel', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'DSG 7', flou:['kg'],
-              note:"Le même 2.0 TDI que le Tiguan II et la Golf VIII, ici avec 360 Nm." },
+              note:"Diesel de la famille EA288, comme les 2.0 TDI du Tiguan II et de la Golf VIII." },
           ]
         },
       ]
