@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.174.0';
+  const VERSION_MODULE = '20.175.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -1044,8 +1044,8 @@
       ch:257, nm:339, kg:1290, cyl:3.5, arch:'V6', adm:'atmo', pos:'avant', tx:'propulsion', bv:'A4',
       note:"Un hot-rod des années 30 réinterprété et produit en série, aux roues avant apparentes façon dragster. Un pari de design osé, malheureusement handicapé par l\'absence de V8 (seul un V6 était disponible). Une curiosité rétro-futuriste." },
     'chrysler-pt-cruiser': { nom:'Chrysler PT Cruiser', an:[2000,2010], pays:'États-Unis',
-      ch:223, nm:330, kg:1400, cyl:2.4, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M5 / A4',
-      note:"Le style néo-rétro inspiré des « hot-rods » et des berlines des années 30-40, sur une base de compacte moderne. Un succès commercial surprise à son lancement. La GT turbo dépasse les 220 ch. Une madeleine de Proust américaine." },
+      ch:141, nm:188, kg:1350, cyl:2.0, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M5', flou:['kg'],
+      note:"Le style néo-rétro inspiré des « hot-rods » et des berlines des années 30-40, sur une base de compacte moderne. Un succès commercial surprise à son lancement. La GT turbo dépasse les 220 ch. Une madeleine de Proust américaine. Chiffres du PT Cruiser 2.0 141 ; elle portait ceux de la GT 2.4 turbo." },
 
     /* ===== FICHES COMPLÈTES — vague AF (muscle cars + américaines) ======= */
     'chevrolet-c4-zr1': { nom:'Chevrolet Corvette ZR-1 (C4)', an:[1990,1995], pays:'États-Unis',
@@ -1782,8 +1782,8 @@
       ch:90, nm:138, kg:1040, cyl:1.6, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
       note:"Le châssis, dérivé de la 405, est resté une référence de rigueur de sa décennie. Décliné du diesel économique à la S16/Rallye sportive (fiche dédiée). Le cabriolet, signé Pininfarina, fut un grand succès. Chiffres de la 306 1.6 de lancement." },
     'peugeot-407': { nom:'Peugeot 407', an:[2004,2011], pays:'France',
-      ch:241, nm:440, kg:1600, cyl:2.7, arch:'4 cyl. et V6 HDi', adm:'turbo', pos:'avant', tx:'traction', bv:'M6 / A6',
-      note:"La calandre à large gueule béante, style marquant de la décennie. Le coupé, spectaculaire, recevait un V6 diesel bi-turbo, chose rare. Un pare-brise très incliné aux montants avant démesurément longs." },
+      ch:136, nm:320, kg:1505, cyl:2.0, arch:'4 cyl. diesel', adm:'turbo', pos:'avant', tx:'traction', bv:'M6', flou:['kg'],
+      note:"La calandre à large gueule béante, style marquant de la décennie. Le coupé, spectaculaire, recevait un V6 diesel bi-turbo, chose rare. Un pare-brise très incliné aux montants avant démesurément longs. Chiffres de la 407 2.0 HDi 136 (340 Nm en surcouple temporaire) ; elle portait ceux du V6 HDi du coupé." },
     'citroen-c4': { nom:'Citroën C4', an:[2004], pays:'France',
       ch:110, nm:147, kg:1200, cyl:1.6, arch:'4 cyl. 16v', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
       note:"La première génération, au volant à moyeu fixe et à l\'affichage tête haute inédits sur ce segment, existait aussi en version coupé. La VTS et son 2.0 16v de 180 ch était la sportive de la gamme. Chiffres de la C4 1.6 16V de 2004 ; la VTS a sa propre fiche." },
@@ -2186,8 +2186,8 @@
       prod:453,
       note:"La seule BMW à moteur central de l\'histoire, dessinée par Giugiaro. Née d\'une collaboration chaotique avec Lamborghini. Le championnat Procar faisait courir des stars de la F1 sur des M1 identiques en lever de rideau des Grands Prix." },
     'renault-laguna': { nom:'Renault Laguna', an:[1993,2015], pays:'France',
-      ch:238, nm:330, kg:1500, cyl:2.0, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction / 4Control', bv:'M6 / auto',
-      note:"La Laguna III GT inaugure le châssis à quatre roues directrices 4Control chez Renault. La II fut l\'une des premières voitures sans clé, à carte mains libres, une innovation marquante de 2001." },
+      ch:110, nm:240, kg:1386, cyl:1.5, arch:'4 cyl. diesel', adm:'turbo', pos:'avant', tx:'traction', bv:'M6', flou:['kg'],
+      note:"La Laguna III GT inaugure le châssis à quatre roues directrices 4Control chez Renault. La II fut l\'une des premières voitures sans clé, à carte mains libres, une innovation marquante de 2001. Chiffres de la Laguna III 1.5 dCi 110, la plus diffusée." },
     'peugeot-508': { nom:'Peugeot 508', an:[2010], pays:'France',
       ch:130, nm:300, kg:1501, cyl:1.5, arch:'4 cyl. diesel', adm:'turbo', pos:'avant', tx:'traction', bv:'A8',
       note:"La PSE (Peugeot Sport Engineered) et ses 360 ch cumulés en font la Peugeot de série la plus puissante jamais produite. Silhouette de fastback sans encadrement de vitres, très élégante. Chiffres de la 508 II BlueHDi 130 ; la PSE a sa propre fiche." },
@@ -2336,8 +2336,8 @@
       ch:150, nm:245, kg:1450, cyl:0, arch:'moteur électrique', adm:'électrique', pos:'avant', tx:'traction', bv:'A1',
       note:"Voiture de l\'Année 2025. Réinterprétation moderne et électrique de la R5 de 1972, sur plateforme AmpR Small. Un pari nostalgique et abordable pour relancer l\'électrique populaire." },
     'renault-zoe': { nom:'Renault Zoé', an:[2012,2024], pays:'France',
-      ch:136, nm:245, kg:1500, cyl:0, arch:'moteur électrique', adm:'électrique', pos:'avant', tx:'traction', bv:'A1',
-      note:"La première électrique de grande diffusion en France. Longtemps la plus vendue d\'Europe. Sa batterie était à l\'origine louée séparément pour abaisser le prix d\'achat, un modèle inédit." },
+      ch:108, nm:225, kg:1502, cyl:0, arch:'moteur électrique', adm:'électrique', pos:'avant', tx:'traction', bv:'A1',
+      note:"La première électrique de grande diffusion en France. Longtemps la plus vendue d\'Europe. Sa batterie était à l\'origine louée séparément pour abaisser le prix d\'achat, un modèle inédit. Chiffres de la Zoé II R110 52 kWh ; elle portait ceux de la R135." },
     'fiat-500e': { nom:'Fiat 500e', an:[2020], pays:'Italie',
       ch:118, nm:220, kg:1300, cyl:0, arch:'moteur électrique', adm:'électrique', pos:'avant', tx:'traction', bv:'A1',
       note:"La 500 renaît en électrique sur une plateforme entièrement nouvelle, sans version thermique. Fidèle au charme de l\'originale de 1957, adaptée à la ville moderne." },
