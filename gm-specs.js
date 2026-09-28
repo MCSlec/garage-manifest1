@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.172.0';
+  const VERSION_MODULE = '20.173.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -184,8 +184,8 @@
       ch:44, nm:100, kg:900, cyl:1.6, arch:'flat-4', adm:'atmo', pos:'arrière', tx:'propulsion', bv:'M4',
       note:"Un véhicule utilitaire découvrable à carrosserie anguleuse, dérivé de la Coccinelle, conçu à l\'origine pour l\'armée allemande. Surnommé « Thing » aux États-Unis, « Kurierwagen » en Allemagne. Un baroudeur minimaliste devenu objet culte décalé." },
     'vw-sharan': { nom:'Volkswagen Sharan', an:[1995,2022], pays:'Allemagne',
-      ch:220, nm:350, kg:1750, cyl:2.0, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction / 4Motion', bv:'DSG',
-      note:"Le grand monospace sept places du groupe VW, né du partenariat avec Ford (jumeau du Galaxy et du SEAT Alhambra). Portes arrière coulissantes, sièges escamotables. Le familial polyvalent par excellence pour les grandes tribus." },
+      ch:150, nm:340, kg:1747, cyl:2.0, arch:'4 cyl. diesel', adm:'turbo', pos:'avant', tx:'traction', bv:'M6', flou:['kg'],
+      note:"Le grand monospace sept places du groupe VW, né du partenariat avec Ford (jumeau du Galaxy et du SEAT Alhambra). Portes arrière coulissantes, sièges escamotables. Le familial polyvalent par excellence pour les grandes tribus. Chiffres du Sharan II 2.0 TDI 150 ; elle portait ceux du 2.0 TSI 220." },
     'vw-caddy': { nom:'Volkswagen Caddy', an:[1979], pays:'Allemagne',
       ch:122, nm:320, kg:1500, cyl:2.0, arch:'4 cyl. diesel et essence', adm:'turbo', pos:'avant', tx:'traction', bv:'DSG',
       note:"Le petit utilitaire polyvalent, décliné en ludospace familial et en camping-car compact (California). Sur base de Golf pour les générations récentes. Un fourgonnette maligne qui a su séduire aussi bien les artisans que les familles." },
@@ -202,8 +202,8 @@
       ch:122, nm:178, kg:1100, cyl:2.0, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M5',
       note:"La « Baby-Benz », première compacte de Mercedes. La 2.5-16 Evolution II, à culasse Cosworth et aileron démesuré, était une homologation pour le DTM et la rivale directe de la M3 E30 sur les circuits. Robustesse Mercedes légendaire. Chiffres de la 190 E 2.0 ; les 190 E 2.3-16 et 2.5-16 ont leurs propres fiches." },
     'opel-zafira': { nom:'Opel Zafira', an:[1999,2019], pays:'Allemagne',
-      ch:240, nm:320, kg:1550, cyl:2.0, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M6',
-      note:"Le monospace compact sept places à système « Flex7 » : les sièges de la troisième rangée disparaissent dans le plancher sans avoir à les retirer, une innovation à son lancement. La rare version OPC turbo lui donne une facette sportive inattendue." },
+      ch:115, nm:155, kg:1430, cyl:1.6, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M5', flou:['kg'],
+      note:"Le monospace compact sept places à système « Flex7 » : les sièges de la troisième rangée disparaissent dans le plancher sans avoir à les retirer, une innovation à son lancement. La rare version OPC turbo lui donne une facette sportive inattendue. Chiffres de la Zafira B 1.6 115 ; elle portait ceux de l\'OPC 2.0 turbo de 240 ch." },
     'nissan-juke': { nom:'Nissan Juke', an:[2010], pays:'Japon',
       ch:114, nm:200, kg:1187, cyl:1.0, arch:'3 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M6 / DCT 7',
       note:"Le petit crossover au style clivant (phares superposés, capot bombé) qui a lancé la mode du SUV urbain audacieux. La version Nismo RS, plus poussée, et surtout la rarissime Juke-R (à moteur de GT-R !) lui donnent des lettres de noblesse sportives. Chiffres du Juke II 1.0 DIG-T 114 ; le Juke Nismo RS a sa propre fiche." },
@@ -255,8 +255,8 @@
       ch:177, nm:202, kg:1350, cyl:2.0, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
       note:"Voiture de l\'Année 2002. Une compacte au gabarit généreux, déclinée en berline, break SW à toit vitré panoramique et coupé-cabriolet CC à toit rigide escamotable. Un best-seller familial des années 2000, remplaçante de la 306." },
     'peugeot-5008': { nom:'Peugeot 5008', an:[2009], pays:'France',
-      ch:210, nm:520, kg:1600, cyl:1.6, arch:'4 cyl. hybride', adm:'turbo + électrique', pos:'avant', tx:'traction', bv:'A8',
-      note:"Le grand SUV sept places de Peugeot, doté de l\'i-Cockpit et d\'une présentation soignée. La première génération était un monospace avant la bascule vers le SUV en 2017. Le familial haut de gamme accessible de la marque." },
+      ch:131, nm:230, kg:1430, cyl:1.2, arch:'3 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'EAT8', flou:['kg'],
+      note:"Le grand SUV sept places de Peugeot, doté de l\'i-Cockpit et d\'une présentation soignée. La première génération était un monospace avant la bascule vers le SUV en 2017. Le familial haut de gamme accessible de la marque. Chiffres du 5008 II 1.2 PureTech 130 (131 ch réels)." },
     'renault-twingo-rs': { nom:'Renault Twingo R.S.', an:[2008,2013], pays:'France',
       ch:133, nm:160, kg:1050, cyl:1.6, arch:'4 cyl. 16v', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
       note:"La petite Twingo réveillée par Renault Sport à Dieppe : un 1.6 16v atmosphérique vif, un châssis Cup joueur, un poids plume. La sportive d\'accès la plus abordable de Renault Sport, aujourd\'hui une youngtimer attachante et sous-cotée." },
@@ -691,8 +691,8 @@
       ch:110, nm:147, kg:1150, cyl:1.6, arch:'4 cyl. essence et HDi', adm:'atmo', pos:'avant', tx:'traction', bv:'M5 / robotisée',
       note:"Ses portes latérales coulissantes électriques, cas unique sur une citadine, facilitaient l\'accès en ville. Un concept malin mais un poids et un prix trop élevés en ont fait un échec commercial. Une curiosité attachante de l\'histoire Peugeot." },
     'peugeot-207': { nom:'Peugeot 207', an:[2006,2014], pays:'France',
-      ch:175, nm:240, kg:1200, cyl:1.6, arch:'4 cyl. THP', adm:'turbo', pos:'avant', tx:'traction', bv:'M5',
-      note:"La citadine best-seller de Peugeot, remplaçante de la 206. La RC/GTi reprend le 1.6 THP turbo développé avec BMW, une sportive vive. La 207 a aussi brillé en rallye (Super 2000), perpétuant la tradition sportive de la marque." },
+      ch:75, nm:120, kg:1223, cyl:1.4, arch:'4 cyl. 8v', adm:'atmo', pos:'avant', tx:'traction', bv:'M5', flou:['kg'],
+      note:"La citadine best-seller de Peugeot, remplaçante de la 206. La RC/GTi reprend le 1.6 THP turbo développé avec BMW, une sportive vive. La 207 a aussi brillé en rallye (Super 2000), perpétuant la tradition sportive de la marque. Chiffres de la 207 1.4 75 ; elle portait ceux de la 207 RC 1.6 THP de 175 ch." },
     'peugeot-j7': { nom:'Peugeot J7', an:[1965,1980], pays:'France',
       ch:68, nm:120, kg:1150, cyl:1.6, arch:'4 cyl. essence et diesel', adm:'atmo', pos:'avant', tx:'traction', bv:'M4',
       note:"Le fourgon au style arrondi caractéristique, omniprésent dans la France des années 70 : ambulances, camions de pompiers, food-trucks avant l\'heure. Sa bouille attachante en fait aujourd\'hui un objet de collection vintage prisé." },
@@ -1085,8 +1085,8 @@
       ch:456, nm:691, kg:2600, cyl:3.5, arch:'V6 EcoBoost (R : V8)', adm:'biturbo', pos:'avant', tx:'4x4', bv:'A10',
       note:"Le pick-up conçu pour rouler à fond dans le désert, aux suspensions à grand débattement Fox. La version Raptor R reçoit le V8 5.2 compressé de la Shelby GT500. Inventeur du segment des pick-up de performance tout-terrain." },
     'ford-mustang-mach-e': { nom:'Ford Mustang Mach-E', an:[2021], pays:'États-Unis',
-      ch:487, nm:860, kg:2200, cyl:0, arch:'deux moteurs électriques', adm:'électrique', pos:'avant/arrière', tx:'intégrale', bv:'A1',
-      note:"Le choix controversé de Ford d\'apposer le nom Mustang sur un SUV électrique. La version GT Performance rivalise avec des sportives en accélération. Un pari commercial réussi malgré la colère des puristes de la Mustang." },
+      ch:269, nm:430, kg:2044, cyl:0, arch:'moteur électrique', adm:'électrique', pos:'arrière', tx:'propulsion', bv:'A1', flou:['kg'],
+      note:"Le choix controversé de Ford d\'apposer le nom Mustang sur un SUV électrique. La version GT Performance rivalise avec des sportives en accélération. Un pari commercial réussi malgré la colère des puristes de la Mustang. Chiffres de la Mach-E propulsion, autonomie standard ; elle portait ceux de la GT à deux moteurs." },
     'ford-explorer': { nom:'Ford Explorer', an:[1990], pays:'États-Unis',
       ch:456, nm:563, kg:2200, cyl:3.0, arch:'V6 (ST) / électrique', adm:'turbo', pos:'avant', tx:'intégrale', bv:'A10',
       note:"L\'un des SUV qui a lancé la mode du genre aux États-Unis dans les années 90. La version ST, sportive, dépasse les 400 ch. Best-seller américain, il existe désormais en version 100 % électrique pour le marché européen." },
@@ -1690,8 +1690,8 @@
       ch:117, nm:165, kg:1000, cyl:1.0, arch:'3 et 4 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M5',
       note:"La citadine mondiale de Nissan, Voiture de l\'Année 1993 (K11). La rare 160 SR et surtout la Micra 100 % de course (Micra Cup) lui donnent une facette sportive méconnue. La dernière génération partage sa base avec la Clio." },
     'nissan-leaf': { nom:'Nissan Leaf', an:[2010], pays:'Japon',
-      ch:217, nm:340, kg:1600, cyl:0, arch:'moteur électrique', adm:'électrique', pos:'avant', tx:'traction', bv:'A1',
-      note:"La première voiture électrique de grande série à succès mondial, plus de 600 000 exemplaires. A démocratisé l\'électrique avant Tesla sur le marché de masse. Système e-Pedal permettant de conduire avec une seule pédale." },
+      ch:150, nm:320, kg:1580, cyl:0, arch:'moteur électrique', adm:'électrique', pos:'avant', tx:'traction', bv:'A1', flou:['kg'],
+      note:"La première voiture électrique de grande série à succès mondial, plus de 600 000 exemplaires. A démocratisé l\'électrique avant Tesla sur le marché de masse. Système e-Pedal permettant de conduire avec une seule pédale. Chiffres de la Leaf II 40 kWh ; elle portait ceux de la e+ 62 kWh (217 ch)." },
     'toyota-celica': { nom:'Toyota Celica', an:[1970,2006], pays:'Japon',
       ch:143, nm:170, kg:1075, cyl:1.8, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
       note:"Coupé emblématique sur sept générations. La GT-Four à transmission intégrale turbo fut championne du monde des rallyes. La dernière génération (T230) au style anguleux et son 1.8 VVTL-i à haut régime clôt la lignée. Chiffres de la Celica T23 1.8 VVT-i ; les GT-Four ont leurs propres fiches." },
@@ -2342,8 +2342,8 @@
       ch:118, nm:220, kg:1300, cyl:0, arch:'moteur électrique', adm:'électrique', pos:'avant', tx:'traction', bv:'A1',
       note:"La 500 renaît en électrique sur une plateforme entièrement nouvelle, sans version thermique. Fidèle au charme de l\'originale de 1957, adaptée à la ville moderne." },
     'vw-id3': { nom:'Volkswagen ID.3', an:[2019], pays:'Allemagne',
-      ch:326, nm:545, kg:1800, cyl:0, arch:'moteur électrique arrière', adm:'électrique', pos:'arrière', tx:'propulsion', bv:'A1',
-      note:"La première VW sur plateforme électrique dédiée MEB, présentée comme l\'héritière spirituelle de la Coccinelle et de la Golf pour l\'ère électrique. La GTX à 326 ch en est la version sportive." },
+      ch:204, nm:310, kg:1815, cyl:0, arch:'moteur électrique arrière', adm:'électrique', pos:'arrière', tx:'propulsion', bv:'A1', flou:['nm','kg'],
+      note:"La première VW sur plateforme électrique dédiée MEB, présentée comme l\'héritière spirituelle de la Coccinelle et de la Golf pour l\'ère électrique. La GTX à 326 ch en est la version sportive. Chiffres de l\'ID.3 Pro 58 kWh (204 ch) ; elle portait ceux de la GTX. Couple selon millésime (310 Nm au lancement)." },
 
     /* ===== FICHES COMPLÈTES — vague F (SUV grand public + crossovers) ==== */
     'peugeot-3008': { nom:'Peugeot 3008', an:[2009], pays:'France',
@@ -2670,8 +2670,8 @@
       note:"La révolution : après 67 ans de moteur avant, la Corvette passe au moteur central. La Z06 et son V8 5.5 à vilebrequin plat hurlent jusqu\'à 8 600 tr/min, du jamais-vu sur une Corvette." },
 
     'mg-4': { nom:'MG MG4', an:[2022], pays:'Chine',
-      ch:435, nm:600, kg:1800, cyl:0, arch:'moteurs électriques', adm:'électrique', pos:'arrière / intégrale', tx:'propulsion / intégrale', bv:'A1',
-      note:"Compacte électrique à propulsion, rare à ce prix. La XPower à deux moteurs et 435 ch abat le 0-100 en 3,8 s, défiant des sportives bien plus chères." },
+      ch:170, nm:250, kg:1655, cyl:0, arch:'moteur électrique', adm:'électrique', pos:'arrière', tx:'propulsion', bv:'A1', flou:['kg'],
+      note:"Compacte électrique à propulsion, rare à ce prix. La XPower à deux moteurs et 435 ch abat le 0-100 en 3,8 s, défiant des sportives bien plus chères. Chiffres de la MG4 Standard 51 kWh ; elle portait ceux de la XPower à deux moteurs (435 ch)." },
     'suzuki-vitara': { nom:'Suzuki Vitara', an:[1988], pays:'Japon',
       ch:129, nm:235, kg:1165, cyl:1.4, arch:'4 cyl.', adm:'turbo + hybridation légère 48 V', pos:'avant', tx:'traction', bv:'M6', flou:['kg'],
       note:"Le petit 4x4 qui a démocratisé le loisir tout-terrain accessible dans les années 90. Les premières générations à châssis séparé sont recherchées par les amateurs de franchissement. Chiffres du Vitara IV 1.4 Boosterjet Hybrid 129 ; transmission intégrale AllGrip en option." },
@@ -2892,8 +2892,8 @@
       ch:326, nm:545, kg:1700, cyl:0, arch:'moteur électrique', adm:'électrique', pos:'arrière', tx:'propulsion', bv:'A1',
       note:"La compacte électrique sportive de Cupra, cousine de la VW ID.3 mais au châssis affûté. La VZ pousse la puissance au-delà de 320 ch." },
     'skoda-kodiaq': { nom:'Škoda Kodiaq', an:[2016], pays:'Tchéquie',
-      ch:245, nm:370, kg:1600, cyl:2.0, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction / intégrale', bv:'A7',
-      note:"Grand SUV sept places au rapport prix/habitabilité redoutable. La version RS a un temps détenu le record des SUV sept places au Nürburgring." },
+      ch:150, nm:250, kg:1506, cyl:1.5, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'DSG 7', flou:['kg'],
+      note:"Grand SUV sept places au rapport prix/habitabilité redoutable. La version RS a un temps détenu le record des SUV sept places au Nürburgring. Chiffres du Kodiaq I 1.5 TSI 150 (5 places) ; elle portait ceux du RS 2.0 TSI 245." },
     'skoda-enyaq': { nom:'Škoda Enyaq', an:[2020], pays:'Tchéquie',
       ch:204, nm:310, kg:2100, cyl:0, arch:'moteur électrique', adm:'électrique', pos:'arrière', tx:'propulsion', bv:'A1', flou:['kg'],
       note:"Premier SUV électrique dédié de Škoda, sur plateforme MEB. La calandre « Crystal Face » rétroéclairée est une option signature. Chiffres de l\'Enyaq iV 80, jumeau technique de l\'ID.4 Pro ; les RS à deux moteurs montent à 340 ch." },
