@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.163.0';
+  const VERSION_MODULE = '20.164.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -44,15 +44,18 @@
 
   /* Indicateurs dérivés — calculés, jamais stockés. */
   const DERIVES = {
-    kgch : { lib: 'Poids / puissance',   u: 'kg/ch',   sens: -1, dec: 2,
+    /* `dep` : les champs dont le ratio est calculé. Un ratio hérite de
+       l'incertitude de ses entrées — kg/ch d'une masse « ≈ » est lui aussi
+       approximatif, et l'afficher ferme contredirait §4.1. */
+    kgch : { lib: 'Poids / puissance',   u: 'kg/ch',   sens: -1, dec: 2, dep: ['kg', 'ch'],
              calc: f => f.kg && f.ch ? f.kg / f.ch : null },
-    chT  : { lib: 'Puissance / tonne',   u: 'ch/t',    sens:  1, dec: 0,
+    chT  : { lib: 'Puissance / tonne',   u: 'ch/t',    sens:  1, dec: 0, dep: ['kg', 'ch'],
              calc: f => f.kg && f.ch ? f.ch / f.kg * 1000 : null },
-    chL  : { lib: 'Puissance spécifique',u: 'ch/L',    sens:  1, dec: 0,
+    chL  : { lib: 'Puissance spécifique',u: 'ch/L',    sens:  1, dec: 0, dep: ['cyl', 'ch'],
              calc: f => f.cyl && f.ch ? f.ch / f.cyl : null },
-    nmL  : { lib: 'Couple spécifique',   u: 'Nm/L',    sens:  1, dec: 0,
+    nmL  : { lib: 'Couple spécifique',   u: 'Nm/L',    sens:  1, dec: 0, dep: ['cyl', 'nm'],
              calc: f => f.cyl && f.nm ? f.nm / f.cyl : null },
-    kgnm : { lib: 'Poids / couple',      u: 'kg/Nm',   sens: -1, dec: 2,
+    kgnm : { lib: 'Poids / couple',      u: 'kg/Nm',   sens: -1, dec: 2, dep: ['kg', 'nm'],
              calc: f => f.kg && f.nm ? f.kg / f.nm : null }
   };
 
@@ -2347,14 +2350,14 @@
       ch:130, nm:230, kg:1320, cyl:1.2, arch:'3 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M6 / A6', flou:['kg'],
       note:"Voiture de l\'Année 2017 pour sa mue en SUV. Son i-Cockpit et son intérieur soigné ont redéfini le haut de gamme accessible. La version GT Hybrid4 dépasse les 300 ch cumulés. Chiffres du 3008 II 1.2 PureTech 130 ; la masse varie de 1 250 à 1 400 kg selon les sources et l\'équipement." },
     'renault-captur': { nom:'Renault Captur', an:[2013], pays:'France',
-      ch:160, nm:270, kg:1300, cyl:1.3, arch:'4 cyl. hybride', adm:'turbo + électrique', pos:'avant', tx:'traction', bv:'A / EDC',
-      note:"Le petit SUV le plus vendu d\'Europe pendant plusieurs années. Banquette arrière coulissante offrant une modularité de coffre rare dans le segment." },
+      ch:91, nm:160, kg:1293, cyl:1.0, arch:'3 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M6', flou:['kg'],
+      note:"Le petit SUV le plus vendu d\'Europe pendant plusieurs années. Banquette arrière coulissante offrant une modularité de coffre rare dans le segment. Chiffres du Captur II TCe 90 ; les hybrides E-Tech sont dans le sélecteur de motorisations." },
     'renault-austral': { nom:'Renault Austral', an:[2022], pays:'France',
       ch:200, kg:1500, cyl:1.2, arch:'3 cyl. hybride', adm:'turbo + électrique', pos:'avant', tx:'traction', bv:'e-CVT',
       note:"Remplaçante du Kadjar. Roues arrière directrices 4Control en option, rare sur ce segment, pour un rayon de braquage de citadine." },
     'peugeot-2008': { nom:'Peugeot 2008', an:[2013], pays:'France',
-      ch:156, nm:260, kg:1200, cyl:1.2, arch:'3 cyl. / électrique', adm:'turbo', pos:'avant', tx:'traction', bv:'A8',
-      note:"Le SUV urbain de Peugeot, décliné en e-2008 électrique dès la seconde génération. i-Cockpit surélevé et calandre à crocs lumineux, signature de la marque." },
+      ch:100, nm:205, kg:1192, cyl:1.2, arch:'3 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M6', flou:['kg'],
+      note:"Le SUV urbain de Peugeot, décliné en e-2008 électrique dès la seconde génération. i-Cockpit surélevé et calandre à crocs lumineux, signature de la marque. Chiffres du 2008 II PureTech 100 ; l\'e-2008 et les autres moteurs sont dans le sélecteur." },
     'citroen-c5-aircross': { nom:'Citroën C5 Aircross', an:[2018], pays:'France',
       ch:225, nm:360, kg:1600, cyl:1.6, arch:'4 cyl. hybride', adm:'turbo + électrique', pos:'avant', tx:'traction', bv:'A8',
       note:"Le SUV du confort selon Citroën : suspensions à butées hydrauliques progressives et sièges « Advanced Comfort », héritage de l\'esprit hydropneumatique de la marque." },
@@ -3666,7 +3669,10 @@
     return sens < 0 ? 1 - rang : rang;
   }
 
-  const estFlou = (f, champ) => Array.isArray(f.flou) && f.flou.includes(champ);
+  /* Un champ est incertain s'il est déclaré dans `flou`, ou si c'est un
+     ratio dont l'une des entrées l'est (DERIVES[champ].dep). */
+  const estFlou = (f, champ) => Array.isArray(f.flou) &&
+    (f.flou.includes(champ) || (DERIVES[champ]?.dep || []).some(c => f.flou.includes(c)));
 
   function fmtNombre(v, dec = 0) {
     return v.toLocaleString('fr-FR', { minimumFractionDigits: dec, maximumFractionDigits: dec });
@@ -10545,7 +10551,7 @@
     if (v == null) return '';
     const p = percentile(champ, v);
     return `<div class="gsp-v">
-      <b>${esc(fmtNombre(v, def.dec))}</b>
+      <b>${estFlou(f, champ) ? '≈ ' : ''}${esc(fmtNombre(v, def.dec))}</b>
       <small>${esc(def.u)}<br>${esc(def.lib)}</small>
       ${p != null ? `<div class="gsp-jauge"><i style="width:${Math.round(p*100)}%"></i></div>` : ''}
     </div>`;
@@ -16120,6 +16126,102 @@
       ]
     },
 
+    /* ---- Vague E2 (28/09/2026) : Polo, Sandero, Captur, 2008. Masses ≈ :
+       elles varient de 50 à 100 kg selon la finition et la norme (DIN / UE). */
+    'vw-polo': {
+      types: [
+        {
+          id: 'aw-essence', label: 'Polo VI — Essence',
+          variants: [
+            { id:'aw-1.0mpi-80', label:'1.0 MPI 80',
+              ch:80, nm:93, kg:1143, cyl:0.999, arch:'3 cyl.', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 5', flou:['kg'],
+              note:"Seul moteur atmosphérique de la gamme." },
+            { id:'aw-1.0tsi-95', label:'1.0 TSI 95',
+              ch:95, nm:175, kg:1172, cyl:0.999, arch:'3 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 5', flou:['kg'],
+              note:"Le moteur le plus répandu de la Polo VI." },
+            { id:'aw-1.0tsi-110', label:'1.0 TSI 110',
+              ch:110, nm:200, kg:1207, cyl:0.999, arch:'3 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'DSG 7', flou:['kg'],
+              note:"Même trois-cylindres que le 95, poussé à 110 ch. La GTI a sa propre fiche." },
+          ]
+        },
+      ]
+    },
+
+    'dacia-sandero': {
+      types: [
+        {
+          id: 'bji-essence', label: 'Sandero III — Essence et GPL',
+          variants: [
+            { id:'bji-sce65', label:'1.0 SCe 65',
+              ch:65, nm:95, kg:1100, cyl:0.999, arch:'3 cyl.', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 5', flou:['kg'],
+              note:"Moteur d\'entrée de gamme, sans turbo." },
+            { id:'bji-tce90', label:'1.0 TCe 90',
+              ch:91, nm:160, kg:1119, cyl:0.999, arch:'3 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 6 puis 5', flou:['kg'],
+              note:"Le trois-cylindres H4Dt, partagé avec la Clio V et le Captur II. Sa boîte perd un rapport en 2022, sauf sur le Stepway." },
+            { id:'bji-ecog100', label:'1.0 ECO-G 100',
+              ch:100, nm:170, kg:1130, cyl:0.999, arch:'3 cyl. bicarburation', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 6', flou:['kg'],
+              note:"Bicarburation essence et GPL d\'usine : un réservoir de GPL loge à la place de la roue de secours." },
+          ]
+        },
+      ]
+    },
+
+    'renault-captur': {
+      types: [
+        {
+          id: 'hjb-essence', label: 'Captur II — Essence',
+          variants: [
+            { id:'hjb-tce90', label:'1.0 TCe 90',
+              ch:91, nm:160, kg:1293, cyl:0.999, arch:'3 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 6', flou:['kg'],
+              note:"Le trois-cylindres H4Dt de la Clio V." },
+          ]
+        },
+        {
+          id: 'hjb-hybride', label: 'Captur II — Hybrides E-Tech',
+          variants: [
+            { id:'hjb-etech145', label:'1.6 E-Tech full hybrid 145',
+              ch:145, kg:1461, cyl:1.598, arch:'4 cyl. hybride', adm:'atmo + électrique', pos:'avant transversal', tx:'traction', bv:'multimode à crabots', flou:['kg'],
+              note:"Puissance cumulée. Renault publie le couple de chaque moteur, mais pas de couple système : aucun n\'est affiché." },
+            { id:'hjb-phev160', label:'1.6 E-Tech plug-in 160',
+              ch:160, kg:1564, cyl:1.598, arch:'4 cyl. hybride rechargeable', adm:'atmo + électrique', pos:'avant transversal', tx:'traction', bv:'multimode à crabots', flou:['kg'],
+              note:"Batterie de 9,8 kWh, 50 km d\'autonomie électrique annoncés. Pas de couple système publié." },
+          ]
+        },
+      ]
+    },
+
+    'peugeot-2008': {
+      types: [
+        {
+          id: 'p24-essence', label: '2008 II — Essence',
+          variants: [
+            { id:'p24-pt100', label:'1.2 PureTech 100',
+              ch:100, nm:205, kg:1192, cyl:1.199, arch:'3 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 6', flou:['kg'],
+              note:"La version la plus diffusée." },
+            { id:'p24-pt130', label:'1.2 PureTech 130 EAT8',
+              ch:130, nm:230, kg:1205, cyl:1.199, arch:'3 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'EAT8', flou:['kg'],
+              note:"Même trois-cylindres PureTech, avec la boîte automatique à huit rapports." },
+          ]
+        },
+        {
+          id: 'p24-diesel', label: '2008 II — Diesel',
+          variants: [
+            { id:'p24-hdi110', label:'1.5 BlueHDi 110',
+              ch:109, nm:250, kg:1205, cyl:1.499, arch:'4 cyl. diesel', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 6', flou:['kg'],
+              note:"109 ch réels pour 110 annoncés : Peugeot arrondit l\'appellation." },
+          ]
+        },
+        {
+          id: 'p24-electrique', label: 'e-2008 — Électrique',
+          variants: [
+            { id:'p24-e136', label:'e-2008 136',
+              ch:136, nm:260, kg:1548, cyl:0, arch:'moteur électrique', adm:'électrique', pos:'avant transversal', tx:'traction', bv:'A1', flou:['kg'],
+              note:"Batterie de 50 kWh ; la même plateforme e-CMP que la e-208." },
+          ]
+        },
+      ]
+    },
+
     /* ---- Étape B, vague E1 (28/09/2026) : les « courantes » les plus vues.
        Masses marquées ≈ quand les sources mêlent masse DIN et masse UE
        (conducteur compris) : l'écart, ~75 kg, fausserait les ratios. Les
@@ -16682,7 +16784,11 @@
         choix: choixRetenu,
         technique: choisir(f, ['ch', 'nm', 'kg', 'cyl', 'arch', 'adm', 'pos', 'tx', 'bv', 'rupteur']),
         derives: deriver(f),
-        flou: Array.isArray(f.flou) ? [...f.flou] : [],
+        /* Champs déclarés, PUIS ratios qui en héritent : la même règle
+           qu'estFlou(), pour que l'API dise ce que l'écran affiche. */
+        flou: Array.isArray(f.flou)
+          ? [...f.flou, ...Object.keys(DERIVES).filter(k => !f.flou.includes(k) && estFlou(f, k))]
+          : [],
         rareteFiche: rarete(f.prod),
         /* GENS est indexé par l'id CATALOGUE, exactement comme le lit
            gensHTML() — et non par la clé de fiche `cle`. La première version

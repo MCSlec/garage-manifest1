@@ -222,6 +222,13 @@ préfixe ces valeurs de « **≈** », et un bas de fiche récapitule
 « Valeurs approximatives (≈) : … ». C'est le seul mécanisme autorisé pour publier
 une valeur incertaine — on l'annonce, on ne la maquille pas en valeur ferme.
 
+**L'incertitude se propage aux ratios.** Un ratio (`DERIVES`) hérite du « ≈ » de
+ses entrées, déclarées dans `DERIVES[x].dep` : une masse approximative rend
+approximatifs kg/ch, ch/t et kg/Nm, mais pas ch/L. `estFlou()` porte la règle, et
+`fichePourInterface().flou` renvoie la même liste que l'écran. Avant le 28/09, les
+ratios mis en avant en haut de fiche s'affichaient fermes sur une masse « ≈ ».
+Les variantes `MOTOR_SPECS` portent leur propre `flou`, que la fiche respecte.
+
 ### 4.2 — `nc` = non communiqué
 Quand un constructeur ne publie officiellement pas une valeur, on ne l'invente pas
 et on ne la devine pas : la valeur est traitée comme **non communiquée (`nc`)**.
@@ -375,7 +382,7 @@ incrémenter conjointement :**
 2. `VERSION` (`"garage-v…"`) dans `sw.js` (ligne ~12).
 
 Ces deux numéros sont **tenus synchronisés** (au 28/09/2026 : `gm-specs.js` →
-`20.163.0`, `sw.js` → `garage-v20.163.0`). `VERSION_MODULE` s'affiche en outre
+`20.164.0`, `sw.js` → `garage-v20.164.0`). `VERSION_MODULE` s'affiche en outre
 dans l'UI via `grefferVersion()`, ce qui permet de vérifier de visu quelle version
 tourne réellement sur l'appareil.
 

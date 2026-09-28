@@ -30,6 +30,12 @@ const srv = http.createServer((q, s) => {
 /* Échantillon couvrant les six vagues de cette livraison ET les cas limites. */
 const CIBLES = [
   { id:'honda-civic-vti',       v5:'vague 5',  present:['100 ch/L', '150 Nm', '1 080 kg'] },
+  /* Incertitude héritée (28/09) : la masse du Captur est « ≈ », donc ses
+     ratios qui en dépendent aussi — mais pas ch/L, qui n'utilise que la
+     puissance et la cylindrée, toutes deux fermes. */
+  { id:'renault-captur',        v5:'flou hérité', present:['≈ 14,21', '≈ 1 293 kg', '160 Nm', '91 ch/L'], absent:['≈ 91'] },
+  /* HSD Toyota : aucun couple système n'existe, rien ne doit s'afficher. */
+  { id:'toyota-yaris',          v5:'HSD',      present:['≈ 1 085 kg'], absent:['Nm'] },  // s'ouvre sur la 1re motorisation (116h)
   { id:'cupra-formentor-vz5',   v5:'vague 6',  present:['156 ch/L', '480 Nm', '1 683 kg'] },
   { id:'seat-leon-cupra',       v5:'vague 6',  present:['150 ch/L', '400 Nm', '1 496 kg'] },
   { id:'renault-rafale',        v5:'vague 7',  present:['1 653 kg'], absent:['Nm'] },
