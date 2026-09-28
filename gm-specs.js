@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.165.0';
+  const VERSION_MODULE = '20.166.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -240,8 +240,8 @@
       ch:150, nm:250, kg:1336, cyl:1.5, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M6 / DSG 7', flou:['kg'],
       note:"La colonne vertébrale de Škoda : une compacte à l\'habitabilité de berline supérieure, sur base de Golf, à prix contenu. La version RS reprend la mécanique de la GTI dans une carrosserie plus spacieuse. Best-seller malin du groupe VW. Chiffres de l\'Octavia IV 1.5 TSI (masse avec conducteur, variable selon l\'équipement) ; l\'Octavia RS a sa propre fiche." },
     'skoda-fabia': { nom:'Škoda Fabia', an:[1999], pays:'Tchéquie',
-      ch:150, nm:250, kg:1150, cyl:1.5, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'DSG 7',
-      note:"La citadine du groupe VW à l\'accent tchèque, réputée pour son sérieux et son habitabilité. La Fabia RS et surtout la version rallye (R5/Rally2), redoutable en championnat, lui donnent une facette sportive méconnue du grand public." },
+      ch:80, nm:93, kg:1116, cyl:1.0, arch:'3 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M5', flou:['kg'],
+      note:"La citadine du groupe VW à l\'accent tchèque, réputée pour son sérieux et son habitabilité. La Fabia RS et surtout la version rallye (R5/Rally2), redoutable en championnat, lui donnent une facette sportive méconnue du grand public. Chiffres de la Fabia IV 1.0 MPI 80 ; la RS a sa propre fiche." },
     'audi-a8': { nom:'Audi A8', an:[1994], pays:'Allemagne',
       ch:340, nm:500, kg:2017, cyl:3.0, arch:'V6', adm:'turbo + hybridation légère', pos:'avant', tx:'quattro', bv:'tiptronic 8',
       note:"La berline amirale d\'Audi, pionnière de la carrosserie tout aluminium (structure ASF) en 1994. Vitrine technologique de la marque. Chiffres de l\'A8 55 TFSI (D5, 2018) ; la S8 et son V8 biturbo ont leur propre fiche. Rendue célèbre par le film « Ronin »." },
@@ -1648,8 +1648,8 @@
       ch:77, nm:115, kg:1025, cyl:1.4, arch:'4 cyl. 8v', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
       note:"Voiture de l\'Année 1995. La GT Turbo puis les Abarth (Grande Punto SuperSport à 180 ch) sont ses versions chaudes recherchées. Une citadine de masse omniprésente en Europe pendant 25 ans. Chiffres de la Grande Punto 1.4 8v ; la Punto I et les GT, HGT et Abarth ont leurs propres fiches." },
     'seat-ibiza': { nom:'SEAT Ibiza', an:[1984], pays:'Espagne',
-      ch:192, nm:320, kg:1150, cyl:1.8, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M6',
-      note:"Les premières générations étaient dessinées par Giugiaro avec une mécanique développée avec Porsche (mention « System Porsche » sur les caches-culbuteurs). La Cupra et la Bocanegra sont les sportives de la lignée." },
+      ch:80, nm:93, kg:1111, cyl:1.0, arch:'3 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M5', flou:['kg'],
+      note:"Les premières générations étaient dessinées par Giugiaro avec une mécanique développée avec Porsche (mention « System Porsche » sur les caches-culbuteurs). La Cupra et la Bocanegra sont les sportives de la lignée. Chiffres de l\'Ibiza V 1.0 MPI 80 ; la Cupra a sa propre fiche." },
     'seat-arona': { nom:'SEAT Arona', an:[2017], pays:'Espagne',
       ch:150, nm:250, kg:1200, cyl:1.5, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'DSG 7',
       note:"Petit SUV urbain dérivé de l\'Ibiza, best-seller de SEAT. Toit contrasté personnalisable et esprit jeune, sur la plateforme MQB A0 du groupe VW partagée avec la Polo." },
@@ -1776,8 +1776,8 @@
       ch:659, nm:900, kg:2245, cyl:6.0, arch:'W12 / V8', adm:'biturbo', pos:'avant', tx:'intégrale', bv:'DCT 8',
       note:"Le grand coupé qui a démocratisé Bentley sous l\'ère Volkswagen. Le W12 6.0 est en réalité deux V6 fusionnés à angle étroit, compact et coupleux. La Speed dépasse les 650 ch tout en pesant plus de deux tonnes." },
     'renault-twingo': { nom:'Renault Twingo', an:[1992], pays:'France',
-      ch:110, nm:170, kg:1000, cyl:0.9, arch:'3 cyl. / électrique', adm:'turbo / atmo', pos:'avant / arrière', tx:'traction / propulsion', bv:'M5 / EDC',
-      note:"La première génération (1992) au regard rond attachant a marqué toute une époque, sans jamais changer de silhouette pendant 15 ans. La troisième, à moteur arrière et propulsion (comme la R8), a été développée avec Smart." },
+      ch:65, nm:95, kg:981, cyl:1.0, arch:'3 cyl.', adm:'atmo', pos:'arrière', tx:'propulsion', bv:'M5', flou:['kg'],
+      note:"La première génération (1992) au regard rond attachant a marqué toute une époque, sans jamais changer de silhouette pendant 15 ans. La troisième, à moteur arrière et propulsion (comme la R8), a été développée avec Smart. Chiffres de la Twingo III SCe 65 ; la R.S. a sa propre fiche." },
     'peugeot-306': { nom:'Peugeot 306', an:[1993,2002], pays:'France',
       ch:90, nm:138, kg:1040, cyl:1.6, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M5',
       note:"Le châssis, dérivé de la 405, est resté une référence de rigueur de sa décennie. Décliné du diesel économique à la S16/Rallye sportive (fiche dédiée). Le cabriolet, signé Pininfarina, fut un grand succès. Chiffres de la 306 1.6 de lancement." },
@@ -2389,8 +2389,8 @@
       ch:225, nm:400, kg:1650, cyl:2.5, arch:'4 cyl. hybride', adm:'atmo + électrique', pos:'avant', tx:'traction / intégrale', bv:'A8',
       note:"Équivalent européen de l\'Escape américain. Sa version hybride rechargeable a longtemps été l\'une des plus vendues d\'Europe sur le segment." },
     'dacia-duster': { nom:'Dacia Duster', an:[2010], pays:'Roumanie',
-      ch:150, nm:250, kg:1300, cyl:1.3, arch:'4 cyl., GPL, hybride', adm:'turbo', pos:'avant', tx:'traction / 4x4', bv:'M6 / A',
-      note:"Le SUV qui a démocratisé le tout-chemin à prix cassé. Increvable, sans fioritures, et capable en 4x4 : un succès qui a surpris toute l\'industrie et changé l\'image de Dacia." },
+      ch:100, nm:170, kg:1345, cyl:1.0, arch:'3 cyl. bicarburation', adm:'turbo', pos:'avant', tx:'traction', bv:'M6', flou:['kg'],
+      note:"Le SUV qui a démocratisé le tout-chemin à prix cassé. Increvable, sans fioritures, et capable en 4x4 : un succès qui a surpris toute l\'industrie et changé l\'image de Dacia. Chiffres du Duster III ECO-G 100 (2024), essence et GPL." },
 
     /* ===== FICHES COMPLÈTES — vague E (compactes & citadines de masse) === */
     'renault-clio': { nom:'Renault Clio', an:[1990], pays:'France',
@@ -2447,8 +2447,8 @@
 
 
     'fiat-500': { nom:'Fiat 500', an:[2007], pays:'Italie',
-      ch:118, nm:215, kg:1000, cyl:0.9, arch:'2 cyl. TwinAir / électrique', adm:'turbo / électrique', pos:'avant', tx:'traction', bv:'M5 / A',
-      note:"Réinterprétation moderne de l\'icône de 1957, elle joue à fond la carte du charme rétro et de la personnalisation. Le petit bicylindre TwinAir est un clin d\'œil direct à la 500 d\'origine." },
+      ch:69, nm:102, kg:865, cyl:1.2, arch:'4 cyl. 8v', adm:'atmo', pos:'avant', tx:'traction', bv:'M5', flou:['kg'],
+      note:"Réinterprétation moderne de l\'icône de 1957, elle joue à fond la carte du charme rétro et de la personnalisation. Le petit bicylindre TwinAir est un clin d\'œil direct à la 500 d\'origine. Chiffres de la 500 1.2 69, la plus diffusée ; le TwinAir est dans le sélecteur." },
     'mini-cooper': { nom:'Mini Cooper', an:[2001], pays:'Royaume-Uni',
       ch:178, nm:280, kg:1200, cyl:2.0, arch:'3 et 4 cyl. / électrique', adm:'turbo / électrique', pos:'avant', tx:'traction', bv:'M6 / A',
       note:"La renaissance sous BMW en 2001, hommage moderne à l\'originale de 1959 d\'Alec Issigonis. Le « go-kart feeling » — direction directe, châssis rivé au sol — est sa marque de fabrique." },
@@ -16123,6 +16123,98 @@
               note:"Turbos plus gros, 280 km/h — même poids que la version de base." },
           ]
         }
+      ]
+    },
+
+    /* ---- Vague E4 (28/09/2026) : Twingo III, Fiat 500, Duster III, Ibiza V, Fabia IV. */
+    'renault-twingo': {
+      types: [
+        {
+          id: 't3-essence', label: 'Twingo III — Essence',
+          variants: [
+            { id:'t3-sce65', label:'1.0 SCe 65',
+              ch:65, nm:95, kg:981, cyl:0.999, arch:'3 cyl.', adm:'atmo', pos:'arrière', tx:'propulsion', bv:'manuelle 5', flou:['kg'],
+              note:"Moteur arrière et propulsion, sur la plateforme partagée avec la Smart ForFour." },
+            { id:'t3-tce90', label:'0.9 TCe 90',
+              ch:90, nm:135, kg:944, cyl:0.898, arch:'3 cyl.', adm:'turbo', pos:'arrière', tx:'propulsion', bv:'manuelle 5', flou:['kg'],
+              note:"Même architecture « tout à l\'arrière » ; boîte EDC en option." },
+          ]
+        },
+      ]
+    },
+
+    'fiat-500': {
+      types: [
+        {
+          id: 'f500-essence', label: '500 (2007) — Essence',
+          variants: [
+            { id:'f500-1.2-69', label:'1.2 69',
+              ch:69, nm:102, kg:865, cyl:1.242, arch:'4 cyl. 8v', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 5', flou:['kg'],
+              note:"Le moteur Fire, le plus répandu de la gamme." },
+            { id:'f500-twinair-85', label:'0.9 TwinAir 85',
+              ch:85, nm:145, kg:930, cyl:0.875, arch:'2 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 5', flou:['kg'],
+              note:"Un bicylindre turbo : clin d\'œil au bicylindre de la 500 de 1957." },
+            { id:'f500-hybrid-70', label:'1.0 Hybrid 70',
+              ch:70, nm:92, kg:980, cyl:0.999, arch:'3 cyl.', adm:'atmo + hybridation légère 12 V', pos:'avant transversal', tx:'traction', bv:'manuelle 6', flou:['kg'],
+              note:"Alterno-démarreur à courroie (BSG) : il assiste le démarrage, il ne fait pas rouler la voiture seul." },
+          ]
+        },
+      ]
+    },
+
+    'dacia-duster': {
+      types: [
+        {
+          id: 'd3-essence', label: 'Duster III — Essence et GPL',
+          variants: [
+            { id:'d3-ecog100', label:'1.0 ECO-G 100',
+              ch:100, nm:170, kg:1345, cyl:0.999, arch:'3 cyl. bicarburation', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 6', flou:['kg'],
+              note:"Bicarburation essence et GPL d\'usine." },
+            { id:'d3-mhev130', label:'1.2 TCe 130',
+              ch:131, nm:230, kg:1304, cyl:1.199, arch:'3 cyl.', adm:'turbo + hybridation légère 48 V', pos:'avant transversal', tx:'traction', bv:'manuelle 6', flou:['kg'],
+              note:"131 ch réels ; existe aussi en 4x4." },
+          ]
+        },
+        {
+          id: 'd3-hybride', label: 'Duster III — Hybride',
+          variants: [
+            { id:'d3-hybrid140', label:'1.6 Hybrid 140',
+              ch:140, kg:1380, cyl:1.598, arch:'4 cyl. hybride', adm:'atmo + électrique', pos:'avant transversal', tx:'traction', bv:'multimode à crabots', flou:['kg'],
+              note:"Même chaîne hybride que les Renault E-Tech ; aucun couple système n\'est publié." },
+          ]
+        },
+      ]
+    },
+
+    'seat-ibiza': {
+      types: [
+        {
+          id: 'ib5-essence', label: 'Ibiza V — Essence',
+          variants: [
+            { id:'ib5-mpi80', label:'1.0 MPI 80',
+              ch:80, nm:93, kg:1111, cyl:0.999, arch:'3 cyl.', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 5', flou:['kg'],
+              note:"Plateforme MQB A0, la même que la Polo VI et la Fabia IV." },
+            { id:'ib5-tsi95', label:'1.0 TSI 95',
+              ch:95, nm:175, kg:1144, cyl:0.999, arch:'3 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 5', flou:['kg'],
+              note:"Le moteur le plus diffusé ; la Cupra a sa propre fiche." },
+          ]
+        },
+      ]
+    },
+
+    'skoda-fabia': {
+      types: [
+        {
+          id: 'fa4-essence', label: 'Fabia IV — Essence',
+          variants: [
+            { id:'fa4-mpi80', label:'1.0 MPI 80',
+              ch:80, nm:93, kg:1116, cyl:0.999, arch:'3 cyl.', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 5', flou:['kg'],
+              note:"Même moteur que l\'Ibiza V et la Polo VI." },
+            { id:'fa4-tsi95', label:'1.0 TSI 95',
+              ch:95, nm:175, kg:1165, cyl:0.999, arch:'3 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 5', flou:['kg'],
+              note:"La version la plus répandue." },
+          ]
+        },
       ]
     },
 

@@ -4,12 +4,12 @@
    cache suffit à rendre toute l'app disponible hors-ligne. Les données (photos,
    collection) vivent dans IndexedDB côté page, pas ici.
 
-   v20.165.0 — MOTOR_SPECS vague E3 (Corsa F, Qashqai J12, Tiguan II, C4 III).
+   v20.166.0 — MOTOR_SPECS vague E4 (Twingo III, 500, Duster III, Ibiza V, Fabia IV).
              Le numéro DOIT être incrémenté à chaque modification d'un fichier
              mis en cache, sinon l'ancienne copie est resservie indéfiniment.
 */
 
-const VERSION = "garage-v20.165.0";
+const VERSION = "garage-v20.166.0";
 
 /* ESSENTIEL : sans ces fichiers, l'app ne démarre pas hors-ligne.
    Mis en cache de façon atomique — si l'un manque, l'installation doit échouer
