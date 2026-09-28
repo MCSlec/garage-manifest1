@@ -505,7 +505,8 @@ modification n'impose aucun bump de version.
 | `sw.js` | Service worker (cache, `VERSION`) |
 | `manifest.webmanifest` | Manifeste PWA |
 | `ai-relay-worker.js` | Relais IA Cloudflare — déployé **à part**, hors dossier statique |
-| `banc-v1.html` | ⚠️ **Contient le prototype complet du « Rouleau »** (~737 lignes), pas un simple banc jetable — voir §9. Hors cache, ne pas livrer comme app, **et ne jamais supprimer** |
+| `banc-v1.html` | ⚠️ **Contient le prototype complet du « Rouleau »** (~737 lignes), pas un simple banc jetable — voir §8 bis. Hors cache, ne pas livrer comme app, **et ne jamais supprimer** |
+| `gm-rouleau.js` | Le Rouleau extrait (§8 bis), non intégré ; banc `banc-rouleau.js` |
 | `index-1.html` | Ancienne copie de travail d'`index.html` — **non servie**, ne pas confondre avec le fichier de prod |
 | `CONTEXT.md` | État projet, décisions, journal des chantiers (le *pourquoi*) |
 | `README.md` | Documentation utilisateur/fonctionnelle (le *quoi*) |
@@ -524,9 +525,10 @@ modification n'impose aucun bump de version.
 
 | Où | Quoi |
 |---|---|
-| `banc-v1.html` | Le module complet (~737 lignes), IIFE exposant `window.GMRouleau`, v1.0.0 |
-| Application principale | **Non intégré.** `index.html` ne le charge pas et ne le connaît pas |
-| `gm-rouleau.js` | **N'existe pas encore** comme fichier autonome |
+| `gm-rouleau.js` | **Le module de référence depuis le 28/09** : extrait de `banc-v1.html` au caractère près, puis une seule correction (v1.0.1, voir plus bas). IIFE exposant `window.GMRouleau` |
+| `banc-v1.html` | Le prototype d'origine (v1.0.0), **conservé tel quel** : ne pas le supprimer ni le « nettoyer ». Il ne reçoit plus les corrections : c'est `gm-rouleau.js` qui évolue |
+| `banc-rouleau.js` | Banc Playwright, 19 tests : rafale, voitures distinctes, même forme autre couleur, hors-ligne, retour réseau, back-off, disjoncteur, erreur applicative, fermeture brutale, persistance, purge à 7 jours, dissociation |
+| Application principale | **Non intégré.** `index.html` ne le charge pas et ne le connaît pas ; aucun cache concerné |
 
 **Ce que le prototype porte déjà**, et qu'il ne faut surtout pas réécrire de
 zéro : pellicule persistée en **IndexedDB dédiée** (`gm-rouleau` / store
@@ -550,10 +552,17 @@ init({ identify, onRevele, onChange, onErreur, conteneur })
 et non `matchCatalog()` : ce dernier est désormais le repli, pas le chemin
 nominal (voir §8 ter).
 
+**Correction v1.0.1, trouvée par le banc.** `estErreurReseau()` testait
+`includes('5')` : tout message contenant le chiffre 5 passait pour une panne
+réseau. Une erreur 400 « 25 Mo maximum » ouvrait donc le disjoncteur et gelait
+toute la pellicule, service pourtant sain. Ne comptent plus comme réseau que
+`TypeError` (fetch rejeté), délai dépassé, 429 et 5xx.
+
 **Règle de travail :** `banc-v1.html` n'est pas un fichier jetable. Ne pas le
 supprimer, ne pas le « nettoyer », ne pas reconstruire le Rouleau ailleurs.
-L'extraction vers `gm-rouleau.js` puis l'intégration à `index.html` est un
-**chantier séparé**, à mener sans perdre les mécanismes ci-dessus.
+L'extraction vers `gm-rouleau.js` est faite ; l'**intégration** à `index.html`
+reste un chantier séparé, qui touche l'écran de capture et attend une décision
+de design. `banc-rouleau.js` doit repasser avant tout branchement.
 
 ---
 
