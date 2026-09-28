@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.164.0';
+  const VERSION_MODULE = '20.165.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -2362,8 +2362,8 @@
       ch:225, nm:360, kg:1600, cyl:1.6, arch:'4 cyl. hybride', adm:'turbo + électrique', pos:'avant', tx:'traction', bv:'A8',
       note:"Le SUV du confort selon Citroën : suspensions à butées hydrauliques progressives et sièges « Advanced Comfort », héritage de l\'esprit hydropneumatique de la marque." },
     'nissan-qashqai': { nom:'Nissan Qashqai', an:[2007], pays:'Japon',
-      ch:190, nm:330, kg:1500, cyl:1.5, arch:'3 cyl. e-POWER / turbo', adm:'turbo + électrique', pos:'avant', tx:'traction / intégrale', bv:'A / e-POWER',
-      note:"L\'inventeur du crossover compact moderne en 2007, conçu et produit au Royaume-Uni. La technologie e-POWER utilise le moteur thermique uniquement comme générateur, jamais pour rouler." },
+      ch:140, nm:240, kg:1404, cyl:1.3, arch:'4 cyl.', adm:'turbo + hybridation légère', pos:'avant', tx:'traction', bv:'M6', flou:['kg'],
+      note:"L\'inventeur du crossover compact moderne en 2007, conçu et produit au Royaume-Uni. La technologie e-POWER utilise le moteur thermique uniquement comme générateur, jamais pour rouler. Chiffres du Qashqai J12 1.3 DIG-T 140 ; l\'e-POWER est dans le sélecteur." },
     'toyota-rav4': { nom:'Toyota RAV4', an:[1994], pays:'Japon',
       ch:306, kg:1700, cyl:2.5, arch:'4 cyl. hybride', adm:'atmo + électrique', pos:'avant', tx:'traction / intégrale', bv:'e-CVT',
       note:"Pionnier du SUV compact de loisir en 1994 (son nom signifie « Recreational Active Vehicle 4WD »). La version hybride rechargeable Plug-in dépasse les 300 ch." },
@@ -2412,8 +2412,8 @@
       ch:100, nm:170, kg:1144, cyl:1.0, arch:'3 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M6',
       note:"Longtemps la voiture la plus vendue au Royaume-Uni. La Fiesta ST, sur trois cylindres avec désactivation de cylindre, est l\'une des petites sportives les plus acclamées de la décennie. Chiffres de la Fiesta VII 1.0 EcoBoost 100 ; la ST a sa propre fiche." },
     'opel-corsa': { nom:'Opel Corsa', an:[1982], pays:'Allemagne',
-      ch:130, nm:230, kg:1100, cyl:1.2, arch:'3 cyl. / électrique', adm:'turbo', pos:'avant', tx:'traction', bv:'M6 / A8',
-      note:"La citadine de grande diffusion d\'Opel, vendue Vauxhall au Royaume-Uni. La dernière génération partage sa base avec la Peugeot 208 après le rachat d\'Opel par PSA." },
+      ch:75, nm:118, kg:1055, cyl:1.2, arch:'3 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M5', flou:['kg'],
+      note:"La citadine de grande diffusion d\'Opel, vendue Vauxhall au Royaume-Uni. La dernière génération partage sa base avec la Peugeot 208 après le rachat d\'Opel par PSA. Chiffres de la Corsa F 1.2 75 ; les autres moteurs, dont l\'électrique, sont dans le sélecteur." },
     'toyota-yaris': { nom:'Toyota Yaris', an:[1999], pays:'Japon',
       ch:130, kg:1090, cyl:1.5, arch:'3 cyl. hybride', adm:'atmo + électrique', pos:'avant', tx:'traction', bv:'e-CVT',
       note:"Voiture de l\'Année 2021. Championne de la fiabilité et de la sobriété grâce à l\'hybride Toyota. À ne pas confondre avec la GR Yaris, sa cousine survitaminée de rallye (fiche dédiée). Chiffres de la Yaris 130h (2024) ; pas de couple affiché : dans l\'hybride Toyota, thermique et électrique sont reliés par un train épicycloïdal, et aucun couple système n\'est publié." },
@@ -16123,6 +16123,97 @@
               note:"Turbos plus gros, 280 km/h — même poids que la version de base." },
           ]
         }
+      ]
+    },
+
+    /* ---- Vague E3 (28/09/2026) : Corsa F, Qashqai J12, Tiguan II, C4 III. */
+    'opel-corsa': {
+      types: [
+        {
+          id: 'f-essence', label: 'Corsa F — Essence',
+          variants: [
+            { id:'f-1.2-75', label:'1.2 75',
+              ch:75, nm:118, kg:1055, cyl:1.199, arch:'3 cyl.', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 5', flou:['kg'],
+              note:"Le trois-cylindres PureTech sans turbo, partagé avec la 208." },
+            { id:'f-1.2t-100', label:'1.2 Turbo 100',
+              ch:100, nm:205, kg:1165, cyl:1.199, arch:'3 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 6', flou:['kg'],
+              note:"La version la plus diffusée." },
+          ]
+        },
+        {
+          id: 'f-electrique', label: 'Corsa-e — Électrique',
+          variants: [
+            { id:'f-e136', label:'Corsa-e 136',
+              ch:136, nm:260, kg:1530, cyl:0, arch:'moteur électrique', adm:'électrique', pos:'avant transversal', tx:'traction', bv:'A1', flou:['kg'],
+              note:"Batterie de 50 kWh ; même plateforme e-CMP que la e-208 et l\'e-2008." },
+          ]
+        },
+      ]
+    },
+
+    'nissan-qashqai': {
+      types: [
+        {
+          id: 'j12-mhev', label: 'J12 — Hybridation légère',
+          variants: [
+            { id:'j12-140', label:'1.3 DIG-T 140',
+              ch:140, nm:240, kg:1404, cyl:1.332, arch:'4 cyl.', adm:'turbo + hybridation légère 12 V', pos:'avant transversal', tx:'traction', bv:'manuelle 6', flou:['kg'],
+              note:"Le 1.3 turbo développé avec Renault et Mercedes." },
+            { id:'j12-158', label:'1.3 DIG-T 158 Xtronic',
+              ch:158, nm:270, kg:1450, cyl:1.332, arch:'4 cyl.', adm:'turbo + hybridation légère 12 V', pos:'avant transversal', tx:'traction', bv:'CVT Xtronic', flou:['kg'],
+              note:"Même bloc, 18 ch et 30 Nm de plus." },
+          ]
+        },
+        {
+          id: 'j12-epower', label: 'J12 — e-POWER',
+          variants: [
+            { id:'j12-epower190', label:'e-POWER 190',
+              ch:190, nm:330, kg:1685, arch:'3 cyl. 1.5 générateur + moteur électrique', adm:'hybride série', pos:'avant transversal', tx:'traction', bv:'A1', flou:['kg'],
+              note:"Seul le moteur électrique entraîne les roues : ses 330 Nm sont le couple à la roue. Le 1.5 turbo ne sert que de générateur, d\'où l\'absence de cylindrée et de ratio par litre." },
+          ]
+        },
+      ]
+    },
+
+    'vw-tiguan': {
+      types: [
+        {
+          id: 'ad-essence', label: 'Tiguan II — Essence',
+          variants: [
+            { id:'ad-1.5tsi-150', label:'1.5 TSI 150 DSG7',
+              ch:150, nm:250, kg:1541, cyl:1.498, arch:'4 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'DSG 7', flou:['kg'],
+              note:"Désactivation de deux cylindres à faible charge." },
+          ]
+        },
+        {
+          id: 'ad-diesel', label: 'Tiguan II — Diesel',
+          variants: [
+            { id:'ad-2.0tdi-150', label:'2.0 TDI 150 DSG7',
+              ch:150, nm:340, kg:1540, cyl:1.968, arch:'4 cyl. diesel', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'DSG 7', flou:['kg'],
+              note:"340 Nm jusqu\'en 2020 ; la version de 2024 en annonce 360." },
+          ]
+        },
+      ]
+    },
+
+    'citroen-c4': {
+      types: [
+        {
+          id: 'c43-essence', label: 'C4 III — Essence',
+          variants: [
+            { id:'c43-pt130', label:'1.2 PureTech 130 EAT8',
+              ch:131, nm:230, kg:1278, cyl:1.199, arch:'3 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'EAT8', flou:['kg'],
+              note:"131 ch réels pour 130 annoncés." },
+          ]
+        },
+        {
+          id: 'c43-electrique', label: 'ë-C4 — Électrique',
+          variants: [
+            { id:'c43-e136', label:'ë-C4 136',
+              ch:136, nm:260, kg:1571, cyl:0, arch:'moteur électrique', adm:'électrique', pos:'avant transversal', tx:'traction', bv:'A1', flou:['kg'],
+              note:"Même chaîne de traction électrique que la e-208 et la Corsa-e." },
+          ]
+        },
       ]
     },
 
