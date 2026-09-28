@@ -152,10 +152,20 @@ const BORNES = {
 
    - Cayman / Boxster (982) : le Cayman EST le Boxster à toit fixe. Même
      plateforme MSB, même flat-4 turbo, et Porsche homologue les deux à la
-     même masse DIN (1 335 kg en 2.0, 1 355 kg en 2.5 S, boîte manuelle). */
+     même masse DIN (1 335 kg en 2.0, 1 355 kg en 2.5 S, boîte manuelle).
+   - Aygo / C1 : la même voiture, construite sur la même chaîne (TPCA,
+     Kolín) avec le même trois-cylindres 1.0 ; seuls les logos changent.
+   - Berlingo / Partner (K9) : même fourgonnette, mêmes moteurs, mêmes
+     usines ; deux marques du même groupe.
+   - ID.4 / Enyaq : même plateforme MEB, même moteur arrière de 204 ch,
+     même batterie ; la masse, arrondie et marquée « ≈ » sur les deux
+     fiches, ne permet pas de les distinguer. */
 const JUMELLES_AVEREES = new Set([
   'porsche-boxster+porsche-cayman',
-  'porsche-boxster-s+porsche-cayman-s'
+  'porsche-boxster-s+porsche-cayman-s',
+  'citroen-c1+toyota-aygo',
+  'citroen-berlingo+peugeot-partner',
+  'skoda-enyaq+vw-id4'
 ]);
 
 const anomalies = [];
@@ -429,6 +439,39 @@ function auditer() {
     if (memeMeca && a.kg === b.kg) {
       signaler('ALERTE', 'CONTAMINATION',
         `${a.nom || clesSpecs[i - 1]} et ${b.nom || clesSpecs[i]} (fiches adjacentes) ont des chiffres identiques : ${a.ch} ch · ${a.nm} Nm · ${a.cyl} L · ${a.kg} kg — vérifier qu'une fiche n'a pas « bavé » sur sa voisine`);
+    }
+  }
+
+  /* --- C ter. Jumelles à distance ---------------------------------------
+     Le contrôle C ne compare que des fiches ADJACENTES. Il a laissé passer
+     une trentaine de paires identiques saisies loin l'une de l'autre, dont
+     la plupart suivent le même motif : une entrée « de base » (GLC, CLA,
+     Polo, Panamera…) qui affiche les chiffres de sa version sportive, alors
+     que celle-ci a sa propre entrée au catalogue (règle GTA, CLAUDE.md
+     §4.5 bis). Quatre valeurs identiques au chiffre près (ch, Nm, L, kg) ne
+     relèvent presque jamais du hasard : soit ce sont de vraies jumelles de
+     plateforme (à nommer dans JUMELLES_AVEREES, avec leur justification),
+     soit une fiche décrit une autre voiture que son entrée. */
+  {
+    const groupes = new Map();
+    for (const cle of clesSpecs) {
+      const f = SPECS[cle];
+      if (f.ch == null || f.nm == null || f.cyl == null || f.kg == null) continue;
+      const empreinte = [f.ch, f.nm, f.cyl, f.kg].join('|');
+      if (!groupes.has(empreinte)) groupes.set(empreinte, []);
+      groupes.get(empreinte).push(cle);
+    }
+    for (const membres of groupes.values()) {
+      if (membres.length < 2) continue;
+      /* Un groupe est exempté seulement si TOUTES ses paires sont avérées. */
+      let toutesAverees = true;
+      for (let i = 0; i < membres.length && toutesAverees; i++)
+        for (let j = i + 1; j < membres.length; j++)
+          if (!JUMELLES_AVEREES.has([membres[i], membres[j]].sort().join('+'))) { toutesAverees = false; break; }
+      if (toutesAverees) continue;
+      const f = SPECS[membres[0]];
+      signaler('ALERTE', 'CONTAMINATION',
+        `${membres.map(c => SPECS[c].nom || c).join(' · ')} ont des chiffres identiques (${f.ch} ch · ${f.nm} Nm · ${f.cyl} L · ${f.kg} kg), sans être adjacentes — jumelles réelles ou fiche qui décrit une autre version que son entrée (§4.5 bis) ?`);
     }
   }
 
