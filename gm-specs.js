@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.169.0';
+  const VERSION_MODULE = '20.170.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -644,7 +644,7 @@
       ch:140, nm:240, kg:1050, cyl:1.4, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'propulsion', bv:'M6',
       note:"La résurrection du roadster 124 des années 60, sur base de Mazda MX-5 (ND) mais avec un moteur turbo Fiat et un style italien. La version Abarth, plus poussée, est la plus recherchée. Le mariage réussi de l\'italien et du japonais. Chiffres du 1.4 MultiAir 140 ; l\'Abarth en tire 170 ch et 250 Nm, pour 1 060 kg." },
     'fiat-ducato': { nom:'Fiat Ducato', an:[1981], pays:'Italie',
-      ch:180, nm:450, kg:2000, cyl:2.2, arch:'4 cyl. diesel, électrique', adm:'turbo', pos:'avant', tx:'traction', bv:'M6',
+      ch:180, nm:450, kg:2000, cyl:2.2, arch:'4 cyl. diesel', adm:'turbo', pos:'avant', tx:'traction', bv:'M6',
       note:"L\'un des utilitaires les plus vendus d\'Europe, et surtout la base de l\'immense majorité des camping-cars du continent. Né du partenariat PSA-Fiat (Sevel), jumeau des Peugeot Boxer et Citroën Jumper. Le van de la liberté pour des millions de vacanciers." },
     'alfa-33': { nom:'Alfa Romeo 33', an:[1983,1994], pays:'Italie',
       ch:137, nm:157, kg:1000, cyl:1.7, arch:'flat-4 (boxer)', adm:'atmo', pos:'avant', tx:'traction / 4x4', bv:'M5',
@@ -1239,7 +1239,7 @@
       ch:250, nm:320, kg:1500, cyl:3.2, arch:'VR6', adm:'atmo', pos:'avant', tx:'4Motion', bv:'DSG 6',
       note:"Le VR6 3.2 atmosphérique à la sonorité rauque, transmission intégrale 4Motion. La première voiture au monde à recevoir la boîte à double embrayage DSG, en 2003. L\'ancêtre de la Golf R, plus émotionnelle que ses descendantes turbo." },
     'dacia-sandero': { nom:'Dacia Sandero', an:[2008], pays:'Roumanie',
-      ch:110, nm:200, kg:1050, cyl:1.0, arch:'3 cyl., GPL', adm:'turbo', pos:'avant', tx:'traction', bv:'M6',
+      ch:110, nm:200, kg:1050, cyl:1.0, arch:'3 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M6',
       note:"La voiture neuve la moins chère d\'Europe, et pourtant l\'une des plus vendues aux particuliers du continent. La preuve que le low-cost bien pensé (mécanique Renault éprouvée, sans superflu) peut séduire massivement." },
 
     /* ===== FICHES COMPLÈTES — vague AB (RS et sportives FR/DE) =========== */
@@ -2394,11 +2394,11 @@
 
     /* ===== FICHES COMPLÈTES — vague E (compactes & citadines de masse) === */
     'renault-clio': { nom:'Renault Clio', an:[1990], pays:'France',
-      ch:140, nm:260, kg:1200, cyl:1.6, arch:'3 et 4 cyl., hybride', adm:'turbo / atmo', pos:'avant', tx:'traction', bv:'M5/6 / EDC',
+      ch:140, nm:260, kg:1200, cyl:1.6, arch:'4 cyl. hybride', adm:'atmo + électrique', pos:'avant', tx:'traction', bv:'multimode à crabots',
       note:"Deux fois Voiture de l\'Année (1991, 2006), l\'une des voitures les plus vendues d\'Europe. La lignée a aussi enfanté des versions extrêmes : Williams, V6 à moteur central, R.S." },
     'vw-golf': { nom:'Volkswagen Golf', an:[1974], pays:'Allemagne',
-      ch:150, nm:250, kg:1300, cyl:1.5, arch:'4 cyl., hybride', adm:'turbo', pos:'avant', tx:'traction', bv:'M6 / DSG',
-      note:"La compacte étalon depuis 1974, plus de 35 millions vendues. Dessinée par Giugiaro à l\'origine pour remplacer la Coccinelle. Chaque génération recalibre le standard du segment." },
+      ch:150, nm:250, kg:1365, cyl:1.5, arch:'4 cyl.', adm:'turbo + hybridation légère 48 V', pos:'avant', tx:'traction', bv:'DSG 7', flou:['kg'],
+      note:"La compacte étalon depuis 1974, plus de 35 millions vendues. Dessinée par Giugiaro à l\'origine pour remplacer la Coccinelle. Chaque génération recalibre le standard du segment. Chiffres de la Golf VIII 1.5 eTSI 150." },
     'peugeot-308': { nom:'Peugeot 308', an:[2007], pays:'France',
       ch:130, nm:230, kg:1258, cyl:1.2, arch:'3 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M6 / A8',
       note:"Voiture de l\'Année 2014. La génération actuelle inaugure le nouveau lion stylisé de Peugeot. Déclinée en berline, break SW et versions hybrides rechargeables (jusqu\'à 225 ch cumulés). Chiffres de la 308 III 1.2 PureTech 130 ; la 308 GTi a sa propre fiche." },
@@ -2406,7 +2406,7 @@
       ch:140, nm:240, kg:1280, cyl:1.3, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M6 / EDC7', flou:['kg'],
       note:"La compacte familiale Renault, dont dérive la redoutable R.S. La génération 2 et son postérieur bombé (« Mégan('cul »)) ont marqué les esprits par leur audace stylistique. Chiffres de la Mégane IV TCe 140 ; les R.S. ont leurs propres fiches." },
     'citroen-c3': { nom:'Citroën C3', an:[2002], pays:'France',
-      ch:130, nm:230, kg:1150, cyl:1.2, arch:'3 cyl. / électrique', adm:'turbo', pos:'avant', tx:'traction', bv:'M6 / A6',
+      ch:130, nm:230, kg:1150, cyl:1.2, arch:'3 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M6 / A6',
       note:"La citadine polyvalente de Citroën, aux Airbumps protecteurs sur certaines versions. La ë-C3 électrique casse les prix du segment en visant les 23 000 €." },
     'ford-fiesta': { nom:'Ford Fiesta', an:[1976,2023], pays:'États-Unis',
       ch:100, nm:170, kg:1144, cyl:1.0, arch:'3 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M6',
@@ -2437,8 +2437,8 @@
 
 
     'peugeot-208': { nom:'Peugeot 208', an:[2012], pays:'France',
-      ch:136, nm:260, kg:1200, cyl:1.2, arch:'3 cyl., électrique', adm:'turbo / électrique', pos:'avant', tx:'traction', bv:'A8',
-      note:"Le poste de conduite i-Cockpit — petit volant, instruments surélevés — est sa signature. La e-208 fut l\'une des premières citadines déclinée en électrique dès son lancement. Voiture de l\'Année 2020." },
+      ch:100, nm:205, kg:1090, cyl:1.2, arch:'3 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M6', flou:['kg'],
+      note:"Le poste de conduite i-Cockpit — petit volant, instruments surélevés — est sa signature. La e-208 fut l\'une des premières citadines déclinée en électrique dès son lancement. Voiture de l\'Année 2020. Chiffres de la 208 II PureTech 100 ; elle portait la puissance de l\'e-208 avec la cylindrée du thermique." },
 
 
 
@@ -2724,7 +2724,7 @@
       ch:155, nm:250, kg:1450, cyl:1.8, arch:'4 cyl. hybride', adm:'atmo + électrique', pos:'avant', tx:'traction / intégrale', bv:'A',
       note:"Le plus grand Dacia jamais produit : un SUV familial spacieux au prix caractéristique de la marque. La stratégie low-cost appliquée au segment C." },
     'peugeot-boxer': { nom:'Peugeot Boxer', an:[1994], pays:'France',
-      ch:180, nm:400, kg:2000, cyl:2.2, arch:'4 cyl. diesel, électrique', adm:'turbo', pos:'avant', tx:'traction', bv:'M6',
+      ch:180, nm:400, kg:2000, cyl:2.2, arch:'4 cyl. diesel', adm:'turbo', pos:'avant', tx:'traction', bv:'M6',
       note:"Grand fourgon né du partenariat PSA-Fiat (Sevel), jumeau du Citroën Jumper et du Fiat Ducato. Base courante de camping-cars." },
     'citroen-c3-aircross': { nom:'Citroën C3 Aircross', an:[2017], pays:'France',
       ch:130, nm:230, kg:1200, cyl:1.2, arch:'3 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M6 / A6',
@@ -2768,7 +2768,7 @@
       ch:218, nm:337, kg:2000, cyl:0, arch:'moteurs électriques', adm:'électrique', pos:'avant / intégrale', bv:'A1',
       note:"Premier SUV 100 % électrique dédié de Toyota. « bZ » pour « beyond Zero ». Développé avec Subaru, qui en propose une version jumelle, le Solterra." },
     'toyota-proace': { nom:'Toyota Proace', an:[2013], pays:'Japon',
-      ch:180, nm:400, kg:1800, cyl:2.0, arch:'4 cyl. diesel, électrique', adm:'turbo', pos:'avant', tx:'traction', bv:'A8',
+      ch:180, nm:400, kg:1800, cyl:2.0, arch:'4 cyl. diesel', adm:'turbo', pos:'avant', tx:'traction', bv:'A8',
       note:"Fourgon Toyota issu du partenariat avec Stellantis : jumeau des Peugeot Expert, Citroën Jumpy et Opel Vivaro. La version Verso transporte jusqu\'à neuf personnes." },
     'nissan-ariya': { nom:'Nissan Ariya', an:[2022], pays:'Japon',
       ch:394, nm:600, kg:2200, cyl:0, arch:'moteurs électriques', adm:'électrique', pos:'avant / intégrale', bv:'A1',
@@ -2807,16 +2807,16 @@
       ch:326, nm:480, kg:1700, cyl:4.973, arch:'V8', adm:'atmo', pos:'avant', tx:'propulsion', bv:'A4',
       note:"Une Mercedes construite en partie par Porsche : la caisse était élargie et assemblée à Zuffenhausen, dans l\'usine Rössle où naissait aussi l\'Audi RS2, peinte à Sindelfingen, puis renvoyée chez Porsche pour recevoir mécanique et intérieur. Le V8 5.0 vient du SL R129. La première berline Mercedes de milieu de gamme à recevoir un huit-cylindres." },
     'citroen-berlingo': { nom:'Citroën Berlingo', an:[1996], pays:'France',
-      ch:130, nm:300, kg:1400, cyl:1.5, arch:'4 cyl. essence, diesel, électrique', adm:'turbo', pos:'avant', tx:'traction', bv:'M6 / A8',
+      ch:130, nm:300, kg:1400, cyl:1.5, arch:'4 cyl. diesel', adm:'turbo', pos:'avant', tx:'traction', bv:'M6 / A8',
       note:"Pionnier du « ludospace » avec le Renault Kangoo : le fourgon devenu familial. Deux fois élu Van of the Year. Un immense succès commercial européen." },
     'renault-kangoo': { nom:'Renault Kangoo', an:[1997], pays:'France',
       ch:131, nm:270, kg:1400, cyl:1.3, arch:'4 cyl. essence, diesel, électrique', adm:'turbo', pos:'avant', tx:'traction', bv:'M6 / A',
       note:"Co-inventeur du ludospace. Le Kangoo Z.E. fut l\'un des tout premiers utilitaires électriques de grande série (2011)." },
     'ford-transit': { nom:'Ford Transit', an:[1965], pays:'États-Unis',
-      ch:185, nm:415, kg:2000, cyl:2.0, arch:'4 cyl. diesel, électrique', adm:'turbo', pos:'avant', tx:'traction / propulsion', bv:'M6 / A',
+      ch:185, nm:415, kg:2000, cyl:2.0, arch:'4 cyl. diesel', adm:'turbo', pos:'avant', tx:'traction / propulsion', bv:'M6 / A',
       note:"« Le Transit » est presque devenu un nom commun pour désigner un fourgon. Longtemps si prisé des malfaiteurs que la police britannique le qualifiait de véhicule de braquage préféré." },
     'peugeot-partner': { nom:'Peugeot Partner', an:[1996], pays:'France',
-      ch:130, nm:300, kg:1400, cyl:1.5, arch:'4 cyl. essence, diesel, électrique', adm:'turbo', pos:'avant', tx:'traction', bv:'M6 / A8',
+      ch:130, nm:300, kg:1400, cyl:1.5, arch:'4 cyl. diesel', adm:'turbo', pos:'avant', tx:'traction', bv:'M6 / A8',
       note:"Jumeau du Citroën Berlingo, décliné en Rifter côté ludospace. Colonne vertébrale du parc utilitaire des artisans français." },
     'citroen-type-h': { nom:'Citroën Type H', an:[1947,1981], pays:'France',
       ch:58, nm:110, kg:1500, cyl:1.9, arch:'4 en ligne', adm:'atmo', pos:'avant', tx:'traction', bv:'M3',
@@ -2834,10 +2834,10 @@
       ch:60, nm:85, kg:830, cyl:0.85, arch:'bicylindre à plat', adm:'atmo', pos:'avant', tx:'traction', bv:'M4',
       note:"Le chant du cygne de Panhard, plus vieille marque automobile du monde. Coupé au style avant-gardiste, propulsé par un simple bicylindre refroidi par air, étonnamment performant." },
     'mercedes-vito': { nom:'Mercedes-Benz Vito', an:[1996], pays:'Allemagne',
-      ch:239, nm:500, kg:2100, cyl:2.0, arch:'4 cyl. diesel, électrique', adm:'turbo', pos:'avant / propulsion', tx:'propulsion / intégrale', bv:'A9',
+      ch:239, nm:500, kg:2100, cyl:2.0, arch:'4 cyl. diesel', adm:'turbo', pos:'avant', tx:'propulsion / intégrale', bv:'A9',
       note:"Fourgon medium, décliné en Classe V pour le transport de personnes haut de gamme. La version électrique eVito cible les flottes urbaines." },
     'mercedes-sprinter': { nom:'Mercedes-Benz Sprinter', an:[1995], pays:'Allemagne',
-      ch:190, nm:440, kg:2500, cyl:2.0, arch:'4 cyl. diesel, électrique', adm:'turbo', pos:'avant', tx:'propulsion / intégrale', bv:'A9',
+      ch:190, nm:440, kg:2500, cyl:2.0, arch:'4 cyl. diesel', adm:'turbo', pos:'avant', tx:'propulsion / intégrale', bv:'A9',
       note:"La référence du grand fourgon, base reine des camping-cars et des vans aménagés « vanlife » dans le monde entier. Le premier à recevoir l\'ESP de série." },
     'morgan-plus-8': { nom:'Morgan Plus 8', an:[1968,2018], pays:'Royaume-Uni',
       ch:367, nm:490, kg:1100, cyl:4.8, arch:'V8 Rover puis BMW', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M6',
@@ -16933,6 +16933,22 @@
             { id:'p1-bluehdi-120', label:'1.6 BlueHDi 120',
               ch:120, nm:300, kg:1125, cyl:1.560, arch:'4 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 6',
               note:"Le diesel le plus puissant de la 208 I, 300 Nm dès 1 750 tr/min." },
+          ]
+        },
+        {
+          id: 'p2-essence', label: '208 II (2019–) — Essence',
+          variants: [
+            { id:'p2-pt100', label:'1.2 PureTech 100',
+              ch:100, nm:205, kg:1090, cyl:1.199, arch:'3 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 6', flou:['kg'],
+              note:"La version la plus diffusée de la 208 II, Voiture de l'Année 2020." },
+          ]
+        },
+        {
+          id: 'p2-electrique', label: 'e-208 — Électrique',
+          variants: [
+            { id:'p2-e136', label:'e-208 136',
+              ch:136, nm:260, kg:1455, cyl:0, arch:'moteur électrique', adm:'électrique', pos:'avant transversal', tx:'traction', bv:'A1', flou:['kg'],
+              note:"Batterie de 50 kWh ; la plateforme e-CMP des Corsa-e, e-2008 et ë-C4." },
           ]
         }
       ]
