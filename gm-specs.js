@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.173.0';
+  const VERSION_MODULE = '20.174.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -222,8 +222,8 @@
 
     /* ===== FICHES COMPLÈTES — vague AW (SUV/breaks premium + curiosités) == */
     'jaguar-fpace': { nom:'Jaguar F-Pace', an:[2016], pays:'Royaume-Uni',
-      ch:550, nm:700, kg:1900, cyl:5.0, arch:'V8 (SVR) / 6 cyl.', adm:'compresseur', pos:'avant', tx:'intégrale', bv:'A8',
-      note:"Le premier SUV de Jaguar, best-seller de la marque. La version SVR et son V8 5.0 compressé, à la sonorité tonitruante, en fait l\'un des SUV les plus sportifs et sonores du marché. La bouée de sauvetage commerciale de Jaguar." },
+      ch:250, nm:365, kg:1831, cyl:2.0, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'intégrale', bv:'A8', flou:['kg'],
+      note:"Le premier SUV de Jaguar, best-seller de la marque. La version SVR et son V8 5.0 compressé, à la sonorité tonitruante, en fait l\'un des SUV les plus sportifs et sonores du marché. La bouée de sauvetage commerciale de Jaguar. Chiffres du F-Pace P250 ; elle portait ceux du SVR à V8 compressé." },
     'volvo-xc40': { nom:'Volvo XC40', an:[2017], pays:'Suède',
       ch:163, nm:265, kg:1688, cyl:2.0, arch:'4 cyl.', adm:'turbo + hybridation légère 48 V', pos:'avant', tx:'traction', bv:'DCT 7', flou:['kg'],
       note:"Le SUV compact premium de Volvo, Voiture de l\'Année 2018. Décliné en version électrique (ex-Recharge, puis EX40), l\'un des premiers Volvo 100 % électriques. Design scandinave épuré et sécurité maison en étendard. Chiffres du XC40 B3 ; elle portait ceux de la Recharge à deux moteurs électriques." },
@@ -231,8 +231,8 @@
       ch:197, nm:300, kg:1869, cyl:2.0, arch:'4 cyl.', adm:'turbo + hybridation légère 48 V', pos:'avant', tx:'traction', bv:'A8', flou:['kg'],
       note:"Le SUV le plus vendu de Volvo, Voiture Mondiale de l\'Année 2018. La T8 hybride rechargeable cumule turbo, compresseur et moteur électrique pour dépasser les 450 ch. Bardé de systèmes de sécurité, fidèle à l\'ADN de la marque. Chiffres du XC60 II B4 essence ; elle portait ceux de la T8 Polestar Engineered." },
     'volvo-v60': { nom:'Volvo V60', an:[2010], pays:'Suède',
-      ch:455, nm:709, kg:1900, cyl:2.0, arch:'4 cyl. hybride', adm:'turbo + compresseur + él.', pos:'avant', tx:'intégrale', bv:'A8',
-      note:"Le break sportif de Volvo, perpétuant la tradition des breaks rapides suédois. La version Polestar Engineered, hybride de plus de 450 ch, aux étriers Brembo dorés et amortisseurs Öhlins, est le loup discret déguisé en familiale." },
+      ch:197, nm:300, kg:1734, cyl:2.0, arch:'4 cyl.', adm:'turbo + hybridation légère 48 V', pos:'avant', tx:'traction', bv:'DCT 7', flou:['kg'],
+      note:"Le break sportif de Volvo, perpétuant la tradition des breaks rapides suédois. La version Polestar Engineered, hybride de plus de 450 ch, aux étriers Brembo dorés et amortisseurs Öhlins, est le loup discret déguisé en familiale. Chiffres de la V60 II B4 essence ; elle portait ceux de la T8 Polestar Engineered." },
     'landrover-discovery': { nom:'Land Rover Discovery', an:[1989], pays:'Royaume-Uni',
       ch:360, nm:700, kg:2300, cyl:3.0, arch:'6 en ligne, V6 diesel', adm:'turbo', pos:'avant', tx:'4x4', bv:'A8',
       note:"Le grand 4x4 familial sept places, aussi capable en tout-terrain que confortable sur route. Sa carrosserie à toit surélevé « stadium seating » (sièges arrière rehaussés) et sa marche arrière asymétrique sont des signatures. Le baroudeur bourgeois." },
@@ -1826,8 +1826,8 @@
       ch:635, nm:800, kg:2500, cyl:4.4, arch:'V8, 6 en ligne, hybride', adm:'biturbo', pos:'avant', tx:'4x4', bv:'A8',
       note:"La version plus dynamique et abordable du Range Rover. La SV, à V8 BMW, transforme le grand SUV en engin de circuit. Un exemplaire a un temps détenu le record du Nürburgring pour un SUV de production." },
     'landrover-evoque': { nom:'Land Rover Range Rover Evoque', an:[2011], pays:'Royaume-Uni',
-      ch:300, nm:400, kg:1800, cyl:2.0, arch:'4 cyl. hybride', adm:'turbo + électrique', pos:'avant', tx:'4x4', bv:'A9',
-      note:"Le petit Range Rover urbain, né d\'un concept-car (LRX) repris quasi à l\'identique, un cas rare. Son design signé Gerry McGovern a fait un carton commercial et redéfini le SUV compact premium." },
+      ch:200, nm:320, kg:1770, cyl:2.0, arch:'4 cyl.', adm:'turbo + hybridation légère 48 V', pos:'avant', tx:'4x4', bv:'A9',
+      note:"Le petit Range Rover urbain, né d\'un concept-car (LRX) repris quasi à l\'identique, un cas rare. Son design signé Gerry McGovern a fait un carton commercial et redéfini le SUV compact premium. Chiffres de l\'Evoque II P200 AWD, masse DIN selon la fiche technique Land Rover (2019)." },
     'jaguar-xjs': { nom:'Jaguar XJS', an:[1975,1996], pays:'Royaume-Uni',
       ch:333, nm:475, kg:1800, cyl:5.3, arch:'V12 (jadis 6 en ligne)', adm:'atmo', pos:'avant', tx:'propulsion', bv:'A3 / M5',
       note:"La grande GT qui a porté le seul V12 de grande série de l\'industrie pendant plus de 20 ans. Longtemps mal-aimée, car remplaçante impossible de la Type E, elle est aujourd\'hui redécouverte et cotée." },
@@ -1985,8 +1985,8 @@
       ch:340, nm:500, kg:1770, cyl:3.0, arch:'V6', adm:'turbo', pos:'avant', tx:'quattro', bv:'S tronic 7',
       note:"Le grand coupé 5 portes à hayon d\'Audi, alternative élégante à la berline A6. Les versions S7 et RS7 (fiches dédiées) en font une des familiales les plus rapides du marché." },
     'audi-q7': { nom:'Audi Q7', an:[2005], pays:'Allemagne',
-      ch:340, nm:600, kg:2100, cyl:3.0, arch:'V6', adm:'turbo', pos:'avant', tx:'quattro', bv:'tiptronic 8',
-      note:"Le grand SUV 7 places d\'Audi, partageant sa plateforme avec le Porsche Cayenne et le VW Touareg. La version SQ7 et son V8 diesel à compresseur électrique 48 V est une prouesse d\'ingénierie." },
+      ch:231, nm:500, kg:2145, cyl:3.0, arch:'V6 diesel', adm:'turbo', pos:'avant', tx:'quattro', bv:'tiptronic 8', flou:['kg'],
+      note:"Le grand SUV 7 places d\'Audi, partageant sa plateforme avec le Porsche Cayenne et le VW Touareg. La version SQ7 et son V8 diesel à compresseur électrique 48 V est une prouesse d\'ingénierie. Chiffres du Q7 II 45 TDI (5 places)." },
     'mercedes-cls': { nom:'Mercedes-Benz CLS', an:[2004,2023], pays:'Allemagne',
       ch:612, nm:850, kg:1800, cyl:3.0, arch:'6 en ligne, V8', adm:'biturbo', pos:'avant', tx:'propulsion / intégrale', bv:'A9',
       note:"L\'inventeur du « coupé quatre portes » en 2004, un concept aussitôt copié par toute la concurrence. Silhouette de coupé sur une base de berline, sacrifiant un peu d\'habitabilité au profit du style." },
@@ -2473,8 +2473,8 @@
       ch:204, nm:320, kg:1825, cyl:2.0, arch:'4 cyl.', adm:'turbo + hybridation légère', pos:'avant', tx:'propulsion', bv:'A9', flou:['kg'],
       note:"La colonne vertébrale de Mercedes depuis 70 ans, référence des taxis et des berlines longue distance. La 500 E de 1990, assemblée par Porsche, cachait un V8 sous une carrosserie discrète. Chiffres de l\'E 200 W214 ; elle portait ceux de l\'E 63 AMG." },
     'audi-q5': { nom:'Audi Q5', an:[2008], pays:'Allemagne',
-      ch:367, nm:500, kg:1800, cyl:3.0, arch:'4 cyl. et V6', adm:'turbo', pos:'avant', tx:'quattro', bv:'S tronic 7',
-      note:"Le SUV premium le plus vendu d\'Audi. La SQ5 diesel a inauguré un compresseur électrique 48 V pour supprimer le temps de réponse du turbo, une technologie de pointe." },
+      ch:204, nm:400, kg:1845, cyl:2.0, arch:'4 cyl. diesel', adm:'turbo + hybridation légère', pos:'avant', tx:'quattro', bv:'S tronic 7', flou:['kg'],
+      note:"Le SUV premium le plus vendu d\'Audi. La SQ5 diesel a inauguré un compresseur électrique 48 V pour supprimer le temps de réponse du turbo, une technologie de pointe. Chiffres du Q5 II 40 TDI quattro ; elle portait ceux du SQ5, qui a sa propre fiche." },
     'bmw-x5': { nom:'BMW X5', an:[1999], pays:'Allemagne',
       ch:340, nm:450, kg:2204, cyl:3.0, arch:'6 en ligne', adm:'turbo', pos:'avant', tx:'intégrale', bv:'A8',
       note:"Le SUV qui a inventé le concept de « Sports Activity Vehicle » en 1999, privilégiant le comportement routier. Chiffres du X5 xDrive40i (G05, 2018) ; les X5 M ont leurs propres fiches." },
@@ -2482,8 +2482,8 @@
       ch:245, nm:500, kg:2165, cyl:2.0, arch:'4 cyl. diesel', adm:'turbo', pos:'avant', tx:'intégrale', bv:'A9', flou:['kg'],
       note:"Appelé Classe M jusqu\'en 2015. La suspension E-Active Body Control à 48 V peut faire rebondir la voiture pour se désensabler, ou pencher dans les virages comme un motard. Chiffres du GLE 300 d 4MATIC (W167) ; elle portait ceux du GLE 63 S AMG." },
     'volvo-xc90': { nom:'Volvo XC90', an:[2002], pays:'Suède',
-      ch:455, nm:709, kg:2100, cyl:2.0, arch:'4 cyl. hybride', adm:'turbo + compresseur + él.', pos:'avant', tx:'intégrale', bv:'A8',
-      note:"Vitrine de la sécurité Volvo : aucun occupant n\'est mort dans un XC90 au Royaume-Uni pendant plus de 16 ans, selon une étude. La T8 hybride cumule turbo, compresseur et moteur électrique." },
+      ch:250, nm:360, kg:2080, cyl:2.0, arch:'4 cyl.', adm:'turbo + hybridation légère 48 V', pos:'avant', tx:'intégrale', bv:'A8', flou:['kg'],
+      note:"Vitrine de la sécurité Volvo : aucun occupant n\'est mort dans un XC90 au Royaume-Uni pendant plus de 16 ans, selon une étude. La T8 hybride cumule turbo, compresseur et moteur électrique. Chiffres du XC90 II B5 AWD (restylé) ; elle portait ceux de la T8 hybride rechargeable." },
     'range-rover': { nom:'Land Rover Range Rover', an:[1970], pays:'Royaume-Uni',
       ch:400, nm:550, kg:2587, cyl:3.0, arch:'6 en ligne', adm:'turbo + hybridation légère', pos:'avant', tx:'intégrale', bv:'A8',
       note:"L\'inventeur du SUV de luxe en 1970. Un exemplaire fut exposé au Louvre comme œuvre de design industriel. La SV Autobiography est le summum du raffinement tout-terrain. Chiffres du Range Rover P400 (L460) ; les V8 dépassent 500 ch." },
@@ -2792,8 +2792,8 @@
 
     /* ===== LOT 8a (utilitaires, classiques, monde) ======================= */
     'ds-7': { nom:'DS 7', an:[2017], pays:'France',
-      ch:300, nm:520, kg:1660, cyl:1.6, arch:'4 cyl. hybride', adm:'turbo + électrique', pos:'avant', tx:'intégrale', bv:'A8',
-      note:"Premier modèle de DS comme marque autonome. La E-Tense 4x4 300 fut la voiture officielle du président Macron pour son investiture en 2017." },
+      ch:130, nm:300, kg:1428, cyl:1.5, arch:'4 cyl. diesel', adm:'turbo', pos:'avant', tx:'traction', bv:'EAT8', flou:['kg'],
+      note:"Premier modèle de DS comme marque autonome. La E-Tense 4x4 300 fut la voiture officielle du président Macron pour son investiture en 2017. Chiffres du DS 7 BlueHDi 130 ; elle portait ceux de l\'E-Tense 4x4 300." },
     'porsche-911-cup': { nom:'Porsche 911 GT3 Cup', an:[1998], pays:'Allemagne',
       ch:510, nm:470, kg:1260, cyl:4.0, arch:'flat-6', adm:'atmo', pos:'arrière', tx:'propulsion', bv:'séquentielle 6',
       note:"La voiture de course de série la plus produite au monde. Base des championnats monotypes Carrera Cup et Supercup depuis 1990. Non homologuée route." },
