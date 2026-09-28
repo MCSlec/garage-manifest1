@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.154.0';
+  const VERSION_MODULE = '20.155.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -1014,7 +1014,7 @@
       ch:431, nm:664, kg:1800, cyl:7.0, arch:'V8 HEMI', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M4 / A3',
       note:"L\'« aero warrior » : nez conique et aileron arrière géant pour la course NASCAR, où elle fut la première à dépasser les 320 km/h sur un ovale. Jumelle de la Plymouth Superbird. Une des muscle cars les plus extrêmes et cotées." },
     'dodge-neon-srt4': { nom:'Dodge Neon SRT-4', an:[2003,2005], pays:'États-Unis',
-      ch:230, nm:340, kg:1300, cyl:2.4, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M5',
+      ch:233, nm:340, kg:1300, cyl:2.4, arch:'4 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M5',
       note:"Une compacte économique transformée en sleeper par la division SRT : un 2.4 turbo qui humiliait des sportives bien plus chères en ligne droite, pour un prix dérisoire. Le tuning américain d\'usine dans sa version la plus efficace." },
     'dodge-durango-srt': { nom:'Dodge Durango SRT Hellcat', an:[2021], pays:'États-Unis',
       ch:717, nm:875, kg:2500, cyl:6.2, arch:'V8 HEMI', adm:'compresseur', pos:'avant', tx:'intégrale', bv:'A8',
@@ -1034,8 +1034,8 @@
       ch:411, nm:522, kg:1600, cyl:5.7, arch:'V8 LT5 (Lotus)', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M6',
       note:"La « King of the Hill » : son V8 LT5 à double arbre à cames en tête fut conçu par Lotus et fabriqué par Mercury Marine. Une clé de bridage limitait la puissance pour les prêts à des tiers. Le sommet de la Corvette C4. Chiffres de 1993–1995 : 405 hp SAE net, soit 411 ch." },
     'dodge-demon': { nom:'Dodge Challenger SRT Demon 170', an:[2023], pays:'États-Unis',
-      ch:1025, nm:1281, kg:2000, cyl:6.2, arch:'V8 HEMI', adm:'compresseur, E85', pos:'avant', tx:'propulsion', bv:'A8',
-      note:"1025 ch à l\'éthanol E85, conçue pour lever les roues avant au départ (un premier record homologué pour une voiture de série). Interdite de dragstrip NHRA sans arceau de sécurité, tant elle est rapide. Le bouquet final de l\'ère du V8 muscle car." },
+      ch:1039, nm:1281, kg:2000, cyl:6.2, arch:'V8 HEMI', adm:'compresseur, E85', pos:'avant', tx:'propulsion', bv:'A8',
+      note:"1 025 hp SAE à l\'éthanol E85, soit 1 039 ch. Sa devancière de 2018, la Demon, a été homologuée par le Guinness pour le plus long wheelie au départ d\'une voiture de série. Interdite de dragstrip NHRA sans arceau de sécurité, tant elle est rapide. Le bouquet final de l\'ère du V8 muscle car." },
     'cadillac-ct5v-bw': { nom:'Cadillac CT5-V Blackwing', an:[2021], pays:'États-Unis',
       ch:677, nm:893, kg:1920, cyl:6.2, arch:'V8', adm:'compresseur', pos:'avant', tx:'propulsion', bv:'M6 / A10',
       note:"La Cadillac de série la plus puissante de l\'histoire, et l\'une des dernières grandes berlines sportives à proposer une boîte manuelle. La réponse américaine aux M5 et E63, avec un V8 compressé à l\'ancienne. Un chant du cygne salué par la presse." },
@@ -1574,7 +1574,7 @@
       ch:300, nm:730, kg:3500, cyl:6.6, arch:'V8 diesel Duramax', adm:'turbo', pos:'avant', tx:'4x4', bv:'A5',
       note:"Version civile du Humvee militaire, popularisée par Arnold Schwarzenegger qui fut le premier à en réclamer une. Près de 2,20 m de large, différentiels centraux à la roue (« portal axles ») pour une garde au sol énorme." },
     'tesla-roadster': { nom:'Tesla Roadster', an:[2008,2012], pays:'États-Unis',
-      ch:288, nm:400, kg:1235, cyl:0, arch:'moteur électrique', adm:'électrique', pos:'arrière', tx:'propulsion', bv:'A1',
+      ch:292, nm:400, kg:1235, cyl:0, arch:'moteur électrique', adm:'électrique', pos:'arrière', tx:'propulsion', bv:'A1',
       note:"La voiture qui a lancé Tesla, sur base de châssis Lotus Elise. Première électrique de série à dépasser 320 km d\'autonomie et à séduire par ses performances plutôt que par l\'écologie seule. A prouvé que l\'électrique pouvait être désirable." },
     'saleen-s7': { nom:'Saleen S7', an:[2000,2009], pays:'États-Unis',
       ch:760, nm:948, kg:1338, cyl:7.0, arch:'V8', adm:'biturbo', pos:'central', tx:'propulsion', bv:'M6',
@@ -3106,7 +3106,7 @@
       ch:220, nm:206, kg:1170, cyl:2.0, arch:'4 en ligne VTEC', adm:'atmo', pos:'avant', tx:'traction', bv:'M6',
       note:"Souvent citée comme la meilleure traction de tous les temps par la presse spécialisée. Moteur VTEC hurlant jusqu\'à 8 400 tr/min, différentiel à glissement limité, allègement drastique." },
     'lotus-emira': { nom:'Lotus Emira', an:[2021], pays:'Royaume-Uni',
-      ch:400, nm:430, kg:1405, cyl:3.5, arch:'V6 compressé / 4 cyl. AMG', adm:'compresseur / turbo', pos:'central', tx:'propulsion', bv:'M6 / A8',
+      ch:405, nm:430, kg:1405, cyl:3.5, arch:'V6 compressé / 4 cyl. AMG', adm:'compresseur / turbo', pos:'central', tx:'propulsion', bv:'M6 / A8',
       note:"La dernière Lotus 100 % thermique : un adieu au moteur à combustion avant le tout-électrique. Le V6 est le compressé Toyota, le 4 cylindres vient d\'AMG." },
     'lotus-europa': { nom:'Lotus Europa', an:[1966,1975], pays:'Royaume-Uni',
       ch:126, nm:150, kg:660, cyl:1.6, arch:'4 en ligne', adm:'atmo', pos:'central', tx:'propulsion', bv:'M5',
@@ -8773,6 +8773,184 @@
     ],
     'nissan-figaro': [
       ['Figaro','1991–1992','4 cyl. 1.0 turbo (MA10ET), boîte automatique trois rapports','76 ch','Attribuée par tirage au sort. 20 073 exemplaires.'],
+    ],
+
+    /* ---- Vague G10 : supercars et sportives --------------------------------- */
+    'alpine-a110': [
+      ['A110 / Première Édition','2017–','4 cyl. 1.8 turbo, moteur central','252 ch','Structure aluminium, un peu plus d\'une tonne.'],
+      ['A110 S','2019–','4 cyl. 1.8 turbo','292 puis 300 ch','Châssis raffermi ; 300 ch à partir de 2022, comme l\'A110 GT.'],
+      ['A110 R','2022–','4 cyl. 1.8 turbo','300 ch','Allégée et aérodynamique de circuit. La R Ultime atteint 345 ch avec du carburant à 102 d\'octane.'],
+    ],
+    'ferrari-308': [
+      ['308 GTB « Vetroresina »','1975–1977','V8 3.0 à carburateurs, moteur central transversal','255 ch','Carrosserie en fibre de verre, seule Ferrari de série ainsi construite. 712 ou 808 exemplaires selon les sources.'],
+      ['308 GTB / GTS','1977–1980','V8 3.0 à carburateurs','255 ch','Carrosserie en acier. La GTS à toit amovible arrive en 1977.'],
+      ['308 GTBi / GTSi','1980–1982','V8 3.0 à injection Bosch K-Jetronic','214 ch','L\'injection dépollue, au prix de quarante chevaux.'],
+      ['308 Quattrovalvole','1982–1985','V8 3.0 à quatre soupapes par cylindre','240 ch','Les culasses à quatre soupapes rendent une partie de la puissance perdue.'],
+    ],
+    'ferrari-348': [
+      ['348 tb / ts','1989–1993','V8 3.4, moteur central longitudinal','300 ch','Succède à la 328, avec des prises d\'air latérales façon Testarossa.'],
+      ['348 GTB / GTS','1993–1995','V8 3.4','320 ch','Évolution finale, plus puissante.'],
+      ['348 Spider','1993–1995','V8 3.4','320 ch','Capote souple, là où les GTS n\'avaient qu\'un panneau de toit amovible.'],
+    ],
+    'mclaren-12c': [
+      ['MP4-12C','2011–2012','V8 3.8 biturbo (M838T), monocoque carbone','600 ch','Première McLaren de série depuis la F1.'],
+      ['12C / 12C Spider','2012–2014','V8 3.8 biturbo','625 ch','Mise à jour proposée gratuitement aux premiers propriétaires. Le Spider à toit rigide escamotable arrive en 2012.'],
+    ],
+    'mclaren-artura': [
+      ['Artura','2021–2024','V6 3.0 biturbo hybride rechargeable','680 ch','Nouvelle architecture carbone, un moteur électrique dans la boîte. Puissance cumulée.'],
+      ['Artura / Artura Spider','2024–','V6 3.0 biturbo hybride rechargeable','700 ch','Vingt chevaux de plus, offerts aussi aux premiers clients par mise à jour.'],
+    ],
+    'honda-nsx-nc1': [
+      ['NSX (NC1)','2016–2021','V6 3.5 biturbo + trois moteurs électriques','581 ch','Deux moteurs électriques à l\'avant, un à l\'arrière. Puissance cumulée, 573 hp aux États-Unis.'],
+      ['NSX Type S','2021–2022','V6 3.5 biturbo hybride','608 ch','350 exemplaires pour clore la production, fin 2022.'],
+    ],
+    'mercedes-slr': [
+      ['SLR McLaren (coupé)','2003–2009','V8 5.4 compressé','626 ch','Portes à ouverture en élytre, échappements latéraux.'],
+      ['SLR 722 Edition','2006–2007','V8 5.4 compressé','650 ch','Nommée d\'après le numéro de départ de Stirling Moss aux Mille Miglia 1955.'],
+      ['SLR Roadster','2007–2009','V8 5.4 compressé','626 ch','Capote souple à trois épaisseurs.'],
+      ['SLR Stirling Moss','2009','V8 5.4 compressé','650 ch','Speedster sans pare-brise ni toit, 75 exemplaires. 2 157 SLR au total.'],
+    ],
+    'saleen-s7': [
+      ['S7','2000–2004','V8 7.0 atmo (Ford), moteur central','558 ch','550 hp SAE. Châssis tubulaire et carrosserie en carbone.'],
+      ['S7 Twin Turbo','2005–2009','V8 7.0 biturbo','760 ch','750 hp SAE. Quelques exemplaires portés à 1 000 ch par l\'option Competition.'],
+    ],
+    'dodge-hellcat': [
+      ['Challenger SRT Hellcat','2015–2023','V8 HEMI 6.2 compressé','717 ch','707 hp SAE : premier HEMI à compresseur de série.'],
+      ['Challenger SRT Hellcat Redeye','2019–2023','V8 HEMI 6.2 compressé','808 ch','797 hp SAE, avec des éléments hérités de la Demon.'],
+    ],
+    'dodge-demon': [
+      ['Challenger SRT Demon','2018','V8 HEMI 6.2 compressé','852 ch (E85)','840 hp SAE à l\'éthanol, conçue pour le dragster. 3 300 exemplaires.'],
+      ['Challenger SRT Demon 170','2023','V8 HEMI 6.2 compressé','1 039 ch (E85)','1 025 hp SAE à l\'E85, 945 lb-ft. 3 300 exemplaires, 3 000 pour les États-Unis et 300 pour le Canada.'],
+    ],
+    'porsche-911-gt3-touring': [
+      ['GT3 Touring (991.2)','2017–2019','flat-6 4.0 atmo','500 ch','Aileron fixe remplacé par un becquet mobile. Boîte manuelle uniquement.'],
+      ['GT3 Touring (992)','2021–2024','flat-6 4.0 atmo','510 ch','Boîte manuelle ou PDK.'],
+      ['GT3 Touring (992.2)','2025–','flat-6 4.0 atmo','','Troisième génération.'],
+    ],
+    'lexus-lfa': [
+      ['LFA','2010–2012','V10 4.8 atmo','560 ch','Coque en polymère renforcé de fibre de carbone, compteur numérique imposé par la vitesse de montée en régime. 500 exemplaires.'],
+      ['LFA Nürburgring Package','2012','V10 4.8 atmo','571 ch','Aileron fixe, suspension de circuit, passage de rapport en 0,15 s. 50 des 500 LFA.'],
+    ],
+    'alfa-8c': [
+      ['8C Competizione','2007–2009','V8 4.7 atmo (base Maserati-Ferrari)','450 ch','Carrosserie en carbone. 500 exemplaires.'],
+      ['8C Spider','2009–2010','V8 4.7 atmo','450 ch','Production annoncée à 500 exemplaires.'],
+    ],
+    'lambo-aventador-svj': [
+      ['Aventador SVJ','2018–2021','V12 6.5 atmo','770 ch','Aérodynamique active ALA. 900 coupés, plus 63 SVJ 63 pour l\'année de fondation de la marque.'],
+      ['Aventador SVJ Roadster','2019–2022','V12 6.5 atmo','770 ch','800 exemplaires.'],
+    ],
+    'mclaren-765lt': [
+      ['765LT','2020–2021','V8 4.0 biturbo','765 ch','« Longtail » : 80 kg de moins que la 720S. 765 exemplaires.'],
+      ['765LT Spider','2021–2022','V8 4.0 biturbo','765 ch','Également limitée à 765 exemplaires.'],
+    ],
+    'gumpert-apollo': [
+      ['Apollo / Sport / S / R','2005–2012','V8 Audi 4.2 biturbo, moteur central','650 à 800 ch','Paliers de puissance selon la version : 650 ch pour la base, 750 ch pour la S, 800 ch pour la R.'],
+    ],
+    'opel-speedster': [
+      ['Speedster 2.2','2000–2003','4 cyl. 2.2 atmo, moteur central','147 ch','Construite par Lotus à Hethel, sur la base de l\'Elise S2. Vauxhall VX220 au Royaume-Uni.'],
+      ['Speedster Turbo','2003–2005','4 cyl. 2.0 turbo','200 ch','7 207 Speedster au total, toutes versions.'],
+    ],
+    'renault-spider': [
+      ['Sport Spider (saute-vent)','1996–1999','4 cyl. 2.0 16v, moteur central','150 ch','Châssis aluminium, portes en élytre, un simple déflecteur à la place du pare-brise.'],
+      ['Sport Spider (pare-brise)','1996–1999','4 cyl. 2.0 16v','150 ch','Version à pare-brise proposée dès fin 1996. 1 726 exemplaires en tout, dont 80 Spider Trophy de compétition.'],
+    ],
+    'tesla-roadster': [
+      ['Roadster 1.5','2008–2009','moteur électrique, batterie lithium-ion','251 ch','Châssis dérivé de la Lotus Elise ; assemblage final européen chez Lotus à Hethel.'],
+      ['Roadster 2.0 / 2.5 / Sport','2010–2012','moteur électrique','292 ch','288 hp. Environ 2 450 Roadster vendus dans plus de trente pays.'],
+    ],
+    'bmw-z3m-coupe': [
+      ['Z3 M Coupé (S50)','1998–2000','6 en ligne 3.2 (S50)','321 ch','Carrosserie de break de chasse, surnommée « chaussure de clown ».'],
+      ['Z3 M Coupé (S54)','2001–2002','6 en ligne 3.2 (S54)','325 ch','Le moteur de la M3 E46. 6 291 Z3 M Coupé au total.'],
+    ],
+    'dodge-neon-srt4': [
+      ['Neon SRT-4','2003','4 cyl. 2.4 turbo','218 ch','215 hp SAE, différentiel ouvert.'],
+      ['Neon SRT-4','2004–2005','4 cyl. 2.4 turbo','233 ch','230 hp SAE et différentiel à glissement limité.'],
+    ],
+    'lotus-emira': [
+      ['Emira V6','2021–','V6 Toyota 3.5 compressé','405 ch','Boîte manuelle ou automatique. La dernière Lotus thermique.'],
+      ['Emira i4','2023–','4 cyl. AMG 2.0 turbo (M139)','365 ch','Le moteur de la Mercedes-AMG A 45 S, en boîte à double embrayage.'],
+    ],
+    'cupra-leon': [
+      ['León (thermique et e-Hybrid)','2020–2024','4 cyl. 2.0 TSI ; 1.4 TSI hybride rechargeable','245 à 310 ch','L\'e-Hybrid affiche 245 ch cumulés.'],
+      ['León (restylée)','2024–','4 cyl. 2.0 TSI ; 1.5 TSI hybride rechargeable','272 à 333 ch','300 ch pour la cinq portes, 333 ch pour le break, 272 ch cumulés pour la VZ e-Hybrid.'],
+    ],
+    'peugeot-308-gti': [
+      ['308 GTi by Peugeot Sport','2015–2021','4 cyl. 1.6 THP','250 ou 270 ch','La 270 reçoit un différentiel Torsen à glissement limité et des jantes de 19 pouces.'],
+    ],
+    'citroen-ds3-racing': [
+      ['DS3 Racing','2011–2014','4 cyl. 1.6 THP','207 ch','Préparée par Citroën Racing. Lancée en série numérotée de 1 000 exemplaires.'],
+    ],
+    'renault-megane-r26r': [
+      ['Mégane R26.R','2008–2009','4 cyl. 2.0 turbo','230 ch','Allégée de 123 kg : vitres arrière en polycarbonate, banquette et climatisation supprimées. 450 exemplaires prévus, assemblés à Dieppe.'],
+    ],
+    'renault-megane-trophy-r': [
+      ['Mégane R.S. Trophy-R','2019','4 cyl. 1.8 turbo','300 ch','Record des tractions au Nürburgring en 7 min 40 s. 500 exemplaires.'],
+    ],
+    'mercedes-amg-gtbs': [
+      ['AMG GT Black Series','2020–2022','V8 4.0 biturbo à vilebrequin plat','730 ch','Record du Nürburgring pour une voiture de série en 2020.'],
+    ],
+    'lambo-huracan-sto': [
+      ['Huracán STO','2021–2024','V10 5.2 atmo','640 ch','« Super Trofeo Omologata ». Propulsion, capot avant d\'un seul tenant.'],
+    ],
+    'lambo-temerario': [
+      ['Temerario','2024–','V8 4.0 biturbo + trois moteurs électriques','920 ch','Remplace la Huracán. Puissance cumulée, rupteur à 10 000 tr/min.'],
+    ],
+    'porsche-911-gt3-rs-40': [
+      ['GT3 RS 4.0 (997)','2011','flat-6 4.0 atmo (Mezger)','500 ch','Dernière 911 à moteur Mezger, dérivé de la course. 600 exemplaires.'],
+    ],
+    'porsche-911-r': [
+      ['911 R (991)','2016','flat-6 4.0 atmo','500 ch','Le moteur de la GT3 RS, boîte manuelle à six rapports, sans aileron. 991 exemplaires.'],
+    ],
+    'porsche-911-dakar': [
+      ['911 Dakar (992)','2023–2024','flat-6 3.0 biturbo','480 ch','Garde au sol relevée, pneus tout-terrain. 2 500 exemplaires.'],
+    ],
+    'porsche-cayman-gts': [
+      ['718 Cayman GTS 4.0','2020–','flat-6 4.0 atmo','400 ch','Le six-cylindres atmosphérique revient, après les 718 à quatre cylindres turbo.'],
+    ],
+    'alfa-giulia-gtam': [
+      ['Giulia GTA / GTAm','2021–2022','V6 2.9 biturbo','540 ch','Allégées de 100 kg par rapport à la Quadrifoglio. La GTAm n\'a que deux places. 500 exemplaires, GTA et GTAm confondues.'],
+    ],
+    'bmw-m3-csl': [
+      ['M3 CSL (E46)','2003–2004','6 en ligne 3.2 (S54)','360 ch','Toit en carbone, admission carbone. 1 383 exemplaires.'],
+    ],
+    'mercedes-clk63-bs': [
+      ['CLK 63 AMG Black Series','2007–2009','V8 6.2 atmo (M156)','507 ch','Voies élargies, ailes bombées. Environ 700 exemplaires.'],
+    ],
+    'toyota-celica-gt-four': [
+      ['Celica GT-Four (ST185)','1989–1993','4 cyl. 2.0 turbo (3S-GTE)','242 ch','Titre pilotes 1992 avec Carlos Sainz, doublé pilotes-constructeurs 1993 avec Juha Kankkunen.'],
+    ],
+    'nissan-pulsar-gtir': [
+      ['Pulsar GTI-R (N14)','1990–1994','4 cyl. 2.0 turbo (SR20DET)','230 ch','Transmission intégrale ATTESA, homologation Groupe A.'],
+    ],
+    'venturi-400gt': [
+      ['400 GT','1994–1998','V6 PRV 3.0 biturbo, moteur central','408 ch','Version routière de la 400 Trophy de course monotype. Freins en carbone.'],
+    ],
+    'wiesmann-gt': [
+      ['GT MF5','2009–2014','V10 BMW 5.0 (S85)','555 ch','Le V10 de la BMW M5 E60, assemblé à la main à Dülmen.'],
+    ],
+    'vector-w8': [
+      ['W8','1989–1993','V8 6.0 biturbo, moteur central','625 ch','Châssis en aluminium et carrosserie en composites, instrumentation d\'avion de chasse.'],
+    ],
+    'scg-004': [
+      ['SCG 004S','2021–','V8 biturbo, moteur central','650 ch','Version routière ; une variante de compétition, la 004C, court en GT.'],
+    ],
+    'dallara-stradale': [
+      ['Stradale','2018–','4 cyl. Ford 2.3 turbo, moteur central','400 ch','Monocoque carbone ; se transforme en barquette, roadster ou targa.'],
+    ],
+    'donkervoort-f22': [
+      ['F22','2022–','5 cyl. Audi 2.5 turbo','500 ch','Moins de 750 kg pour 500 ch.'],
+    ],
+    'tvr-sagaris': [
+      ['Sagaris','2005–2006','6 en ligne 4.0 (Speed Six)','406 ch','Ni ABS, ni antipatinage. 211 exemplaires, parmi les dernières TVR de Blackpool.'],
+    ],
+    'autozam-az1': [
+      ['AZ-1','1992–1994','3 cyl. 0.66 turbo (Suzuki), moteur central','64 ch','Kei car à portes papillon, aussi vendue sous le nom de Suzuki Cara.'],
+    ],
+    'panoz-esperante': [
+      ['Esperante','2000–2007','V8 Ford 4.6','','Châssis aluminium, assemblée en Géorgie. La GTLM à compresseur est la plus puissante.'],
+    ],
+    'rwb-911': [
+      ['RWB 911','1997–','flat-6 Porsche, selon la base','','Préparations d\'Akira Nakai sur des 911 anciennes (930, 964, 993), chacune réalisée par lui sur place.'],
     ],
     'toyota-century': [
       ['G20 / G30 / G40','1967–1997','V8 3.0, 3.4 puis 4.0','','Trente ans de production quasiment sans changement de ligne, réservée au marché japonais.'],
