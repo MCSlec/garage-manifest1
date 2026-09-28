@@ -507,6 +507,7 @@ modification n'impose aucun bump de version.
 | `ai-relay-worker.js` | Relais IA Cloudflare — déployé **à part**, hors dossier statique |
 | `banc-v1.html` | ⚠️ **Contient le prototype complet du « Rouleau »** (~737 lignes), pas un simple banc jetable — voir §8 bis. Hors cache, ne pas livrer comme app, **et ne jamais supprimer** |
 | `gm-rouleau.js` | Le Rouleau extrait (§8 bis), non intégré ; banc `banc-rouleau.js` |
+| `banc-i18n.js` → `I18N.md` | Recensement des textes d'interface (préparation i18n). `I18N.md` est **généré** : relancer `node banc-i18n.js --md`, ne jamais l'éditer à la main |
 | `index-1.html` | Ancienne copie de travail d'`index.html` — **non servie**, ne pas confondre avec le fichier de prod |
 | `CONTEXT.md` | État projet, décisions, journal des chantiers (le *pourquoi*) |
 | `README.md` | Documentation utilisateur/fonctionnelle (le *quoi*) |

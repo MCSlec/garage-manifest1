@@ -607,6 +607,12 @@ avoir à refaire l'interface le jour où le bandeau arrive.
   boutons ni le contenu ; `padding-bottom` correspondant sur le contenu
   scrollable ; `env(safe-area-inset-bottom)` respecté ; comportement propre
   sur desktop ; activable plus tard par une simple classe/id.
+- **Constat du 28/09 : le bandeau existe déjà** dans `gm-specs.js`
+  (`SPONSORS` par région, vide par défaut donc invisible, refermable pour la
+  session, mention « Publicité », fixe au-dessus de la barre d'onglets). Seul
+  écart avec ce cadrage : une fois actif, il **recouvre le bas du contenu**
+  (pas de `padding-bottom` sur la zone qui défile). Question de mise en page,
+  laissée à la décision de design.
 - **La pub est une couche externe de monétisation, jamais une mécanique de
   jeu.** Elle ne doit influencer ni la fiche voiture, ni la boucle
   capture → identification → confirmation → collection → fiche → progression.
@@ -624,6 +630,15 @@ traduire quoi que ce soit maintenant.
   aux textes de traduction.** Un nom de modèle, une note de fiche, un libellé
   de motorisation ne sont pas des chaînes d'UI. Les confondre rendrait le
   catalogue intraduisible… et traduisible par erreur, ce qui est pire.
+
+> **État au 28/09 : recensement fait (option a), aucun code modifié.**
+> `node banc-i18n.js --md` → `I18N.md` : **547 textes d'interface distincts**
+> (index.html 379, gm-specs.js 161, gm-matcher.js 7) + 131 textes éditoriaux
+> (collections, à traiter comme les notes de fiche). Plus de 20 000 chaînes de
+> données écartées mécaniquement. Trois obstacles à un `t("clé")` naïf :
+> phrases coupées par des `${…}`, pluriels codés en français
+> (« voiture{…} née{…} »), et libellés de catégorie qui servent aussi de clés
+> de filtrage. Option (b) — le mécanisme `t()` — non lancée.
 
 ### C. Extraction du Rouleau depuis `banc-v1.html` → `gm-rouleau.js`
 
@@ -669,6 +684,7 @@ sur 1 017 fiches. **Programme, pas session.**
 | 28/09/2026 | **Étape B `MOTOR_SPECS`, vague E1** (chantier E lancé) : Golf VIII (1.0 TSI 110, 1.5 eTSI 150, 2.0 TDI 115 et 150) et Yaris XP210 (116h, 130h) — 51 modèles équipés. La fiche Yaris perd son couple (185 Nm) : aucun couple système n'existe sur un hybride Toyota (§4.4). **Correctif de rendu** : `ficheHTML()` forçait `flou: []` sur toute variante, alors que `fichePourInterface()` respectait le `flou` de la variante — une masse approximative de variante s'affichait comme ferme. **Limite de sourçage** : l'environnement bloque la lecture directe de largus, zeperfs, ultimatespecs, automobile-catalog et Wikipédia ; seuls les résumés de recherche sont accessibles. Requêtes formulées sans chiffres pour ne pas s'auto-confirmer, et masses de sources mêlées (DIN / UE) marquées ≈ | `gm-specs.js` v20.163.0, `sw.js` `garage-v20.163.0` | `gm-specs.js`, `sw.js`, `CLAUDE.md`, `CONTEXT.md` |
 | 28/09/2026 | **Vague E2** : Polo VI (MPI 80, TSI 95, TSI 110), Sandero III (SCe 65, TCe 90, ECO-G 100), Captur II (TCe 90, E-Tech 145, E-Tech plug-in 160), 2008 II (PureTech 100 et 130, BlueHDi 110, e-2008) — 55 modèles équipés. Fiches ramenées à leur version de base : **2008** (elle portait les 156 ch de l'e-2008 avec la cylindrée du thermique, incohérence interne du type Scénic) et **Captur** (hybride rechargeable 160 ch à 270 Nm non sourcés). Les hybrides E-Tech restent sans couple : Renault ne publie pas de couple système. Détail trouvé en sourçant : le TCe 90 du Sandero perd un rapport en 2022. **Incertitude héritée par les ratios** : kg/ch, ch/t et kg/Nm s'affichaient fermes sur une masse « ≈ » ; `DERIVES[x].dep` + `estFlou()`, même liste dans `fichePourInterface()`. Banc de rendu 51/51 (+ cas Captur « ≈ » hérité et Yaris HSD sans couple), mutation vérifiée | `gm-specs.js` v20.164.0, `sw.js` `garage-v20.164.0` | `gm-specs.js`, `sw.js`, `banc-rendu.js`, `CLAUDE.md`, `CONTEXT.md` |
 | 28/09/2026 | **Chantier C, première moitié : le Rouleau extrait.** `gm-rouleau.js` extrait de `banc-v1.html` au caractère près (le prototype reste intact). Nouveau banc `banc-rouleau.js`, 19 tests, dont ce que le banc embarqué ne prouvait pas : reprise après fermeture brutale, disjoncteur, purge à 7 jours (révélées supprimées, latentes conservées), « même forme, autre couleur », dissociation, persistance. **Défaut trouvé et corrigé (v1.0.1)** : `estErreurReseau()` testait `includes('5')`, si bien qu'une erreur 400 « 25 Mo maximum » ouvrait le disjoncteur et gelait la pellicule. Mutations vérifiées (reprise des vues orphelines : 2 échecs). Intégration à `index.html` non faite : elle touche l'écran de capture | aucune (module non chargé par l'app) | `gm-rouleau.js`, `banc-rouleau.js`, `CLAUDE.md`, `CONTEXT.md` |
+| 28/09/2026 | **Chantier B, option (a) : recensement des textes d'interface**, sans toucher au code. `banc-i18n.js` tokenise le JavaScript (chaînes, gabarits avec `${…}`, commentaires, expressions régulières) et le balisage, écarte mécaniquement les données automobiles (littéraux `CARS`, `INFO`, `VARIANTS`, `SPECS`, `GENS`, `MOTOR_SPECS`… repérés par équilibrage de crochets, plus tout nom de marque du catalogue) et génère `I18N.md` : 547 textes d'interface distincts + 131 éditoriaux. Les gabarits sont recomposés entiers avant de retirer les balises, si bien que les phrases paramétrées restent lisibles (« Capture {…} voiture{…} née{…} avant 1980 »). Au passage, **constat sur A** : le bandeau sponsor existe déjà, il ne manque que la marge qui l'empêche de recouvrir le contenu | aucune | `banc-i18n.js`, `I18N.md`, `CLAUDE.md`, `CONTEXT.md` |
 
 ---
 
