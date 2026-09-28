@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.166.0';
+  const VERSION_MODULE = '20.167.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -217,8 +217,8 @@
       ch:265, nm:350, kg:1900, cyl:1.6, arch:'4 cyl. hybride', adm:'turbo + électrique', pos:'avant', tx:'intégrale', bv:'A6',
       note:"Le grand SUV familial de Hyundai, nommé d\'après la ville américaine. La dernière génération au style anguleux très marqué, aux immenses portes arrière, sept places. Un familial spacieux qui a fait grimper l\'image de la marque coréenne." },
     'kia-picanto': { nom:'Kia Picanto', an:[2004], pays:'Corée du Sud',
-      ch:100, nm:172, kg:1000, cyl:1.0, arch:'3 cyl.', adm:'turbo / atmo', pos:'avant', tx:'traction', bv:'M5',
-      note:"La citadine d\'entrée de gamme de Kia, appréciée pour son rapport prix/équipement et sa garantie 7 ans. La version GT-Line turbo lui donne un look sportif. Une puce urbaine maligne, l\'une des dernières vraies petites voitures abordables du marché." },
+      ch:67, nm:96, kg:903, cyl:1.0, arch:'3 cyl.', adm:'atmo', pos:'avant', tx:'traction', bv:'M5', flou:['kg'],
+      note:"La citadine d\'entrée de gamme de Kia, appréciée pour son rapport prix/équipement et sa garantie 7 ans. La version GT-Line turbo lui donne un look sportif. Une puce urbaine maligne, l\'une des dernières vraies petites voitures abordables du marché. Chiffres de la Picanto III 1.0 67." },
 
     /* ===== FICHES COMPLÈTES — vague AW (SUV/breaks premium + curiosités) == */
     'jaguar-fpace': { nom:'Jaguar F-Pace', an:[2016], pays:'Royaume-Uni',
@@ -2673,8 +2673,8 @@
       ch:435, nm:600, kg:1800, cyl:0, arch:'moteurs électriques', adm:'électrique', pos:'arrière / intégrale', tx:'propulsion / intégrale', bv:'A1',
       note:"Compacte électrique à propulsion, rare à ce prix. La XPower à deux moteurs et 435 ch abat le 0-100 en 3,8 s, défiant des sportives bien plus chères." },
     'suzuki-vitara': { nom:'Suzuki Vitara', an:[1988], pays:'Japon',
-      ch:140, nm:220, kg:1200, cyl:1.4, arch:'4 cyl. / hybride', adm:'turbo', pos:'avant', tx:'traction / AllGrip', bv:'M6 / A6',
-      note:"Le petit 4x4 qui a démocratisé le loisir tout-terrain accessible dans les années 90. Les premières générations à châssis séparé sont recherchées par les amateurs de franchissement." },
+      ch:129, nm:235, kg:1165, cyl:1.4, arch:'4 cyl.', adm:'turbo + hybridation légère 48 V', pos:'avant', tx:'traction', bv:'M6', flou:['kg'],
+      note:"Le petit 4x4 qui a démocratisé le loisir tout-terrain accessible dans les années 90. Les premières générations à châssis séparé sont recherchées par les amateurs de franchissement. Chiffres du Vitara IV 1.4 Boosterjet Hybrid 129 ; transmission intégrale AllGrip en option." },
 
     /* ===== LOT 8c (dernières fiches légitimes) =========================== */
     'mg-zs': { nom:'MG ZS', an:[2017], pays:'Chine',
@@ -2733,8 +2733,8 @@
       ch:225, nm:360, kg:1500, cyl:1.6, arch:'4 cyl. hybride', adm:'turbo + électrique', pos:'avant', tx:'traction', bv:'A8',
       note:"Compacte premium à la présentation soignée, suspension à caméra scrutant la route. La marque DS revendique un luxe « à la française »." },
     'opel-mokka': { nom:'Opel Mokka', an:[2012], pays:'Allemagne',
-      ch:156, nm:260, kg:1300, cyl:1.2, arch:'3 cyl. / électrique', adm:'turbo', pos:'avant', tx:'traction', bv:'M6 / A8',
-      note:"SUV urbain. La 2e génération inaugure le nouveau visage « Vizor » d\'Opel, une face avant en bandeau noir unifié, déclinée sur toute la gamme." },
+      ch:100, nm:205, kg:1270, cyl:1.2, arch:'3 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M6', flou:['kg'],
+      note:"SUV urbain. La 2e génération inaugure le nouveau visage « Vizor » d\'Opel, une face avant en bandeau noir unifié, déclinée sur toute la gamme. Chiffres du Mokka B 1.2 Turbo 100 ; le Mokka-e est dans le sélecteur." },
     'opel-grandland': { nom:'Opel Grandland', an:[2017], pays:'Allemagne',
       ch:130, nm:230, kg:1295, cyl:1.2, arch:'3 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M6 / A8', flou:['kg'],
       note:"SUV familial partageant sa base avec le Peugeot 3008. La version hybride rechargeable Hybrid4 dépasse les 300 ch cumulés. Chiffres du Grandland X 1.2 Turbo 130 ; la masse varie selon les sources." },
@@ -2914,8 +2914,8 @@
       ch:68, nm:92, kg:850, cyl:0.66, arch:'3 cyl.', adm:'turbo', pos:'avant', tx:'traction', bv:'M5',
       note:"Minuscule roadster « kei car » à toit rigide électrique escamotable. Malgré sa cylindrée limitée à 660 cm³ par la loi japonaise, un vrai petit cabriolet plein de charme." },
     'hyundai-kona': { nom:'Hyundai Kona', an:[2017], pays:'Corée du Sud',
-      ch:280, nm:392, kg:1500, cyl:2.0, arch:'4 cyl. / électrique', adm:'turbo', pos:'avant', tx:'traction / intégrale', bv:'A8',
-      note:"SUV urbain décliné en version N à près de 280 ch, l\'une des rares à jouer la carte sportive dans ce segment. La version électrique offre une autonomie remarquable." },
+      ch:141, nm:265, kg:1485, cyl:1.6, arch:'4 cyl. hybride', adm:'atmo + électrique', pos:'avant', tx:'traction', bv:'DCT 6', flou:['kg'],
+      note:"SUV urbain décliné en version N à près de 280 ch, l\'une des rares à jouer la carte sportive dans ce segment. La version électrique offre une autonomie remarquable. Chiffres du Kona II Hybrid 141, puissance et couple cumulés. Elle portait ceux du Kona N (280 ch), une autre voiture." },
     'chrysler-300c': { nom:'Chrysler 300C', an:[2004,2023], pays:'États-Unis',
       ch:367, nm:534, kg:1937, cyl:5.7, arch:'V8 HEMI', adm:'atmo', pos:'avant', tx:'propulsion / intégrale', bv:'A5 / A8',
       note:"Grande berline au style « gangster » assumé, calandre imposante. Beaucoup partagent leur base technique avec la Mercedes Classe E, héritage de l\'ère DaimlerChrysler. Chiffres du V8 HEMI 5.7 de la 300C elle-même, en norme SAE net ; la 300 SRT8 et son HEMI 6.4 est une autre voiture." },
@@ -16123,6 +16123,85 @@
               note:"Turbos plus gros, 280 km/h — même poids que la version de base." },
           ]
         }
+      ]
+    },
+
+    /* ---- Vague E5 (28/09/2026) : Mokka B, Kona II, Picanto III, Vitara IV —
+       fiches « multi-architectures » ramenées à une version (CONTEXT §10). */
+    'opel-mokka': {
+      types: [
+        {
+          id: 'mb-essence', label: 'Mokka B — Essence',
+          variants: [
+            { id:'mb-1.2t-100', label:'1.2 Turbo 100',
+              ch:100, nm:205, kg:1270, cyl:1.199, arch:'3 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'manuelle 6', flou:['kg'],
+              note:"Le trois-cylindres PureTech du groupe Stellantis." },
+            { id:'mb-1.2t-130', label:'1.2 Turbo 130 BVA8',
+              ch:130, nm:230, kg:1295, cyl:1.199, arch:'3 cyl.', adm:'turbo', pos:'avant transversal', tx:'traction', bv:'automatique 8', flou:['kg'],
+              note:"Même bloc, avec la boîte automatique à huit rapports." },
+          ]
+        },
+        {
+          id: 'mb-electrique', label: 'Mokka-e — Électrique',
+          variants: [
+            { id:'mb-e136', label:'Mokka-e 136',
+              ch:136, nm:260, kg:1598, cyl:0, arch:'moteur électrique', adm:'électrique', pos:'avant transversal', tx:'traction', bv:'A1', flou:['kg'],
+              note:"Batterie de 50 kWh, plateforme e-CMP." },
+          ]
+        },
+      ]
+    },
+
+    'hyundai-kona': {
+      types: [
+        {
+          id: 'sx2-hybride', label: 'Kona II — Hybride',
+          variants: [
+            { id:'sx2-hev141', label:'1.6 Hybrid 141',
+              ch:141, nm:265, kg:1485, cyl:1.58, arch:'4 cyl. hybride', adm:'atmo + électrique', pos:'avant transversal', tx:'traction', bv:'DCT 6', flou:['kg'],
+              note:"Hybride parallèle à embrayage : Hyundai publie un couple système, repris tel quel (§4.4)." },
+          ]
+        },
+        {
+          id: 'sx2-electrique', label: 'Kona II — Électrique',
+          variants: [
+            { id:'sx2-ev217', label:'Electric 65 kWh 217',
+              ch:217, nm:255, kg:1773, cyl:0, arch:'moteur électrique', adm:'électrique', pos:'avant transversal', tx:'traction', bv:'A1', flou:['kg'],
+              note:"Batterie de 65,4 kWh, jusqu\'à 514 km en cycle mixte WLTP." },
+          ]
+        },
+      ]
+    },
+
+    'kia-picanto': {
+      types: [
+        {
+          id: 'ja-essence', label: 'Picanto III — Essence',
+          variants: [
+            { id:'ja-1.0-67', label:'1.0 DPi 67',
+              ch:67, nm:96, kg:903, cyl:0.998, arch:'3 cyl.', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 5', flou:['kg'],
+              note:"Le moteur d\'entrée de gamme." },
+            { id:'ja-1.2-79', label:'1.2 DPi 79',
+              ch:79, nm:112, kg:915, cyl:1.197, arch:'4 cyl.', adm:'atmo', pos:'avant transversal', tx:'traction', bv:'manuelle 5', flou:['kg'],
+              note:"Seul quatre-cylindres de la gamme ; boîte robotisée en option." },
+          ]
+        },
+      ]
+    },
+
+    'suzuki-vitara': {
+      types: [
+        {
+          id: 'ly-hybride', label: 'Vitara IV — Hybrides',
+          variants: [
+            { id:'ly-1.4-129', label:'1.4 Boosterjet Hybrid 129',
+              ch:129, nm:235, kg:1165, cyl:1.373, arch:'4 cyl.', adm:'turbo + hybridation légère 48 V', pos:'avant transversal', tx:'traction', bv:'manuelle 6', flou:['kg'],
+              note:"Hybridation légère 48 V ; transmission intégrale AllGrip en option." },
+            { id:'ly-1.5-115', label:'1.5 Dualjet Hybrid 115 AGS',
+              ch:115, kg:1245, cyl:1.462, arch:'4 cyl. hybride', adm:'atmo + électrique', pos:'avant transversal', tx:'traction', bv:'robotisée AGS', flou:['kg'],
+              note:"Puissance système ; Suzuki ne publie pas de couple système (138 Nm pour le seul thermique)." },
+          ]
+        },
       ]
     },
 

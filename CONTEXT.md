@@ -567,6 +567,14 @@ de l'éditer.
 - [ ] `DEV_UNLOCK` (bypass du verrou pour vérification visuelle en dev) — proposé, jamais implémenté ; contourné pour l'instant par le banc Playwright
 
 ### Dette technique identifiée
+- **Fiches « multi-architectures » (mesuré le 28/09 : 92 fiches, dont 37 « courantes » ou « communes »).**
+  Le champ `arch` ou `adm` décrit plusieurs moteurs à la fois (« 3 cyl. / électrique »,
+  « turbo / atmo ») alors que `ch`, `nm` et `cyl` n'appartiennent qu'à l'un d'eux — parfois
+  à deux versions différentes (2008 : puissance de l'électrique, cylindrée du thermique).
+  Pas mis au banc en ALERTE : 92 alertes d'un coup, c'est un banc qu'on finit par ignorer.
+  Traité vague par vague dans le chantier E, les « courantes » d'abord : le sélecteur absorbe
+  les versions multiples et la fiche redevient mono-version (§4.5 bis). Liste : relancer la
+  requête du 28/09 (`arch`/`adm` contenant « / », « , électrique », « , hybride », « ou »).
 - Store IndexedDB unique portant trois natures d'enregistrements différentes via des clés sentinelles, plutôt que plusieurs stores dédiés.
 - Pas de stratégie de migration de schéma versionnée (`VER` reste à `1` depuis le début).
 - Ambiguïté non tranchée entre `VARIANTS` (finitions/phases) et les `types` de `MOTOR_SPECS` (motorisations) — risque de contradiction déjà repéré une fois sur Giulia/« Veloce ».
@@ -687,6 +695,7 @@ sur 1 017 fiches. **Programme, pas session.**
 | 28/09/2026 | **Chantier B, option (a) : recensement des textes d'interface**, sans toucher au code. `banc-i18n.js` tokenise le JavaScript (chaînes, gabarits avec `${…}`, commentaires, expressions régulières) et le balisage, écarte mécaniquement les données automobiles (littéraux `CARS`, `INFO`, `VARIANTS`, `SPECS`, `GENS`, `MOTOR_SPECS`… repérés par équilibrage de crochets, plus tout nom de marque du catalogue) et génère `I18N.md` : 547 textes d'interface distincts + 131 éditoriaux. Les gabarits sont recomposés entiers avant de retirer les balises, si bien que les phrases paramétrées restent lisibles (« Capture {…} voiture{…} née{…} avant 1980 »). Au passage, **constat sur A** : le bandeau sponsor existe déjà, il ne manque que la marge qui l'empêche de recouvrir le contenu | aucune | `banc-i18n.js`, `I18N.md`, `CLAUDE.md`, `CONTEXT.md` |
 | 28/09/2026 | **Vague E3** : Corsa F (1.2 75, 1.2 Turbo 100, Corsa-e), Qashqai J12 (1.3 DIG-T 140 et 158, e-POWER 190), Tiguan II (1.5 TSI 150, 2.0 TDI 150), C4 III (PureTech 130, ë-C4) — 59 modèles équipés. Fiches ramenées à leur version de base : **Corsa** (elle affichait les chiffres de la 130 avec l'architecture « 3 cyl. / électrique ») et **Qashqai** (e-POWER 190 sur une entrée courante). Cas d'école de l'**hybride série** : l'e-POWER garde ses 330 Nm, qui sont le couple à la roue puisque seul le moteur électrique entraîne les roues, mais n'a ni cylindrée ni ch/L, sans signification quand le thermique ne fait que produire du courant | `gm-specs.js` v20.165.0, `sw.js` `garage-v20.165.0` | `gm-specs.js`, `sw.js`, `CLAUDE.md`, `CONTEXT.md` |
 | 28/09/2026 | **Vague E4** : Twingo III (SCe 65, TCe 90), Fiat 500 (1.2 69, TwinAir 85, Hybrid 70), Duster III (ECO-G 100, TCe 130, Hybrid 140), Ibiza V et Fabia IV (MPI 80, TSI 95) — 64 modèles équipés. **Les cinq fiches décrivaient une autre voiture que leur entrée** (§4.5 bis) : l'Ibiza affichait la Cupra, qui a sa propre entrée (192 ch), la Fabia une 1.5 TSI 150, le Duster un TCe 150 ; la Twingo et la 500 mêlaient chiffres électriques ou turbo et cylindrée thermique. Toutes ramenées à leur version de base. Twingo électrique et 500e non ajoutées : les résumés de recherche mélangeaient deux générations (Twingo III Z.E. / Twingo IV 2026) | `gm-specs.js` v20.166.0, `sw.js` `garage-v20.166.0` | `gm-specs.js`, `sw.js`, `CLAUDE.md`, `CONTEXT.md` |
+| 28/09/2026 | **Vague E5**, première vague tirée de la liste des fiches « multi-architectures » (§10 Dette) : Mokka B (1.2 Turbo 100 et 130, Mokka-e), Kona II (Hybrid 141, Electric 217), Picanto III (1.0 67, 1.2 79), Vitara IV (1.4 Boosterjet 129, 1.5 Hybrid 115) — 68 modèles équipés. Fiches ramenées à une seule version : le **Kona** affichait le Kona N (280 ch), une autre voiture ; le **Mokka** l'électrique avec la cylindrée du thermique. Couple : cumulé et publié sur le Kona Hybrid (parallèle à embrayage), absent sur le Vitara Hybrid AGS (non publié). MG ZS et Kona 1.0 T-GDi remis à plus tard : générations mal départagées par les sources | `gm-specs.js` v20.167.0, `sw.js` `garage-v20.167.0` | `gm-specs.js`, `sw.js`, `CLAUDE.md`, `CONTEXT.md` |
 
 ---
 
