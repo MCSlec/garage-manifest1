@@ -136,6 +136,8 @@
   // ------------------------------------------------ sauvegarde / restauration --
   async function sauvegarder({ progres } = {}, _deuxiemeEssai = false) {
     if (!global.GMGarage) throw new ErreurCompte('Application pas encore prête', 0);
+    // Anciennes photos non compressées : ramenées sous le plafond du serveur (2 Mo) avant envoi.
+    if (typeof global.GMGarage.normaliserPhotos === 'function') await global.GMGarage.normaliserPhotos();
     const donnees = global.GMGarage.exporter();
     const photos = new Map();                        // empreinte → { type, octets }
     const spots = [];

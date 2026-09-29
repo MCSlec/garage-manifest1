@@ -106,8 +106,12 @@ Par défaut, le champ « Endpoint IA » de Réglages est vide → la reconnaissa
 2. Colle le contenu de `ai-relay-worker.js` dans l'éditeur en ligne → **Deploy**.
 3. Récupère une clé API Anthropic sur **console.anthropic.com** → **API Keys** → **Create Key**.
 4. Dans les réglages du Worker → **Settings → Variables** → ajoute une variable **secrète** nommée `ANTHROPIC_API_KEY` avec ta clé (ou en ligne de commande : `wrangler secret put ANTHROPIC_API_KEY` si tu utilises Wrangler).
-5. Redéploie si besoin. Ton Worker a une URL du type `https://ai-relay-worker.tonpseudo.workers.dev`.
-6. Dans l'app → **Plus → Réglages → Endpoint de reconnaissance IA** → colle cette URL.
+5. **Base de limites (obligatoire depuis le 29/09)** : dans les réglages du Worker → **Bindings** → ajoute une liaison **D1** nommée `DB` vers la base des comptes (`garage-comptes`, schéma `cloud/schema.sql`, voir `cloud/DEPLOIEMENT.md`). Sans elle, le relais **refuse de travailler** (503) : un relais sans plafond est un compte Anthropic ouvert à tous.
+6. **Variables** : `APP_ORIGIN` = l'origine exacte de l'app (`https://mcslec.github.io`). Facultatif, pour ajuster les plafonds : `QUOTA_IA_ANONYME` (défaut 30 / jour / appareil sans compte), `QUOTA_IA_COMPTE` (200 / jour / compte), `QUOTA_IA_JOUR` (3 000 / jour pour tout le service).
+7. Redéploie si besoin. Ton Worker a une URL du type `https://ai-relay-worker.tonpseudo.workers.dev`.
+8. Dans l'app → **Plus → Réglages → Endpoint de reconnaissance IA** → colle cette URL.
+
+Au-delà des plafonds, l'app affiche le message du relais (« choisis la voiture à la main ») : la capture continue, sans reconnaissance automatique. Banc : `node banc-relais.js` (18 tests, sans réseau ni crédit dépensé).
 
 ### Coût
 L'API Anthropic est payante à l'usage (quelques centimes par identification avec le modèle par défaut, plus rapide et économique). Cloudflare Workers est gratuit jusqu'à 100 000 requêtes/jour — largement suffisant pour un usage perso ou entre potes.

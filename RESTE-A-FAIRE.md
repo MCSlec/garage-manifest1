@@ -47,29 +47,30 @@ Guide détaillé : `cloud/DEPLOIEMENT.md`.
 
 ## 2 bis. 🟡 Quotas et facture (après déploiement)
 
-- [ ] **Valider les quotas proposés** (réglables sans toucher au code, `wrangler.toml`) :
-  5 000 photos et 1,5 Go par compte, 50 Go pour tout le service. Base de calcul :
-  une photo de l'app pèse ≈ 330 Ko (mesuré), un compte plein coûte ≈ 0,02 $/mois.
-- [ ] **Créer une alerte de facturation** Cloudflare **et** Anthropic (console) :
+- [x] Quotas de stockage validés le 29/09 (5 000 photos / 1,5 Go par compte, 50 Go au total).
+- [ ] **Créer une alerte de facturation** Cloudflare **et** chez le fournisseur d'IA :
   la seule garantie qui ne dépend pas du code.
 
-## 2 ter. 🔴 Relais IA — décisions avant lancement public
+## 2 ter. 🔴 Relais IA
 
-Revue faite le 29/09 (détail dans le rapport du 29/09) : le relais répond à
-n'importe qui, sans limite. Décisions à prendre avant que je le corrige :
-- [ ] **Plafond global quotidien** d'identifications (proposition : 3 000/jour
-  ≈ 10 $/jour au pire).
-- [ ] **Quota anonyme par appareil / IP** (proposition : 30/jour) et quota plus
-  haut pour un compte connecté (proposition : 200/jour).
-- [ ] **Retirer `/notify`** (plus appelé par l'app ; ouvert à tous, sans limite).
+- [x] Plafonds validés le 29/09 (3 000/jour au total, 30/jour sans compte, 200/jour
+  avec compte) et `/notify` supprimé — **faits dans le code**.
+- [ ] **Redéployer le relais** avec la liaison D1 `DB` et la variable `APP_ORIGIN`
+  (README §3bis). Tant que ce n'est pas fait, c'est l'ANCIEN relais, ouvert, qui tourne.
+- [ ] 🟡 **Choisir le fournisseur d'IA** : Claude Haiku (payant dès le 1er appel)
+  ou Gemini Flash-Lite (quota gratuit quotidien). Voir le rapport du 29/09.
 
 ## 3. ⚖️ Avant d'ouvrir les comptes au public
 
 Tout est dans `cloud/CONFIDENTIALITE.md` :
 
 - [ ] Identité et contact du **responsable du traitement**, date de publication.
-- [ ] Vérifier l'adhésion de **Cloudflare** et **Resend** au Data Privacy
-  Framework UE–États-Unis (transfert hors UE).
+- [ ] Vérifier l'adhésion de **Cloudflare**, **Resend** et du **fournisseur d'IA**
+  au Data Privacy Framework UE–États-Unis (transfert hors UE).
+- [ ] Fournisseur d'IA retenu : relever la **durée de conservation** des photos
+  reçues par son API et son engagement de **non-entraînement** ; les reporter
+  dans `CONFIDENTIALITE.md` (section « Sans compte »). Ce texte concerne **tous**
+  les utilisateurs, avec ou sans compte : la reconnaissance est active par défaut.
 - [ ] Vérifier la durée de rétention des sauvegardes techniques D1
   (« Time Travel ») selon l'offre Cloudflare choisie.
 - [ ] 🟡 **Comptes inactifs** : durée de conservation (proposition : suppression

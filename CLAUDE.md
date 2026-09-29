@@ -99,6 +99,16 @@ dans le navigateur. Le client envoie `POST {image: dataURL}` et reçoit
 `[{brand, model, confidence}]` ; le rapprochement catalogue se fait **côté client**
 dans `index.html` (`matchCatalog`).
 
+**Protections du relais** (29/09, `banc-relais.js`) : l'adresse du relais est
+publique, **CORS n'est pas une protection** (un script n'envoie pas d'Origin).
+Ce qui protège la facture : des **quotas dans D1** pris d'un bloc — par appareil
+sans compte, par compte connecté, et pour tout le service (`QUOTA_IA_*`) —,
+une image ≤ 2 Mo en JPEG/PNG/WebP, une **route unique** (`POST /`), aucune erreur
+détaillée renvoyée, et **503 sans base D1** (jamais de relais ouvert). Aucun
+compte n'est exigé pour capturer. Côté app, le jeton de session n'est envoyé
+**qu'au relais officiel** (`AI_ENDPOINT_DEFAULT`), jamais à un relais
+personnalisé. `/notify` n'existe plus.
+
 Même règle pour les **comptes** (§8 quinquies) : le serveur `cloud/compte-worker.js`
 se déploie à part ; la clé d'envoi d'e-mails (`RESEND_API_KEY`) est un secret du
 Worker. Le navigateur ne porte que l'adresse publique du Worker (`COMPTE_URL`) et
@@ -419,7 +429,7 @@ incrémenter conjointement :**
 2. `VERSION` (`"garage-v…"`) dans `sw.js` (ligne ~12).
 
 Ces deux numéros sont **tenus synchronisés** (au 28/09/2026 : `gm-specs.js` →
-`20.191.0`, `sw.js` → `garage-v20.191.0`). `VERSION_MODULE` s'affiche en outre
+`20.192.0`, `sw.js` → `garage-v20.192.0`). `VERSION_MODULE` s'affiche en outre
 dans l'UI via `grefferVersion()`, ce qui permet de vérifier de visu quelle version
 tourne réellement sur l'appareil.
 
@@ -557,6 +567,8 @@ modification n'impose aucun bump de version.
 | `banc-compte.js` / `banc-compte-navigateur.js` | Bancs du serveur (Worker réel, D1/R2 simulés) et de bout en bout (app + Worker dans Chromium) |
 | `vendor/leaflet/` | Leaflet 1.9.4 hébergé dans le dépôt (§1.2) ; banc `banc-carte.js` : aucun script ni style chargé depuis un autre domaine |
 | `vendor/protomaps-leaflet/` | Moteur de rendu de **notre** carte (§1.2), chargé seulement si `CARTE_URL` est renseignée ; banc `banc-carte-perso.js` (fabrique une vraie archive PMTiles) ; guide `cloud/CARTE.md` |
+| `banc-relais.js` | Banc serveur du relais IA : quotas (dont rafale simultanée), taille/format d'image, origine, route unique, erreurs sans détail, fermeture sans D1 |
+| `banc-photos.js` | Banc navigateur des limites de photos : plafond par rareté (`PHOTOS_PAR_RARETE`), taille par photo, recompression des anciennes photos (`GMGarage.normaliserPhotos`) |
 | `banc-imports.js` | Banc navigateur des **fichiers importés hostiles** (sauvegarde, profil d'équipage) : aucune charge ne doit s'exécuter, à l'import comme au redémarrage (DT-09, DT-10) ; contrat `data-car-id` |
 | `AUDIT-DEFAUTS.md` | Rapport de la chasse aux défauts du 29/09 : corrigé, et reste à décider |
 | `banc-i18n.js` → `I18N.md` | Recensement des textes d'interface (préparation i18n). `I18N.md` est **généré** : relancer `node banc-i18n.js --md`, ne jamais l'éditer à la main |
@@ -743,6 +755,11 @@ GMGarage.importer(data, { fusion })   → { n, rejected }
   appareils**. « Tout effacer » reste une remise à zéro locale, non propagée.
   La fusion des doublons de catalogue (`FUSIONS`, `fusionnerPrise`) est une
   autre fonction, inchangée.
+- **Photos** : plafond **par rareté** à la capture (`PHOTOS_PAR_RARETE` dans
+  `index.html` : 3 courant → 30 légendaire), **jamais** de retrait des photos
+  existantes au-delà ; 1,5 Mo par photo côté app (recompression plutôt que
+  refus), 2 Mo côté serveur ; les anciennes photos trop lourdes sont ramenées
+  au format actuel par `GMGarage.normaliserPhotos()` avant chaque sauvegarde.
 - **Restauration** : une photo injoignable (hors 404) interrompt tout — sinon la
   sauvegarde qui suit un conflit effacerait du cloud une photo qui existe.
 - Le code n'est envoyé qu'avec l'adresse **demandée sur cet appareil**

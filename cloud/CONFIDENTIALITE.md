@@ -1,8 +1,9 @@
 # Politique de confidentialité — comptes Garage Manifest
 
 > **Projet de texte**, rédigé à partir du code réel (`cloud/compte-worker.js`,
-> `gm-compte.js`) : chaque affirmation ci-dessous correspond à un comportement
-> vérifié par `banc-compte.js` / `banc-compte-navigateur.js`. Les passages
+> `gm-compte.js`, `ai-relay-worker.js`) : chaque affirmation ci-dessous
+> correspond à un comportement vérifié par `banc-compte.js` /
+> `banc-compte-navigateur.js` / `banc-relais.js`. Les passages
 > `[À COMPLÉTER]` et `[À DÉCIDER]` doivent être tranchés **avant** l'ouverture
 > au public. Ce document n'est pas un avis juridique : fais-le relire si l'app
 > dépasse le cercle d'amis.
@@ -16,10 +17,29 @@
 
 Responsable du traitement : **[À COMPLÉTER — nom, adresse ou e-mail de contact]**.
 
-## Sans compte, rien ne quitte ton téléphone
+## Sans compte : ta collection reste sur ton téléphone
 
-Le compte est **facultatif**. Sans lui, ta collection et tes photos restent dans
-la mémoire de ton appareil (IndexedDB) et ne sont envoyées nulle part.
+Le compte est **facultatif**. Sans lui, ta collection et tes photos sont
+**stockées** uniquement dans la mémoire de ton appareil (IndexedDB) : aucune
+sauvegarde n'est faite ailleurs.
+
+**Une exception, active par défaut : la reconnaissance automatique.** Quand tu
+photographies ou importes une voiture, la photo est envoyée, **pour cette seule
+identification**, au relais de reconnaissance (`ai-relay-worker.js`, hébergé
+chez Cloudflare), qui la transmet au fournisseur du modèle d'IA et te renvoie
+la marque et le modèle proposés.
+- Le relais **ne conserve pas** la photo : il ne l'écrit ni en base ni dans un
+  stockage, et ne la journalise pas.
+- Pour plafonner les abus (et la facture), il compte les identifications du
+  jour **par appareil** (adresse IP) ou **par compte** si tu es connecté. Ces
+  compteurs ne gardent qu'une **empreinte** SHA-256, jamais l'IP ni
+  l'identifiant en clair, et sont effacés sous 48 heures par la purge nocturne.
+- Pour ne rien envoyer du tout : Réglages → vide le champ « Endpoint de
+  reconnaissance IA » et choisis la voiture à la main.
+- **[À COMPLÉTER — au lancement : la durée pendant laquelle le fournisseur
+  d'IA conserve les requêtes reçues par son API, et son engagement de ne pas
+  s'en servir pour entraîner ses modèles, d'après ses conditions commerciales
+  en vigueur.]**
 
 ## Ce qui est collecté quand tu crées un compte
 
@@ -59,6 +79,9 @@ Précisions vérifiables dans le code :
   en créant un compte (art. 6.1.b).
 - Limites de débit contre les abus : **intérêt légitime** à protéger le service
   et les boîtes mail d'autrui (art. 6.1.f).
+- Reconnaissance automatique d'une photo : **exécution du service** que tu
+  déclenches en capturant une voiture (art. 6.1.b) ; ses compteurs quotidiens
+  relèvent de l'intérêt légitime ci-dessus.
 
 Aucune publicité ciblée, aucune revente, aucun profilage, aucun traceur : ces
 données ne servent qu'à te rendre ton garage.
@@ -69,8 +92,9 @@ données ne servent qu'à te rendre ton garage.
 |---|---|---|
 | **Cloudflare, Inc.** | Hébergement du serveur (Workers), de la base (D1) et des photos (R2) | Tout ce qui est listé plus haut |
 | **Resend** | Envoi de l'e-mail de connexion | Ton adresse e-mail et le code |
+| **Fournisseur du modèle d'IA** (aujourd'hui **Anthropic, PBC** ; **[À DÉCIDER]** — voir `RESTE-A-FAIRE.md`) | Reconnaissance de la voiture sur la photo | La photo envoyée à l'identification, sans ton adresse ni ton identifiant (le relais ne transmet que l'image) |
 
-Ces deux sociétés sont établies aux **États-Unis**. **[À COMPLÉTER — vérifier au
+Ces sociétés sont établies aux **États-Unis**. **[À COMPLÉTER — vérifier au
 moment du lancement leur adhésion au Data Privacy Framework UE–États-Unis ou
 leurs clauses contractuelles types, et l'indiquer ici.]**
 

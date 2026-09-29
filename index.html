@@ -3270,11 +3270,51 @@ const VARIANTS = {
     catch { toast("Image illisible"); }
   }
 
+  /* ---- Limites de photos (demande du propriétaire, 29/09) ----
+     Plus une voiture est rare, plus on garde d'images : une Ferrari F40 croisée
+     une fois dans sa vie mérite une série, une citadine trois clichés.
+     Taille : une photo de l'app pèse ≈ 330 Ko (1 280 px, mesuré) ; au-delà du
+     plafond, on la recompresse plutôt que de la refuser. */
+  const PHOTOS_PAR_RARETE = { courant:3, commun:5, peucommun:8, rare:12, epique:20, legendaire:30 };
+  const MAX_OCTETS_PHOTO = 1.5 * 1024 * 1024;
+  const plafondPhotos = (carId) => PHOTOS_PAR_RARETE[CARS_BY_ID[carId]?.r] || PHOTOS_PAR_RARETE.commun;
+  const octetsDataUrl = (d) => Math.floor((String(d).length - String(d).indexOf(",") - 1) * 3 / 4);
+  async function reduirePhoto(dataUrl) {
+    try {
+      const blob = await (await fetch(dataUrl)).blob();
+      for (const q of [0.82, 0.7, 0.55]) { const d = await toThumb(blob, 1280, q); if (octetsDataUrl(d) <= MAX_OCTETS_PHOTO) return d; }
+    } catch {}
+    return null;
+  }
+  /* Photos d'avant la compression (versions de juillet) : ramenées au format
+     actuel UNE fois, sur l'appareil, avant la sauvegarde cloud — le serveur
+     n'accepte plus que 2 Mo par photo. La nouvelle version remplace l'ancienne
+     localement, pour que tous les appareils partagent la même photo. */
+  async function normaliserPhotos() {
+    let n = 0;
+    for (const rec of state.spots.values()) {
+      if (!(rec.photos || []).some(p => octetsDataUrl(p) > MAX_OCTETS_PHOTO)) continue;
+      const photos = [];
+      for (const p of rec.photos) { const r = octetsDataUrl(p) > MAX_OCTETS_PHOTO ? await reduirePhoto(p) : null; if (r) n++; photos.push(r || p); }
+      rec.photos = photos; await Store.put(rec);
+    }
+    return n;
+  }
+
   async function saveDraft() {
     if (!draft.carId) return;
     const id = draft.carId;
     const prev = state.spots.get(id);
     const photos = prev ? [...(prev.photos||[])] : [];
+    let refus = "";
+    if (draft.photo && octetsDataUrl(draft.photo) > MAX_OCTETS_PHOTO) {
+      draft.photo = await reduirePhoto(draft.photo);
+      if (!draft.photo) refus = "Photo trop lourde, même recompressée : prise enregistrée sans elle";
+    }
+    if (draft.photo && photos.length >= plafondPhotos(id)) {
+      refus = `Limite de ${plafondPhotos(id)} photos pour une voiture ${(RARITY[CARS_BY_ID[id]?.r]?.label || "").toLowerCase()} : prise enregistrée sans la nouvelle photo`;
+      draft.photo = null;   // les photos existantes au-delà du plafond (anciennes versions) sont conservées
+    }
     if (draft.photo) { if (draft.lockCar) photos.push(draft.photo); else photos.unshift(draft.photo); }
     const rec = {
       carId: id,
@@ -3306,7 +3346,7 @@ const VARIANTS = {
 
     closeOverlay();
     render();
-    if (isNew) showReveal(id); else toast("Fiche mise à jour");
+    if (isNew) showReveal(id); else toast(refus || "Fiche mise à jour");
     checkMissions();
     setTimeout(() => { if (state.flash === id) { state.flash = null; render(); } }, 1500); // sinon la classe .flash restait collée (DT-18)
   }
@@ -3755,6 +3795,7 @@ const VARIANTS = {
   window.GMGarage = Object.freeze({
     exporter: () => donneesExport(),
     importer: async (data, options) => { const r = await importerDonnees(data, options); render(); return r; },
+    normaliserPhotos: () => normaliserPhotos(),
   });
   async function resetAll() {
     if (!await askConfirm("Effacer TOUTES tes prises et photos ? Cette action est irréversible.", "Tout effacer", true)) return;

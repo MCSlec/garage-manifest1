@@ -60,7 +60,9 @@ const DUREE_SESSION_MS  = 90 * 24 * 3600 * 1000;   // session : 90 jours
    échouait en « Erreur interne ». On refuse avant, avec un message clair.
    Mesuré en OCTETS UTF-8 (un « é » en pèse 2), pas en caractères. */
 const MAX_GARAGE_OCTETS = 1_900_000;               // collection sans photos
-const MAX_PHOTO_OCTETS  = 12 * 1024 * 1024;        // même plafond que l'import côté app
+/* 2 Mo par photo (demande du 29/09) : l'app n'en produit pas de plus de ≈ 0,8 Mo
+   (JPEG 1 280 px), et recompresse les anciennes avant envoi (normaliserPhotos). */
+const MAX_PHOTO_OCTETS  = 2 * 1024 * 1024;
 
 /* Quotas de stockage photo (défaut n°9 de /code-review). Mesure du 29/09 : une
    photo de l'app (JPEG, 1 280 px, qualité 0,82) pèse ≈ 330 Ko sur une scène

@@ -145,8 +145,9 @@ détail est dans ce journal.
 ## Avant toute modification du serveur
 
 ```sh
-node banc-compte.js              # le Worker réel, D1 et R2 simulés (47 tests)
-node banc-compte-navigateur.js   # app + Worker de bout en bout dans Chromium (26 tests)
+node banc-compte.js              # le Worker réel, D1 et R2 simulés (61 tests)
+node banc-compte-navigateur.js   # app + Worker de bout en bout dans Chromium (47 tests)
+node banc-relais.js              # le relais IA réel, D1 simulée, IA interceptée (18 tests)
 ```
 Les deux doivent repasser. Ils ne nécessitent ni compte Cloudflare ni réseau.
 
