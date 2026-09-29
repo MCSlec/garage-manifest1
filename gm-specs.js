@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.184.0';
+  const VERSION_MODULE = '20.185.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -13618,6 +13618,14 @@
     return SPONSORS[REGION_COURANTE] || SPONSORS._default;
   }
 
+  /* Emplacement RÉSERVÉ en attendant un annonceur (demande du 29/09) : tant
+     qu'aucun sponsor n'est configuré pour la région, on affiche un encart
+     neutre « Espace partenaire » au format bannière mobile standard (320×50).
+     Intérêt : la mise en page est déjà calée — le jour où un sponsor arrive,
+     on remplit SPONSORS et rien ne bouge. Passer à false pour ne rien
+     afficher du tout sans sponsor (comportement d'avant). */
+  const EMPLACEMENT_RESERVE = true;
+
   const CLE_BANDEAU_FERME = 'gm-sponsor-ferme';
 
   function bandeauSponsorFerme() {
@@ -13627,23 +13635,34 @@
     try { sessionStorage.setItem(CLE_BANDEAU_FERME, '1'); } catch (_) {}
     const el = document.getElementById('gsp-bandeau');
     if (el) el.remove();
+    document.body.classList.remove('gsp-avec-bandeau');
   }
 
   function grefferBandeauSponsor() {
     const s = sponsorPourRegion();
-    if (!s.image || !s.lien || !s.nom) return;   // rien de configuré pour cette région : rien à montrer
+    const configure = !!(s.image && s.lien && s.nom);
+    if (!configure && !EMPLACEMENT_RESERVE) return;   // rien de configuré, et pas d'emplacement réservé
     if (bandeauSponsorFerme()) return;
     if (document.getElementById('gsp-bandeau')) return;
 
     const el = document.createElement('div');
     el.id = 'gsp-bandeau';
-    el.innerHTML = `
+    el.innerHTML = configure ? `
       <a href="${esc(s.lien)}" target="_blank" rel="noopener sponsored" aria-label="Publicité — ${esc(s.nom)}">
         <img src="${esc(s.image)}" alt="${esc(s.nom)}" loading="lazy">
         <span class="gsp-tag">Publicité</span>
       </a>
-      <button type="button" class="gsp-x" data-gsp="fermer" aria-label="Masquer la publicité">✕</button>`;
+      <button type="button" class="gsp-x" data-gsp="fermer" aria-label="Masquer la publicité">✕</button>` : `
+      <div class="gsp-vide" role="note" aria-label="Espace partenaire">
+        <span class="gsp-tag">Partenaire</span>
+        <span class="gsp-vide-t">Espace partenaire</span>
+      </div>
+      <button type="button" class="gsp-x" data-gsp="fermer" aria-label="Masquer l'espace partenaire">✕</button>`;
     document.body.appendChild(el);
+    /* Le contenu, les toasts et l'avis de mise à jour remontent de la hauteur
+       du bandeau : sans cette classe, le bandeau fixe recouvrait le bas des
+       listes (le dernier élément devenait inatteignable). */
+    document.body.classList.add('gsp-avec-bandeau');
   }
 
   function brancherBandeauSponsor() {
@@ -15029,12 +15048,24 @@
   .gcls-v{ margin:10px 2px; font:400 12px/1.5 var(--sans); color:var(--dim); }
   .gcls-n{ margin:12px 2px 0; font:400 11px/1.5 var(--sans); color:var(--dim); }
 
-  #gsp-bandeau{ position:fixed; left:8px; right:8px;
-    bottom:calc(var(--tabh,64px) + 8px + var(--sb,0px)); z-index:120;
-    background:var(--panel); border:1px solid var(--line2); border-radius:12px;
-    box-shadow:0 8px 24px rgba(0,0,0,.35); overflow:hidden; }
-  #gsp-bandeau a{ display:block; position:relative; text-decoration:none; }
-  #gsp-bandeau img{ display:block; width:100%; height:auto; max-height:88px; object-fit:cover; }
+  /* Hauteur réservée : format bannière mobile standard (320×50), bordures comprises.
+     z-index 29 : au-dessus du contenu, SOUS la barre d'onglets (30) et SOUS le
+     voile des fiches (50). Il était à 120 : la pub serait passée par-dessus
+     une fiche ouverte. */
+  body{ --gsp-h:52px; }
+  #gsp-bandeau{ position:fixed; left:8px; right:8px; height:var(--gsp-h);
+    bottom:calc(var(--tabh,64px) + 6px + var(--sb,0px)); z-index:29;
+    max-width:728px; margin:0 auto;
+    background:var(--panel); border:1px solid var(--line2); border-radius:10px;
+    box-shadow:0 6px 18px rgba(0,0,0,.28); overflow:hidden; }
+  #gsp-bandeau a{ display:block; position:relative; height:100%; text-decoration:none; }
+  #gsp-bandeau img{ display:block; width:100%; height:100%; object-fit:cover; }
+  #gsp-bandeau .gsp-vide{ height:100%; display:flex; align-items:center; justify-content:center; gap:10px;
+    color:var(--dim); font:500 12px/1 var(--sans); letter-spacing:.02em; }
+  #gsp-bandeau .gsp-vide .gsp-tag{ position:static; background:transparent; border:1px solid var(--line2); color:var(--dim); }
+  body.gsp-avec-bandeau main{ padding-bottom:calc(var(--tabh) + var(--sb) + 24px + var(--gsp-h) + 6px); }
+  body.gsp-avec-bandeau .toast{ bottom:calc(var(--tabh) + var(--sb) + 16px + var(--gsp-h) + 6px); }
+  body.gsp-avec-bandeau #swUpdate{ bottom:calc(var(--tabh) + 12px + var(--sb) + var(--gsp-h) + 6px); }
   #gsp-bandeau .gsp-tag{ position:absolute; left:8px; top:8px; padding:3px 7px; border-radius:5px;
     background:rgba(11,11,13,.72); color:rgba(255,255,255,.85); font:600 9px/1 var(--mono);
     letter-spacing:.06em; text-transform:uppercase; }

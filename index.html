@@ -3490,7 +3490,26 @@ const VARIANTS = {
   // sauvegarde forgée obtient une exécution de script, persistée en base (DT-02).
   const PHOTO_RE = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2}$/;
   const sanitizePhotos = (arr) => (Array.isArray(arr) ? arr : [])
-    .filter(p => typeof p === "string" && p.length <= 12e6 && PHOTO_RE.test(p));
+    .filter(p => typeof p === "string" && p.length <= 12e6 && PHOTO_RE.test(p))
+    .slice(0, 50);   // 50 photos par voiture : large pour un usage réel, borne un fichier piégé
+
+  /* Taille des fichiers importés, vérifiée AVANT lecture : file.text() charge
+     tout en mémoire, et un fichier démesuré figeait puis tuait l'onglet sans
+     message. Plafond de sauvegarde = limite pratique d'une chaîne JavaScript
+     (~512 Mo dans Chrome) : au-delà, la lecture échoue de toute façon. On
+     refuse aussi un fichier plus gros que l'espace libre, qui ne pourrait pas
+     être enregistré. Un profil d'équipage pèse quelques Ko : 1 Mo suffit. */
+  const TAILLE_MAX_SAUVEGARDE = 500 * 1024 * 1024;
+  const TAILLE_MAX_PROFIL = 1024 * 1024;
+  const enMo = (o) => Math.round(o / 1048576).toLocaleString("fr-FR");
+  async function tailleImportRefusee(file, max) {
+    if (file.size > max) return `Fichier trop lourd (${enMo(file.size)} Mo, maximum ${enMo(max)} Mo)`;
+    try {
+      const { usage = 0, quota = 0 } = (await navigator.storage?.estimate?.()) || {};
+      if (quota && file.size > quota - usage) return `Espace insuffisant sur l'appareil pour ce fichier (${enMo(file.size)} Mo)`;
+    } catch {}
+    return null;
+  }
 
   // Une entrée custom dont `r` ou `cat` sort du référentiel fait planter le tri du sélecteur,
   // et l'erreur survit au redémarrage puisqu'elle est persistée avant tout rendu (DT-03).
@@ -3590,6 +3609,8 @@ const VARIANTS = {
     const inp = document.createElement("input"); inp.type = "file"; inp.accept = "application/json,.json";
     inp.onchange = async () => {
       const file = inp.files?.[0]; if (!file) return;
+      const refus = await tailleImportRefusee(file, TAILLE_MAX_SAUVEGARDE);
+      if (refus) { toast(refus); return; }
       try {
         const data = JSON.parse(await file.text());
         if (data.custom && Array.isArray(data.custom.list)) { // les « Non classé » d'abord, sinon leurs prises seraient rejetées
@@ -3919,6 +3940,7 @@ const VARIANTS = {
     const inp = document.createElement("input"); inp.type = "file"; inp.accept = "application/json,.json";
     inp.onchange = async () => {
       const f = inp.files?.[0]; if (!f) return;
+      if (f.size > TAILLE_MAX_PROFIL) { toast("Ce fichier est trop lourd pour être un profil Garage"); return; }
       try {
         const brut = JSON.parse(await f.text());
         if (brut?.type !== "profile" || brut?.app !== "garage-manifest") { toast("Ce n'est pas un profil Garage"); return; }

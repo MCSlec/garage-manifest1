@@ -188,6 +188,25 @@ const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   const homonyme = await ouvrir(idHomonyme);
   v('data-car-id · la « Non classé » homonyme ne reçoit AUCUNE fiche', homonyme && homonyme.shell === idHomonyme && !homonyme.fiche, JSON.stringify(homonyme));
 
+  /* 5. Taille des imports : vérifiée AVANT lecture, et photos plafonnées. */
+  await page.reload({ waitUntil: 'networkidle' }); await pret(); await page.waitForTimeout(400);   // referme la fiche ouverte au test 4
+  await ouvrirEquipage();
+  if (await page.$('[data-act="importprofile"]')) {
+    const avant = (await parId())['__meta__']?.friends?.length || 0;
+    await choisirFichier('[data-act="importprofile"]', {
+      app: 'garage-manifest', type: 'profile', v: 1, name: 'Lourd', score: 1, count: 1, legends: [],
+      bourrage: 'x'.repeat(1.2 * 1024 * 1024) });
+    const toastTxt = await page.evaluate(() => document.getElementById('toast')?.textContent || '');
+    const apres = (await parId())['__meta__']?.friends?.length || 0;
+    v('taille · profil de plus de 1 Mo refusé avec un message', apres === avant && /trop lourd/i.test(toastTxt), JSON.stringify({ avant, apres, toastTxt }));
+  }
+  await ouvrirReglages();
+  const photo = i => `data:image/jpeg;base64,${String.fromCharCode(65 + (i % 26)).repeat(4)}${i.toString(36).padStart(4, 'A').replace(/[^A-Za-z0-9]/g, 'A')}`;
+  await choisirFichier('[data-act="import"]', { app: 'garage-manifest', version: 1, spots: [
+    { carId: 'ferrari-f40', at: '2026-09-02T12:00:00.000Z', photos: Array.from({ length: 60 }, (_, i) => photo(i)), variants: [] } ] });
+  const nbPhotos = (await parId())['ferrari-f40']?.photos?.length;
+  v('taille · 60 photos importées pour une voiture → 50 conservées', nbPhotos === 50, nbPhotos);
+
   v('aucune erreur JS', errs.length === 0, errs.join(' | '));
 
   await nav.close(); serveur.close();

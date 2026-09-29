@@ -4,12 +4,12 @@
    cache suffit à rendre toute l'app disponible hors-ligne. Les données (photos,
    collection) vivent dans IndexedDB côté page, pas ici.
 
-   v20.184.0 — Six fiches alignées sur INFO (635 CSi, XK8, Elan, LS 400, Opel GT, Charger).
+   v20.185.0 — Emplacement publicitaire réservé, taille des imports contrôlée.
              Le numéro DOIT être incrémenté à chaque modification d'un fichier
              mis en cache, sinon l'ancienne copie est resservie indéfiniment.
 */
 
-const VERSION = "garage-v20.184.0";
+const VERSION = "garage-v20.185.0";
 
 /* ESSENTIEL : sans ces fichiers, l'app ne démarre pas hors-ligne.
    Mis en cache de façon atomique — si l'un manque, l'installation doit échouer
