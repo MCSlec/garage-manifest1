@@ -3939,7 +3939,11 @@ const VARIANTS = {
     if (state.tab !== "map" || !$("#huntMap")) return;
     if (huntMap) { try { huntMap.remove(); } catch {} huntMap = null; }
     document.body.classList.add("map-dark");
-    const carteANous = !!(CARTE_URL && window.protomapsL);
+    /* Carte à nous configurée mais moteur absent (script chargé qui plante,
+       copie en cache abîmée…) : on s'arrête là. Basculer sur OpenStreetMap
+       ferait l'appel externe que CARTE_URL existe pour éviter (CLAUDE.md §1.2). */
+    if (CARTE_URL && !window.protomapsL) { $("#huntMap").innerHTML = `<div class="empty" style="height:100%">${icon("map")}<p class="t">Carte indisponible</p><p class="s">Le fond de carte n'a pas pu se charger. Tes données, elles, restent locales.</p></div>`; return; }
+    const carteANous = !!CARTE_URL;
     huntMap = L.map($("#huntMap"), { zoomControl:true, attributionControl:carteANous });
     if (carteANous) {
       // Données OpenStreetMap (licence ODbL) : l'attribution reste due, même hébergées chez nous.

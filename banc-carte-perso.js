@@ -117,7 +117,7 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   await new Promise(r => app.listen(PORT_APP, r)); await new Promise(r => carte.listen(PORT_CARTE, '127.0.0.1', r));
   const nav = await chromium.launch({ executablePath: process.env.CHROMIUM || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--no-sandbox'] });
 
-  async function ouvrirCarte(urlCarte) {
+  async function ouvrirCarte(urlCarte, { moteurCasse = false } = {}) {
     const ctx = await nav.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block' });
     if (urlCarte !== undefined) await ctx.addInitScript(u => { window.GM_CARTE_URL = u; }, urlCarte);
     const externes = [];
@@ -127,6 +127,9 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
       if (u.host === `localhost:${PORT_APP}` || u.host === `127.0.0.1:${PORT_CARTE}`) return route.continue();
       externes.push(u.hostname); return route.abort();
     });
+    // Moteur qui se CHARGE (onload) mais plante à l'exécution : protomapsL n'existe jamais.
+    if (moteurCasse) await ctx.route('**/vendor/protomaps-leaflet/protomaps-leaflet.js',
+      r => r.fulfill({ status: 200, contentType: 'application/javascript', body: 'throw new Error("moteur cassé (banc)");' }));
     const page = await ctx.newPage();
     const erreurs = []; page.on('pageerror', e => erreurs.push(String(e)));
     await page.goto(URL_APP, { waitUntil: 'networkidle' });
@@ -173,6 +176,13 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   v('carte introuvable : toujours aucune requête vers OpenStreetMap ni ailleurs', B.externes.length === 0, JSON.stringify([...new Set(B.externes)]));
   v('… et l\'app reste debout (le point de la prise est là)', (await B.page.evaluate(() => document.querySelectorAll('#huntMap path.leaflet-interactive').length)) === 1);
   await B.ctx.close();
+
+  /* 2 bis. Moteur de carte chargé mais en panne (défaut n°1 de /code-review) */
+  const D = await ouvrirCarte(URL_CARTE, { moteurCasse: true });
+  const infoD = await D.page.evaluate(() => ({ texte: document.querySelector('#huntMap')?.textContent || '', tuiles: document.querySelectorAll('#huntMap .leaflet-tile').length }));
+  v('moteur en panne : aucune requête vers OpenStreetMap ni ailleurs (pas de repli silencieux)', D.externes.length === 0, JSON.stringify([...new Set(D.externes)]));
+  v('… et un message « Carte indisponible » à la place', /Carte indisponible/.test(infoD.texte) && infoD.tuiles === 0, JSON.stringify(infoD));
+  await D.ctx.close();
 
   /* 3. Non configurée : comportement historique */
   const C = await ouvrirCarte(undefined);

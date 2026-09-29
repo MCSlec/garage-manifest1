@@ -56,9 +56,12 @@
 const DUREE_CODE_MS     = 10 * 60 * 1000;          // code : 10 min
 const ESSAIS_CODE       = 5;                       // essais par code, puis il est détruit
 const DUREE_SESSION_MS  = 90 * 24 * 3600 * 1000;   // session : 90 jours
-const MAX_GARAGE_OCTETS = 5 * 1024 * 1024;         // collection sans photos
+/* D1 refuse toute ligne de plus de 2 000 000 octets : au-delà, l'écriture
+   échouait en « Erreur interne ». On refuse avant, avec un message clair.
+   Mesuré en OCTETS UTF-8 (un « é » en pèse 2), pas en caractères. */
+const MAX_GARAGE_OCTETS = 1_900_000;               // collection sans photos
 const MAX_PHOTO_OCTETS  = 12 * 1024 * 1024;        // même plafond que l'import côté app
-const MAX_EMPREINTES    = 5000;                    // par requête /photos/manquantes
+const MAX_EMPREINTES    = 5000;                    // par requête /photos/manquantes (le client envoie par lots de 1 000)
 const TYPES_PHOTO       = ['image/jpeg', 'image/png', 'image/webp'];
 
 /* Limites de débit : protègent la boîte de réception d'autrui (on ne doit pas
@@ -134,14 +137,19 @@ async function lireJson(req, max = 64 * 1024) {
 async function depasseLimite(env, cleClaire, { max, fenetreMs }) {
   const maintenant = Date.now();
   const cle = await sha256hex('limite:' + cleClaire);
-  const l = await env.DB.prepare('SELECT compte, fenetre FROM limites WHERE cle = ?').bind(cle).first();
-  if (!l || maintenant - l.fenetre > fenetreMs) {
-    await env.DB.prepare('INSERT OR REPLACE INTO limites (cle, compte, fenetre) VALUES (?, 1, ?)').bind(cle, maintenant).run();
-    return false;
-  }
-  if (l.compte >= max) return true;
-  await env.DB.prepare('UPDATE limites SET compte = compte + 1 WHERE cle = ?').bind(cle).run();
-  return false;
+  /* UNE seule instruction, lue et écrite d'un bloc (upsert + RETURNING).
+     La version précédente lisait le compteur PUIS l'écrivait : 50 requêtes
+     simultanées lisaient toutes « 0 » et passaient toutes (trouvé par
+     /code-review, reproduit au banc : 50 codes envoyés au lieu de 3).
+     Dans un SET SQLite, `fenetre` désigne l'ANCIENNE valeur : la fenêtre
+     expirée repart à 1, sinon le compteur s'incrémente. */
+  const l = await env.DB.prepare(
+    `INSERT INTO limites (cle, compte, fenetre) VALUES (?1, 1, ?2)
+     ON CONFLICT (cle) DO UPDATE SET
+       compte  = CASE WHEN ?2 - fenetre > ?3 THEN 1  ELSE compte + 1 END,
+       fenetre = CASE WHEN ?2 - fenetre > ?3 THEN ?2 ELSE fenetre   END
+     RETURNING compte`).bind(cle, maintenant, fenetreMs).first();
+  return !l || l.compte > max;
 }
 
 async function utilisateurDeSession(req, env) {
@@ -197,12 +205,13 @@ async function routeSession(req, env) {
   const maintenant = Date.now();
   /* L'essai est COMPTÉ AVANT la comparaison, par un UPDATE atomique borné :
      même cent requêtes simultanées ne dépassent pas 5 essais par code. */
-  const essai = await env.DB.prepare('UPDATE codes SET essais = essais + 1 WHERE email = ? AND expire > ? AND essais < ?')
-    .bind(email, maintenant, ESSAIS_CODE).run();
-  if (!essai.meta || essai.meta.changes !== 1) return erreur(env, 400, 'Code expiré : demandes-en un nouveau');
-  const ligne = await env.DB.prepare('SELECT hash FROM codes WHERE email = ?').bind(email).first();
+  /* …et l'empreinte est lue DANS la même instruction (RETURNING) : un nouveau
+     code demandé entre les deux ne peut pas être comparé sans être compté. */
+  const ligne = await env.DB.prepare('UPDATE codes SET essais = essais + 1 WHERE email = ? AND expire > ? AND essais < ? RETURNING hash')
+    .bind(email, maintenant, ESSAIS_CODE).first();
+  if (!ligne) return erreur(env, 400, 'Code expiré : demandes-en un nouveau');
   const attendu = await hmacCode(env, email, code);
-  if (!ligne || !egauxTempsConstant(ligne.hash, attendu)) return erreur(env, 400, 'Code incorrect');
+  if (!egauxTempsConstant(ligne.hash, attendu)) return erreur(env, 400, 'Code incorrect');
   // Consommation atomique : deux envois simultanés du bon code n'ouvrent qu'une session.
   const conso = await env.DB.prepare('DELETE FROM codes WHERE email = ? AND hash = ?').bind(email, attendu).run();
   if (!conso.meta || conso.meta.changes !== 1) return erreur(env, 400, 'Code déjà utilisé');
@@ -229,11 +238,14 @@ async function routeGarageEcrire(req, env, u) {
   const brut = String(req.headers.get('If-Match') || '').replace(/"/g, '').trim();
   const attendue = /^\d+$/.test(brut) ? Number(brut) : NaN;
   if (!Number.isInteger(attendue)) return erreur(env, 428, 'En-tête If-Match requis (version connue, 0 pour une première sauvegarde)');
-  let corps; try { corps = await lireJson(req, MAX_GARAGE_OCTETS); } catch (e) {
+  let corps; try { corps = await lireJson(req, 2 * MAX_GARAGE_OCTETS); } catch (e) {
     return erreur(env, e.message === 'trop-gros' ? 413 : 400, e.message === 'trop-gros' ? 'Garage trop volumineux' : 'Requête invalide');
   }
-  if (!corps || typeof corps.donnees !== 'object') return erreur(env, 400, 'Champ « donnees » manquant');
-  const texte = JSON.stringify(corps.donnees);
+  // `typeof null === 'object'` : null et tableaux passaient, et cassaient ensuite la restauration.
+  const d = corps && corps.donnees;
+  if (!d || typeof d !== 'object' || Array.isArray(d)) return erreur(env, 400, 'Champ « donnees » manquant ou invalide');
+  const texte = JSON.stringify(d);
+  if (enc.encode(texte).length > MAX_GARAGE_OCTETS) return erreur(env, 413, 'Garage trop volumineux pour la sauvegarde cloud (1,9 Mo hors photos)');
   const maj = Date.now();
   let r;
   if (attendue === 0) {
@@ -253,10 +265,16 @@ async function routeGarageEcrire(req, env, u) {
 
 async function routePhotosManquantes(req, env, u) {
   let corps; try { corps = await lireJson(req, 512 * 1024); } catch { return erreur(env, 400, 'Requête invalide'); }
-  const liste = (Array.isArray(corps.empreintes) ? corps.empreintes : []).filter(e => RE_SHA.test(e)).slice(0, MAX_EMPREINTES);
-  const manquantes = [];
-  for (const e of liste) if (!(await env.PHOTOS.head(`u/${u.id}/${e}`))) manquantes.push(e);
-  return json(env, { manquantes });
+  const liste = (Array.isArray(corps.empreintes) ? corps.empreintes : []).filter(e => RE_SHA.test(e));
+  // Refus explicite plutôt que troncature : le client découpe en lots (gm-compte.js).
+  if (liste.length > MAX_EMPREINTES) return erreur(env, 413, `Au plus ${MAX_EMPREINTES} empreintes par requête`);
+  /* UN listage (1 appel par tranche de 1 000 photos) au lieu d'un head() par
+     photo : sur l'offre gratuite, une requête n'a droit qu'à 1 000 appels aux
+     services Cloudflare — au-delà d'environ 1 000 photos, plus aucune
+     sauvegarde ne passait. */
+  const prefixe = `u/${u.id}/`;
+  const presentes = new Set((await toutesLesPhotos(env, u)).map(k => k.slice(prefixe.length)));
+  return json(env, { manquantes: [...new Set(liste)].filter(e => !presentes.has(e)) });
 }
 
 async function routePhotoEcrire(req, env, u, sha) {

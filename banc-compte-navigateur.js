@@ -53,7 +53,7 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   const sqlite = new DatabaseSync(':memory:');
   sqlite.exec(fs.readFileSync(path.join(RACINE, 'cloud', 'schema.sql'), 'utf8'));
   const env = { DB: d1(sqlite), PHOTOS: r2(), APP_ORIGIN: ORIGINE, MAIL_FROM: 'GM <x@test>', RESEND_API_KEY: 'test', CODE_SECRET: 'secret-de-banc-32-octets-minimum!' };
-  const mails = []; let appelsApi = 0, requetesBrutes = 0;
+  const mails = []; let appelsApi = 0, requetesBrutes = 0; const requetesLots = [];
   const fetchReel = globalThis.fetch;
   globalThis.fetch = async (u, o) => {
     if (String(u).startsWith('https://api.resend.com/')) { mails.push(JSON.parse(o.body)); return new Response('{}', { status: 200 }); }
@@ -70,9 +70,11 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
     // Les pré-vols CORS (OPTIONS) sont émis par le navigateur, pas par le module :
     // on ne compte que les appels applicatifs.
     requetesBrutes++; if (req.method !== "OPTIONS") appelsApi++;
+    const suivreLot = req.method === "POST" && req.url === "/photos/manquantes";
     if (process.env.TRACE) console.log("    API", req.method, req.url);
     const morceaux = []; for await (const c of req) morceaux.push(c);
     const corps = Buffer.concat(morceaux);
+    if (suivreLot) { try { requetesLots.push(JSON.parse(corps.toString()).empreintes.length); } catch {} }
     const r = await worker.fetch(new Request(URL_API + req.url, { method: req.method, headers: req.headers,
       body: ['GET', 'HEAD', 'OPTIONS'].includes(req.method) ? undefined : corps }), env);
     const h = {}; r.headers.forEach((val, k) => { h[k] = val; });
@@ -199,9 +201,53 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   await P.page.waitForSelector('#gcp-email', { timeout: 5000 });
   v('« Changer d\'adresse » : retour à la saisie de l\'e-mail, rien d\'ouvert', !(await P.page.evaluate(() => window.GMCompte.etat().connecte || window.GMCompte.etat().codeEnvoyeA)));
 
+  /* 4 ter. Défauts de /code-review n°3 et n°2 côté app */
+  const shaDe = (d) => require('crypto').createHash('sha256').update(Buffer.from(d.split(',')[1], 'base64')).digest('hex');
+  // (a) Récupération manuelle avec une photo en panne réseau : on n'importe RIEN
+  const F = await telephone();
+  // 4e demande de code pour pilote@ en quelques secondes : la limite (3 / 15 min)
+  // jouerait à juste titre. On simule le quart d'heure écoulé.
+  sqlite.prepare('DELETE FROM limites').run();
+  await connecter(F.page, 'pilote@exemple.fr');
+  const shaPanne = cloud().donnees.spots.flatMap(x => x.photos)[0];
+  await F.ctx.route(`${URL_API}/photos/${shaPanne}`, r => r.request().method() === 'GET' ? r.fulfill({ status: 503, body: '{"erreur":"indisponible"}', headers: { 'Access-Control-Allow-Origin': ORIGINE, 'Content-Type': 'application/json' } }) : r.continue());
+  await ouvrirReglages(F.page); await cliquer(F.page, 'restaurer', 'réessaie');
+  v('récupération avec une photo en panne : interrompue, message clair, rien d\'importé', Object.keys(await garage(F.page)).length === 0, await F.page.textContent('#gcp-msg'));
+  await F.ctx.unroute(`${URL_API}/photos/${shaPanne}`);
+  await cliquer(F.page, 'restaurer', 'Récupéré');
+  v('… et la même récupération réussit une fois le réseau revenu', Object.keys(await garage(F.page)).length === 4);
+  // (b) Conflit (409) pendant qu'une photo du cloud est injoignable : le cloud ne perd pas la photo
+  await idb(A.page, 'put', [prise('ferrari-f40', [PH('A'), PH('B'), PH('G')])]); await recharger(A.page);
+  await ouvrirReglages(A.page); await cliquer(A.page, 'sauvegarder', 'Sauvegardé');
+  const shaG = shaDe(PH('G'));
+  v('(préparation) la nouvelle photo de A est au cloud', cloud().donnees.spots.some(x => x.photos.includes(shaG)));
+  await F.ctx.route(`${URL_API}/photos/${shaG}`, r => r.request().method() === 'GET' ? r.fulfill({ status: 503, body: '{"erreur":"indisponible"}', headers: { 'Access-Control-Allow-Origin': ORIGINE, 'Content-Type': 'application/json' } }) : r.continue());
+  await idb(F.page, 'put', [prise('bmw-m3', [PH('D'), PH('H')])]); await recharger(F.page);
+  await ouvrirReglages(F.page); await cliquer(F.page, 'sauvegarder', 'réessaie');
+  v('conflit + photo injoignable : la sauvegarde s\'arrête, et le cloud garde la photo de A', cloud().donnees.spots.some(x => x.photos.includes(shaG)), await F.page.textContent('#gcp-msg'));
+  await F.ctx.unroute(`${URL_API}/photos/${shaG}`);
+  await cliquer(F.page, 'sauvegarder', 'Sauvegardé');
+  const apres = cloud().donnees.spots;
+  v('… puis, réseau revenu : sauvegarde complète, photo de A conservée et nouvelle photo de F ajoutée',
+    apres.some(x => x.photos.includes(shaG)) && apres.some(x => x.photos.includes(shaDe(PH('H')))));
+  // (c) Collection de plus de 1 000 photos : envoi des empreintes par lots
+  const L = await telephone();
+  const photosLot = Array.from({ length: 1050 }, (_, i) => `data:image/jpeg;base64,${Buffer.from('lot-' + i + '-'.repeat(8)).toString('base64')}`);
+  await idb(L.page, 'put', [{ ...prise('ferrari-f40', photosLot.slice(0, 525)) }, { ...prise('peugeot-205', photosLot.slice(525)) }]);
+  await recharger(L.page);
+  await connecter(L.page, 'lots@exemple.fr');
+  const lotsAvant = requetesLots.length;
+  await ouvrirReglages(L.page); await cliquer(L.page, 'sauvegarder', 'Sauvegardé');
+  const lots = requetesLots.slice(lotsAvant);
+  v('1 050 photos : empreintes envoyées en 2 lots (≤ 1 000), toutes les photos au cloud',
+    lots.length === 2 && lots.every(n => n <= 1000) && [...env.PHOTOS._m.keys()].length >= 1050, JSON.stringify(lots));
+
   /* 5. Suppression du compte */
+  const idPilote = sqlite.prepare("SELECT id FROM utilisateurs WHERE email = 'pilote@exemple.fr'").get().id;
   await ouvrirReglages(A.page); await cliquer(A.page, 'supprimer', 'Compte supprimé');
-  v('suppression : plus rien sur le serveur (compte, garage, photos)', !sqlite.prepare("SELECT 1 FROM utilisateurs WHERE email = 'pilote@exemple.fr'").get() && !cloud() && env.PHOTOS._m.size === 0);
+  v('suppression : plus rien sur le serveur pour ce compte (compte, garage, photos)', !sqlite.prepare("SELECT 1 FROM utilisateurs WHERE email = 'pilote@exemple.fr'").get()
+    && !sqlite.prepare('SELECT 1 FROM garages WHERE utilisateur = ?').get(idPilote) && ![...env.PHOTOS._m.keys()].some(k => k.startsWith(`u/${idPilote}/`)));
+  v('… et les autres comptes sont intacts', [...env.PHOTOS._m.keys()].length >= 1050);
   v('… et le téléphone garde son garage local', Object.keys(await garage(A.page)).length === 4);
   v('… et le panneau repasse à « Recevoir un code »', !!(await A.page.$('#gcp-email')));
 

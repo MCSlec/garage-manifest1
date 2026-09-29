@@ -47,6 +47,7 @@
 
   const CLE = 'gm-compte';
   const CONCURRENCE_PHOTOS = 3;
+  const LOT_EMPREINTES = 1000;     // le serveur refuse au-delà de 5 000 par requête : on reste loin
 
   // ------------------------------------------------------------ état ----
   const lireEtat = () => { try { return JSON.parse(localStorage.getItem(CLE)) || {}; } catch (_) { return {}; } };
@@ -147,7 +148,11 @@
       }
       spots.push({ ...s, photos: emp });
     }
-    const { manquantes } = await api('POST', '/photos/manquantes', { corps: { empreintes: [...photos.keys()] } });
+    const toutes = [...photos.keys()], manquantes = [];
+    for (let i = 0; i < toutes.length; i += LOT_EMPREINTES) {
+      const r = await api('POST', '/photos/manquantes', { corps: { empreintes: toutes.slice(i, i + LOT_EMPREINTES) } });
+      manquantes.push(...r.manquantes);
+    }
     let faites = 0;
     await enParallele(manquantes, CONCURRENCE_PHOTOS, async (h) => {
       const o = photos.get(h);
@@ -183,7 +188,7 @@
     const toutes = [...new Set((g.donnees.spots || []).flatMap(s => Array.isArray(s.photos) ? s.photos : []))]
       .filter(h => /^[0-9a-f]{64}$/.test(h));
     const aTelecharger = toutes.filter(h => !locales.has(h));
-    let faites = 0;
+    let faites = 0, echecs = 0;
     await enParallele(aTelecharger, CONCURRENCE_PHOTOS, async (h) => {
       try {
         const r = await api('GET', `/photos/${h}`, { reponseBrute: true });
@@ -193,9 +198,17 @@
         const octets = new Uint8Array(await r.arrayBuffer());
         // Contrôle d'intégrité : le contenu doit correspondre à son empreinte.
         if (await empreinte(octets) === h) locales.set(h, octetsVersDataUrl(octets, type));
-      } catch (_) { /* photo absente : la prise est restaurée sans elle */ }
+      } catch (err) {
+        /* 404 : la photo n'existe plus au cloud, il n'y a rien à perdre en
+           l'ignorant. Toute AUTRE erreur (réseau, serveur) est passagère : on
+           interrompt tout, sinon la sauvegarde suivante — automatique après un
+           conflit — réécrirait le garage cloud SANS cette photo, qui serait
+           perdue alors qu'elle existe (trouvé par /code-review). */
+        if (!err || err.statut !== 404) echecs++;
+      }
       progres && progres({ etape: 'photos', faites: ++faites, total: aTelecharger.length });
     });
+    if (echecs) throw new ErreurCompte(`${echecs} photo${echecs > 1 ? 's' : ''} n'${echecs > 1 ? 'ont' : 'a'} pas pu être téléchargée${echecs > 1 ? 's' : ''} : rien n'a été modifié, réessaie`, 0);
     const donnees = { ...g.donnees, spots: (g.donnees.spots || []).map(s => ({
       ...s, photos: (Array.isArray(s.photos) ? s.photos : []).map(h => locales.get(h)).filter(Boolean) })) };
     const r = await global.GMGarage.importer(donnees, { fusion: true });

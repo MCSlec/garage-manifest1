@@ -23,24 +23,33 @@ const { DatabaseSync } = require('node:sqlite');
 
 /* ---- D1 simulé ---------------------------------------------------------- */
 function d1(sqlite) {
+  /* Latence d'une vraie base distante : chaque requête rend la main avant de
+     s'exécuter. Sans elle, les requêtes simultanées ne s'entremêlent jamais et
+     un défaut de concurrence (lecture puis écriture séparées) reste invisible. */
+  const latence = () => new Promise(ok => setImmediate(ok));
   const lier = (sql, args = []) => ({
     bind: (...a) => lier(sql, a),
-    first: async () => sqlite.prepare(sql).get(...args) ?? null,
-    all: async () => ({ results: sqlite.prepare(sql).all(...args) }),
-    run: async () => { const r = sqlite.prepare(sql).run(...args); return { meta: { changes: Number(r.changes) } }; },
+    first: async () => { await latence(); return sqlite.prepare(sql).get(...args) ?? null; },
+    all: async () => { await latence(); return { results: sqlite.prepare(sql).all(...args) }; },
+    run: async () => { await latence(); const r = sqlite.prepare(sql).run(...args); return { meta: { changes: Number(r.changes) } }; },
   });
   return { prepare: (sql) => lier(sql), batch: async (stmts) => Promise.all(stmts.map(s => s.run())) };
 }
 /* ---- R2 simulé ---------------------------------------------------------- */
 function r2() {
   const m = new Map();
+  const appels = { n: 0 };            // chaque appel au stockage compte (limite Cloudflare par requête)
+  const compter = (f) => async (...a) => { appels.n++; return f(...a); };
   return {
-    _m: m,
-    put: async (k, octets, o = {}) => { m.set(k, { octets: new Uint8Array(octets), httpMetadata: o.httpMetadata || {} }); },
-    get: async (k) => m.has(k) ? { body: m.get(k).octets, httpMetadata: m.get(k).httpMetadata } : null,
-    head: async (k) => m.has(k) ? { key: k } : null,
-    delete: async (k) => { for (const x of [].concat(k)) m.delete(x); },
-    list: async ({ prefix }) => ({ objects: [...m.keys()].filter(k => k.startsWith(prefix)).map(key => ({ key })), truncated: false }),
+    _m: m, _appels: appels,
+    put: compter(async (k, octets, o = {}) => { m.set(k, { octets: new Uint8Array(octets), httpMetadata: o.httpMetadata || {} }); }),
+    get: compter(async (k) => m.has(k) ? { body: m.get(k).octets, httpMetadata: m.get(k).httpMetadata } : null),
+    head: compter(async (k) => m.has(k) ? { key: k } : null),
+    delete: compter(async (k) => { for (const x of [].concat(k)) m.delete(x); }),
+    /* Comme le vrai R2 : 1 000 objets au plus par page, suite par curseur. */
+    list: compter(async ({ prefix, cursor }) => { const toutes = [...m.keys()].filter(k => k.startsWith(prefix)).sort();
+      const debut = Number(cursor || 0), page = toutes.slice(debut, debut + 1000), fin = debut + page.length;
+      return { objects: page.map(key => ({ key })), truncated: fin < toutes.length, cursor: fin < toutes.length ? String(fin) : undefined }; }),
   };
 }
 
@@ -169,6 +178,13 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   for (let i = 0; i < 12; i++) { ip = 210 + i; const x = await appel('POST', '/auth/code', { corps: { email: 'limite@exemple.fr' } }); if (x.status === 429) n429++;
     sqlite.prepare('UPDATE limites SET fenetre = ? WHERE compte >= 3 AND fenetre > ?').run(Date.now() - 16 * 60 * 1000, Date.now() - 60000); }
   v('plafond journalier : pas plus de 10 codes par jour pour une adresse', n429 > 0, n429);
+  /* n°6 : 50 demandes SIMULTANÉES pour une même adresse ne doivent pas passer le plafond */
+  const avantRafale = mails.length;
+  await Promise.all(Array.from({ length: 50 }, (_, i) => worker.fetch(new Request('https://api.test/auth/code', { method: 'POST',
+    headers: { Origin: 'https://app.test', 'Content-Type': 'application/json', 'CF-Connecting-IP': `10.7.${i}.1` },
+    body: JSON.stringify({ email: 'rafale-codes@exemple.fr' }) }), env)));
+  const envoyes = mails.slice(avantRafale).filter(m => m.to[0] === 'rafale-codes@exemple.fr').length;
+  v('50 demandes de code simultanées : pas plus de 3 codes envoyés (compteur atomique)', envoyes <= 3, envoyes);
   const clesLimites = sqlite.prepare('SELECT cle FROM limites').all().map(x => x.cle);
   v('compteurs de débit : ni adresse ni IP en clair (empreintes seulement)',
     clesLimites.length > 0 && clesLimites.every(k => /^[0-9a-f]{64}$/.test(k)), JSON.stringify(clesLimites.slice(0, 2)));
@@ -214,6 +230,30 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   v('un autre compte ne voit pas la photo', r.status === 404);
   r = await appel('GET', '/garage', { session: sB });
   v('un autre compte ne voit pas le garage', r.status === 404);
+
+  /* Gros garages et grosses collections (défauts n°2, 5, 8, 10 de /code-review) */
+  const sC = await connecter('charge@exemple.fr');
+  const idC = sqlite.prepare("SELECT id FROM utilisateurs WHERE email = 'charge@exemple.fr'").get().id;
+  const hexa = (i) => require('crypto').createHash('sha256').update('photo-' + i).digest('hex');
+  const empreintes = Array.from({ length: 1200 }, (_, i) => hexa(i));
+  for (const e of empreintes.slice(0, 1100)) env.PHOTOS._m.set(`u/${idC}/${e}`, { octets: new Uint8Array([1]), httpMetadata: {} });
+  const appelsAvant = env.PHOTOS._appels.n;
+  r = await appel('POST', '/photos/manquantes', { session: sC, corps: { empreintes } });
+  const manq = r.status === 200 ? (await r.json()).manquantes : null;
+  v('1 200 photos dont 1 100 déjà au cloud : exactement les 100 manquantes', manq && manq.length === 100 && manq.every(e => empreintes.slice(1100).includes(e)), manq && manq.length);
+  const appelsR2 = env.PHOTOS._appels.n - appelsAvant;
+  v('… en quelques appels au stockage, pas un par photo (limite Cloudflare : 1 000 par requête)', appelsR2 <= 5, appelsR2);
+  r = await appel('POST', '/photos/manquantes', { session: sC, corps: { empreintes: Array.from({ length: 5001 }, (_, i) => hexa(i)) } });
+  v('liste trop longue : refus explicite (413), jamais une troncature silencieuse', r.status === 413, r.status);
+  for (const e of empreintes.slice(0, 1100)) env.PHOTOS._m.delete(`u/${idC}/${e}`);
+  r = await appel('PUT', '/garage', { session: sC, corps: { donnees: null }, entetes: { 'If-Match': '0' } });
+  v('garage « null » refusé (400)', r.status === 400, r.status);
+  r = await appel('PUT', '/garage', { session: sC, corps: { donnees: [1, 2] }, entetes: { 'If-Match': '0' } });
+  v('garage « tableau » refusé (400)', r.status === 400, r.status);
+  r = await appel('PUT', '/garage', { session: sC, corps: { donnees: { spots: [], note: 'é'.repeat(1_000_000) } }, entetes: { 'If-Match': '0' } });
+  const msgTaille = r.status === 413 ? (await r.json()).erreur : '';
+  v('garage de plus de 1,9 Mo (octets, accents compris) : 413 explicite, pas « Erreur interne »', r.status === 413 && /volumineux/i.test(msgTaille), `${r.status} ${msgTaille}`);
+  await appel('DELETE', '/compte', { session: sC });
 
   /* RGPD : export, déconnexion, suppression */
   r = await appel('GET', '/compte/export', { session: sA });
