@@ -242,6 +242,56 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   v('1 050 photos : empreintes envoyées en 2 lots (≤ 1 000), toutes les photos au cloud',
     lots.length === 2 && lots.every(n => n <= 1000) && [...env.PHOTOS._m.keys()].length >= 1050, JSON.stringify(lots));
 
+  /* 4 quater. Défaut n°4 : synchronisation à deux appareils — ajout, modification, suppression, fusion */
+  sqlite.prepare('DELETE FROM limites').run();
+  const S1 = await telephone(), S2 = await telephone();
+  const maintenant = () => new Date().toISOString();
+  const cloudDe = (email) => { const u = sqlite.prepare('SELECT id FROM utilisateurs WHERE email = ?').get(email);
+    const g = u && sqlite.prepare('SELECT version, donnees FROM garages WHERE utilisateur = ?').get(u.id); return g ? { version: g.version, donnees: JSON.parse(g.donnees) } : null; };
+  const retirerViaApp = async (page, id) => {
+    await page.evaluate(() => document.querySelector('[data-tab="collection"]')?.click()); await page.waitForTimeout(300);
+    await page.evaluate(i => document.querySelector(`[data-car="${i}"]`)?.click(), id);
+    await page.waitForSelector(`[data-release="${id}"]`, { state: 'attached', timeout: 5000 });   // sur une page du carrousel de la fiche
+    await page.evaluate(i => document.querySelector(`[data-release="${i}"]`).click(), id);
+    await page.waitForSelector('[data-cf="1"]', { timeout: 5000 }); await page.click('[data-cf="1"]');
+    await page.waitForFunction(i => !document.querySelector(`[data-release="${i}"]`), id, { timeout: 5000 });
+  };
+  const t0 = new Date(Date.now() - 3600e3).toISOString();
+  await idb(S1.page, 'put', [{ ...prise('ferrari-f40', [PH('S')]), note: 'note d\'origine', maj: t0 }, { ...prise('peugeot-205', [PH('T')]), maj: t0 }]);
+  await recharger(S1.page); await connecter(S1.page, 'sync@exemple.fr');
+  await ouvrirReglages(S1.page); await cliquer(S1.page, 'sauvegarder', 'Sauvegardé');
+  await connecter(S2.page, 'sync@exemple.fr');
+  await ouvrirReglages(S2.page); await cliquer(S2.page, 'restaurer', 'Récupéré');
+  v('sync · ajout : S2 récupère les 2 voitures de S1', Object.keys(await garage(S2.page)).length === 2);
+  // Modification sur S2 (note réécrite + une photo en plus), sauvée
+  const x2 = (await garage(S2.page))['ferrari-f40'];
+  await idb(S2.page, 'put', [{ ...x2, note: 'note réécrite sur S2', photos: [...x2.photos, PH('U')], maj: maintenant() }]);
+  await recharger(S2.page); await ouvrirReglages(S2.page); await cliquer(S2.page, 'sauvegarder', 'Sauvegardé');
+  // Pendant ce temps, S1 (en retard d'une version) RETIRE la 205 via l'app et AJOUTE une M3
+  await retirerViaApp(S1.page, 'peugeot-205');
+  await idb(S1.page, 'put', [{ ...prise('bmw-m3', [PH('V')]), maj: maintenant() }]); await recharger(S1.page);
+  await ouvrirReglages(S1.page); await cliquer(S1.page, 'sauvegarder', 'Sauvegardé');     // 409 → fusion → renvoi
+  let cs = cloudDe('sync@exemple.fr'); const idsCloud = cs.donnees.spots.map(x => x.carId).sort();
+  const xCloud = cs.donnees.spots.find(x => x.carId === 'ferrari-f40');
+  v('sync · fusion après conflit : la 205 retirée par S1 ne revient pas, la M3 ajoutée est là', JSON.stringify(idsCloud) === '["bmw-m3","ferrari-f40"]', JSON.stringify(idsCloud));
+  v('sync · la note la plus récente (S2) remplace l\'ancienne, sans concaténation', xCloud && xCloud.note === 'note réécrite sur S2', xCloud && JSON.stringify(xCloud.note));
+  v('sync · les photos des deux appareils sont conservées', xCloud && xCloud.photos.length === 2, xCloud && xCloud.photos.length);
+  v('sync · le retrait voyage avec la sauvegarde (pierre tombale)', !!(cs.donnees.meta && cs.donnees.meta.supprimes && cs.donnees.meta.supprimes['peugeot-205']));
+  // S2 récupère : la 205 disparaît AUSSI chez lui
+  await ouvrirReglages(S2.page); await cliquer(S2.page, 'restaurer', 'Récupéré');
+  const g2 = await garage(S2.page);
+  v('sync · S2 : la 205 retirée sur S1 disparaît, la M3 arrive, la note de S2 est intacte',
+    !g2['peugeot-205'] && !!g2['bmw-m3'] && g2['ferrari-f40'].note === 'note réécrite sur S2', JSON.stringify(Object.keys(g2)));
+  v('sync · … et le message le dit', /retirée sur un autre appareil/.test(await S2.page.textContent('#gcp-msg')), await S2.page.textContent('#gcp-msg'));
+  // S2 resauve : rien ne ressuscite
+  await cliquer(S2.page, 'sauvegarder', 'Sauvegardé');
+  v('sync · resauvegarde : la 205 ne ressuscite pas', !cloudDe('sync@exemple.fr').donnees.spots.some(x => x.carId === 'peugeot-205'));
+  // Recapture APRÈS le retrait (sur S2) : elle doit revenir partout
+  await idb(S2.page, 'put', [{ ...prise('peugeot-205', [PH('W')]), maj: maintenant() }]); await recharger(S2.page);
+  await ouvrirReglages(S2.page); await cliquer(S2.page, 'sauvegarder', 'Sauvegardé');
+  await ouvrirReglages(S1.page); await cliquer(S1.page, 'restaurer', 'Récupéré');
+  v('sync · une voiture recapturée après son retrait revient sur l\'autre appareil', !!(await garage(S1.page))['peugeot-205']);
+
   /* 5. Suppression du compte */
   const idPilote = sqlite.prepare("SELECT id FROM utilisateurs WHERE email = 'pilote@exemple.fr'").get().id;
   await ouvrirReglages(A.page); await cliquer(A.page, 'supprimer', 'Compte supprimé');

@@ -203,9 +203,10 @@ const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   await ouvrirReglages();
   const photo = i => `data:image/jpeg;base64,${String.fromCharCode(65 + (i % 26)).repeat(4)}${i.toString(36).padStart(4, 'A').replace(/[^A-Za-z0-9]/g, 'A')}`;
   await choisirFichier('[data-act="import"]', { app: 'garage-manifest', version: 1, spots: [
-    { carId: 'ferrari-f40', at: '2026-09-02T12:00:00.000Z', photos: Array.from({ length: 60 }, (_, i) => photo(i)), variants: [] } ] });
+    { carId: 'ferrari-f40', at: '2026-09-02T12:00:00.000Z', photos: Array.from({ length: 510 }, (_, i) => photo(i)), variants: [] } ] });
   const nbPhotos = (await parId())['ferrari-f40']?.photos?.length;
-  v('taille · 60 photos importées pour une voiture → 50 conservées', nbPhotos === 50, nbPhotos);
+  // Borne relevée de 50 à 500 le 29/09 : 50 amputait des collections réelles (capture sans plafond).
+  v('taille · 510 photos importées pour une voiture → 500 conservées (borne anti-fichier piégé)', nbPhotos === 500, nbPhotos);
 
   v('aucune erreur JS', errs.length === 0, errs.join(' | '));
 

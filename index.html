@@ -3269,9 +3269,11 @@ const VARIANTS = {
       cover: prev ? (prev.cover||0) : 0,
       variants: (draft.variantsFor === id && draft.variants) ? [...draft.variants] : (prev?.variants || []),
       favorite: prev?.favorite || false,
+      maj: new Date().toISOString(),   // horodatage de modification : arbitre des fusions entre appareils
     };
     await Store.put(rec);
     state.spots.set(id, rec);
+    if (META.supprimes && META.supprimes[id]) { delete META.supprimes[id]; await saveMeta(); } // recapturée après un retrait
     state.flash = id;
     const isNew = !prev;
 
@@ -3458,19 +3460,24 @@ const VARIANTS = {
         const hint = document.querySelector(".swipe-hint"); if (hint) hint.style.opacity = i===0 ? "1" : "0";
       }, { passive:true });
     }
-    if (h) { const t = $("#detNote"); if (t) t.addEventListener("blur", async () => { rec.note = t.value.trim(); await Store.put(rec); }); }
+    if (h) { const t = $("#detNote"); if (t) t.addEventListener("blur", async () => { const n = t.value.trim(); if (n === (rec.note || "")) return; rec.note = n; rec.maj = new Date().toISOString(); await Store.put(rec); }); }
   }
 
-  async function setCover(carId, i) { const rec = state.spots.get(carId); if (!rec) return; rec.cover = i; await Store.put(rec); openDetail(carId); render(); }
+  async function setCover(carId, i) { const rec = state.spots.get(carId); if (!rec) return; rec.cover = i; rec.maj = new Date().toISOString(); await Store.put(rec); openDetail(carId); render(); }
   async function toggleFavorite(carId) {
     const rec = state.spots.get(carId); if (!rec) return;
     rec.favorite = !rec.favorite;
+    rec.maj = new Date().toISOString();
     await Store.put(rec);
     toast(rec.favorite ? "Ajoutée aux trouvailles favorites ★" : "Retirée des favoris");
     openDetail(carId); render();
   }
   async function release(carId) {
     await Store.del(carId); state.spots.delete(carId);
+    /* Pierre tombale datée : exportée avec la sauvegarde cloud, elle retire la
+       voiture des AUTRES appareils à la prochaine synchronisation. Sans elle, la
+       fusion la faisait réapparaître (défaut n°4 de /code-review). */
+    META.supprimes = { ...(META.supprimes || {}), [carId]: new Date().toISOString() }; await saveMeta();
     if (CARS_BY_ID[carId]?.custom) { await deleteCustomCar(carId); delete CARS_BY_ID[carId]; } // une « Non classé » sans prise n'a plus de raison d'exister
     closeOverlay(); toast("Retirée du garage"); render();
   }
@@ -3490,9 +3497,13 @@ const VARIANTS = {
   // Un dataURL importé est injecté tel quel dans 7 attributs src : sans ce filtre, une
   // sauvegarde forgée obtient une exécution de script, persistée en base (DT-02).
   const PHOTO_RE = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2}$/;
+  /* Borne contre un fichier piégé. Elle était de 50, mais la capture n'a aucun
+     plafond : une voiture à 60 photos exportée puis réimportée (ou restaurée du
+     cloud) en perdait 10 en silence. La taille totale reste bornée à l'import. */
+  const MAX_PHOTOS_VOITURE = 500;
   const sanitizePhotos = (arr) => (Array.isArray(arr) ? arr : [])
     .filter(p => typeof p === "string" && p.length <= 12e6 && PHOTO_RE.test(p))
-    .slice(0, 50);   // 50 photos par voiture : large pour un usage réel, borne un fichier piégé
+    .slice(0, MAX_PHOTOS_VOITURE);
 
   /* Taille des fichiers importés, vérifiée AVANT lecture : file.text() charge
      tout en mémoire, et un fichier démesuré figeait puis tuait l'onglet sans
@@ -3593,7 +3604,40 @@ const VARIANTS = {
       cover: Math.max(0, Math.min(Number(rec.cover) || 0, Math.max(0, photos.length - 1))),
       variants: (Array.isArray(rec.variants) ? rec.variants : []).filter(v => typeof v === "string").slice(0,20),
       favorite: !!rec.favorite,
+      ...(isoValide(rec.maj) ? { maj: rec.maj } : {}),
     };
+  }
+
+  /* ---- Synchronisation entre appareils (défaut n°4 de /code-review) ----
+     Pierres tombales : { carId → date du retrait }. Une prise dont la dernière
+     modification (`maj`) est ANTÉRIEURE au retrait est supprimée partout ;
+     une prise recapturée après (maj plus récent) survit. Dates comparées en
+     nombres, pas en texte. Prise sans `maj` (sauvegarde ancienne) = 0 : le
+     moindre retrait l'emporte. */
+  const tDate = (v) => Date.parse(v) || 0;
+  function sanitizeSupprimes(raw) {
+    const out = {};
+    if (raw && typeof raw === "object" && !Array.isArray(raw))
+      for (const [id, d] of Object.entries(raw).slice(0, 5000))
+        if ((/^[a-z0-9][a-z0-9-]{0,80}$/.test(id) || CUSTOM_ID_RE.test(id)) && isoValide(d)) out[id] = d;
+    return out;
+  }
+  function unirSupprimes(a, b) {
+    const out = { ...a };
+    for (const [id, d] of Object.entries(b)) if (!out[id] || tDate(d) > tDate(out[id])) out[id] = d;
+    return out;
+  }
+  const retireeApres = (prise, supprimes) => !!supprimes[prise.carId] && tDate(prise.maj) <= tDate(supprimes[prise.carId]);
+  /* Deux versions d'une même prise : la plus récemment modifiée donne note,
+     favori, déclinaisons, lieu, date et couverture ; les photos s'additionnent
+     (l'app ne retire jamais une photo seule). À égalité, l'appareil fait autorité.
+     Plus de concaténation des notes : une note réécrite remplace l'ancienne. */
+  function fusionnerDistante(locale, distante) {
+    const recente = tDate(distante.maj) > tDate(locale.maj) ? distante : locale;
+    const photos = [...(recente.photos || [])];
+    for (const p of [...(locale.photos || []), ...(distante.photos || [])]) if (!photos.includes(p)) photos.push(p);
+    const garde = photos.slice(0, MAX_PHOTOS_VOITURE);
+    return { ...recente, photos: garde, cover: Math.min(recente.cover || 0, Math.max(0, garde.length - 1)) };
   }
 
   /* Données de sauvegarde, sans dialogue : partagées par l'export fichier et la
@@ -3644,14 +3688,28 @@ const VARIANTS = {
           await Store.put(CUSTOM_REG);
         }
         const spots = Array.isArray(data.spots) ? data.spots : [];
-        let n = 0, rejected = 0;
+        let n = 0, rejected = 0, retirees = 0;
+        // Fusion cloud : les retraits des DEUX appareils s'appliquent aux deux.
+        const supprimes = fusion ? unirSupprimes(sanitizeSupprimes(META.supprimes), sanitizeSupprimes(data.meta && data.meta.supprimes)) : null;
         for (const rec of spots) {
           let clean = sanitizeSpot(rec);
           const f = !clean && rec && typeof rec === "object" ? fusionVers(rec.carId) : null;
           if (f) { const c2 = sanitizeSpot({ ...rec, carId: f.vers }); if (c2) clean = fusionnerPrise(c2, f); }
           if (!clean) { rejected++; continue; }
-          if (fusion && state.spots.has(clean.carId)) clean = fusionnerPrise(clean, { vers: clean.carId });
+          if (fusion && retireeApres(clean, supprimes)) continue;          // retirée ailleurs, après sa dernière modification
+          if (fusion && state.spots.has(clean.carId)) clean = fusionnerDistante(state.spots.get(clean.carId), clean);
           await Store.put(clean); state.spots.set(clean.carId, clean); n++;
+        }
+        if (fusion) {
+          // Retraits faits sur l'AUTRE appareil : on les applique ici aussi.
+          for (const [id, rec] of [...state.spots]) {
+            if (!retireeApres(rec, supprimes)) continue;
+            await Store.del(id); state.spots.delete(id); retirees++;
+          }
+          // « Non classé » dont plus aucune prise ne dépend : elles ne réapparaissent pas dans le sélecteur.
+          for (const c of [...CUSTOM_REG.list]) if (supprimes[c.id] && !state.spots.has(c.id)) { await deleteCustomCar(c.id); delete CARS_BY_ID[c.id]; }
+          META = { ...META, supprimes };
+          await saveMeta();
         }
         if (data.meta && typeof data.meta === "object") {
           // `ai` volontairement ignoré : un fichier importé ne doit pas pouvoir rerouter
@@ -3673,7 +3731,7 @@ const VARIANTS = {
             carId:"__meta__" };
           await saveMeta();
         }
-        return { n, rejected };
+        return { n, rejected, retirees };
   }
   /* Contrat public pour gm-compte.js (sauvegarde cloud). Seul point d'entrée :
      le module ne touche jamais à IndexedDB ni à `state` directement. */
@@ -4356,7 +4414,8 @@ const VARIANTS = {
       }
       // Ce qui a été persisté avant DT-09 / DT-10 repasse par les mêmes filtres qu'à l'import.
       META = { ...META, bonus:entierBorne(META.bonus), missions:sanitizeMissions(META.missions),
-               friends:sanitizeFriends(META.friends), feed:sanitizeFeed(META.feed), name:String(META.name ?? "").slice(0,24) };
+               friends:sanitizeFriends(META.friends), feed:sanitizeFeed(META.feed), name:String(META.name ?? "").slice(0,24),
+               supprimes:sanitizeSupprimes(META.supprimes) };
       for (const rec of all) {
         if (rec.carId === "__meta__" || rec.carId === "__customcars__") continue;
         if (CARS_BY_ID[rec.carId]) state.spots.set(rec.carId, rec);

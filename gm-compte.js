@@ -213,7 +213,7 @@
       ...s, photos: (Array.isArray(s.photos) ? s.photos : []).map(h => locales.get(h)).filter(Boolean) })) };
     const r = await global.GMGarage.importer(donnees, { fusion: true });
     ecrireEtat({ ...lireEtat(), version: g.version });
-    return { voitures: r.n, rejetees: r.rejected, photosTelechargees: aTelecharger.length, version: g.version };
+    return { voitures: r.n, rejetees: r.rejected, retirees: r.retirees || 0, photosTelechargees: aTelecharger.length, version: g.version };
   }
 
   async function supprimerCompte() {
@@ -290,7 +290,7 @@
       } else if (action === 'restaurer') {
         dire('Récupération en cours…');
         const r = await restaurer({ progres: p => dire(`Photos : ${p.faites}/${p.total}`) });
-        message = r.rien ? 'Rien n\'est encore sauvé dans le cloud.' : `Récupéré : ${r.voitures} voiture${r.voitures > 1 ? 's' : ''}.`;
+        message = r.rien ? 'Rien n\'est encore sauvé dans le cloud.' : `Récupéré : ${r.voitures} voiture${r.voitures > 1 ? 's' : ''}${r.retirees ? ` · ${r.retirees} retirée${r.retirees > 1 ? 's' : ''} sur un autre appareil` : ''}.`;
         rafraichir();
       } else if (action === 'deconnecter') {
         await deconnecter(); message = 'Déconnecté.'; rafraichir();
