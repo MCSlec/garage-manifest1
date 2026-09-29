@@ -5,22 +5,28 @@
 > Tenu à jour à chaque livraison ; une ligne cochée sort de la liste au
 > passage suivant (l'historique reste dans `git log`).
 >
+> **Règle : une ligne n'est cochée que lorsque le propriétaire a dit
+> explicitement qu'elle est faite.** Jamais par déduction (un fichier qui
+> apparaît, une question qui ne revient pas…) : tant que ce n'est pas dit,
+> ce n'est pas fait.
+>
 > 🔴 bloque un lancement · ⚖️ obligation légale · 🟡 décision produit
 
 ---
 
 ## 1. ⚖️ Déjà en production — à trancher en premier
 
-- [ ] **Attribution OpenStreetMap absente de la carte.** `index.html` crée la
-  carte avec `attributionControl:false` alors qu'elle affiche les tuiles de
-  `tile.openstreetmap.org`. La politique d'usage des tuiles OSM et la licence
-  ODbL imposent une mention visible « © OpenStreetMap ». Deux sorties :
-  - **(a)** feu vert pour réafficher la mention (une ligne, petit texte en bas
-    à droite de la carte) ;
-  - **(b)** passer à la carte embarquée (§4) : plus de tuiles OSM, plus
-    d'obligation — mais ce n'est pas immédiat.
+- [ ] **Attribution OpenStreetMap incomplète sur la carte actuelle.** La
+  mention « © OpenStreetMap » figure **sous** la carte, mais seulement quand au
+  moins une prise est géolocalisée ; carte vide → aucune mention, alors que les
+  tuiles OSM s'affichent. La politique d'usage des tuiles OSM et la licence
+  ODbL imposent une attribution visible. Deux sorties :
+  - **(a)** feu vert pour ajouter la mention dans le cas « carte vide » (texte
+    seul, sous la carte) ;
+  - **(b)** passer à **notre** carte (§4) : l'attribution y est affichée
+    d'office. Mais cela suppose que les étapes du §4 soient faites.
 
-  Recommandation : **(a) tout de suite**, (b) ensuite si tu la valides.
+  Recommandation : **(a) tout de suite**, (b) dès que la carte est hébergée.
 
 ## 2. 🔴 Lancer les comptes (dans l'ordre)
 
@@ -53,17 +59,23 @@ Tout est dans `cloud/CONFIDENTIALITE.md` :
   c'est tranché.
 - [ ] 🟡 **Âge minimum** des utilisateurs.
 
-## 4. 🟡 Carte sans aucun service externe
+## 4. 🔴 Notre propre carte (plus aucun appel externe)
 
-Faisable, la question est le **niveau de détail** (chiffres mesurés le 29/09) :
+**Prête côté app, en sommeil** (`CARTE_URL` vide dans `index.html`). Guide pas à
+pas : `cloud/CARTE.md`. Nécessite le compte Cloudflare et le domaine du §2.
 
-| Option | Détail visible | Poids | Hébergement |
-|---|---|---|---|
-| **A. Carte du monde embarquée** (Natural Earth, domaine public) | Pays, côtes — pas de rues | 0,76 Mo (1:50 M) à 3,7 Mo (1:10 M), 0,2 à 0,9 Mo compressé | Dans le dépôt, hors ligne, rien à payer |
-| **B. Rues de la France / de l'Europe** (données OSM en PMTiles) | Rues, comme aujourd'hui | Probablement plusieurs Go — **à mesurer** sur l'emprise choisie avant de décider | Trop gros pour GitHub Pages → ton bucket R2 (celui des comptes) |
-| **C. Statu quo** | Rues | — | Serveurs OSM (externe) |
-
-- [ ] Choisir A, B, ou A puis B.
+1. [ ] Installer l'outil **`pmtiles`** sur ton ordinateur.
+2. [ ] 🟡 **Choisir l'emprise** après l'avoir **mesurée** (`--dry-run`, rien n'est
+   téléchargé) : France au niveau des rues (probablement gratuit, ≤ 10 Go — à
+   confirmer), ou monde entier (~120 Go, ≈ 1,65 $/mois). Me donner les tailles
+   si tu veux que je t'aide à trancher.
+3. [ ] Faire l'extrait, créer le bucket **`garage-carte`** (séparé des photos),
+   envoyer le fichier (rclone au-delà de 315 Mo).
+4. [ ] Brancher un **domaine personnalisé** (`carte.ton-domaine.fr`) sur le
+   bucket — pas l'adresse `r2.dev`, réservée au développement.
+5. [ ] Coller la **règle CORS** du guide sur le bucket.
+6. [ ] **Me donner l'adresse du fichier** (`https://carte.…/france.pmtiles`) :
+   je renseigne `CARTE_URL` et je livre.
 
 ## 5. 🟡 Décisions produit en attente
 

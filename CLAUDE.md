@@ -48,14 +48,23 @@ aucune chaîne de dépendances à maintenir, aucune rupture liée à une montée
 version tierce. **N'introduis jamais de dépendance externe** (CDN, package, lib)
 sans que ce soit explicitement demandé et argumenté.
 
-**Seule bibliothèque tierce : Leaflet (carte), HÉBERGÉE DANS LE DÉPÔT** —
+**Bibliothèques tierces : Leaflet et protomaps-leaflet (carte), HÉBERGÉES DANS LE DÉPÔT** —
+Leaflet :
 `vendor/leaflet/`, v1.9.4 tirée du registre npm, licence BSD-2 jointe. Jusqu'au
 29/09 elle était chargée depuis cdnjs sans contrôle d'intégrité : un CDN
 compromis aurait exécuté son code dans l'app, et la carte ne s'affichait pas
 hors ligne. **Jamais de CDN** : une bibliothèque indispensable se copie dans
 `vendor/`, se met en cache (`EXTRAS` de `sw.js`) et se teste (`banc-carte.js`).
-Les **tuiles** de la carte (images OpenStreetMap) restent externes : la carte
-du monde ne s'embarque pas, et une image n'exécute aucun code.
+Les **tuiles** de la carte (images OpenStreetMap) restent externes tant que
+`CARTE_URL` est vide.
+
+**Carte à nous** (`cloud/CARTE.md`) : `protomaps-leaflet` 5.1.0 (npm, BSD-3,
+`vendor/protomaps-leaflet/`, licences des composants embarqués jointes) dessine
+un fichier PMTiles posé sur **notre** stockage R2, lu par requêtes Range. Dès
+que `CARTE_URL` est renseignée : **zéro requête tierce, y compris en cas
+d'échec** — jamais de repli silencieux vers OpenStreetMap. L'attribution
+« © OpenStreetMap » reste affichée : c'est la licence ODbL des **données**,
+indépendante de l'hébergeur. Banc : `banc-carte-perso.js`.
 
 ### 1.3 — Jamais réécrire `index.html` en entier
 `index.html` fait ~3 900 lignes et concentre l'app complète. **Interdiction de le
@@ -410,7 +419,7 @@ incrémenter conjointement :**
 2. `VERSION` (`"garage-v…"`) dans `sw.js` (ligne ~12).
 
 Ces deux numéros sont **tenus synchronisés** (au 28/09/2026 : `gm-specs.js` →
-`20.189.0`, `sw.js` → `garage-v20.189.0`). `VERSION_MODULE` s'affiche en outre
+`20.190.0`, `sw.js` → `garage-v20.190.0`). `VERSION_MODULE` s'affiche en outre
 dans l'UI via `grefferVersion()`, ce qui permet de vérifier de visu quelle version
 tourne réellement sur l'appareil.
 
@@ -547,6 +556,7 @@ modification n'impose aucun bump de version.
 | `cloud/` | Serveur de comptes — déployé **à part** : `compte-worker.js`, `schema.sql`, `wrangler.toml.exemple`, `DEPLOIEMENT.md`, `CONFIDENTIALITE.md` (projet RGPD, à maintenir dans le même commit que tout changement de collecte) |
 | `banc-compte.js` / `banc-compte-navigateur.js` | Bancs du serveur (Worker réel, D1/R2 simulés) et de bout en bout (app + Worker dans Chromium) |
 | `vendor/leaflet/` | Leaflet 1.9.4 hébergé dans le dépôt (§1.2) ; banc `banc-carte.js` : aucun script ni style chargé depuis un autre domaine |
+| `vendor/protomaps-leaflet/` | Moteur de rendu de **notre** carte (§1.2), chargé seulement si `CARTE_URL` est renseignée ; banc `banc-carte-perso.js` (fabrique une vraie archive PMTiles) ; guide `cloud/CARTE.md` |
 | `banc-imports.js` | Banc navigateur des **fichiers importés hostiles** (sauvegarde, profil d'équipage) : aucune charge ne doit s'exécuter, à l'import comme au redémarrage (DT-09, DT-10) ; contrat `data-car-id` |
 | `AUDIT-DEFAUTS.md` | Rapport de la chasse aux défauts du 29/09 : corrigé, et reste à décider |
 | `banc-i18n.js` → `I18N.md` | Recensement des textes d'interface (préparation i18n). `I18N.md` est **généré** : relancer `node banc-i18n.js --md`, ne jamais l'éditer à la main |

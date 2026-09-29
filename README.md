@@ -21,6 +21,7 @@ favicon-32.png             ← favicon
 gm-specs.js, gm-matcher.js ← modules : fiches techniques, rapprochement IA → catalogue
 gm-compte.js               ← compte e-mail + sauvegarde cloud (en sommeil tant que non configuré)
 vendor/leaflet/            ← carte (Leaflet, hébergé ici : aucun CDN)
+vendor/protomaps-leaflet/  ← rendu de notre propre carte (en sommeil tant que CARTE_URL est vide, voir cloud/CARTE.md)
 ai-relay-worker.js         ← relais de reconnaissance IA (optionnel — voir section 3bis, se déploie À PART sur Cloudflare, pas dans ce dossier)
 cloud/                     ← serveur de comptes (optionnel — se déploie À PART, voir cloud/DEPLOIEMENT.md)
 ```

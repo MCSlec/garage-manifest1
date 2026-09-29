@@ -3896,21 +3896,32 @@ const VARIANTS = {
 
   /* ====================================================== CARTE DE CHASSE */
   let leafletReady = null, huntMap = null;
+  /* Carte À NOUS (cloud/CARTE.md) : un fichier PMTiles sur NOTRE stockage, lu par
+     morceaux (requêtes Range) et dessiné par protomaps-leaflet (vendor/). Une fois
+     renseignée, plus AUCUNE requête ne part vers OpenStreetMap, même en cas
+     d'échec. Vide → tuiles OpenStreetMap, comme avant.
+     `window.GM_CARTE_URL`, posé avant le chargement, prend le pas (bancs). */
+  const CARTE_URL = String(window.GM_CARTE_URL || "");
+  const chargerScript = (src) => new Promise((res, rej) => {
+    const s = document.createElement("script");
+    s.src = src; s.onload = res; s.onerror = () => rej(new Error("offline"));
+    document.head.appendChild(s);
+  });
   function ensureLeaflet() {
-    if (window.L) return Promise.resolve();
+    if (window.L && (!CARTE_URL || window.protomapsL)) return Promise.resolve();
     if (leafletReady) return leafletReady;
     leafletReady = new Promise((res, rej) => {
       const css = document.createElement("link");
       /* Leaflet est HÉBERGÉ DANS LE DÉPÔT (vendor/leaflet, v1.9.4 du registre npm) :
          plus aucun code tiers chargé depuis un CDN, et le moteur de carte est mis
-         en cache par le service worker. Seules les tuiles (images) viennent encore
-         d'OpenStreetMap : la carte du monde ne s'embarque pas. */
+         en cache par le service worker. Sans CARTE_URL, seules les tuiles (images)
+         viennent encore d'OpenStreetMap. */
       css.rel = "stylesheet"; css.href = "vendor/leaflet/leaflet.css";
-      document.head.appendChild(css);
-      const s = document.createElement("script");
-      s.src = "vendor/leaflet/leaflet.js";
-      s.onload = res; s.onerror = () => { leafletReady = null; rej(new Error("offline")); };
-      document.head.appendChild(s);
+      if (!window.L) document.head.appendChild(css);
+      // protomaps-leaflet s'appuie sur le L global : il se charge APRÈS Leaflet.
+      (window.L ? Promise.resolve() : chargerScript("vendor/leaflet/leaflet.js"))
+        .then(() => CARTE_URL && !window.protomapsL ? chargerScript("vendor/protomaps-leaflet/protomaps-leaflet.js") : null)
+        .then(res, (e) => { leafletReady = null; rej(e); });
     });
     return leafletReady;
   }
@@ -3928,8 +3939,13 @@ const VARIANTS = {
     if (state.tab !== "map" || !$("#huntMap")) return;
     if (huntMap) { try { huntMap.remove(); } catch {} huntMap = null; }
     document.body.classList.add("map-dark");
-    huntMap = L.map($("#huntMap"), { zoomControl:true, attributionControl:false });
-    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(huntMap);
+    const carteANous = !!(CARTE_URL && window.protomapsL);
+    huntMap = L.map($("#huntMap"), { zoomControl:true, attributionControl:carteANous });
+    if (carteANous) {
+      // Données OpenStreetMap (licence ODbL) : l'attribution reste due, même hébergées chez nous.
+      huntMap.attributionControl.setPrefix(false);
+      protomapsL.leafletLayer({ url: CARTE_URL, flavor: "light", lang: "fr" }).addTo(huntMap);
+    } else L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(huntMap);
     const pts = [];
     for (const rec of state.spots.values()) {
       if (rec.carId==="__meta__" || !rec.coords) continue;
