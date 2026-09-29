@@ -745,6 +745,48 @@ le même commit**.
 
 ---
 
+## 8 sexies. Commandes « / » (compétences) : c'est à l'agent de les PROPOSER
+
+Règle posée par le propriétaire le 29/09 : il ne doit pas avoir à penser aux
+commandes « / ». **L'agent repère le moment où l'une d'elles apporte quelque
+chose, et demande l'autorisation de la lancer** — jamais de lancement d'office,
+jamais d'attente qu'on la lui réclame.
+
+**Format de la demande** (court, une par moment opportun, pas de relance si
+refusée tant que le contexte ne change pas) :
+
+```
+🔧 Proposition : /nom-de-la-commande  (sur quoi)
+   Pourquoi maintenant : l'événement qui la rend utile
+   Plus-value : ce qu'elle apporte que le travail en cours n'apporte pas
+   Nature : lecture seule (rapport) | modifie le code (chaque changement relu)
+   Coût : durée / risque
+   → « go » ou « non »
+```
+
+**Quand proposer quoi** (repères, non exhaustifs) :
+
+| Moment | Commande | Plus-value attendue |
+|---|---|---|
+| Avant un **merge** ou une livraison qui touche sécurité, comptes, imports, relais | `/security-review` | Regard méthodique indépendant du fil de travail : failles d'injection, d'authentification, de fuite de données |
+| Avant un **merge** de PR, ou après une série de commits sur la logique | `/code-review` (niveau adapté à la taille) | Bugs de correction repérés hors de l'angle de celui qui a écrit le code |
+| Nouvelle session où les bancs navigateur ne tournent pas d'emblée | `/session-start-hook` | Bancs relançables dans toute session, première marche vers une CI |
+| Suivi répétitif (PR, déploiement, file de tâches) | `/loop` | Vérification périodique sans que le propriétaire relance |
+| Après un gros ajout, si du code dupliqué ou alambiqué est repéré | `/simplify` | Nettoyage — **uniquement en mode rapport**, puis patchs ciblés un par un (§1.3) |
+
+**Garde-fous :**
+- Une commande qui **modifie** le code ne s'applique jamais en lot : chaque
+  changement proposé est relu et appliqué en patch ciblé (§1.3), puis les bancs
+  repassent (§6).
+- Les résultats d'une revue sont des **pistes à vérifier**, pas des vérités : on
+  confirme chaque point sur le code avant d'agir (même principe que la sortie du
+  banc d'audit, §5 bis).
+- `/init` ne se propose pas : ce `CLAUDE.md` existe et fait foi.
+- Les commandes de l'interface (`/clear`, `/model`, `/config`…) appartiennent au
+  propriétaire : l'agent peut les lui **suggérer**, pas les lancer.
+
+---
+
 ## 9. Rétro-ingénierie — pourquoi ces règles, et pas d'autres
 
 Pour pouvoir défendre et maintenir ce projet, voici la logique derrière les choix
