@@ -564,6 +564,7 @@ modification n'impose aucun bump de version.
 | `CONTEXT.md` | État projet, décisions, journal des chantiers (le *pourquoi*) |
 | `RESTE-A-FAIRE.md` | Ce que **seul l'humain** peut faire (comptes, paiements, mentions légales, décisions). **À tenir à jour à chaque livraison** : ajouter ce qu'une livraison lui demande, retirer ce qui est fait |
 | `README.md` | Documentation utilisateur/fonctionnelle (le *quoi*) |
+| `.claude/hooks/session-start.sh` + `.claude/settings.json` | Hook de démarrage des sessions **cloud** : installe `playwright-core` 1.63.0 (version figée) dans `.claude/outils-bancs/` (ignoré par git, **jamais** à la racine — l'app reste sans dépendance) et exporte `NODE_PATH` / `CHROMIUM`. Les bancs navigateur tournent dès l'ouverture de la session, sans rien installer à la main. Idempotent ; inactif en local |
 | `*.png` | Icônes PWA |
 
 ---

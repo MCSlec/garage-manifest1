@@ -4,3 +4,6 @@ cloud/.wrangler/
 
 # Captures produites par banc-layout.js (sorties de banc, pas des sources)
 banc-captures/
+
+# Outils des bancs installés par le hook de démarrage (.claude/hooks/session-start.sh)
+.claude/outils-bancs/
