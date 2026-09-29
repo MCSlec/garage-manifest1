@@ -266,6 +266,12 @@ ici. Y inscrire un chiffre, même trouvé quelque part, est une **erreur techniq
 pas une approximation. Le champ `nm` reste vide pour ces fiches (Prius, Camry,
 Crown, RAV4 hybride, C-HR, Lexus RX…).
 
+**Hybrides Honda e:HEV (i-MMD)** : le moteur électrique de traction entraîne
+seul les roues, sauf en prise directe du thermique à vitesse stabilisée. Honda
+publie la puissance et le couple de ce moteur : on les reprend (Civic 315 Nm,
+Jazz 253 Nm, CR-V 335 Nm), puissance et couple venant du même moteur, donc de
+la même norme. Ne jamais y substituer le couple du seul thermique.
+
 Même prudence pour les hybrides **série** en général : la règle du couple cumulé
 vaut pour les architectures **parallèles** où le constructeur publie une valeur
 système (Peugeot PSE, Volvo T8, AMG E Performance, Alfa Tonale Q4…).
@@ -384,7 +390,7 @@ incrémenter conjointement :**
 2. `VERSION` (`"garage-v…"`) dans `sw.js` (ligne ~12).
 
 Ces deux numéros sont **tenus synchronisés** (au 28/09/2026 : `gm-specs.js` →
-`20.182.0`, `sw.js` → `garage-v20.182.0`). `VERSION_MODULE` s'affiche en outre
+`20.183.0`, `sw.js` → `garage-v20.183.0`). `VERSION_MODULE` s'affiche en outre
 dans l'UI via `grefferVersion()`, ce qui permet de vérifier de visu quelle version
 tourne réellement sur l'appareil.
 

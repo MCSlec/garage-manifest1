@@ -4,12 +4,12 @@
    cache suffit à rendre toute l'app disponible hors-ligne. Les données (photos,
    collection) vivent dans IndexedDB côté page, pas ici.
 
-   v20.182.0 — Chasse aux défauts : imports hostiles, greffe par id, marques en double.
+   v20.183.0 — Américains en SAE net convertis, hybrides Honda e:HEV.
              Le numéro DOIT être incrémenté à chaque modification d'un fichier
              mis en cache, sinon l'ancienne copie est resservie indéfiniment.
 */
 
-const VERSION = "garage-v20.182.0";
+const VERSION = "garage-v20.183.0";
 
 /* ESSENTIEL : sans ces fichiers, l'app ne démarre pas hors-ligne.
    Mis en cache de façon atomique — si l'un manque, l'installation doit échouer
