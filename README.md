@@ -18,10 +18,14 @@ icon-512.png               ← icône 512×512
 icon-maskable-512.png      ← icône adaptative Android (zone de sécurité)
 apple-touch-icon-180.png   ← icône iOS
 favicon-32.png             ← favicon
+gm-specs.js, gm-matcher.js ← modules : fiches techniques, rapprochement IA → catalogue
+gm-compte.js               ← compte e-mail + sauvegarde cloud (en sommeil tant que non configuré)
+vendor/leaflet/            ← carte (Leaflet, hébergé ici : aucun CDN)
 ai-relay-worker.js         ← relais de reconnaissance IA (optionnel — voir section 3bis, se déploie À PART sur Cloudflare, pas dans ce dossier)
+cloud/                     ← serveur de comptes (optionnel — se déploie À PART, voir cloud/DEPLOIEMENT.md)
 ```
 
-**Tout doit rester dans le même dossier** : les chemins sont relatifs, donc l'ensemble marche à la racine d'un site comme dans un sous-dossier. Seul `ai-relay-worker.js` fait exception : il ne va PAS avec les 8 autres fichiers sur Netlify/GitHub Pages — il se déploie séparément sur Cloudflare Workers (section 3bis).
+**Tout doit rester dans le même dossier** : les chemins sont relatifs, donc l'ensemble marche à la racine d'un site comme dans un sous-dossier. Seuls `ai-relay-worker.js` et le dossier `cloud/` font exception : ce sont des serveurs, ils ne vont PAS sur Netlify/GitHub Pages — ils se déploient séparément sur Cloudflare Workers (section 3bis et `cloud/DEPLOIEMENT.md`).
 
 ---
 

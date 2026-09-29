@@ -79,6 +79,8 @@ près.
   photos — volume élevé, asynchrone, quota large. Repli **en mémoire** si
   IndexedDB est indisponible (bac à sable, aperçu) : l'app tourne, sans
   persistance. Ne remplace pas ce mécanisme par `localStorage`.
+  (Seule exception, voulue : `gm-compte.js` garde son **jeton de session** dans
+  `localStorage` — une préférence d'appareil, pas une donnée de collection.)
 - **Service worker** (`sw.js`) pour l'installabilité et la consultation hors-ligne.
 
 ### 1.5 — Aucun secret côté client
@@ -87,6 +89,15 @@ La reconnaissance photo passe par un relais **Cloudflare Workers**
 dans le navigateur. Le client envoie `POST {image: dataURL}` et reçoit
 `[{brand, model, confidence}]` ; le rapprochement catalogue se fait **côté client**
 dans `index.html` (`matchCatalog`).
+
+Même règle pour les **comptes** (§8 quinquies) : le serveur `cloud/compte-worker.js`
+se déploie à part ; la clé d'envoi d'e-mails (`RESEND_API_KEY`) est un secret du
+Worker. Le navigateur ne porte que l'adresse publique du Worker (`COMPTE_URL`) et
+un jeton de session propre à l'utilisateur.
+
+> ℹ️ **« Aucun serveur » (§0) reste vrai pour l'app** : elle fonctionne entière
+> sans compte. Les deux Workers sont des services **facultatifs** ; l'app ne doit
+> jamais dépendre de leur disponibilité pour afficher, capturer ou collectionner.
 
 ---
 
@@ -399,7 +410,7 @@ incrémenter conjointement :**
 2. `VERSION` (`"garage-v…"`) dans `sw.js` (ligne ~12).
 
 Ces deux numéros sont **tenus synchronisés** (au 28/09/2026 : `gm-specs.js` →
-`20.187.0`, `sw.js` → `garage-v20.187.0`). `VERSION_MODULE` s'affiche en outre
+`20.188.0`, `sw.js` → `garage-v20.188.0`). `VERSION_MODULE` s'affiche en outre
 dans l'UI via `grefferVersion()`, ce qui permet de vérifier de visu quelle version
 tourne réellement sur l'appareil.
 
@@ -515,6 +526,9 @@ modification n'impose aucun bump de version.
    ne prouve rien sur le câblage DOM. Un test d'exécution réelle (banc Playwright
    qui écrit des spots dans IndexedDB, ouvre les fiches, lit le DOM) est
    obligatoire pour toute modification de la greffe ou du contrat inter-modules.
+10. **Comptes** : toute modification de `gm-compte.js`, `cloud/` ou du contrat
+    `GMGarage` repasse `banc-compte.js` **et** `banc-compte-navigateur.js` ;
+    un changement de collecte met à jour `cloud/CONFIDENTIALITE.md` (§8 quinquies).
 
 ---
 
@@ -529,6 +543,9 @@ modification n'impose aucun bump de version.
 | `ai-relay-worker.js` | Relais IA Cloudflare — déployé **à part**, hors dossier statique |
 | `banc-v1.html` | ⚠️ **Contient le prototype complet du « Rouleau »** (~737 lignes), pas un simple banc jetable — voir §8 bis. Hors cache, ne pas livrer comme app, **et ne jamais supprimer** |
 | `gm-rouleau.js` | Le Rouleau extrait (§8 bis), non intégré ; banc `banc-rouleau.js` |
+| `gm-compte.js` | Compte par e-mail + sauvegarde cloud (§8 quinquies). **En sommeil** tant que `COMPTE_URL` est vide |
+| `cloud/` | Serveur de comptes — déployé **à part** : `compte-worker.js`, `schema.sql`, `wrangler.toml.exemple`, `DEPLOIEMENT.md`, `CONFIDENTIALITE.md` (projet RGPD, à maintenir dans le même commit que tout changement de collecte) |
+| `banc-compte.js` / `banc-compte-navigateur.js` | Bancs du serveur (Worker réel, D1/R2 simulés) et de bout en bout (app + Worker dans Chromium) |
 | `vendor/leaflet/` | Leaflet 1.9.4 hébergé dans le dépôt (§1.2) ; banc `banc-carte.js` : aucun script ni style chargé depuis un autre domaine |
 | `banc-imports.js` | Banc navigateur des **fichiers importés hostiles** (sauvegarde, profil d'équipage) : aucune charge ne doit s'exécuter, à l'import comme au redémarrage (DT-09, DT-10) ; contrat `data-car-id` |
 | `AUDIT-DEFAUTS.md` | Rapport de la chasse aux défauts du 29/09 : corrigé, et reste à décider |
@@ -661,6 +678,55 @@ Garde-fou : un `choix` qui ne correspond à aucune variante renvoie
 `choix: null` et les chiffres du modèle — l'interface peut détecter l'écart
 au lieu d'afficher, sans le savoir, les chiffres d'une autre voiture.
 Le retour est une copie profonde : le muter n'altère pas `MOTOR_SPECS`.
+
+---
+
+## 8 quinquies. Comptes et sauvegarde cloud — `gm-compte.js` + `cloud/`
+
+Connexion par **lien magique** (e-mail, sans mot de passe), sauvegarde et
+restauration du garage entre appareils. Guide : `cloud/DEPLOIEMENT.md`.
+
+**Contrat côté app : `window.GMGarage`** (posé par `index.html`, gelé) :
+
+```
+GMGarage.exporter()                   → { app, version, spots, meta, custom }  (= fichier d'export)
+GMGarage.importer(data, { fusion })   → { n, rejected }
+```
+
+- `gm-compte.js` **ne touche jamais** à IndexedDB ni à `state` : tout passe par
+  ce contrat. Une restauration cloud traverse donc **exactement les mêmes
+  filtres** qu'un fichier importé (DT-02, DT-03, DT-09, DT-10) — une sauvegarde
+  cloud n'est pas plus digne de confiance qu'un fichier reçu.
+- `fusion:true` fusionne prise par prise (`fusionnerPrise`, la locale fait
+  autorité) et garde pseudo, amis et fil locaux ; sans `fusion`, comportement
+  historique de l'import.
+- `exporter()` vide `meta.ai` : l'adresse du relais IA ne quitte pas l'appareil.
+
+**Invariants du serveur**, chacun couvert par `banc-compte.js` :
+
+| Invariant | Pourquoi |
+|---|---|
+| Aucun jeton (lien, session) stocké en clair — SHA-256 seulement | Une copie de la base ne permet ni de se connecter ni de rejouer un lien |
+| Lien à usage unique, 15 min, consommé par un `UPDATE … WHERE utilise=0` **atomique** | Deux clics simultanés ne doivent pas ouvrir deux sessions |
+| Réponse identique à `/auth/lien` que le compte existe ou non | Impossible de sonder qui est inscrit |
+| `PUT /garage` exige `If-Match` (428 sinon), 409 si la version a bougé | Deux appareils ne s'écrasent jamais en silence ; le client restaure en fusion puis renvoie |
+| Photo refusée si son contenu ne correspond pas à son empreinte | Personne ne peut substituer une photo à une autre |
+| Clés du limiteur de débit **hachées** ; purge nocturne (`scheduled`) de l'échu | Minimisation RGPD : ni IP ni adresse d'un non-inscrit lisibles, rien d'échu conservé |
+
+**Côté client :**
+- **En sommeil par défaut** : `COMPTE_URL = ''` → aucun panneau, aucune requête
+  (pas même un pré-vol CORS — vérifié au banc). Les bancs l'activent par
+  `window.GM_COMPTE_URL`.
+- **Login CSRF** : si l'e-mail d'une session ouverte par lien n'est pas celui
+  demandé sur cet appareil, confirmation explicite ; refus → session révoquée.
+  Sans cela, un lien piégé portant le jeton d'un tiers basculerait l'appareil
+  sur son compte et lui livrerait la sauvegarde suivante.
+- Le lien est traité au chargement **et** sur `hashchange` (lien ouvert dans un
+  onglet où l'app tourne déjà : seul le fragment change, pas de rechargement).
+
+⚠️ **`CONFIDENTIALITE.md` décrit ce que le code collecte.** Toute modification
+qui change ce qui est stocké, combien de temps ou par qui, la met à jour **dans
+le même commit**.
 
 ---
 

@@ -2338,6 +2338,7 @@ const VARIANTS = {
      trop tard : les modèles existeraient dans CARS mais resteraient invisibles pour l'app. -->
 <script src="./gm-matcher.js"></script>
 <script src="./gm-specs.js"></script>
+<script src="./gm-compte.js"></script>
 
 <script>
 (() => {
@@ -3595,10 +3596,16 @@ const VARIANTS = {
     };
   }
 
+  /* Données de sauvegarde, sans dialogue : partagées par l'export fichier et la
+     sauvegarde cloud (gm-compte.js, via window.GMGarage), pour qu'elles
+     transportent exactement la même chose.
+     `ai` est exclu : c'est l'URL du relais, donc en pratique son seul contrôle d'accès.
+     Une sauvegarde s'échange par WhatsApp — elle ne doit pas la transporter (DT-14). */
+  function donneesExport() {
+    return { app:"garage-manifest", version:1, exportedAt:new Date().toISOString(), spots:[...state.spots.values()], meta:{ ...META, ai:"" }, custom:{ ...CUSTOM_REG } };
+  }
   async function exportJSON() {
-    // `ai` est exclu : c'est l'URL du relais, donc en pratique son seul contrôle d'accès.
-    // Une sauvegarde s'échange par WhatsApp — elle ne doit pas la transporter (DT-14).
-    const data = { app:"garage-manifest", version:1, exportedAt:new Date().toISOString(), spots:[...state.spots.values()], meta:{ ...META, ai:"" }, custom:{ ...CUSTOM_REG } };
+    const data = donneesExport();
     const blob = new Blob([JSON.stringify(data)], { type:"application/json" });
     const url = URL.createObjectURL(blob), a = document.createElement("a");
     a.href = url; a.download = `garage-manifest-${new Date().toISOString().slice(0,10)}.json`;
@@ -3613,6 +3620,21 @@ const VARIANTS = {
       if (refus) { toast(refus); return; }
       try {
         const data = JSON.parse(await file.text());
+        const { n, rejected } = await importerDonnees(data);
+        toast(`${n} voiture${n>1?"s":""} importée${n>1?"s":""}${rejected?` · ${rejected} entrée${rejected>1?"s":""} rejetée${rejected>1?"s":""}`:""}`);
+        render();
+      } catch { toast("Fichier invalide"); }
+    };
+    inp.click();
+  }
+  /* Import sans dialogue, commun au fichier et au cloud : les mêmes filtres
+     (DT-02, DT-03, DT-09, DT-10) s'appliquent quelle que soit l'origine.
+     `fusion:true` (restauration cloud) : une prise déjà présente sur l'appareil
+     fait AUTORITÉ et reçoit les photos, la note et les déclinaisons de la
+     sauvegarde — la règle de fusionnerPrise(), déjà prouvée par banc-fusions.
+     Sans fusion (fichier), comportement historique : la prise importée remplace. */
+  async function importerDonnees(data, { fusion = false } = {}) {
+    if (!data || typeof data !== "object") throw new Error("donnees-invalides");
         if (data.custom && Array.isArray(data.custom.list)) { // les « Non classé » d'abord, sinon leurs prises seraient rejetées
           for (const raw of data.custom.list) {
             const c = sanitizeCustomCar(raw); if (!c) continue;
@@ -3628,14 +3650,21 @@ const VARIANTS = {
           const f = !clean && rec && typeof rec === "object" ? fusionVers(rec.carId) : null;
           if (f) { const c2 = sanitizeSpot({ ...rec, carId: f.vers }); if (c2) clean = fusionnerPrise(c2, f); }
           if (!clean) { rejected++; continue; }
+          if (fusion && state.spots.has(clean.carId)) clean = fusionnerPrise(clean, { vers: clean.carId });
           await Store.put(clean); state.spots.set(clean.carId, clean); n++;
         }
-        toast(`${n} voiture${n>1?"s":""} importée${n>1?"s":""}${rejected?` · ${rejected} entrée${rejected>1?"s":""} rejetée${rejected>1?"s":""}`:""}`);
         if (data.meta && typeof data.meta === "object") {
           // `ai` volontairement ignoré : un fichier importé ne doit pas pouvoir rerouter
           // silencieusement les photos vers un serveur tiers.
           const m = data.meta;
-          META = { ...META,
+          if (fusion) {
+            // Deux appareils : on garde le meilleur bonus et on n'écrase ni le nom ni l'équipage locaux.
+            META = { ...META, bonus: Math.max(entierBorne(m.bonus), entierBorne(META.bonus)),
+              missions: Object.keys(META.missions || {}).length ? META.missions : sanitizeMissions(m.missions),
+              friends: META.friends.length ? META.friends : sanitizeFriends(m.friends),
+              feed:    META.feed.length ? META.feed : sanitizeFeed(m.feed),
+              name:    META.name || String(m.name || "").slice(0,24), carId:"__meta__" };
+          } else META = { ...META,
             bonus:    entierBorne(m.bonus) || META.bonus || 0,
             missions: (m.missions && typeof m.missions === "object") ? sanitizeMissions(m.missions) : META.missions,
             friends:  Array.isArray(m.friends) ? sanitizeFriends(m.friends) : META.friends,
@@ -3644,11 +3673,14 @@ const VARIANTS = {
             carId:"__meta__" };
           await saveMeta();
         }
-        render();
-      } catch { toast("Fichier invalide"); }
-    };
-    inp.click();
+        return { n, rejected };
   }
+  /* Contrat public pour gm-compte.js (sauvegarde cloud). Seul point d'entrée :
+     le module ne touche jamais à IndexedDB ni à `state` directement. */
+  window.GMGarage = Object.freeze({
+    exporter: () => donneesExport(),
+    importer: async (data, options) => { const r = await importerDonnees(data, options); render(); return r; },
+  });
   async function resetAll() {
     if (!await askConfirm("Effacer TOUTES tes prises et photos ? Cette action est irréversible.", "Tout effacer", true)) return;
     await Store.clear();

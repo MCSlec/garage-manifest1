@@ -217,7 +217,7 @@ function recenser(fichier) {
 }
 
 /* ---------- Sortie -------------------------------------------------------- */
-const FICHIERS = ['index.html', 'gm-specs.js', 'gm-matcher.js'];
+const FICHIERS = ['index.html', 'gm-specs.js', 'gm-matcher.js', 'gm-compte.js'];
 const resultats = FICHIERS.map(recenser);
 const parZone = r => r.entrees.reduce((a, e) => (a[e.zone] = (a[e.zone] || 0) + 1, a), {});
 const uniques = (r, edito = false) => new Set(r.entrees.filter(e => !!e.edito === edito).map(e => e.texte)).size;

@@ -9,7 +9,7 @@
              mis en cache, sinon l'ancienne copie est resservie indéfiniment.
 */
 
-const VERSION = "garage-v20.187.0";
+const VERSION = "garage-v20.188.0";
 
 /* ESSENTIEL : sans ces fichiers, l'app ne démarre pas hors-ligne.
    Mis en cache de façon atomique — si l'un manque, l'installation doit échouer
@@ -27,6 +27,7 @@ const SHELL = [
 const EXTRAS = [
   "./gm-specs.js",
   "./gm-matcher.js",
+  "./gm-compte.js",
   "./vendor/leaflet/leaflet.js",
   "./vendor/leaflet/leaflet.css",
   "./vendor/leaflet/images/layers.png",

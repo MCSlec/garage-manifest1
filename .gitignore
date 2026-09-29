@@ -1,0 +1,3 @@
+# Configuration de déploiement propre à chaque compte Cloudflare (cloud/DEPLOIEMENT.md)
+cloud/wrangler.toml
+cloud/.wrangler/
