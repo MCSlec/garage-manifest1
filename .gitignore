@@ -1,3 +1,6 @@
 # Configuration de déploiement propre à chaque compte Cloudflare (cloud/DEPLOIEMENT.md)
 cloud/wrangler.toml
 cloud/.wrangler/
+
+# Captures produites par banc-layout.js (sorties de banc, pas des sources)
+banc-captures/
