@@ -222,6 +222,9 @@
     return r;
   }
   const exporterCompte = () => api('GET', '/compte/export');
+  /* En-tête de session pour le relais IA (quota du compte). index.html ne
+     l'envoie qu'au relais officiel, jamais à un relais personnalisé. */
+  const enteteAuth = () => { const e = lireEtat(); return base && e.session ? { Authorization: `Bearer ${e.session}` } : {}; };
 
   // --------------------------------------------- panneau dans Réglages --
   /* Greffé sous le panneau « Sauvegarde », comme les autres modules gm-* :
@@ -320,7 +323,7 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', installer); else installer();
 
   global.GMCompte = Object.freeze({
-    VERSION: VERSION_COMPTE, etat, demanderCode, verifierCode, annulerCode, deconnecter,
+    VERSION: VERSION_COMPTE, etat, demanderCode, verifierCode, annulerCode, deconnecter, enteteAuth,
     sauvegarder, restaurer, supprimerCompte, exporterCompte,
   });
 })(window);

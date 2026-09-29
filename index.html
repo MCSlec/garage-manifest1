@@ -2996,10 +2996,27 @@ const VARIANTS = {
     if (!/^https:\/\//.test(url)) { lastAiError = "Aucun relais IA valide — saisie manuelle"; return []; }
     try {
       const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 15000);
+      /* Compte connecté → quota du compte au relais (plus large que l'anonyme).
+         Le jeton ne part QUE vers le relais officiel : un relais personnalisé
+         (Réglages) est un serveur tiers, il ne doit jamais le recevoir. */
+      const auth = (url === AI_ENDPOINT_DEFAULT && window.GMCompte && typeof window.GMCompte.enteteAuth === "function") ? window.GMCompte.enteteAuth() : {};
+      const envoyer = (h) => fetch(url, { method:"POST", headers:{ "Content-Type":"application/json", ...h }, body:JSON.stringify({ image: thumbDataUrl }), signal:ctl.signal });
       let res;
-      try { res = await fetch(url, { method:"POST", headers:{ "Content-Type":"application/json" }, body:JSON.stringify({ image: thumbDataUrl }), signal:ctl.signal }); }
+      try {
+        try { res = await envoyer(auth); }
+        catch (err) {
+          // Un relais pas encore mis à jour refuse l'en-tête Authorization au pré-vol :
+          // on réessaie en anonyme plutôt que de priver la capture de reconnaissance.
+          if (!auth.Authorization || (err && err.name === "AbortError")) throw err;
+          res = await envoyer({});
+        }
+      }
       finally { clearTimeout(t); }
-      if (!res.ok) { lastAiError = `Relais IA indisponible (HTTP ${res.status})`; return []; }
+      if (!res.ok) {
+        let msg = ""; try { msg = String((await res.json()).error || "").slice(0, 200); } catch {}
+        lastAiError = (res.status === 429 && msg) ? msg : `Relais IA indisponible (HTTP ${res.status})`;
+        return [];
+      }
       const guesses = await res.json();
       if (!Array.isArray(guesses)) { lastAiError = "Réponse du relais IA inattendue"; return []; }
       /* Rapprochement délégué à gm-matcher.js quand il est là : il sépare

@@ -292,6 +292,57 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   await ouvrirReglages(S1.page); await cliquer(S1.page, 'restaurer', 'Récupéré');
   v('sync · une voiture recapturée après son retrait revient sur l\'autre appareil', !!(await garage(S1.page))['peugeot-205']);
 
+  /* 4 quinquies. Relais IA : jeton de compte et limites, sur une vraie capture « Importer une photo » */
+  const RELAIS = 'https://silent-firefly-2620.cyril-lapopin.workers.dev';
+  const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
+  const capturer = async (tel) => {
+    await tel.page.evaluate(() => document.querySelector('[data-fab]')?.click());
+    await tel.page.waitForSelector('#fileInput', { state: 'attached', timeout: 5000 });
+    await tel.page.setInputFiles('#fileInput', { name: 'voiture.png', mimeType: 'image/png', buffer: PNG });
+  };
+  const espionnerRelais = async (tel, reponse) => {
+    const vues = [];
+    await tel.ctx.route(u => u.href.startsWith(RELAIS) || u.hostname === 'autre-relais.test', async (route) => {
+      const h = route.request().headers();
+      vues.push({ hote: new URL(route.request().url()).hostname, auth: h.authorization || null, methode: route.request().method() });
+      return reponse(route, h);
+    });
+    return vues;
+  };
+  const cors = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Content-Type, Authorization', 'Content-Type': 'application/json' };
+  const repondre = (statut, corps) => (route) => route.fulfill({ status: statut, headers: cors, body: JSON.stringify(corps) });
+  // (a) sans compte : aucun jeton
+  const R1 = await telephone(false);
+  const vuesR1 = await espionnerRelais(R1, repondre(200, []));
+  await capturer(R1); await R1.page.waitForTimeout(1500);
+  const postsR1 = vuesR1.filter(x => x.methode === 'POST');
+  v('relais · sans compte : identification envoyée, sans aucun jeton', postsR1.length === 1 && !postsR1[0].auth, JSON.stringify(vuesR1));
+  // (b) compte connecté : jeton vers le relais officiel
+  const vuesS1 = await espionnerRelais(S1, repondre(200, []));
+  await S1.page.evaluate(() => document.querySelector('[data-tab="collection"]')?.click());
+  await capturer(S1); await S1.page.waitForTimeout(1500);
+  const postS1 = vuesS1.find(x => x.methode === 'POST');
+  v('relais · compte connecté : le jeton de session part vers le relais officiel', !!postS1 && /^Bearer [A-Za-z0-9_-]{20,}$/.test(postS1.auth || ''), JSON.stringify(postS1));
+  // (c) relais personnalisé (Réglages) : jamais le jeton
+  await idb(S1.page, 'put', [{ ...((await idb(S1.page, 'all')).find(x => x.carId === '__meta__') || { carId: '__meta__' }), ai: 'https://autre-relais.test/' }]);
+  await recharger(S1.page); vuesS1.length = 0;
+  await capturer(S1); await S1.page.waitForTimeout(1500);
+  const postPerso = vuesS1.find(x => x.methode === 'POST');
+  v('relais · relais personnalisé : identification envoyée SANS le jeton (serveur tiers)', !!postPerso && postPerso.hote === 'autre-relais.test' && !postPerso.auth, JSON.stringify(vuesS1));
+  const m0 = (await idb(S1.page, 'all')).find(x => x.carId === '__meta__'); await idb(S1.page, 'put', [{ ...m0, ai: '' }]); await recharger(S1.page);
+  // (d) limite atteinte : le message du relais est affiché
+  const R2 = await telephone(false);
+  await espionnerRelais(R2, repondre(429, { error: "Limite d'identifications du jour atteinte sur cet appareil : choisis la voiture à la main, ou reviens demain" }));
+  await capturer(R2);
+  await R2.page.waitForFunction(() => /Limite d'identifications/.test(document.querySelector('#toast')?.textContent || ''), null, { timeout: 8000 }).catch(() => {});
+  v('relais · limite atteinte (429) : le message du relais est montré, pas un code HTTP', /choisis la voiture à la main/.test(await R2.page.textContent('#toast')), await R2.page.textContent('#toast'));
+  // (e) relais pas encore mis à jour (refuse le jeton) : nouvel essai anonyme
+  await S1.ctx.unroute(u => true).catch(() => {});
+  const vuesAncien = await espionnerRelais(S1, (route, h) => h.authorization ? route.abort('failed') : repondre(200, [])(route));
+  await capturer(S1); await S1.page.waitForTimeout(2000);
+  const postsAncien = vuesAncien.filter(x => x.methode === 'POST');
+  v('relais · ancien relais qui refuse le jeton : second essai anonyme, la capture fonctionne', postsAncien.length === 2 && !!postsAncien[0].auth && !postsAncien[1].auth, JSON.stringify(postsAncien));
+
   /* 5. Suppression du compte */
   const idPilote = sqlite.prepare("SELECT id FROM utilisateurs WHERE email = 'pilote@exemple.fr'").get().id;
   await ouvrirReglages(A.page); await cliquer(A.page, 'supprimer', 'Compte supprimé');
