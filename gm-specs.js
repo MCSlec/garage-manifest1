@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.183.0';
+  const VERSION_MODULE = '20.184.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -585,8 +585,8 @@
       ch:365, nm:460, kg:1250, cyl:5.4, arch:'V8 Chevrolet', adm:'atmo', pos:'avant-central', tx:'propulsion', bv:'M4',
       note:"Giotto Bizzarrini, ancien ingénieur Ferrari (père de la 250 GTO), a créé sa propre GT à V8 Corvette monté très en arrière (« avant-central ») pour l\'équilibre. Victorieuse de catégorie au Mans 1965. Une des plus belles et rares GT italiennes." },
     'jaguar-xk8': { nom:'Jaguar XK8 / XKR', an:[1996,2006], pays:'Royaume-Uni',
-      ch:406, nm:553, kg:1600, cyl:4.2, arch:'V8', adm:'compresseur', pos:'avant', tx:'propulsion', bv:'A6',
-      note:"Le grand coupé GT qui a relancé Jaguar, premier V8 de la marque. La XKR compressée apparaît dans le James Bond « Meurs un autre jour ». Une ligne élégante héritière de la Type E, un grand tourisme feutré à l\'anglaise." },
+      ch:294, nm:393, kg:1615, cyl:4.0, arch:'V8', adm:'compresseur', pos:'avant', tx:'propulsion', bv:'A6', flou:['kg'],
+      note:"Le grand coupé GT qui a relancé Jaguar, premier V8 de la marque. La XKR compressée apparaît dans le James Bond « Meurs un autre jour ». Une ligne élégante héritière de la Type E, un grand tourisme feutré à l\'anglaise. Chiffres du XK8 4.0 coupé (294 ch) ; elle portait ceux de la XKR 4.2 compressée." },
     'tvr-griffith': { nom:'TVR Griffith', an:[1991,2002], pays:'Royaume-Uni',
       ch:340, nm:460, kg:1060, cyl:5.0, arch:'V8 Rover', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M5',
       note:"Une bombe brutale : un gros V8 dans un roadster léger, sans aucune assistance électronique (ni ABS ni antipatinage), pas même de poignées de porte extérieures (un bouton caché). Réputée piégeuse et sauvage, l\'essence même de TVR." },
@@ -600,8 +600,8 @@
       ch:230, nm:309, kg:1600, cyl:3.3, arch:'flat-6', adm:'atmo', pos:'avant', tx:'intégrale', bv:'A4',
       note:"Un grand coupé au style futuriste signé Giugiaro, à la célèbre « fenêtre dans la fenêtre » (vitre latérale à double découpe, inspirée des avions). Le seul flat-6 de Subaru dans un coupé. Un pari haut de gamme audacieux et confidentiel." },
     'lexus-ls400': { nom:'Lexus LS 400', an:[1989,2000], pays:'Japon',
-      ch:280, nm:353, kg:1700, cyl:4.0, arch:'V8', adm:'atmo', pos:'avant', tx:'propulsion', bv:'A4',
-      note:"La berline qui a créé Lexus et fait trembler Mercedes et BMW : un raffinement, un silence et une fiabilité inédits, pour bien moins cher. Une démonstration technique obsessionnelle (des ingénieurs ont vécu aux États-Unis pour l\'étudier). Un tournant dans l\'histoire du luxe automobile." },
+      ch:245, nm:350, kg:1820, cyl:4.0, arch:'V8', adm:'atmo', pos:'avant', tx:'propulsion', bv:'A4', flou:['kg'],
+      note:"La berline qui a créé Lexus et fait trembler Mercedes et BMW : un raffinement, un silence et une fiabilité inédits, pour bien moins cher. Une démonstration technique obsessionnelle (des ingénieurs ont vécu aux États-Unis pour l\'étudier). Un tournant dans l\'histoire du luxe automobile. Chiffres de la version européenne (245 ch DIN, 350 Nm) ; la fiche mêlait une puissance sans référent et le couple américain." },
     'nissan-pulsar-gtir': { nom:'Nissan Pulsar GTI-R', an:[1990,1994], pays:'Japon',
       ch:230, nm:290, kg:1200, cyl:2.0, arch:'4 cyl. SR20DET', adm:'turbo', pos:'avant', tx:'intégrale', bv:'M5',
       note:"Une compacte transformée en arme de rallye Groupe A : le SR20DET turbo et la transmission intégrale ATTESA dans une petite carrosserie, avec une énorme prise d\'air sur le capot. Surnommée « Baby Godzilla ». Rare et recherchée." },
@@ -609,8 +609,8 @@
       ch:650, nm:1100, kg:925, cyl:5.5, arch:'V12 diesel', adm:'biturbo', pos:'central', tx:'propulsion', bv:'séquentielle 5',
       flou:['ch'], note:"La première voiture à moteur diesel à remporter les 24 Heures du Mans (2006), une révolution. Son V12 turbodiesel de course, presque silencieux mais au couple colossal, a lancé la domination Audi diesel en endurance pour une décennie." },
     'bmw-635csi': { nom:'BMW 635 CSi (E24)', an:[1976,1989], pays:'Allemagne',
-      ch:286, nm:340, kg:1500, cyl:3.5, arch:'6 en ligne', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M5',
-      note:"Le grand coupé BMW des années 70-80, à la ligne intemporelle signée Paul Bracq. La version M635CSi (M6) reçoit le six-cylindres de la M1. Une GT élégante et sportive, dominatrice en championnat d\'Europe de tourisme (ETCC)." },
+      ch:218, nm:310, kg:1564, cyl:3.4, arch:'6 en ligne', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M5', flou:['kg'],
+      note:"Le grand coupé BMW des années 70-80, à la ligne intemporelle signée Paul Bracq. La version M635CSi (M6) reçoit le six-cylindres de la M1. Une GT élégante et sportive, dominatrice en championnat d\'Europe de tourisme (ETCC). Chiffres de la 635 CSi (M30 3.4, 218 ch) ; elle portait ceux de la M635CSi (286 ch)." },
     'smart-roadster': { nom:'Smart Roadster', an:[2003,2005], pays:'Allemagne',
       ch:82, nm:110, kg:790, cyl:0.7, arch:'3 cyl.', adm:'turbo', pos:'central', tx:'propulsion', bv:'robotisée 6',
       note:"Un minuscule roadster à moteur central et propulsion, pesant moins de 800 kg. Un jouet joueur au ras du sol, façon kart, hélas handicapé par sa boîte robotisée lente et des soucis d\'étanchéité. Devenu culte pour son concept unique et rare." },
@@ -925,8 +925,8 @@
       ch:450, nm:750, kg:2300, cyl:6.0, arch:'W12 (et V8, V10 TDI)', adm:'atmo', pos:'avant', tx:'intégrale', bv:'A6',
       note:"La tentative folle de Ferdinand Piëch d\'imposer VW dans le luxe absolu, avec un cahier des charges dément (rouler à 300 km/h par 50°C avec 22°C à bord). Techniquement une Bentley Continental. Un échec commercial retentissant, aujourd\'hui culte." },
     'opel-gt-classic': { nom:'Opel GT (1968)', an:[1968,1973], pays:'Allemagne',
-      ch:102, nm:135, kg:920, cyl:1.9, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M4',
-      note:"« La Corvette du pauvre » : un petit coupé au style inspiré de la Corvette C3, avec des phares pivotants manuellement. Une réussite esthétique surprenante pour Opel, produite sur base mécanique de Kadett. Devenue un youngtimer prisé." },
+      ch:90, nm:149, kg:940, cyl:1.9, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M4', flou:['kg'],
+      note:"« La Corvette du pauvre » : un petit coupé au style inspiré de la Corvette C3, avec des phares pivotants manuellement. Une réussite esthétique surprenante pour Opel, produite sur base mécanique de Kadett. Devenue un youngtimer prisé. Chiffres du GT 1900 en norme DIN (90 ch, 149 Nm) ; les 102 ch de la fiche étaient une valeur SAE sans le couple correspondant." },
     'opel-lotus-omega': { nom:'Opel Lotus Omega', an:[1990,1992], pays:'Allemagne',
       ch:377, nm:568, kg:1690, cyl:3.6, arch:'6 en ligne', adm:'biturbo', pos:'avant', tx:'propulsion', bv:'M6',
       note:"Une berline familiale Opel transformée par Lotus en missile de 283 km/h, la berline la plus rapide du monde en 1990. Elle a provoqué un débat parlementaire au Royaume-Uni sur les voitures « trop rapides ». Vendue Vauxhall Lotus Carlton. Un sleeper absolu." },
@@ -1358,8 +1358,8 @@
       ch:390, nm:664, kg:1700, cyl:7.2, arch:'V8 Chrysler', adm:'atmo', pos:'avant', tx:'propulsion / intégrale', bv:'A3',
       note:"Un grand GT britannique à V8 américain et carrosserie italienne (Touring), avec sa spectaculaire lunette arrière bombée. La version FF fut la première voiture de tourisme à transmission intégrale et ABS, dès 1966." },
     'lotus-elan': { nom:'Lotus Elan', an:[1962,1975], pays:'Royaume-Uni',
-      ch:126, nm:153, kg:700, cyl:1.6, arch:'4 cyl. twin-cam', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M4',
-      note:"Le roadster qui a défini l\'agilité Lotus : châssis poutre, coque polyester, moins de 700 kg. Sa tenue de route a directement inspiré les ingénieurs de la Mazda MX-5. La voiture d\'Emma Peel dans la série « Chapeau melon et bottes de cuir »." },
+      ch:105, nm:146, kg:710, cyl:1.6, arch:'4 cyl. twin-cam', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M4', flou:['kg'],
+      note:"Le roadster qui a défini l\'agilité Lotus : châssis poutre, coque polyester, moins de 700 kg. Sa tenue de route a directement inspiré les ingénieurs de la Mazda MX-5. La voiture d\'Emma Peel dans la série « Chapeau melon et bottes de cuir ». Chiffres de l\'Elan S3 (105 ch) ; elle portait ceux de la Sprint (126 ch), version finale plus rare." },
     'triumph-spitfire': { nom:'Triumph Spitfire', an:[1962,1980], pays:'Royaume-Uni',
       ch:75, nm:100, kg:790, cyl:1.5, arch:'4 cyl.', adm:'atmo', pos:'avant', tx:'propulsion', bv:'M4',
       note:"Le petit roadster britannique abordable par excellence, dessiné par Giovanni Michelotti. Capot avant basculant d\'un seul tenant offrant un accès total au moteur. Rival direct de la MG Midget pendant deux décennies." },
