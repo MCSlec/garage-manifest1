@@ -11,7 +11,7 @@
 | Besoin | Pourquoi | Coût indicatif* |
 |---|---|---|
 | Compte **Cloudflare** | Héberge le Worker (code), D1 (base SQL) et R2 (photos) | Offre gratuite : 100 000 requêtes/jour, D1 5 Go, R2 10 Go |
-| Compte **Resend** | Envoie l'e-mail contenant le lien de connexion | Offre gratuite : 3 000 e-mails/mois, 100/jour |
+| Compte **Resend** | Envoie l'e-mail contenant le code de connexion | Offre gratuite : 3 000 e-mails/mois, 100/jour — **un seul compte suffit**, voir plus bas |
 | Un **nom de domaine** à toi | Resend n'envoie à n'importe quelle adresse que depuis un domaine vérifié (SPF/DKIM). Sans domaine, il n'écrit qu'à ta propre adresse : suffisant pour tester, pas pour lancer | ≈ 10 €/an |
 | **Node.js** sur ton ordinateur | Pour l'outil en ligne de commande `wrangler` | Gratuit |
 
@@ -65,13 +65,32 @@ propriétaire authentifié. N'active jamais l'accès public.
    ```
 5. Dans `wrangler.toml`, mets `MAIL_FROM` sur une adresse de ce domaine :
    `"Garage Manifest <connexion@ton-domaine.fr>"`.
+6. Le **secret des codes** : 32 octets aléatoires qui scellent les codes en base
+   (HMAC). Sans lui, le Worker refuse d'envoyer le moindre code.
+   ```sh
+   openssl rand -base64 32          # copie la ligne affichée…
+   npx wrangler secret put CODE_SECRET   # …et colle-la ici
+   ```
+   Ne le change pas à la légère : les codes en cours (10 min) deviendraient
+   invalides — rien de plus grave, les sessions ne dépendent pas de lui.
+
+**Pourquoi un seul compte Resend suffit.** Il n'y a **aucun mot de passe**, donc
+aucun e-mail « mot de passe oublié », de bienvenue ou de confirmation : l'app
+n'envoie qu'**un seul type d'e-mail**, le code, et seulement quand quelqu'un se
+connecte sur un nouvel appareil (une session dure 90 jours). Ouvrir plusieurs
+comptes gratuits pour contourner la limite est **explicitement interdit** par la
+politique d'utilisation acceptable de Resend (resend.com/legal/acceptable-use :
+créer un ou plusieurs comptes « dans le but de contourner les quotas ou
+limites ») et expose au blocage des comptes — donc à une app où plus personne ne
+peut se connecter. Si un jour 100 connexions par
+jour ne suffisent plus, c'est que l'app a du succès : l'offre payante devient
+alors un coût justifié (ou un autre service d'envoi, en changeant la seule
+fonction `envoyerCode` du Worker).
 
 ### 6. Adresse de l'app
 Dans `wrangler.toml` :
 - `APP_ORIGIN` : l'**origine exacte** de l'app, sans chemin ni `/` final
   (`https://mcslec.github.io`). Toute requête d'une autre origine est refusée (403).
-- `APP_URL` : l'adresse complète où s'ouvre l'app ; le lien de connexion y
-  ajoute `#connexion=…`.
 
 ### 7. Déploiement
 ```sh
@@ -100,8 +119,8 @@ obligation dès qu'on collecte une adresse e-mail.
 
 ## Vérifier que tout marche
 
-1. Réglages → panneau **Compte** → saisis ton adresse → « Recevoir le lien ».
-2. Ouvre le lien **sur le même appareil** : « Connecté ✓ ».
+1. Réglages → panneau **Compte** → saisis ton adresse → « Recevoir un code ».
+2. Tape le code reçu (6 chiffres) → « Connecté ✓ ».
 3. « Sauvegarder » : le message indique le nombre de voitures et de photos.
 4. Sur un second appareil : connexion, puis « Récupérer ».
 
@@ -112,7 +131,7 @@ détail est dans ce journal.
 ## Avant toute modification du serveur
 
 ```sh
-node banc-compte.js              # le Worker réel, D1 et R2 simulés (37 tests)
+node banc-compte.js              # le Worker réel, D1 et R2 simulés (47 tests)
 node banc-compte-navigateur.js   # app + Worker de bout en bout dans Chromium (26 tests)
 ```
 Les deux doivent repasser. Ils ne nécessitent ni compte Cloudflare ni réseau.

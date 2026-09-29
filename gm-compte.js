@@ -4,7 +4,10 @@
    POURQUOI
    La collection vit dans IndexedDB : dans UN appareil. Ce module la sauve
    sur le serveur de comptes (cloud/compte-worker.js) et la restaure sur
-   n'importe quel autre appareil, connecté par un lien reçu par e-mail.
+   n'importe quel autre appareil. Connexion par un CODE à 6 chiffres reçu
+   par e-mail : pas de mot de passe, donc pas de « mot de passe oublié ».
+   (Un code plutôt qu'un lien : sur iPhone, l'app installée n'a pas le même
+   stockage que Safari, où s'ouvrirait le lien. Le code se tape dans l'app.)
 
    EN SOMMEIL PAR DÉFAUT
    Tant que COMPTE_URL est vide, le module ne fait RIEN : aucun panneau,
@@ -33,7 +36,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_COMPTE = '1.0.0';
+  const VERSION_COMPTE = '2.0.0';
 
   /* Adresse du Worker de comptes, SANS « / » final.
      Ex. 'https://garage-comptes.<ton-compte>.workers.dev'. Vide = en sommeil.
@@ -50,9 +53,11 @@
   const ecrireEtat = (e) => { try { localStorage.setItem(CLE, JSON.stringify(e)); } catch (_) {} };
   const oublierSession = () => { const e = lireEtat(); delete e.session; delete e.version; ecrireEtat(e); };
 
+  const DUREE_CODE_MS = 10 * 60 * 1000;               // = serveur
   function etat() {
     const e = lireEtat();
-    return { configure: !!base, connecte: !!(base && e.session), email: e.email || null,
+    const enAttente = !e.session && e.emailEnAttente && Date.now() - (e.codeDemande || 0) < DUREE_CODE_MS ? e.emailEnAttente : null;
+    return { configure: !!base, connecte: !!(base && e.session), email: e.email || null, codeEnvoyeA: enAttente,
              version: e.version || 0, derniereSauvegarde: e.derniere || null };
   }
 
@@ -104,33 +109,23 @@
   }
 
   // ---------------------------------------------------------- connexion --
-  async function demanderLien(email) {
-    await api('POST', '/auth/lien', { corps: { email } });
-    const e = lireEtat(); e.emailEnAttente = String(email).trim().toLowerCase(); ecrireEtat(e);
+  async function demanderCode(email) {
+    const adresse = String(email).trim().toLowerCase();
+    await api('POST', '/auth/code', { corps: { email: adresse } });
+    ecrireEtat({ ...lireEtat(), emailEnAttente: adresse, codeDemande: Date.now() });
     return true;
   }
 
-  /* Le lien reçu ouvre l'app avec #connexion=<jeton>. Le fragment n'est jamais
-     envoyé au serveur qui sert la page : il ne finit dans aucun journal. On le
-     retire de la barre d'adresse dès qu'il est lu. */
-  async function finaliserConnexion() {
-    const m = /[#&]connexion=([A-Za-z0-9_-]{20,100})/.exec(global.location.hash || '');
-    if (!m || !base) return false;
-    try { history.replaceState(null, '', global.location.pathname + global.location.search); } catch (_) {}
+  /* Le code n'est valable que pour l'adresse qui l'a demandé SUR CET APPAREIL :
+     on n'envoie jamais une adresse saisie ailleurs. */
+  async function verifierCode(code) {
     const e = lireEtat();
-    const r = await api('POST', '/auth/session', { corps: { jeton: m[1] } });
-    /* Parade au « login CSRF » : un lien piégé portant le jeton d'un TIERS
-       connecterait l'appareil au compte de ce tiers, et la sauvegarde suivante
-       lui livrerait le garage. Si l'adresse obtenue n'est pas celle demandée
-       ici, on la montre et on demande confirmation ; refus → session révoquée. */
-    if (r.email !== e.emailEnAttente &&
-        !global.confirm(`Te connecter au compte ${r.email} ? Ta collection y sera sauvegardée.`)) {
-      await fetch(base + '/auth/deconnexion', { method: 'POST', headers: { Authorization: `Bearer ${r.session}` } }).catch(() => {});
-      throw new ErreurCompte('Connexion annulée', 0);
-    }
-    ecrireEtat({ ...e, session: r.session, email: r.email, emailEnAttente: undefined, version: 0 });
+    if (!e.emailEnAttente) throw new ErreurCompte('Demande d\'abord un code', 0);
+    const r = await api('POST', '/auth/session', { corps: { email: e.emailEnAttente, code: String(code).replace(/\s/g, '') } });
+    ecrireEtat({ ...lireEtat(), session: r.session, email: r.email, emailEnAttente: undefined, codeDemande: undefined, version: 0 });
     return true;
   }
+  const annulerCode = () => { const e = lireEtat(); delete e.emailEnAttente; delete e.codeDemande; ecrireEtat(e); };
 
   async function deconnecter() {
     try { await api('POST', '/auth/deconnexion'); } catch (_) {}
@@ -221,6 +216,7 @@
      module est configuré. Réutilise les classes existantes (panel, srow, btn). */
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   let message = '';
+  const CHAMP = 'flex:1;min-width:0;background:var(--bg);border:1px solid var(--line);border-radius:9px;color:var(--fg);padding:10px 12px;font:400 14px var(--sans)';
 
   function panneauHTML() {
     const e = etat();
@@ -228,9 +224,11 @@
           <div class="srow"><div class="l"><b>Connecté</b><span>${esc(e.email)}${e.derniereSauvegarde ? ` · dernière sauvegarde le ${esc(new Date(e.derniereSauvegarde).toLocaleString('fr-FR'))}` : ''}</span></div><button class="btn" data-gcp="deconnecter">Se déconnecter</button></div>
           <div class="srow"><div class="l"><b>Sauvegarder dans le cloud</b><span>Collection et photos, retrouvables sur tous tes appareils</span></div><button class="btn red" data-gcp="sauvegarder">Sauvegarder</button></div>
           <div class="srow"><div class="l"><b>Récupérer mon garage</b><span>Ajoute ici ce qui est sauvé dans le cloud, sans rien effacer</span></div><button class="btn" data-gcp="restaurer">Récupérer</button></div>
-          <div class="srow"><div class="l"><b>Supprimer mon compte</b><span>Efface ton compte et tout ce qui est sauvé dans le cloud (ce téléphone garde son garage)</span></div><button class="btn red ghost" data-gcp="supprimer">Supprimer</button></div>` : `
-          <div class="srow"><div class="l"><b>Retrouver ton garage partout</b><span>Reçois un lien de connexion par e-mail — pas de mot de passe</span></div></div>
-          <div class="srow"><input id="gcp-email" type="email" inputmode="email" autocomplete="email" placeholder="ton@email.fr" aria-label="Adresse e-mail" style="flex:1;min-width:0;background:var(--bg);border:1px solid var(--line);border-radius:9px;color:var(--fg);padding:10px 12px;font:400 14px var(--sans)"><button class="btn red" data-gcp="lien">Recevoir le lien</button></div>`;
+          <div class="srow"><div class="l"><b>Supprimer mon compte</b><span>Efface ton compte et tout ce qui est sauvé dans le cloud (ce téléphone garde son garage)</span></div><button class="btn red ghost" data-gcp="supprimer">Supprimer</button></div>` : e.codeEnvoyeA ? `
+          <div class="srow"><div class="l"><b>Code envoyé</b><span>à ${esc(e.codeEnvoyeA)} — valable 10 minutes</span></div><button class="btn" data-gcp="changer">Changer d'adresse</button></div>
+          <div class="srow"><input id="gcp-code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" maxlength="7" placeholder="123456" aria-label="Code reçu par e-mail" style="${CHAMP};letter-spacing:.3em"><button class="btn red" data-gcp="valider">Valider</button></div>` : `
+          <div class="srow"><div class="l"><b>Retrouver ton garage partout</b><span>Reçois un code par e-mail — pas de mot de passe</span></div></div>
+          <div class="srow"><input id="gcp-email" type="email" inputmode="email" autocomplete="email" placeholder="ton@email.fr" aria-label="Adresse e-mail" style="${CHAMP}"><button class="btn red" data-gcp="code">Recevoir un code</button></div>`;
     return `
       <div class="section panel" id="gcp-compte">
         <div class="h2" style="margin-bottom:6px">Compte</div>
@@ -258,11 +256,19 @@
     const action = b.dataset.gcp;
     b.disabled = true;
     try {
-      if (action === 'lien') {
+      if (action === 'code') {
         const email = (document.getElementById('gcp-email')?.value || '').trim();
         if (!/^\S+@\S+\.\S+$/.test(email)) { dire('Adresse e-mail invalide'); return; }
-        await demanderLien(email);
-        dire(`Lien envoyé à ${email} — ouvre-le sur cet appareil (valable 15 min).`);
+        await demanderCode(email);
+        message = 'Regarde ta boîte mail (et les indésirables).'; rafraichir();
+        document.getElementById('gcp-code')?.focus();
+      } else if (action === 'valider') {
+        const code = (document.getElementById('gcp-code')?.value || '').replace(/\s/g, '');
+        if (!/^\d{6}$/.test(code)) { dire('Le code fait 6 chiffres'); return; }
+        await verifierCode(code);
+        message = 'Connecté ✓'; rafraichir();
+      } else if (action === 'changer') {
+        annulerCode(); message = ''; rafraichir();
       } else if (action === 'sauvegarder') {
         dire('Sauvegarde en cours…');
         const r = await sauvegarder({ progres: p => dire(`Envoi des photos : ${p.faites}/${p.total}`) });
@@ -290,19 +296,18 @@
     document.addEventListener('click', surClic);
     const vue = document.getElementById('view');
     if (vue) new MutationObserver(() => { try { greffer(); } catch (_) {} }).observe(vue, { childList: true, subtree: true });
+    // Entrée au clavier = le bouton de la ligne (champ e-mail → code, champ code → valider).
+    document.addEventListener('keydown', (ev) => {
+      if (ev.key !== 'Enter') return;
+      const cible = ev.target && ev.target.id === 'gcp-email' ? 'code' : ev.target && ev.target.id === 'gcp-code' ? 'valider' : null;
+      if (cible) { ev.preventDefault(); document.querySelector(`[data-gcp="${cible}"]`)?.click(); }
+    });
     greffer();
-    const finaliser = () => finaliserConnexion()
-      .then(ok => { if (ok) { message = 'Connecté ✓'; rafraichir(); } })
-      .catch(err => { message = err && err.message ? err.message : 'Lien invalide'; rafraichir(); });
-    finaliser();
-    // Lien ouvert dans un onglet où l'app tourne déjà : seul le fragment change,
-    // la page ne se recharge pas — sans cet écouteur, le jeton resterait lettre morte.
-    global.addEventListener('hashchange', finaliser);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', installer); else installer();
 
   global.GMCompte = Object.freeze({
-    VERSION: VERSION_COMPTE, etat, demanderLien, finaliserConnexion, deconnecter,
+    VERSION: VERSION_COMPTE, etat, demanderCode, verifierCode, annulerCode, deconnecter,
     sauvegarder, restaurer, supprimerCompte, exporterCompte,
   });
 })(window);

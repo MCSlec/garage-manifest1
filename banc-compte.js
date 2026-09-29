@@ -5,11 +5,11 @@
    Exécute le VRAI code du Worker dans Node, avec :
      · une base SQLite en mémoire (node:sqlite) qui imite l'API D1 ;
      · un stockage en mémoire qui imite l'API R2 ;
-     · l'envoi d'e-mail (Resend) intercepté : on lit le lien reçu.
+     · l'envoi d'e-mail (Resend) intercepté : on lit le code reçu.
    Rien n'est déployé, rien ne sort sur le réseau.
 
-   Ce que le banc garantit : le lien est à usage unique et expire ; aucun
-   jeton n'est stocké en clair ; on ne peut pas sonder qui est inscrit ; les
+   Ce que le banc garantit : le code est à usage unique, expire, ne supporte
+   que 5 essais (même en rafale simultanée) et n'est jamais stocké en clair ; on ne peut pas sonder qui est inscrit ; les
    débits sont bornés ; deux appareils ne s'écrasent pas (409) ; une photo ne
    peut pas être remplacée par une autre ; un compte ne voit jamais les données
    d'un autre ; la suppression efface tout (RGPD).
@@ -54,7 +54,7 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
 
   const sqlite = new DatabaseSync(':memory:');
   sqlite.exec(fs.readFileSync(path.join(__dirname, 'cloud', 'schema.sql'), 'utf8'));
-  const env = { DB: d1(sqlite), PHOTOS: r2(), APP_ORIGIN: 'https://app.test', APP_URL: 'https://app.test/garage/', MAIL_FROM: 'GM <x@app.test>', RESEND_API_KEY: 'test' };
+  const env = { DB: d1(sqlite), PHOTOS: r2(), APP_ORIGIN: 'https://app.test', MAIL_FROM: 'GM <x@app.test>', RESEND_API_KEY: 'test', CODE_SECRET: 'secret-de-banc-32-octets-minimum!' };
 
   const mails = [];
   const fetchReel = globalThis.fetch;
@@ -72,55 +72,103 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
       ...(type ? { 'Content-Type': type } : {}), ...entetes },
     body: brut !== undefined ? brut : corps !== undefined ? JSON.stringify(corps) : undefined,
   }), env);
-  const jetonDuMail = () => { const m = /#connexion=([A-Za-z0-9_-]+)/.exec(mails[mails.length - 1].text); return m && m[1]; };
+  const codeDuMail = () => { const m = /code de connexion à Garage Manifest : (\d{6})/.exec(mails[mails.length - 1].text); return m && m[1]; };
   const connecter = async (email) => {
     ip++;
-    await appel('POST', '/auth/lien', { corps: { email } });
-    const r = await appel('POST', '/auth/session', { corps: { jeton: jetonDuMail() } });
+    await appel('POST', '/auth/code', { corps: { email } });
+    const r = await appel('POST', '/auth/session', { corps: { email, code: codeDuMail() } });
     return (await r.json()).session;
   };
+  const faux = (code) => String((Number(code) + 1) % 1e6).padStart(6, '0');
 
   /* CORS et origine */
   let r = await appel('OPTIONS', '/garage');
   v('CORS : pré-vol limité à l\'origine de l\'app', r.status === 204 && r.headers.get('Access-Control-Allow-Origin') === 'https://app.test');
-  r = await worker.fetch(new Request('https://api.test/auth/lien', { method: 'POST', headers: { Origin: 'https://pirate.test', 'Content-Type': 'application/json' }, body: '{"email":"a@b.fr"}' }), env);
+  r = await worker.fetch(new Request('https://api.test/auth/code', { method: 'POST', headers: { Origin: 'https://pirate.test', 'Content-Type': 'application/json' }, body: '{"email":"a@b.fr"}' }), env);
   v('origine étrangère refusée (403)', r.status === 403);
 
-  /* Lien magique */
-  r = await appel('POST', '/auth/lien', { corps: { email: 'pas-une-adresse' } });
+  /* Code par e-mail */
+  r = await appel('POST', '/auth/code', { corps: { email: 'pas-une-adresse' } });
   v('e-mail invalide refusé (400)', r.status === 400);
-  r = await appel('POST', '/auth/lien', { corps: { email: '  Alice@Exemple.FR ' } });
+  r = await appel('POST', '/auth/code', { corps: { email: '  Alice@Exemple.FR ' } });
   const reponse1 = await r.text();
-  v('demande de lien acceptée', r.status === 200 && mails.length === 1);
-  v('le lien pointe vers l\'app, jeton dans le fragment (#)', mails[0].text.includes('https://app.test/garage/#connexion='));
+  v('demande de code acceptée', r.status === 200 && mails.length === 1);
+  const code = codeDuMail();
+  v('code à 6 chiffres, présent dans l\'objet du message (lisible dans la notification)', /^\d{6}$/.test(code) && mails[0].subject.startsWith(code));
   v('e-mail normalisé (minuscules, espaces retirés)', mails[0].to[0] === 'alice@exemple.fr');
-  const jeton = jetonDuMail();
-  const enBase = sqlite.prepare('SELECT hash FROM jetons_lien').all().map(x => x.hash);
-  v('aucun jeton stocké en clair (empreinte seulement)', !enBase.includes(jeton) && enBase.every(h => /^[0-9a-f]{64}$/.test(h)));
+  const enBase = sqlite.prepare('SELECT hash FROM codes').all().map(x => x.hash);
+  v('code jamais stocké en clair (HMAC seulement)', enBase.length === 1 && /^[0-9a-f]{64}$/.test(enBase[0]) && !JSON.stringify(sqlite.prepare('SELECT * FROM codes').all()).includes(code));
+  const { createHash } = require('crypto');
+  v('… et pas en simple SHA-256 (qu\'on retrouverait en 10^6 essais hors ligne)',
+    enBase[0] !== createHash('sha256').update(`alice@exemple.fr:${code}`).digest('hex') && enBase[0] !== createHash('sha256').update(code).digest('hex'));
   ip++;
-  r = await appel('POST', '/auth/lien', { corps: { email: 'inconnu@exemple.fr' } });
+  r = await appel('POST', '/auth/code', { corps: { email: 'inconnu@exemple.fr' } });
   v('anti-sondage : même réponse pour une adresse sans compte', r.status === 200 && (await r.text()) === reponse1);
 
   /* Session */
-  r = await appel('POST', '/auth/session', { corps: { jeton } });
+  r = await appel('POST', '/auth/session', { corps: { email: 'alice@exemple.fr', code: faux(code) } });
+  v('code faux refusé', r.status === 400);
+  r = await appel('POST', '/auth/session', { corps: { email: 'autre@exemple.fr', code } });
+  v('le bon code ne vaut que pour SON adresse', r.status === 400);
+  r = await appel('POST', '/auth/session', { corps: { email: 'ALICE@exemple.fr', code: ` ${code.slice(0, 3)} ${code.slice(3)} ` } });
   const sA = (await r.json()).session;
-  v('le lien ouvre une session', r.status === 200 && typeof sA === 'string' && sA.length >= 40);
-  r = await appel('POST', '/auth/session', { corps: { jeton } });
-  v('lien à usage unique (2e clic refusé)', r.status === 400);
-  ip++;
-  await appel('POST', '/auth/lien', { corps: { email: 'bob@exemple.fr' } });
-  const jetonExpire = jetonDuMail();
-  sqlite.prepare('UPDATE jetons_lien SET expire = ? WHERE hash = (SELECT hash FROM jetons_lien ORDER BY rowid DESC LIMIT 1)').run(Date.now() - 1);
-  r = await appel('POST', '/auth/session', { corps: { jeton: jetonExpire } });
-  v('lien expiré refusé', r.status === 400);
+  v('le code ouvre une session (adresse normalisée, espaces tolérés)', r.status === 200 && typeof sA === 'string' && sA.length >= 40);
+  r = await appel('POST', '/auth/session', { corps: { email: 'alice@exemple.fr', code } });
+  v('code à usage unique (2e saisie refusée)', r.status === 400);
   v('aucune session stockée en clair', !sqlite.prepare('SELECT hash FROM sessions').all().some(x => x.hash === sA));
+
+  ip++;
+  await appel('POST', '/auth/code', { corps: { email: 'bob@exemple.fr' } });
+  const codeExpire = codeDuMail();
+  sqlite.prepare("UPDATE codes SET expire = ? WHERE email = 'bob@exemple.fr'").run(Date.now() - 1);
+  r = await appel('POST', '/auth/session', { corps: { email: 'bob@exemple.fr', code: codeExpire } });
+  v('code expiré refusé', r.status === 400);
+
+  /* Force brute : 5 essais par code, y compris en rafale simultanée */
+  ip = 50;
+  await appel('POST', '/auth/code', { corps: { email: 'cible@exemple.fr' } });
+  const codeCible = codeDuMail();
+  for (let i = 0; i < 5; i++) { ip++; await appel('POST', '/auth/session', { corps: { email: 'cible@exemple.fr', code: faux(codeCible) } }); }
+  ip++;
+  r = await appel('POST', '/auth/session', { corps: { email: 'cible@exemple.fr', code: codeCible } });
+  v('après 5 essais faux, même le BON code est refusé (code détruit)', r.status === 400);
+  ip = 60;
+  await appel('POST', '/auth/code', { corps: { email: 'rafale@exemple.fr' } });
+  const codeRafale = codeDuMail();
+  const rafale = await Promise.all(Array.from({ length: 30 }, (_, i) => { ip = 61 + i; return appel('POST', '/auth/session', { corps: { email: 'rafale@exemple.fr', code: faux(codeRafale) } }); }));
+  const essais = sqlite.prepare("SELECT essais FROM codes WHERE email = 'rafale@exemple.fr'").get().essais;
+  v('30 essais simultanés : le compteur plafonne à 5', essais === 5 && rafale.every(x => x.status === 400), essais);
+  ip = 95;
+  await appel('POST', '/auth/code', { corps: { email: 'double@exemple.fr' } });
+  const ancien = codeDuMail();
+  await appel('POST', '/auth/code', { corps: { email: 'double@exemple.fr' } });
+  const nouveau = codeDuMail();
+  r = ancien === nouveau ? null : await appel('POST', '/auth/session', { corps: { email: 'double@exemple.fr', code: ancien } });
+  v('un nouveau code remplace l\'ancien (un seul code actif par adresse)', ancien === nouveau || r.status === 400);
+  const courses = await Promise.all([0, 1, 2].map(() => appel('POST', '/auth/session', { corps: { email: 'double@exemple.fr', code: nouveau } })));
+  v('bon code envoyé 3 fois simultanément : une seule session ouverte', courses.filter(x => x.status === 200).length === 1, courses.map(x => x.status).join(','));
+
+  /* Uniformité du tirage : le code ne doit favoriser aucun chiffre */
+  const src = fs.readFileSync(path.join(__dirname, 'cloud', 'compte-worker.js'), 'utf8');
+  const codeAleatoire = new Function(/function codeAleatoire\(\) \{[\s\S]*?\n\}/.exec(src)[0] + '; return codeAleatoire;')();
+  const tirages = Array.from({ length: 20000 }, codeAleatoire);
+  const premiers = Array(10).fill(0); for (const c of tirages) premiers[c[0]]++;
+  v('codes : toujours 6 chiffres, premier chiffre uniformément réparti (± 15 %)',
+    tirages.every(c => /^\d{6}$/.test(c)) && premiers.every(n => Math.abs(n - 2000) < 300), premiers.join(','));
+  const sansSecret = await worker.fetch(new Request('https://api.test/auth/code', { method: 'POST', headers: { Origin: 'https://app.test', 'Content-Type': 'application/json', 'CF-Connecting-IP': '10.9.9.9' }, body: '{"email":"z@exemple.fr"}' }), { ...env, CODE_SECRET: '' });
+  v('sans CODE_SECRET, le Worker refuse (500) plutôt que stocker un code faible', sansSecret.status === 500);
 
   /* Limite de débit */
   ip = 200;
-  for (let i = 0; i < 3; i++) await appel('POST', '/auth/lien', { corps: { email: 'cible@exemple.fr' } });
+  for (let i = 0; i < 3; i++) await appel('POST', '/auth/code', { corps: { email: 'limite@exemple.fr' } });
   ip = 201;
-  r = await appel('POST', '/auth/lien', { corps: { email: 'cible@exemple.fr' } });
-  v('au-delà de 3 liens en 15 min pour une adresse : 429', r.status === 429);
+  r = await appel('POST', '/auth/code', { corps: { email: 'limite@exemple.fr' } });
+  v('au-delà de 3 codes en 15 min pour une adresse : 429', r.status === 429);
+  sqlite.prepare('UPDATE limites SET fenetre = ? WHERE compte = 3').run(Date.now() - 16 * 60 * 1000);
+  let n429 = 0;
+  for (let i = 0; i < 12; i++) { ip = 210 + i; const x = await appel('POST', '/auth/code', { corps: { email: 'limite@exemple.fr' } }); if (x.status === 429) n429++;
+    sqlite.prepare('UPDATE limites SET fenetre = ? WHERE compte >= 3 AND fenetre > ?').run(Date.now() - 16 * 60 * 1000, Date.now() - 60000); }
+  v('plafond journalier : pas plus de 10 codes par jour pour une adresse', n429 > 0, n429);
   const clesLimites = sqlite.prepare('SELECT cle FROM limites').all().map(x => x.cle);
   v('compteurs de débit : ni adresse ni IP en clair (empreintes seulement)',
     clesLimites.length > 0 && clesLimites.every(k => /^[0-9a-f]{64}$/.test(k)), JSON.stringify(clesLimites.slice(0, 2)));
@@ -184,18 +232,18 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
 
   /* Purge nocturne (scheduled) : l'échu part, le vivant reste */
   ip = 300;
-  await appel('POST', '/auth/lien', { corps: { email: 'vivant@exemple.fr' } });
-  const jetonVivant = jetonDuMail();
-  r = await appel('POST', '/auth/lien', { corps: { email: 'fantome@exemple.fr' } });
-  sqlite.prepare("UPDATE jetons_lien SET expire = ? WHERE email = 'fantome@exemple.fr'").run(Date.now() - 1);
-  r = await appel('POST', '/auth/session', { corps: { jeton: jetonVivant } });
+  await appel('POST', '/auth/code', { corps: { email: 'vivant@exemple.fr' } });
+  const codeVivant = codeDuMail();
+  r = await appel('POST', '/auth/code', { corps: { email: 'fantome@exemple.fr' } });
+  sqlite.prepare("UPDATE codes SET expire = ? WHERE email = 'fantome@exemple.fr'").run(Date.now() - 1);
+  r = await appel('POST', '/auth/session', { corps: { email: 'vivant@exemple.fr', code: codeVivant } });
   const sV = (await r.json()).session;
   sqlite.prepare("INSERT INTO sessions (hash, utilisateur, expire, cree) SELECT 'echue', utilisateur, ?, cree FROM sessions LIMIT 1").run(Date.now() - 1);
-  sqlite.prepare("UPDATE limites SET fenetre = ? WHERE rowid = (SELECT MIN(rowid) FROM limites)").run(Date.now() - 16 * 60 * 1000);
+  sqlite.prepare("UPDATE limites SET fenetre = ? WHERE rowid = (SELECT MIN(rowid) FROM limites)").run(Date.now() - 25 * 3600 * 1000);
   const avantPurge = sqlite.prepare('SELECT COUNT(*) AS n FROM limites').get().n;
   const purge = await worker.scheduled({ cron: '17 3 * * *' }, env, { waitUntil() {} });
-  v('purge : jeton de lien expiré effacé (adresse d\'une personne sans compte)',
-    !sqlite.prepare("SELECT 1 FROM jetons_lien WHERE email = 'fantome@exemple.fr'").get());
+  v('purge : code expiré effacé (adresse d\'une personne sans compte)',
+    !sqlite.prepare("SELECT 1 FROM codes WHERE email = 'fantome@exemple.fr'").get());
   v('purge : session échue effacée, session valide conservée',
     !sqlite.prepare("SELECT 1 FROM sessions WHERE hash = 'echue'").get() && (await appel('GET', '/garage', { session: sV })).status === 404);
   v('purge : compteur de débit hors fenêtre effacé, les autres gardés',

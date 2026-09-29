@@ -410,7 +410,7 @@ incrémenter conjointement :**
 2. `VERSION` (`"garage-v…"`) dans `sw.js` (ligne ~12).
 
 Ces deux numéros sont **tenus synchronisés** (au 28/09/2026 : `gm-specs.js` →
-`20.188.0`, `sw.js` → `garage-v20.188.0`). `VERSION_MODULE` s'affiche en outre
+`20.189.0`, `sw.js` → `garage-v20.189.0`). `VERSION_MODULE` s'affiche en outre
 dans l'UI via `grefferVersion()`, ce qui permet de vérifier de visu quelle version
 tourne réellement sur l'appareil.
 
@@ -552,6 +552,7 @@ modification n'impose aucun bump de version.
 | `banc-i18n.js` → `I18N.md` | Recensement des textes d'interface (préparation i18n). `I18N.md` est **généré** : relancer `node banc-i18n.js --md`, ne jamais l'éditer à la main |
 | `index-1.html` | Ancienne copie de travail d'`index.html` — **non servie**, ne pas confondre avec le fichier de prod |
 | `CONTEXT.md` | État projet, décisions, journal des chantiers (le *pourquoi*) |
+| `RESTE-A-FAIRE.md` | Ce que **seul l'humain** peut faire (comptes, paiements, mentions légales, décisions). **À tenir à jour à chaque livraison** : ajouter ce qu'une livraison lui demande, retirer ce qui est fait |
 | `README.md` | Documentation utilisateur/fonctionnelle (le *quoi*) |
 | `*.png` | Icônes PWA |
 
@@ -683,7 +684,8 @@ Le retour est une copie profonde : le muter n'altère pas `MOTOR_SPECS`.
 
 ## 8 quinquies. Comptes et sauvegarde cloud — `gm-compte.js` + `cloud/`
 
-Connexion par **lien magique** (e-mail, sans mot de passe), sauvegarde et
+Connexion par **code à 6 chiffres reçu par e-mail** (sans mot de passe, donc
+sans « mot de passe oublié »), sauvegarde et
 restauration du garage entre appareils. Guide : `cloud/DEPLOIEMENT.md`.
 
 **Contrat côté app : `window.GMGarage`** (posé par `index.html`, gelé) :
@@ -706,9 +708,10 @@ GMGarage.importer(data, { fusion })   → { n, rejected }
 
 | Invariant | Pourquoi |
 |---|---|
-| Aucun jeton (lien, session) stocké en clair — SHA-256 seulement | Une copie de la base ne permet ni de se connecter ni de rejouer un lien |
-| Lien à usage unique, 15 min, consommé par un `UPDATE … WHERE utilise=0` **atomique** | Deux clics simultanés ne doivent pas ouvrir deux sessions |
-| Réponse identique à `/auth/lien` que le compte existe ou non | Impossible de sonder qui est inscrit |
+| Code stocké en **HMAC** (`CODE_SECRET`), session en SHA-256 ; jamais en clair | Un code n'a que 10⁶ valeurs : une simple empreinte se retrouverait hors ligne en un million d'essais. Sans `CODE_SECRET`, le Worker refuse (500) |
+| **5 essais par code**, comptés par un `UPDATE … WHERE essais < 5` **avant** la comparaison ; un seul code actif par adresse ; 10 codes/jour/adresse | La sécurité d'un code court tient au nombre d'essais, pas à sa longueur : ≤ 50 essais/jour → 1 chance sur 20 000. Vérifié en rafale de 30 requêtes simultanées |
+| Code consommé par un `DELETE` **atomique** ; tirage uniforme (rejet) | Deux envois simultanés n'ouvrent qu'une session ; aucun code favorisé |
+| Réponse identique à `/auth/code` que le compte existe ou non | Impossible de sonder qui est inscrit |
 | `PUT /garage` exige `If-Match` (428 sinon), 409 si la version a bougé | Deux appareils ne s'écrasent jamais en silence ; le client restaure en fusion puis renvoie |
 | Photo refusée si son contenu ne correspond pas à son empreinte | Personne ne peut substituer une photo à une autre |
 | Clés du limiteur de débit **hachées** ; purge nocturne (`scheduled`) de l'échu | Minimisation RGPD : ni IP ni adresse d'un non-inscrit lisibles, rien d'échu conservé |
@@ -717,12 +720,14 @@ GMGarage.importer(data, { fusion })   → { n, rejected }
 - **En sommeil par défaut** : `COMPTE_URL = ''` → aucun panneau, aucune requête
   (pas même un pré-vol CORS — vérifié au banc). Les bancs l'activent par
   `window.GM_COMPTE_URL`.
-- **Login CSRF** : si l'e-mail d'une session ouverte par lien n'est pas celui
-  demandé sur cet appareil, confirmation explicite ; refus → session révoquée.
-  Sans cela, un lien piégé portant le jeton d'un tiers basculerait l'appareil
-  sur son compte et lui livrerait la sauvegarde suivante.
-- Le lien est traité au chargement **et** sur `hashchange` (lien ouvert dans un
-  onglet où l'app tourne déjà : seul le fragment change, pas de rechargement).
+- Le code n'est envoyé qu'avec l'adresse **demandée sur cet appareil**
+  (`emailEnAttente`), et la saisie reprend si l'app est fermée le temps de lire
+  ses mails. Champ `autocomplete="one-time-code"` : remplissage automatique.
+- ⚠️ **Pourquoi pas de lien magique** (version du 29/09 matin, abandonnée) : sur
+  iPhone, une app installée sur l'écran d'accueil a un stockage **séparé** de
+  Safari ; un lien ouvert depuis Mail connecte Safari, pas l'app. Il exposait
+  aussi au « login CSRF » (lien piégé d'un tiers) et aux antivirus de messagerie
+  qui visitent les liens. Ne pas y revenir sans avoir réglé ces trois points.
 
 ⚠️ **`CONFIDENTIALITE.md` décrit ce que le code collecte.** Toute modification
 qui change ce qui est stocké, combien de temps ou par qui, la met à jour **dans

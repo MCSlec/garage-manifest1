@@ -10,15 +10,22 @@
 //   son garage sur n'importe quel appareil.
 //
 // CHOIX D'ARCHITECTURE (voir cloud/DEPLOIEMENT.md pour le détail)
-//   · Connexion par LIEN MAGIQUE, sans mot de passe : rien à stocker qui
-//     puisse fuiter, rien à oublier. On reçoit un lien valable 15 min, à usage
-//     unique ; il ouvre une session de 90 jours.
-//   · On ne stocke JAMAIS un jeton en clair : seulement son empreinte SHA-256.
-//     Une copie de la base ne permet donc ni de se connecter, ni de réutiliser
-//     un lien.
-//   · Le jeton du lien voyage dans le FRAGMENT de l'URL (#connexion=…) : un
-//     fragment n'est jamais envoyé au serveur qui sert la page, donc il
-//     n'apparaît dans aucun journal d'accès.
+//   · Connexion par CODE À 6 CHIFFRES reçu par e-mail, sans mot de passe :
+//     rien à stocker qui puisse fuiter, rien à oublier — donc pas de « mot de
+//     passe oublié ». Le code vaut 10 min, 5 essais, et ouvre une session de
+//     90 jours.
+//     Pourquoi un code plutôt qu'un lien (version précédente) : sur iPhone,
+//     une app installée sur l'écran d'accueil a son propre stockage, séparé de
+//     Safari. Un lien ouvert depuis Mail s'ouvre dans Safari : la session
+//     atterrissait dans Safari, pas dans l'app. Un code se tape là où on est.
+//     Et les antivirus de messagerie qui « visitent » les liens ne peuvent
+//     pas consommer un code.
+//   · Un code n'a que 10^6 valeurs : il est protégé par le NOMBRE D'ESSAIS
+//     (5 par code, un seul code actif par adresse, plafond de codes par jour),
+//     et stocké en HMAC avec un secret du Worker (CODE_SECRET) — une simple
+//     empreinte se retrouverait en un million d'essais hors ligne.
+//   · Les sessions ne sont stockées qu'en empreinte SHA-256 (jeton de 256
+//     bits : là, une empreinte suffit).
 //   · Réponse identique que l'e-mail ait un compte ou non : impossible de
 //     sonder qui est inscrit.
 //   · Photos dans R2, rangées sous leur empreinte SHA-256 : une photo n'est
@@ -30,8 +37,8 @@
 //   · RGPD : export complet (portabilité) et suppression totale du compte.
 //
 // CONTRAT HTTP (JSON, CORS limité à APP_ORIGIN)
-//   POST   /auth/lien            { email }        → 200 { ok:true }   (toujours)
-//   POST   /auth/session         { jeton }        → 200 { session, email } | 400
+//   POST   /auth/code            { email }        → 200 { ok:true }   (toujours)
+//   POST   /auth/session         { email, code }  → 200 { session, email } | 400
 //   POST   /auth/deconnexion     Bearer           → 200
 //   GET    /garage               Bearer           → 200 { version, maj, donnees } | 404
 //   PUT    /garage               Bearer, If-Match → 200 { version } | 409 { version }
@@ -42,11 +49,12 @@
 //   DELETE /compte               Bearer           → 200 (tout est effacé)
 //
 // LIAISONS ET VARIABLES (wrangler.toml)
-//   DB (D1), PHOTOS (R2), APP_ORIGIN, APP_URL, MAIL_FROM
-//   Secret : RESEND_API_KEY  (wrangler secret put RESEND_API_KEY)
+//   DB (D1), PHOTOS (R2), APP_ORIGIN, MAIL_FROM
+//   Secrets : RESEND_API_KEY, CODE_SECRET  (wrangler secret put …)
 // ============================================================================
 
-const DUREE_LIEN_MS     = 15 * 60 * 1000;          // lien magique : 15 min
+const DUREE_CODE_MS     = 10 * 60 * 1000;          // code : 10 min
+const ESSAIS_CODE       = 5;                       // essais par code, puis il est détruit
 const DUREE_SESSION_MS  = 90 * 24 * 3600 * 1000;   // session : 90 jours
 const MAX_GARAGE_OCTETS = 5 * 1024 * 1024;         // collection sans photos
 const MAX_PHOTO_OCTETS  = 12 * 1024 * 1024;        // même plafond que l'import côté app
@@ -54,10 +62,13 @@ const MAX_EMPREINTES    = 5000;                    // par requête /photos/manqu
 const TYPES_PHOTO       = ['image/jpeg', 'image/png', 'image/webp'];
 
 /* Limites de débit : protègent la boîte de réception d'autrui (on ne doit pas
-   pouvoir faire envoyer 1 000 liens à une adresse) et le quota d'envoi. */
+   pouvoir faire envoyer 1 000 codes à une adresse) et le quota d'envoi. */
 const LIMITES = {
-  lienParEmail: { max: 3,  fenetreMs: 15 * 60 * 1000 },
-  lienParIp:    { max: 10, fenetreMs: 15 * 60 * 1000 },
+  codeParEmail:     { max: 3,  fenetreMs: 15 * 60 * 1000 },
+  /* Plafond journalier : borne le nombre total d'essais sur une adresse à
+     10 codes × 5 essais = 50 par jour, soit 1 chance sur 20 000 de deviner. */
+  codeParEmailJour: { max: 10, fenetreMs: 24 * 3600 * 1000 },
+  codeParIp:        { max: 10, fenetreMs: 15 * 60 * 1000 },
   sessionParIp: { max: 20, fenetreMs: 15 * 60 * 1000 },
 };
 
@@ -65,6 +76,26 @@ const LIMITES = {
 const enc = new TextEncoder();
 const hex = (buf) => [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
 const sha256hex = async (donnees) => hex(await crypto.subtle.digest('SHA-256', typeof donnees === 'string' ? enc.encode(donnees) : donnees));
+/* Code à 6 chiffres UNIFORME : tirage par rejet. Un simple « % 1e6 » sur 32
+   bits favoriserait les petits codes (2^32 n'est pas multiple de 10^6). */
+function codeAleatoire() {
+  const plafond = Math.floor(0x100000000 / 1e6) * 1e6;
+  const t = new Uint32Array(1);
+  do crypto.getRandomValues(t); while (t[0] >= plafond);
+  return String(t[0] % 1e6).padStart(6, '0');
+}
+async function hmacCode(env, email, code) {
+  if (!env.CODE_SECRET) throw new Error('CODE_SECRET absent');   // on refuse plutôt que stocker faible
+  const cle = await crypto.subtle.importKey('raw', enc.encode(env.CODE_SECRET), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  return hex(await crypto.subtle.sign('HMAC', cle, enc.encode(`${email}:${code}`)));
+}
+/* Comparaison à temps constant : ne pas révéler, par la durée de la réponse,
+   combien de caractères de l'empreinte coïncident. */
+function egauxTempsConstant(a, b) {
+  if (a.length !== b.length) return false;
+  let d = 0; for (let i = 0; i < a.length; i++) d |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return d === 0;
+}
 function jetonAleatoire() {
   const o = crypto.getRandomValues(new Uint8Array(32));
   return btoa(String.fromCharCode(...o)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -97,7 +128,7 @@ async function lireJson(req, max = 64 * 1024) {
 /* Fenêtre glissante simplifiée en base : une ligne par clé, remise à zéro à
    l'expiration de la fenêtre. Suffisant pour un petit service ; Cloudflare
    Rate Limiting peut prendre le relais si le trafic grossit. */
-/* La clé (« lien-ip:1.2.3.4 », « lien-email:x@y.fr ») n'est stockée que
+/* La clé (« code-ip:1.2.3.4 », « code-email:x@y.fr ») n'est stockée que
    HACHÉE : le limiteur n'a besoin que de l'égalité, pas de pouvoir relire une
    IP ou l'adresse de quelqu'un qui n'a peut-être jamais créé de compte. */
 async function depasseLimite(env, cleClaire, { max, fenetreMs }) {
@@ -123,30 +154,35 @@ async function utilisateurDeSession(req, env) {
   return { id: s.id, email: s.email, hashSession: await sha256hex(m[1]) };
 }
 
-async function envoyerLien(env, email, lien) {
-  const texte = `Bonjour,\n\nVoici ton lien de connexion à Garage Manifest (valable 15 minutes, utilisable une seule fois) :\n\n${lien}\n\nSi tu n'as rien demandé, ignore simplement ce message : personne ne peut se connecter sans ce lien.\n`;
+async function envoyerCode(env, email, code) {
+  const texte = `Bonjour,\n\nTon code de connexion à Garage Manifest : ${code}\n\nIl est valable 10 minutes. Tape-le dans l'app, là où tu l'as demandé.\n\nSi tu n'as rien demandé, ignore simplement ce message : personne ne peut se connecter sans ce code.\n`;
   const r = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ from: env.MAIL_FROM, to: [email], subject: 'Ton lien de connexion Garage Manifest', text: texte }),
+    // Le code dans l'objet : lisible dans la notification, sans ouvrir le message.
+    body: JSON.stringify({ from: env.MAIL_FROM, to: [email], subject: `${code} — ton code Garage Manifest`, text: texte }),
   });
   if (!r.ok) throw new Error(`envoi-mail-${r.status}`);
 }
 
 // ------------------------------------------------------------- routes ------
-async function routeLien(req, env) {
+async function routeCode(req, env) {
   let corps; try { corps = await lireJson(req); } catch { return erreur(env, 400, 'Requête invalide'); }
   const email = normaliserEmail(corps.email);
   if (!RE_EMAIL.test(email)) return erreur(env, 400, 'Adresse e-mail invalide');
   const ip = req.headers.get('CF-Connecting-IP') || 'inconnue';
-  if (await depasseLimite(env, `lien-ip:${ip}`, LIMITES.lienParIp)
-   || await depasseLimite(env, `lien-email:${email}`, LIMITES.lienParEmail)) {
-    return erreur(env, 429, 'Trop de demandes, réessaie dans quelques minutes');
+  if (await depasseLimite(env, `code-ip:${ip}`, LIMITES.codeParIp)
+   || await depasseLimite(env, `code-email:${email}`, LIMITES.codeParEmail)
+   || await depasseLimite(env, `code-email-jour:${email}`, LIMITES.codeParEmailJour)) {
+    return erreur(env, 429, 'Trop de demandes, réessaie plus tard');
   }
-  const jeton = jetonAleatoire();
-  await env.DB.prepare('INSERT INTO jetons_lien (hash, email, expire, utilise) VALUES (?, ?, ?, 0)')
-    .bind(await sha256hex(jeton), email, Date.now() + DUREE_LIEN_MS).run();
-  await envoyerLien(env, email, `${env.APP_URL}#connexion=${jeton}`);
+  const code = codeAleatoire();
+  /* UN SEUL code actif par adresse : le nouveau remplace l'ancien (et remet
+     les essais à zéro). Sans cela, demander 3 codes triplerait les chances
+     de deviner l'un d'eux. */
+  await env.DB.prepare('INSERT OR REPLACE INTO codes (email, hash, expire, essais) VALUES (?, ?, ?, 0)')
+    .bind(email, await hmacCode(env, email, code), Date.now() + DUREE_CODE_MS).run();
+  await envoyerCode(env, email, code);
   // Même réponse que le compte existe ou non (anti-énumération).
   return json(env, { ok: true });
 }
@@ -155,24 +191,29 @@ async function routeSession(req, env) {
   const ip = req.headers.get('CF-Connecting-IP') || 'inconnue';
   if (await depasseLimite(env, `session-ip:${ip}`, LIMITES.sessionParIp)) return erreur(env, 429, 'Trop de tentatives');
   let corps; try { corps = await lireJson(req); } catch { return erreur(env, 400, 'Requête invalide'); }
-  const jeton = String(corps.jeton || '');
-  if (!/^[A-Za-z0-9_-]{20,100}$/.test(jeton)) return erreur(env, 400, 'Lien invalide');
-  const hash = await sha256hex(jeton);
-  /* Consommation ATOMIQUE : le UPDATE ne réussit que si le jeton est encore
-     inutilisé et non expiré. Deux clics simultanés sur le même lien ne peuvent
-     pas ouvrir deux sessions. */
-  const conso = await env.DB.prepare('UPDATE jetons_lien SET utilise = 1 WHERE hash = ? AND utilise = 0 AND expire > ?')
-    .bind(hash, Date.now()).run();
-  if (!conso.meta || conso.meta.changes !== 1) return erreur(env, 400, 'Lien expiré ou déjà utilisé');
-  const { email } = await env.DB.prepare('SELECT email FROM jetons_lien WHERE hash = ?').bind(hash).first();
+  const email = normaliserEmail(corps.email);
+  const code = String(corps.code ?? '').replace(/\s/g, '');
+  if (!RE_EMAIL.test(email) || !/^\d{6}$/.test(code)) return erreur(env, 400, 'Code invalide');
+  const maintenant = Date.now();
+  /* L'essai est COMPTÉ AVANT la comparaison, par un UPDATE atomique borné :
+     même cent requêtes simultanées ne dépassent pas 5 essais par code. */
+  const essai = await env.DB.prepare('UPDATE codes SET essais = essais + 1 WHERE email = ? AND expire > ? AND essais < ?')
+    .bind(email, maintenant, ESSAIS_CODE).run();
+  if (!essai.meta || essai.meta.changes !== 1) return erreur(env, 400, 'Code expiré : demandes-en un nouveau');
+  const ligne = await env.DB.prepare('SELECT hash FROM codes WHERE email = ?').bind(email).first();
+  const attendu = await hmacCode(env, email, code);
+  if (!ligne || !egauxTempsConstant(ligne.hash, attendu)) return erreur(env, 400, 'Code incorrect');
+  // Consommation atomique : deux envois simultanés du bon code n'ouvrent qu'une session.
+  const conso = await env.DB.prepare('DELETE FROM codes WHERE email = ? AND hash = ?').bind(email, attendu).run();
+  if (!conso.meta || conso.meta.changes !== 1) return erreur(env, 400, 'Code déjà utilisé');
   let u = await env.DB.prepare('SELECT id FROM utilisateurs WHERE email = ?').bind(email).first();
   if (!u) {
     u = { id: crypto.randomUUID() };
-    await env.DB.prepare('INSERT INTO utilisateurs (id, email, cree) VALUES (?, ?, ?)').bind(u.id, email, Date.now()).run();
+    await env.DB.prepare('INSERT INTO utilisateurs (id, email, cree) VALUES (?, ?, ?)').bind(u.id, email, maintenant).run();
   }
   const session = jetonAleatoire();
   await env.DB.prepare('INSERT INTO sessions (hash, utilisateur, expire, cree) VALUES (?, ?, ?, ?)')
-    .bind(await sha256hex(session), u.id, Date.now() + DUREE_SESSION_MS, Date.now()).run();
+    .bind(await sha256hex(session), u.id, maintenant + DUREE_SESSION_MS, maintenant).run();
   return json(env, { session, email });
 }
 
@@ -259,26 +300,26 @@ async function routeSupprimer(env, u) {
   await env.DB.batch([
     env.DB.prepare('DELETE FROM garages WHERE utilisateur = ?').bind(u.id),
     env.DB.prepare('DELETE FROM sessions WHERE utilisateur = ?').bind(u.id),
-    env.DB.prepare('DELETE FROM jetons_lien WHERE email = ?').bind(email || ''),
+    env.DB.prepare('DELETE FROM codes WHERE email = ?').bind(email || ''),
     env.DB.prepare('DELETE FROM utilisateurs WHERE id = ?').bind(u.id),
   ]);
   return json(env, { ok: true, photosEffacees: cles.length });
 }
 
 // ------------------------------------------------------------- aiguillage --
-/* Minimisation (RGPD art. 5.1.e) : rien d'échu ne reste en base. Les jetons de
-   lien portent l'adresse de personnes qui n'ont parfois jamais ouvert le
-   lien ; les compteurs de débit n'ont de sens que pendant leur fenêtre.
+/* Minimisation (RGPD art. 5.1.e) : rien d'échu ne reste en base. Les codes
+   portent l'adresse de personnes qui n'ont parfois jamais créé de
+   compte ; les compteurs de débit n'ont de sens que pendant leur fenêtre.
    Lancé chaque nuit par le déclencheur cron de wrangler.toml. */
 async function purger(env, maintenant = Date.now()) {
   const fenetreMax = Math.max(...Object.values(LIMITES).map(l => l.fenetreMs));
   const r = await env.DB.batch([
-    env.DB.prepare('DELETE FROM jetons_lien WHERE expire < ?').bind(maintenant),
+    env.DB.prepare('DELETE FROM codes WHERE expire < ?').bind(maintenant),
     env.DB.prepare('DELETE FROM sessions WHERE expire < ?').bind(maintenant),
     env.DB.prepare('DELETE FROM limites WHERE fenetre < ?').bind(maintenant - fenetreMax),
   ]);
   const n = r.map(x => (x && x.meta && x.meta.changes) || 0);
-  return { jetons: n[0], sessions: n[1], limites: n[2] };
+  return { codes: n[0], sessions: n[1], limites: n[2] };
 }
 
 export default {
@@ -295,7 +336,7 @@ export default {
     const url = new URL(req.url);
     const p = url.pathname.replace(/\/+$/, '') || '/';
     try {
-      if (req.method === 'POST' && p === '/auth/lien')    return await routeLien(req, env);
+      if (req.method === 'POST' && p === '/auth/code')    return await routeCode(req, env);
       if (req.method === 'POST' && p === '/auth/session') return await routeSession(req, env);
 
       const u = await utilisateurDeSession(req, env);

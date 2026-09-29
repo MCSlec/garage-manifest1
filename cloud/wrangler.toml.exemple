@@ -8,12 +8,10 @@ compatibility_date = "2026-09-01"
 [vars]
 # Origine EXACTE de l'app (protocole + domaine, sans chemin ni « / » final).
 APP_ORIGIN = "https://mcslec.github.io"
-# Adresse de l'app : le lien magique pointe ici (#connexion=… est ajouté).
-APP_URL = "https://mcslec.github.io/garage-manifest1/"
 # Expéditeur des e-mails : domaine vérifié chez Resend.
 MAIL_FROM = "Garage Manifest <connexion@ton-domaine.fr>"
 
-# Purge nocturne de l'échu (jetons de lien, sessions, compteurs de débit) :
+# Purge nocturne de l'échu (codes, sessions, compteurs de débit) :
 # appelle le gestionnaire scheduled() du Worker. Heure UTC.
 [triggers]
 crons = ["17 3 * * *"]
@@ -27,5 +25,6 @@ database_id = "À-REMPLIR-après-wrangler-d1-create"
 binding = "PHOTOS"
 bucket_name = "garage-photos"
 
-# Secret (jamais dans ce fichier) :
+# Secrets (jamais dans ce fichier) :
 #   wrangler secret put RESEND_API_KEY
+#   wrangler secret put CODE_SECRET      ← 32 octets aléatoires : openssl rand -base64 32

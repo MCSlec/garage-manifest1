@@ -4,10 +4,10 @@
    --------------------------------------------------------------------------
    Fait tourner le VRAI Worker (cloud/compte-worker.js) dans Node, avec D1
    simulé par SQLite et R2 en mémoire, et DEUX navigateurs isolés qui jouent
-   deux téléphones. L'e-mail (Resend) est intercepté : on suit le lien reçu.
+   deux téléphones. L'e-mail (Resend) est intercepté : on lit le code reçu.
 
    Parcours vérifié :
-     1. téléphone A : demande le lien, l'ouvre, sauvegarde (collection + photos)
+     1. téléphone A : demande un code, se trompe, le saisit, sauvegarde (collection + photos)
      2. téléphone B (vide) : se connecte, récupère → même garage, mêmes photos
      3. conflit : B puis A sauvegardent chacun une nouvelle voiture ; A reçoit
         409, fusionne, renvoie → rien n'est perdu, des deux côtés
@@ -52,7 +52,7 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   const worker = (await import('file://' + tmp)).default;
   const sqlite = new DatabaseSync(':memory:');
   sqlite.exec(fs.readFileSync(path.join(RACINE, 'cloud', 'schema.sql'), 'utf8'));
-  const env = { DB: d1(sqlite), PHOTOS: r2(), APP_ORIGIN: ORIGINE, APP_URL: URL_APP, MAIL_FROM: 'GM <x@test>', RESEND_API_KEY: 'test' };
+  const env = { DB: d1(sqlite), PHOTOS: r2(), APP_ORIGIN: ORIGINE, MAIL_FROM: 'GM <x@test>', RESEND_API_KEY: 'test', CODE_SECRET: 'secret-de-banc-32-octets-minimum!' };
   const mails = []; let appelsApi = 0, requetesBrutes = 0;
   const fetchReel = globalThis.fetch;
   globalThis.fetch = async (u, o) => {
@@ -111,14 +111,19 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
     await page.click(`[data-gcp="${action}"]`);
     if (attente) await page.waitForFunction(t => (document.getElementById('gcp-msg')?.textContent || '').includes(t), attente, { timeout: 15000 });
   };
-  const connecter = async (page, email) => {
+  const codeDuMail = () => /code de connexion à Garage Manifest : (\d{6})/.exec(mails[mails.length - 1].text)[1];
+  const demanderCode = async (page, email) => {
     await ouvrirReglages(page);
     await page.fill('#gcp-email', email);
-    await cliquer(page, 'lien', 'Lien envoyé');
-    const lien = /(http\S+#connexion=[A-Za-z0-9_-]+)/.exec(mails[mails.length - 1].text)[1];
-    await page.goto(lien, { waitUntil: 'networkidle' });
-    await page.waitForFunction(() => window.GMCompte && window.GMCompte.etat().connecte, { timeout: 10000 });
-    return lien;
+    await page.press('#gcp-email', 'Enter');                  // Entrée = « Recevoir un code »
+    await page.waitForSelector('#gcp-code', { timeout: 10000 });
+    return codeDuMail();
+  };
+  const connecter = async (page, email) => {
+    const code = await demanderCode(page, email);
+    await page.fill('#gcp-code', code);
+    await cliquer(page, 'valider', 'Connecté');
+    return code;
   };
   const cloud = () => { const g = sqlite.prepare('SELECT version, donnees FROM garages').get(); return g ? { version: g.version, donnees: JSON.parse(g.donnees) } : null; };
 
@@ -129,10 +134,19 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   await recharger(A.page);
   await ouvrirReglages(A.page);
   v('module configuré : panneau « Compte » affiché dans Réglages', !!(await A.page.$('#gcp-compte')));
-  const lien = await connecter(A.page, 'pilote@exemple.fr');
-  v('lien reçu par e-mail, jeton dans le fragment de l\'URL', lien.startsWith(URL_APP + '#connexion='));
-  v('après ouverture du lien : connecté, et le jeton a disparu de la barre d\'adresse',
-    (await A.page.evaluate(() => window.GMCompte.etat().email)) === 'pilote@exemple.fr' && !(await A.page.evaluate(() => location.hash)));
+  const codeA = await demanderCode(A.page, 'pilote@exemple.fr');
+  v('code reçu par e-mail ; le panneau passe à la saisie du code', /^\d{6}$/.test(codeA) && (await A.page.textContent('#gcp-compte')).includes('pilote@exemple.fr'));
+  v('champ de code prêt pour le remplissage automatique iOS / Android',
+    (await A.page.getAttribute('#gcp-code', 'autocomplete')) === 'one-time-code' && (await A.page.getAttribute('#gcp-code', 'inputmode')) === 'numeric');
+  await recharger(A.page); await ouvrirReglages(A.page);
+  v('app fermée puis rouverte (le temps d\'aller lire ses mails) : la saisie du code reprend', !!(await A.page.$('#gcp-code')));
+  await A.page.fill('#gcp-code', String((Number(codeA) + 1) % 1e6).padStart(6, '0'));
+  await cliquer(A.page, 'valider', 'incorrect');
+  v('code faux : message clair, toujours déconnecté', !(await A.page.evaluate(() => window.GMCompte.etat().connecte)));
+  await A.page.fill('#gcp-code', `${codeA.slice(0, 3)} ${codeA.slice(3)}`);
+  await A.page.press('#gcp-code', 'Enter');
+  await A.page.waitForFunction(() => window.GMCompte.etat().connecte, null, { timeout: 10000 });
+  v('bon code (avec espace, validé par Entrée) : connecté', (await A.page.evaluate(() => window.GMCompte.etat().email)) === 'pilote@exemple.fr');
   await ouvrirReglages(A.page);
   await cliquer(A.page, 'sauvegarder', 'Sauvegardé');
   let c = cloud();
@@ -178,28 +192,18 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   v('sauvegarde cloud piégée : id hostile rejeté, score ramené à un entier', !JSON.stringify(gC).includes('onfocus') && ((gC.find(r => r.carId === '__meta__')?.friends || [])[0]?.score ?? 0) === 0);
   v('… et aucune charge exécutée', !(await C.page.evaluate(() => window.__pwned)));
 
-  /* 4 bis. Login CSRF : un tiers envoie SON lien à la victime (téléphone C,
-     connecté à pilote@, qui n'a rien demandé). Sans parade, C basculerait en
-     silence sur le compte du tiers et lui livrerait sa prochaine sauvegarde. */
+  /* 4 bis. Changer d'adresse avant d'avoir validé */
   const P = await telephone();
-  await ouvrirReglages(P.page); await P.page.fill('#gcp-email', 'pirate@exemple.fr');
-  await cliquer(P.page, 'lien', 'Lien envoyé');
-  const lienPirate = /(http\S+#connexion=[A-Za-z0-9_-]+)/.exec(mails[mails.length - 1].text)[1];
-  C.refuser = true; C.dialogues.length = 0;
-  await C.page.goto(lienPirate, { waitUntil: 'networkidle' });
-  await C.page.waitForFunction(() => (document.getElementById('gcp-msg')?.textContent || '').includes('annulée'), null, { timeout: 10000 }).catch(() => {});
-  v('login CSRF : lien d\'un autre compte → confirmation affichée, avec l\'adresse', C.dialogues.some(m => m.includes('pirate@exemple.fr')), JSON.stringify(C.dialogues));
-  v('… refusée : le téléphone reste sur son propre compte', (await C.page.evaluate(() => window.GMCompte.etat().email)) === 'pilote@exemple.fr');
-  v('… et la session ouverte par le lien piégé est révoquée côté serveur',
-    !sqlite.prepare("SELECT 1 FROM sessions s JOIN utilisateurs u ON u.id = s.utilisateur WHERE u.email = 'pirate@exemple.fr'").get());
-  C.refuser = false;
-  v('… alors qu\'un lien demandé sur l\'appareil même ne demande aucune confirmation (A, B)', A.dialogues.length + B.dialogues.length === 0, JSON.stringify([...A.dialogues, ...B.dialogues]));
+  await demanderCode(P.page, 'faute@exemple.fr');
+  await cliquer(P.page, 'changer');
+  await P.page.waitForSelector('#gcp-email', { timeout: 5000 });
+  v('« Changer d\'adresse » : retour à la saisie de l\'e-mail, rien d\'ouvert', !(await P.page.evaluate(() => window.GMCompte.etat().connecte || window.GMCompte.etat().codeEnvoyeA)));
 
   /* 5. Suppression du compte */
   await ouvrirReglages(A.page); await cliquer(A.page, 'supprimer', 'Compte supprimé');
   v('suppression : plus rien sur le serveur (compte, garage, photos)', !sqlite.prepare("SELECT 1 FROM utilisateurs WHERE email = 'pilote@exemple.fr'").get() && !cloud() && env.PHOTOS._m.size === 0);
   v('… et le téléphone garde son garage local', Object.keys(await garage(A.page)).length === 4);
-  v('… et le panneau repasse à « Recevoir le lien »', !!(await A.page.$('#gcp-email')));
+  v('… et le panneau repasse à « Recevoir un code »', !!(await A.page.$('#gcp-email')));
 
   /* 6. En sommeil : non configuré → aucun panneau, aucun appel */
   const appels0 = requetesBrutes;
