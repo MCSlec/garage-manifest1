@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.181.0';
+  const VERSION_MODULE = '20.182.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -11070,9 +11070,9 @@
     { id:'opel-corsa-b', brand:'Opel', model:'Corsa B', yr:'1993–2000', c:'🇩🇪', cat:'Citadine', r:'peucommun' },
     { id:'opel-corsa-opc', brand:'Opel', model:'Corsa OPC', yr:'2007–2014', c:'🇩🇪', cat:'Sportive', r:'rare' },
     { id:'opel-grandland', brand:'Opel', model:'Grandland', yr:'2017–', c:'🇩🇪', cat:'SUV', r:'commun' },
-    { id:'mini-countryman-jcw', brand:'Mini', model:'Countryman John Cooper Works', yr:'2017–', c:'🇬🇧', cat:'SUV', r:'peucommun' },
-    { id:'mini-countryman', brand:'Mini', model:'Countryman', yr:'2010–', c:'🇬🇧', cat:'SUV', r:'commun' },
-    { id:'mini-clubman', brand:'Mini', model:'Clubman', yr:'2007–2024', c:'🇬🇧', cat:'Break', r:'peucommun' },
+    { id:'mini-countryman-jcw', brand:'MINI', model:'Countryman John Cooper Works', yr:'2017–', c:'🇬🇧', cat:'SUV', r:'peucommun' },
+    { id:'mini-countryman', brand:'MINI', model:'Countryman', yr:'2010–', c:'🇬🇧', cat:'SUV', r:'commun' },
+    { id:'mini-clubman', brand:'MINI', model:'Clubman', yr:'2007–2024', c:'🇬🇧', cat:'Break', r:'peucommun' },
     { id:'bmw-x3-moderne', brand:'BMW', model:'X3', yr:'2003–', c:'🇩🇪', cat:'SUV', r:'commun' },
     { id:'bmw-i4', brand:'BMW', model:'i4', yr:'2021–', c:'🇩🇪', cat:'Berline', r:'peucommun' },
     { id:'bmw-ix', brand:'BMW', model:'iX', yr:'2021–', c:'🇩🇪', cat:'SUV', r:'peucommun' },
@@ -11165,8 +11165,11 @@
      ne se croise pas avec la même fréquence qu'une Sandero, et surtout elle
      ne se regarde pas pareil. Sans cette distinction, le palier « Commun »
      se vidait presque entièrement — un palier vide ne sert à rien. */
+  /* Comparée à l'identique à c.brand : l'orthographe doit être celle du
+     catalogue. 'Mini' ne reconnaissait pas les cinq entrées « MINI » de CARS,
+     et la Cooper, déclarée « commun », passait « courant » à l'exécution. */
   const MARQUES_PREMIUM = ['BMW', 'Mercedes-Benz', 'Mercedes-AMG', 'Audi', 'Porsche', 'Volvo',
-    'Jaguar', 'Land Rover', 'Lexus', 'Genesis', 'Alfa Romeo', 'Mini', 'DS', 'Cupra',
+    'Jaguar', 'Land Rover', 'Lexus', 'Genesis', 'Alfa Romeo', 'MINI', 'DS', 'Cupra',
     'Maserati', 'Bentley', 'Rolls-Royce', 'Aston Martin', 'Tesla', 'Polestar', 'Saab', 'Lancia'];
 
   function reclasserCourant() {
@@ -15151,9 +15154,15 @@
     /* Voiture non spottée : index.html pose data-verrou. On ne greffe RIEN —
        sinon le verrou de collection fuit (bug trouvé au banc navigateur). */
     if (page.querySelector('[data-verrou]')) return;
+    /* L'id vient du marqueur data-car-id (contrat §3), le titre n'est plus
+       qu'un repli pour un index.html plus ancien encore en cache. Résoudre par
+       le seul titre greffait la fiche de la vraie Ferrari F40 sur une
+       « Non classé » que le joueur avait baptisée « Ferrari F40 ». */
+    const idDom = page.querySelector('[data-car-id]')?.dataset.carId || '';
+    if (idDom.startsWith('custom:')) return;        // « Non classé » : aucune fiche technique
     const h2 = page.querySelector('.info-head h2');
-    if (!h2) return;
-    const id = indexTitres().get(norm(h2.textContent));
+    if (!idDom && !h2) return;
+    const id = idDom || indexTitres().get(norm(h2.textContent));
     if (!id) return;
     const html = blocHTML(id, varianteActive(page, id));
     if (html) page.insertAdjacentHTML('beforeend', html);

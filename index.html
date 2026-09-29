@@ -1330,7 +1330,7 @@ const CARS = [
   { id: "toyota-celica-gt4", brand: "Toyota", model: "Celica GT-Four", yr: "1986–1999", c: "🇯🇵", cat: "Youngtimer", r: "rare" },
   { id: "honda-s660", brand: "Honda", model: "S660 (kei)", yr: "2015–2022", c: "🇯🇵", cat: "Roadster", r: "rare" },
   { id: "aspark-owl", brand: "Aspark", model: "Owl", yr: "2020–", c: "🇯🇵", cat: "Hypercar", r: "legendaire" },
-  { id: "nio-ep9", brand: "Nio", model: "EP9", yr: "2016–2018", c: "🇨🇳", cat: "Hypercar", r: "legendaire" },
+  { id: "nio-ep9", brand: "NIO", model: "EP9", yr: "2016–2018", c: "🇨🇳", cat: "Hypercar", r: "legendaire" },
   { id: "wmotors-lykan", brand: "W Motors", model: "Lykan HyperSport", yr: "2013–2017", c: "🇦🇪", cat: "Hypercar", r: "legendaire" },
   { id: "chevrolet-c4-zr1", brand: "Chevrolet", model: "Corvette ZR-1 (C4)", yr: "1990–1995", c: "🇺🇸", cat: "Youngtimer", r: "legendaire" },
   { id: "dodge-demon", brand: "Dodge", model: "Challenger Demon 170", yr: "2018–2023", c: "🇺🇸", cat: "Sportive", r: "legendaire" },
@@ -2638,7 +2638,8 @@ const VARIANTS = {
       .addEventListener("change", () => { if (themeChoisi() === "system") majCouleurBarre(); });
   } catch {}
 
-  const escapeHtml = (s) => String(s||"").replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
+  // `s ?? ""` et non `s || ""` : un 0 (compteur, année) doit s'afficher « 0 », pas disparaître.
+  const escapeHtml = (s) => String(s ?? "").replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
   const fmtDate = (iso) => { try { return new Date(iso).toLocaleDateString("fr-FR",{ day:"2-digit", month:"short", year:"numeric" }); } catch { return ""; } };
   const rColor = (r) => (RARITY[r] || RARITY.courant).color;
 
@@ -2900,8 +2901,8 @@ const VARIANTS = {
       <div class="section panel">
         <div class="h2" style="margin-bottom:6px">Sauvegarde</div>
         <div class="rows">
-          <div class="srow"><div class="l"><b>Exporter ma collection</b><span>Fichier .json (photos incluses) — ta sauvegarde</span></div><button class="btn" data-act="export">${icon("download","icon")}</button></div>
-          <div class="srow"><div class="l"><b>Importer une sauvegarde</b><span>Restaure depuis un fichier .json</span></div><button class="btn" data-act="import">${icon("upload","icon")}</button></div>
+          <div class="srow"><div class="l"><b>Exporter ma collection</b><span>Fichier .json (photos incluses) — ta sauvegarde</span></div><button class="btn" data-act="export" aria-label="Exporter la sauvegarde">${icon("download","icon")}</button></div>
+          <div class="srow"><div class="l"><b>Importer une sauvegarde</b><span>Restaure depuis un fichier .json</span></div><button class="btn" data-act="import" aria-label="Importer une sauvegarde">${icon("upload","icon")}</button></div>
         </div>
       </div>
 
@@ -2909,7 +2910,7 @@ const VARIANTS = {
         <div class="h2" style="margin-bottom:6px">Application</div>
         <div class="rows">
           ${installRow}
-          <div class="srow"><div class="l"><b>Envoyer un retour</b><span>Bug, idée, ressenti — inclut la version pour que je m'y retrouve</span></div><button class="btn" data-act="feedback">${icon("upload","icon")}</button></div>
+          <div class="srow"><div class="l"><b>Envoyer un retour</b><span>Bug, idée, ressenti — inclut la version pour que je m'y retrouve</span></div><button class="btn" data-act="feedback" aria-label="Envoyer un retour">${icon("upload","icon")}</button></div>
           <div class="srow"><div class="l"><b>Thème</b><span>Sombre, clair, ou selon ton téléphone</span></div><div class="theme-pick" id="themePick">
             <button data-theme-set="dark">Sombre</button>
             <button data-theme-set="light">Clair</button>
@@ -2924,7 +2925,7 @@ const VARIANTS = {
       <div class="section panel">
         <div class="h2" style="margin-bottom:6px">Zone sensible</div>
         <div class="rows">
-          <div class="srow"><div class="l"><b>Réinitialiser le garage</b><span>Efface toutes tes prises et photos. Irréversible.</span></div><button class="btn red ghost" data-act="reset" style="color:var(--red);border-color:var(--red-dk)">${icon("trash","icon")}</button></div>
+          <div class="srow"><div class="l"><b>Réinitialiser le garage</b><span>Efface toutes tes prises et photos. Irréversible.</span></div><button class="btn red ghost" data-act="reset" aria-label="Tout effacer" style="color:var(--red);border-color:var(--red-dk)">${icon("trash","icon")}</button></div>
         </div>
       </div>
 
@@ -3065,7 +3066,7 @@ const VARIANTS = {
   function renderCapture() {
     const title = draft.lockCar ? "Ajouter une photo" : "Enregistrer une prise";
     openSheet(`
-      <div class="sh-head"><h3>${title}</h3><button class="iconbtn" data-close="1">${icon("x")}</button></div>
+      <div class="sh-head"><h3>${title}</h3><button class="iconbtn" data-close="1" aria-label="Fermer">${icon("x")}</button></div>
       <div class="sh-body" id="capBody"></div>
     `);
     renderCaptureBody();
@@ -3102,8 +3103,8 @@ const VARIANTS = {
         <div class="preview">
           <img src="${draft.photo}" alt="prise" />
           <div class="re">
-            <button data-cap="camera">${icon("camera","icon")}</button>
-            <button data-cap="gallery">${icon("image","icon")}</button>
+            <button data-cap="camera" aria-label="Prendre une photo">${icon("camera","icon")}</button>
+            <button data-cap="gallery" aria-label="Choisir dans la galerie">${icon("image","icon")}</button>
           </div>
         </div>
         <input type="file" id="fileInput" accept="image/*" style="display:none" />
@@ -3295,7 +3296,7 @@ const VARIANTS = {
     const col = rColor(c.r), ph = cover(rec);
     const strip = rec.photos.length
       ? `<div class="thumbstrip">${rec.photos.map((p,i) => `<button class="ts${(rec.cover||0)===i?" cover":""}" data-setcover="${i}"><img src="${p}" /></button>`).join("")}
-          <button class="add" data-addphoto="1">${icon("plus","icon")}</button></div>`
+          <button class="add" data-addphoto="1" aria-label="Ajouter une photo">${icon("plus","icon")}</button></div>`
       : "";
     const mapLink = rec.coords ? `<a class="spec" href="https://maps.google.com/?q=${rec.coords.lat},${rec.coords.lng}" target="_blank" rel="noopener" style="text-decoration:none"><dt>Position</dt><dd>${icon("map","icon")} Ouvrir dans Maps</dd></a>` : "";
     const meta = (rec.at || rec.loc || rec.coords)
@@ -3312,7 +3313,7 @@ const VARIANTS = {
       ${strip}
       <div class="detail-title"><div><h2>${escapeHtml(c.model)}</h2><p class="muted">${c.c} ${escapeHtml(c.brand)}</p></div>
         <div style="display:flex;align-items:center;gap:8px">
-          <button class="fav-toggle${rec.favorite?" on":""}" data-favtoggle="${c.id}" title="${rec.favorite?"Retirer des favoris":"Marquer comme trouvaille favorite"}">${icon("star","icon")}</button>
+          <button class="fav-toggle${rec.favorite?" on":""}" data-favtoggle="${c.id}" title="${rec.favorite?"Retirer des favoris":"Marquer comme trouvaille favorite"}" aria-label="${rec.favorite?"Retirer des favoris":"Marquer comme trouvaille favorite"}" aria-pressed="${rec.favorite?"true":"false"}">${icon("star","icon")}</button>
           <span class="pts">+${RARITY[c.r].pts} pts</span>
         </div>
       </div>
@@ -3325,8 +3326,8 @@ const VARIANTS = {
       </div>` : ""}
       <div style="display:flex;gap:10px;margin-top:14px">
         <button class="btn" data-addphoto="1" style="flex:1">${icon("camera","icon")}&nbsp; Ajouter une photo</button>
-        <button class="btn ghost" data-act="sharecard" title="Partager la carte">${icon("star","icon")}</button>
-        <button class="btn ghost btn-danger" data-release="${c.id}">${icon("trash","icon")}</button>
+        <button class="btn ghost" data-act="sharecard" title="Partager la carte" aria-label="Partager la carte">${icon("star","icon")}</button>
+        <button class="btn ghost btn-danger" data-release="${c.id}" aria-label="Retirer du garage">${icon("trash","icon")}</button>
       </div>`;
   }
 
@@ -3416,7 +3417,7 @@ const VARIANTS = {
        reporté ici : sans lui, greffer() ne sort pas et masse, couple et
        ratios fuient sur les voitures non collectées (CLAUDE.md §3). */
     return `
-      <div class="detail-shell" data-brand="${escapeHtml(c.brand)}" data-rarity="${escapeHtml(c.r)}"${!h ? ' data-verrou="1"' : ''}>
+      <div class="detail-shell" data-car-id="${escapeHtml(c.id)}" data-brand="${escapeHtml(c.brand)}" data-rarity="${escapeHtml(c.r)}"${!h ? ' data-verrou="1"' : ''}>
       <div class="info-head">
         <span class="chip" style="background:${col}12;border:1px solid ${col}33;color:var(--muted)"><span style="width:8px;height:8px;border-radius:50%;background:${col};box-shadow:0 0 8px ${col}88"></span>${RARITY[c.r].label}</span>
         <h2>${escapeHtml(c.brand)} ${escapeHtml(c.model)}</h2>
@@ -3440,7 +3441,7 @@ const VARIANTS = {
     const multi = pages.length > 1;
 
     openSheet(`
-      <div class="sh-head"><h3>${escapeHtml(c.model)}</h3><button class="iconbtn" data-close="1">${icon("x")}</button></div>
+      <div class="sh-head"><h3>${escapeHtml(c.model)}</h3><button class="iconbtn" data-close="1" aria-label="Fermer">${icon("x")}</button></div>
       <div class="sh-body" style="padding:0">
         <div class="pager" id="pager">${pages.map(p => `<div class="page">${p}</div>`).join("")}</div>
         ${multi ? `<div class="dots" id="dots">${pages.map((_,i) => `<button class="dot${i===0?" on":""}" data-dot="${i}"></button>`).join("")}</div>
@@ -3493,10 +3494,14 @@ const VARIANTS = {
 
   // Une entrée custom dont `r` ou `cat` sort du référentiel fait planter le tri du sélecteur,
   // et l'erreur survit au redémarrage puisqu'elle est persistée avant tout rendu (DT-03).
+  // L'id est injecté tel quel dans data-car="…" (tuiles, sélecteur, carte). Ne
+  // contrôler que le préfixe laissait passer `custom:x" onfocus="…` depuis une
+  // sauvegarde forgée (DT-09). createCustomCar ne produit que [a-z0-9-].
+  const CUSTOM_ID_RE = /^custom:[a-z0-9-]{1,110}$/;
   function sanitizeCustomCar(raw) {
     if (!raw || typeof raw !== "object") return null;
     const id = String(raw.id || "");
-    if (!id.startsWith("custom:") || id.length > 120) return null;
+    if (!CUSTOM_ID_RE.test(id)) return null;
     const brand = String(raw.brand || "").trim().slice(0,40);
     const model = String(raw.model || "").trim().slice(0,50);
     if (!brand || !model) return null;
@@ -3504,6 +3509,36 @@ const VARIANTS = {
              c:"🏳️", cat:"Non classé",
              r: RARITY_ORDER.includes(raw.r) ? raw.r : "commun", custom:true };
   }
+  /* Équipage, fil et défis (DT-10). Le classement interpole score et nombre de
+     voitures sans échappement, puisque ce sont des nombres ; or la sauvegarde
+     recopiait `friends` tel quel : un fichier forgé y plaçait du HTML, exécuté à
+     l'ouverture de l'onglet et persisté en base. Une valeur de défi non-tableau
+     faisait, elle, planter missionsFor() à chaque rendu. Ces filtres servent à
+     l'import ET au démarrage, pour assainir aussi ce qui a été persisté avant. */
+  const entierBorne = (v) => { const n = Math.floor(Number(v)); return Number.isFinite(n) ? Math.max(0, Math.min(n, 1e7)) : 0; };
+  const isoValide = (v) => (typeof v === "string" && v.length <= 40 && !isNaN(new Date(v).getTime())) ? v : null;
+  function sanitizeFriend(raw) {
+    if (!raw || typeof raw !== "object") return null;
+    const name = String(raw.name ?? "").trim().slice(0,24);
+    if (!name) return null;
+    const legends = (Array.isArray(raw.legends) ? raw.legends : [])
+      .filter(l => l && typeof l.id === "string" && CARS_BY_ID[l.id])
+      .slice(-60).map(l => ({ id:l.id, at:isoValide(l.at) }));
+    return { name, ts:isoValide(raw.ts) || new Date().toISOString(), score:entierBorne(raw.score),
+             count:entierBorne(raw.count), rank:String(raw.rank ?? "").slice(0,24), legends };
+  }
+  const sanitizeFriends = (arr) => (Array.isArray(arr) ? arr : []).map(sanitizeFriend).filter(Boolean).slice(0,50);
+  const sanitizeFeed = (arr) => (Array.isArray(arr) ? arr : [])
+    .filter(ev => ev && typeof ev.id === "string" && CARS_BY_ID[ev.id] && isoValide(ev.at))
+    .map(ev => ({ who:String(ev.who ?? "").slice(0,24), id:ev.id, at:ev.at })).slice(0,50);
+  function sanitizeMissions(raw) {
+    const out = {};
+    if (raw && typeof raw === "object" && !Array.isArray(raw))
+      for (const [k, v] of Object.entries(raw).slice(0,20))
+        if (Array.isArray(v)) out[String(k).slice(0,20)] = v.filter(x => typeof x === "string").slice(0,20);
+    return out;
+  }
+
   /* Fusion de doublons — contrat avec gm-specs.js (GMSpecs.fusionDe).
      Un id retiré du catalogue laisse ses prises dans IndexedDB, mais `init`
      ne charge que les ids connus : sans rattachement, la voiture disparaît
@@ -3580,10 +3615,10 @@ const VARIANTS = {
           // silencieusement les photos vers un serveur tiers.
           const m = data.meta;
           META = { ...META,
-            bonus:    Number(m.bonus) || META.bonus || 0,
-            missions: (m.missions && typeof m.missions === "object") ? m.missions : META.missions,
-            friends:  Array.isArray(m.friends) ? m.friends : META.friends,
-            feed:     Array.isArray(m.feed) ? m.feed.slice(0,50) : META.feed,
+            bonus:    entierBorne(m.bonus) || META.bonus || 0,
+            missions: (m.missions && typeof m.missions === "object") ? sanitizeMissions(m.missions) : META.missions,
+            friends:  Array.isArray(m.friends) ? sanitizeFriends(m.friends) : META.friends,
+            feed:     Array.isArray(m.feed) ? sanitizeFeed(m.feed) : META.feed,
             name:     String(m.name || META.name || "").slice(0,24),
             carId:"__meta__" };
           await saveMeta();
@@ -3885,12 +3920,14 @@ const VARIANTS = {
     inp.onchange = async () => {
       const f = inp.files?.[0]; if (!f) return;
       try {
-        const p = JSON.parse(await f.text());
-        if (p.type !== "profile" || p.app !== "garage-manifest") { toast("Ce n'est pas un profil Garage"); return; }
+        const brut = JSON.parse(await f.text());
+        if (brut?.type !== "profile" || brut?.app !== "garage-manifest") { toast("Ce n'est pas un profil Garage"); return; }
+        const p = sanitizeFriend(brut);
+        if (!p) { toast("Profil invalide"); return; }
         const prev = META.friends.find(x => x.name === p.name);
         const prevIds = new Set((prev?.legends||[]).map(l => l.id));
-        const fresh = (p.legends||[]).filter(l => !prevIds.has(l.id) && CARS_BY_ID[l.id]);
-        META.friends = [...META.friends.filter(x => x.name !== p.name), { name:p.name, ts:p.ts, score:p.score|0, count:p.count|0, rank:p.rank||"", legends:p.legends||[] }];
+        const fresh = p.legends.filter(l => !prevIds.has(l.id));
+        META.friends = [...META.friends.filter(x => x.name !== p.name), p].slice(-50);
         for (const l of fresh.slice(-10)) META.feed.unshift({ who:p.name, id:l.id, at:new Date().toISOString() });
         META.feed = META.feed.slice(0, 50);
         await saveMeta();
@@ -4237,8 +4274,11 @@ const VARIANTS = {
       const all = await Store.all();
       for (const rec of all) {
         if (rec.carId === "__meta__") { META = { ...META, ...rec, carId:"__meta__" }; }
-        else if (rec.carId === "__customcars__") { CUSTOM_REG = { carId:"__customcars__", list: Array.isArray(rec.list) ? rec.list : [] }; for (const c of CUSTOM_REG.list) CARS_BY_ID[c.id] = c; }
+        else if (rec.carId === "__customcars__") { CUSTOM_REG = { carId:"__customcars__", list: (Array.isArray(rec.list) ? rec.list : []).map(sanitizeCustomCar).filter(Boolean) }; for (const c of CUSTOM_REG.list) CARS_BY_ID[c.id] = c; }
       }
+      // Ce qui a été persisté avant DT-09 / DT-10 repasse par les mêmes filtres qu'à l'import.
+      META = { ...META, bonus:entierBorne(META.bonus), missions:sanitizeMissions(META.missions),
+               friends:sanitizeFriends(META.friends), feed:sanitizeFeed(META.feed), name:String(META.name ?? "").slice(0,24) };
       for (const rec of all) {
         if (rec.carId === "__meta__" || rec.carId === "__customcars__") continue;
         if (CARS_BY_ID[rec.carId]) state.spots.set(rec.carId, rec);

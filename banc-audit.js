@@ -413,6 +413,24 @@ function auditer() {
     }
   }
 
+  /* Une marque écrite de deux façons (« MINI » / « Mini », « NIO » / « Nio »)
+     apparaît deux fois dans le filtre des marques, compte double dans les
+     statistiques, et échappe aux listes comparées à l'identique : la liste
+     premium disait 'Mini', et la Cooper « commun » de CARS passait « courant »
+     à l'exécution. On compare sans casse ni accents ni ponctuation. */
+  const parMarque = new Map();
+  for (const c of carsFusionnes) {
+    const k = String(c.brand).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '');
+    if (!parMarque.has(k)) parMarque.set(k, new Set());
+    parMarque.get(k).add(c.brand);
+  }
+  for (const graphies of parMarque.values()) {
+    if (graphies.size > 1) {
+      signaler('ERREUR', 'MARQUE EN DOUBLE',
+        `une même marque est écrite ${graphies.size} façons : ${[...graphies].map(g => `« ${g} »`).join(', ')} — deux entrées dans le filtre, comptée deux fois`);
+    }
+  }
+
   /* Même piège, détecté par le nom de la FICHE : deux clés SPECS
      distinctes qui décrivent la même voiture (ex. 'citroen-ami' et
      'citroen-ami-2020'), invisible au contrôle de libellé si les entrées

@@ -193,6 +193,7 @@ moteurs).
 | Marqueur | Posé par | Lu par | Effet |
 |---|---|---|---|
 | `[data-verrou]` | `index.html`, sur une voiture **non spottée** | `greffer()` | Si présent → **on ne greffe RIEN**. Le verrou de collection est une mécanique de jeu qui doit survivre à tout re-design. |
+| `[data-car-id]` | `index.html`, sur `.detail-shell` | `greffer()` | L'**id** de la voiture affichée. Remplace la résolution par le texte du titre, qui greffait la fiche d'une voiture du catalogue sur une « Non classé » homonyme. Sur un id `custom:` → **aucune fiche**. Le titre reste un repli pour un `index.html` plus ancien encore en cache. |
 | `[data-moto-actif="typeId\|variantId"]` | `index.html`, sur le sélecteur de motorisation | `varianteActive()` puis `greffer()` | Indique la motorisation choisie. La fiche greffée est alors recalculée **pour cette variante** (`ficheHTML(id, variante)`) : champs mécaniques de la variante, mais note/surnom/production/son du modèle ; le `rupteur` est **retiré** car propre à un seul moteur. |
 
 Règles à ne jamais enfreindre :
@@ -383,7 +384,7 @@ incrémenter conjointement :**
 2. `VERSION` (`"garage-v…"`) dans `sw.js` (ligne ~12).
 
 Ces deux numéros sont **tenus synchronisés** (au 28/09/2026 : `gm-specs.js` →
-`20.181.0`, `sw.js` → `garage-v20.181.0`). `VERSION_MODULE` s'affiche en outre
+`20.182.0`, `sw.js` → `garage-v20.182.0`). `VERSION_MODULE` s'affiche en outre
 dans l'UI via `grefferVersion()`, ce qui permet de vérifier de visu quelle version
 tourne réellement sur l'appareil.
 
@@ -421,6 +422,7 @@ Ce qu'il attrape, et que ni l'œil ni `node --check` ne voient :
 | **Champs manquants / hors plage** | Complétude par champ, et incohérences d'ordre de grandeur. |
 | **Règle GTA dans les sélecteurs** | Une variante `MOTOR_SPECS` dont le libellé nomme une déclinaison qui a **sa propre entrée** (même marque, modèle qui prolonge celui de base : « 206 » → « 206 RC ») doit sortir du sélecteur de base (§4.5). Le commentaire annonçant ce contrôle existait **sans code** : il a laissé passer la 206 RC, les 106 Rallye / GTI, les Xantia Activa et un sélecteur de 205 qui ne contenait **que** des GTI. Vérifié par mutation. |
 | **Hybrides Toyota / Lexus sans couple** | La règle §4.4 (aucun couple système sur un HSD) était écrite mais pas contrôlée : la Corolla l'enfreignait sur sa fiche **et** deux variantes (dont une note affirmant « couple cumulé »), la Century aussi — c'était le couple du seul thermique. Toute fiche ou variante hybride Toyota/Lexus (hors Course) portant un `nm` remonte. Vérifié par mutation. |
+| **Marque en double** | Une marque écrite de deux façons (« MINI » / « Mini ») apparaît deux fois dans le filtre et échappe aux listes comparées à l'identique : la liste premium disait `'Mini'`, et la Cooper « commun » passait « courant » à l'exécution. Comparaison sans casse, accents ni ponctuation → ERREUR. Vérifié par mutation. |
 | **Divergences `CARS` / `CATALOGUE_PLUS`** | Un id déclaré des deux côtés : `CARS` fait autorité, l'autre déclaration est **perdue en silence**. |
 | **Fiche ↔ variante** | La fiche `SPECS` et une variante `MOTOR_SPECS` qui décrivent le **même moteur** (appariées sur la cylindrée ± 60 cm³ **et** la puissance ± 6 ch) doivent afficher les mêmes chiffres, sinon le joueur lit deux valeurs selon qu'il a touché au sélecteur. 25 cas au premier passage (206 : 111 / 120 Nm ; C6 : 240 ch avec la cylindrée du 2.7 ; MR2 : 1 100 / 1 270 kg). Un champ `flou` d'un côté est ignoré (l'écart est annoncé). Exemptions nominatives : `MEME_MOTEUR_AUTRE_GENERATION`. Vérifié par mutation. |
 
@@ -511,6 +513,8 @@ modification n'impose aucun bump de version.
 | `ai-relay-worker.js` | Relais IA Cloudflare — déployé **à part**, hors dossier statique |
 | `banc-v1.html` | ⚠️ **Contient le prototype complet du « Rouleau »** (~737 lignes), pas un simple banc jetable — voir §8 bis. Hors cache, ne pas livrer comme app, **et ne jamais supprimer** |
 | `gm-rouleau.js` | Le Rouleau extrait (§8 bis), non intégré ; banc `banc-rouleau.js` |
+| `banc-imports.js` | Banc navigateur des **fichiers importés hostiles** (sauvegarde, profil d'équipage) : aucune charge ne doit s'exécuter, à l'import comme au redémarrage (DT-09, DT-10) ; contrat `data-car-id` |
+| `AUDIT-DEFAUTS.md` | Rapport de la chasse aux défauts du 29/09 : corrigé, et reste à décider |
 | `banc-i18n.js` → `I18N.md` | Recensement des textes d'interface (préparation i18n). `I18N.md` est **généré** : relancer `node banc-i18n.js --md`, ne jamais l'éditer à la main |
 | `index-1.html` | Ancienne copie de travail d'`index.html` — **non servie**, ne pas confondre avec le fichier de prod |
 | `CONTEXT.md` | État projet, décisions, journal des chantiers (le *pourquoi*) |

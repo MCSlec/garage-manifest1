@@ -4,12 +4,12 @@
    cache suffit à rendre toute l'app disponible hors-ligne. Les données (photos,
    collection) vivent dans IndexedDB côté page, pas ici.
 
-   v20.181.0 — Corvette C5, Abarth 500e, Charger, Fabia RS : la bonne voiture.
+   v20.182.0 — Chasse aux défauts : imports hostiles, greffe par id, marques en double.
              Le numéro DOIT être incrémenté à chaque modification d'un fichier
              mis en cache, sinon l'ancienne copie est resservie indéfiniment.
 */
 
-const VERSION = "garage-v20.181.0";
+const VERSION = "garage-v20.182.0";
 
 /* ESSENTIEL : sans ces fichiers, l'app ne démarre pas hors-ligne.
    Mis en cache de façon atomique — si l'un manque, l'installation doit échouer
@@ -80,7 +80,8 @@ self.addEventListener("fetch", (event) => {
   // Navigations (ouverture de l'app) → réseau d'abord, app-shell en repli hors-ligne.
   if (req.mode === "navigate") {
     event.respondWith(
-      fetch(req).catch(() => caches.match("./index.html", { ignoreSearch: true }))
+      fetch(req).catch(() => caches.match("./index.html", { ignoreSearch: true })
+        .then((r) => r || Response.error()))
     );
     return;
   }
@@ -99,7 +100,7 @@ self.addEventListener("fetch", (event) => {
           caches.open(VERSION).then((c) => c.put(req, copie)).catch(() => {});
         }
         return res;
-      }).catch(() => caches.match(req, { ignoreSearch: true }))
+      }).catch(() => caches.match(req, { ignoreSearch: true }).then((r) => r || Response.error()))
     );
     return;
   }
@@ -117,7 +118,10 @@ self.addEventListener("fetch", (event) => {
             caches.open(VERSION).then((cache) => cache.put(req, copie)).catch(() => {});
           }
           return res;
-        }).catch(() => cached);
+        /* Ici `cached` est forcément vide (sinon on l'aurait servi) : le renvoyer
+           passait `undefined` à respondWith, qui lève une TypeError au lieu d'un
+           simple échec réseau. Response.error() donne l'échec propre attendu. */
+        }).catch(() => Response.error());
       })
     );
   }
