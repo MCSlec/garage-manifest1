@@ -53,6 +53,20 @@ npx wrangler r2 bucket create garage-photos
 Le bucket reste **privé** : les photos ne sont servies que par le Worker, à leur
 propriétaire authentifié. N'active jamais l'accès public.
 
+**Quotas de stockage** (valeurs par défaut du Worker, réglables dans
+`wrangler.toml`, section `[vars]`, sans toucher au code) :
+
+| Réglage | Défaut | Pourquoi ce chiffre |
+|---|---|---|
+| `QUOTA_PHOTOS` | 5 000 photos / compte | ≈ 4 à 5 photos par voiture du catalogue (1 071) |
+| `QUOTA_OCTETS` | 1,5 Go / compte | Photo de l'app mesurée à ≈ 330 Ko (JPEG 1 280 px) → ≈ 4 500 photos ; coût d'un compte plein ≈ 0,02 $/mois |
+| `QUOTA_GLOBAL_OCTETS` | 50 Go pour tout le service | Disjoncteur de facture : au-delà, plus aucune photo n'est acceptée (≈ 0,60 $/mois une fois les 10 Go gratuits dépassés) |
+
+Au-delà, l'app affiche « Quota de stockage atteint » ; la collection reste
+entière sur le téléphone. **Ajoute aussi une alerte de facturation** dans le
+tableau de bord Cloudflare : c'est ta vraie garantie contre une mauvaise
+surprise, quel que soit le code.
+
 ### 5. Envoi des e-mails (Resend)
 1. Crée un compte sur resend.com.
 2. **Domains → Add domain** : ajoute ton domaine et recopie chez ton registraire

@@ -61,6 +61,18 @@ const DUREE_SESSION_MS  = 90 * 24 * 3600 * 1000;   // session : 90 jours
    Mesuré en OCTETS UTF-8 (un « é » en pèse 2), pas en caractères. */
 const MAX_GARAGE_OCTETS = 1_900_000;               // collection sans photos
 const MAX_PHOTO_OCTETS  = 12 * 1024 * 1024;        // même plafond que l'import côté app
+
+/* Quotas de stockage photo (défaut n°9 de /code-review). Mesure du 29/09 : une
+   photo de l'app (JPEG, 1 280 px, qualité 0,82) pèse ≈ 330 Ko sur une scène
+   réaliste, ≈ 800 Ko au pire. Valeurs PROPOSÉES — voir cloud/DEPLOIEMENT.md —
+   et réglables sans toucher au code, par les variables du Worker
+   (wrangler.toml [vars]) : QUOTA_PHOTOS, QUOTA_OCTETS, QUOTA_GLOBAL_OCTETS. */
+const QUOTAS_DEFAUT = {
+  photos:       5000,                        // par compte (≈ 4 à 5 photos par voiture du catalogue)
+  octets:       1.5 * 1024 ** 3,             // par compte : 1,5 Go ≈ 4 500 photos réalistes
+  globalOctets: 50 * 1024 ** 3,              // tout le service : disjoncteur de facture (≈ 0,60 $/mois au-delà des 10 Go gratuits)
+};
+const quota = (env, cle, defaut) => { const n = Number(env[cle]); return Number.isFinite(n) && n > 0 ? n : defaut; };
 const MAX_EMPREINTES    = 5000;                    // par requête /photos/manquantes (le client envoie par lots de 1 000)
 const TYPES_PHOTO       = ['image/jpeg', 'image/png', 'image/webp'];
 
@@ -284,7 +296,34 @@ async function routePhotoEcrire(req, env, u, sha) {
   if (!octets.byteLength || octets.byteLength > MAX_PHOTO_OCTETS) return erreur(env, 413, 'Photo vide ou trop lourde');
   // Le contenu doit correspondre à l'empreinte annoncée : pas d'écrasement possible.
   if (await sha256hex(octets) !== sha) return erreur(env, 400, 'Empreinte ne correspondant pas au contenu');
-  await env.PHOTOS.put(`u/${u.id}/${sha}`, octets, { httpMetadata: { contentType: type } });
+  const cle = `u/${u.id}/${sha}`;
+  // Adressage par empreinte : une photo déjà stockée est identique, rien à compter ni à réécrire.
+  if (await env.PHOTOS.head(cle)) return new Response(null, { status: 201, headers: cors(env) });
+  const taille = octets.byteLength;
+  /* Disjoncteur global : au-delà, le service n'accepte plus de photo, pour
+     personne. Contrôle grossier (non atomique) : c'est une borne de facture. */
+  const total = await env.DB.prepare('SELECT COALESCE(SUM(octets), 0) AS o FROM usages').first();
+  if ((total ? total.o : 0) + taille > quota(env, 'QUOTA_GLOBAL_OCTETS', QUOTAS_DEFAUT.globalOctets)) {
+    return erreur(env, 507, 'Stockage du service momentanément plein : ta collection reste sur ton téléphone');
+  }
+  /* Réservation ATOMIQUE sur le compte (upsert conditionnel + RETURNING) :
+     des envois simultanés ne peuvent pas dépasser le quota ensemble. */
+  const reserve = await env.DB.prepare(
+    `INSERT INTO usages (utilisateur, photos, octets) VALUES (?1, 1, ?2)
+     ON CONFLICT (utilisateur) DO UPDATE SET photos = photos + 1, octets = octets + ?2
+       WHERE photos + 1 <= ?3 AND octets + ?2 <= ?4
+     RETURNING photos`).bind(u.id, taille, quota(env, 'QUOTA_PHOTOS', QUOTAS_DEFAUT.photos), quota(env, 'QUOTA_OCTETS', QUOTAS_DEFAUT.octets)).first();
+  // Première photo d'un compte : l'INSERT passe sans la condition, on la vérifie ici.
+  if (!reserve || taille > quota(env, 'QUOTA_OCTETS', QUOTAS_DEFAUT.octets)) {
+    if (reserve) await env.DB.prepare('UPDATE usages SET photos = photos - 1, octets = octets - ? WHERE utilisateur = ?').bind(taille, u.id).run();
+    return erreur(env, 507, 'Quota de stockage du compte atteint');
+  }
+  try {
+    await env.PHOTOS.put(cle, octets, { httpMetadata: { contentType: type } });
+  } catch (e) {
+    await env.DB.prepare('UPDATE usages SET photos = photos - 1, octets = octets - ? WHERE utilisateur = ?').bind(taille, u.id).run();
+    throw e;
+  }
   return new Response(null, { status: 201, headers: cors(env) });
 }
 
@@ -317,6 +356,7 @@ async function routeSupprimer(env, u) {
   const email = (await env.DB.prepare('SELECT email FROM utilisateurs WHERE id = ?').bind(u.id).first())?.email;
   await env.DB.batch([
     env.DB.prepare('DELETE FROM garages WHERE utilisateur = ?').bind(u.id),
+    env.DB.prepare('DELETE FROM usages WHERE utilisateur = ?').bind(u.id),
     env.DB.prepare('DELETE FROM sessions WHERE utilisateur = ?').bind(u.id),
     env.DB.prepare('DELETE FROM codes WHERE email = ?').bind(email || ''),
     env.DB.prepare('DELETE FROM utilisateurs WHERE id = ?').bind(u.id),

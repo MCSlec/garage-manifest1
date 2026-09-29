@@ -42,14 +42,14 @@ function r2() {
   const compter = (f) => async (...a) => { appels.n++; return f(...a); };
   return {
     _m: m, _appels: appels,
-    put: compter(async (k, octets, o = {}) => { m.set(k, { octets: new Uint8Array(octets), httpMetadata: o.httpMetadata || {} }); }),
+    put: compter(async (k, octets, o = {}) => { m.set(k, { octets: new Uint8Array(octets), httpMetadata: o.httpMetadata || {}, uploaded: new Date() }); }),
     get: compter(async (k) => m.has(k) ? { body: m.get(k).octets, httpMetadata: m.get(k).httpMetadata } : null),
     head: compter(async (k) => m.has(k) ? { key: k } : null),
     delete: compter(async (k) => { for (const x of [].concat(k)) m.delete(x); }),
     /* Comme le vrai R2 : 1 000 objets au plus par page, suite par curseur. */
     list: compter(async ({ prefix, cursor }) => { const toutes = [...m.keys()].filter(k => k.startsWith(prefix)).sort();
       const debut = Number(cursor || 0), page = toutes.slice(debut, debut + 1000), fin = debut + page.length;
-      return { objects: page.map(key => ({ key })), truncated: fin < toutes.length, cursor: fin < toutes.length ? String(fin) : undefined }; }),
+      return { objects: page.map(key => ({ key, size: m.get(key).octets.length, uploaded: m.get(key).uploaded || new Date() })), truncated: fin < toutes.length, cursor: fin < toutes.length ? String(fin) : undefined }; }),
   };
 }
 
@@ -254,6 +254,42 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   const msgTaille = r.status === 413 ? (await r.json()).erreur : '';
   v('garage de plus de 1,9 Mo (octets, accents compris) : 413 explicite, pas « Erreur interne »', r.status === 413 && /volumineux/i.test(msgTaille), `${r.status} ${msgTaille}`);
   await appel('DELETE', '/compte', { session: sC });
+
+  /* Quota de stockage (défaut n°9) — valeurs réduites pour le banc via les variables du Worker */
+  const sQ = await connecter('quota@exemple.fr');
+  const photoQ = (i, n = 8) => { const o = new Uint8Array(n); o[0] = 0xff; o[1] = 0xd8; o[2] = i & 255; o[3] = (i >> 8) & 255; return o; };
+  const shaQ = (o) => require('crypto').createHash('sha256').update(o).digest('hex');
+  env.QUOTA_PHOTOS = '3';
+  const res4 = [];
+  for (let i = 0; i < 4; i++) { const o = photoQ(i); res4.push((await appel('PUT', `/photos/${shaQ(o)}`, { session: sQ, brut: o, type: 'image/jpeg' })).status); }
+  v('quota photos : 3 acceptées, la 4e refusée (507)', JSON.stringify(res4) === '[201,201,201,507]', JSON.stringify(res4));
+  r = await appel('PUT', `/photos/${shaQ(photoQ(0))}`, { session: sQ, brut: photoQ(0), type: 'image/jpeg' });
+  v('… renvoyer une photo déjà stockée ne compte pas (201, idempotent)', r.status === 201, r.status);
+  const lireErreur = async (x) => { try { return JSON.parse(await x.text()).erreur || ''; } catch { return ''; } };
+  const msgQuota = await lireErreur(await appel('PUT', `/photos/${shaQ(photoQ(9))}`, { session: sQ, brut: photoQ(9), type: 'image/jpeg' }));
+  v('… avec un message explicite', /quota/i.test(msgQuota || ''), msgQuota);
+  // Rafale : 10 envois simultanés avec 1 place restante (après suppression du compte et recréation)
+  await appel('DELETE', '/compte', { session: sQ });
+  v('suppression du compte : son compteur de stockage disparaît aussi', !sqlite.prepare('SELECT 1 FROM usages').all().some(() => true) || !sqlite.prepare("SELECT 1 FROM usages u JOIN utilisateurs x ON x.id = u.utilisateur WHERE x.email = 'quota@exemple.fr'").get());
+  ip = 250; const sR = await connecter('rafale-photos@exemple.fr');
+  env.QUOTA_PHOTOS = '4';
+  const rafaleP = await Promise.all(Array.from({ length: 10 }, (_, i) => appel('PUT', `/photos/${shaQ(photoQ(100 + i))}`, { session: sR, brut: photoQ(100 + i), type: 'image/jpeg' })));
+  const acceptees = rafaleP.filter(x => x.status === 201).length;
+  const idR = sqlite.prepare("SELECT id FROM utilisateurs WHERE email = 'rafale-photos@exemple.fr'").get().id;
+  const stockees = [...env.PHOTOS._m.keys()].filter(k => k.startsWith(`u/${idR}/`)).length;
+  v('10 envois simultanés, quota de 4 : exactement 4 acceptés et stockés (réservation atomique)', acceptees === 4 && stockees === 4, `${acceptees} acceptés, ${stockees} stockés`);
+  delete env.QUOTA_PHOTOS;
+  // Quota en octets
+  env.QUOTA_OCTETS = '20';
+  r = await appel('PUT', `/photos/${shaQ(photoQ(500, 16))}`, { session: sR, brut: photoQ(500, 16), type: 'image/jpeg' });
+  v('quota octets : une photo qui dépasse le volume restant est refusée (507)', r.status === 507, r.status);
+  delete env.QUOTA_OCTETS;
+  // Plafond global du service
+  env.QUOTA_GLOBAL_OCTETS = '10';
+  r = await appel('PUT', `/photos/${shaQ(photoQ(600))}`, { session: sR, brut: photoQ(600), type: 'image/jpeg' });
+  v('plafond global atteint : plus aucune photo acceptée, message distinct (507)', r.status === 507 && /service/i.test(await lireErreur(r)), r.status);
+  delete env.QUOTA_GLOBAL_OCTETS;
+  await appel('DELETE', '/compte', { session: sR });
 
   /* RGPD : export, déconnexion, suppression */
   r = await appel('GET', '/compte/export', { session: sA });

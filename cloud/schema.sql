@@ -40,6 +40,14 @@ CREATE TABLE IF NOT EXISTS garages (
   donnees      TEXT NOT NULL          -- collection sans photos (empreintes à la place)
 );
 
+-- Stockage photo consommé par compte (quota) : tenu à jour à chaque photo
+-- NOUVELLE (réservation atomique), remis à zéro à la suppression du compte.
+CREATE TABLE IF NOT EXISTS usages (
+  utilisateur  TEXT PRIMARY KEY REFERENCES utilisateurs (id),
+  photos       INTEGER NOT NULL DEFAULT 0,
+  octets       INTEGER NOT NULL DEFAULT 0
+);
+
 CREATE TABLE IF NOT EXISTS limites (
   cle      TEXT PRIMARY KEY,          -- SHA-256 de « code-email:x@y.fr », « code-ip:1.2.3.4 »… (jamais en clair)
   compte   INTEGER NOT NULL,

@@ -10,6 +10,11 @@ compatibility_date = "2026-09-01"
 APP_ORIGIN = "https://mcslec.github.io"
 # Expéditeur des e-mails : domaine vérifié chez Resend.
 MAIL_FROM = "Garage Manifest <connexion@ton-domaine.fr>"
+# Quotas de stockage photo (facultatifs : sans eux, les valeurs par défaut du
+# Worker s'appliquent — 5 000 photos et 1,5 Go par compte, 50 Go au total).
+# QUOTA_PHOTOS = "5000"
+# QUOTA_OCTETS = "1610612736"
+# QUOTA_GLOBAL_OCTETS = "53687091200"
 
 # Purge nocturne de l'échu (codes, sessions, compteurs de débit) :
 # appelle le gestionnaire scheduled() du Worker. Heure UTC.

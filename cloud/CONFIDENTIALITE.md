@@ -30,6 +30,8 @@ la mémoire de ton appareil (IndexedDB) et ne sont envoyées nulle part.
 | **Session** (empreinte SHA-256 seulement) | Rester connecté sans recevoir un code à chaque fois | 90 jours, ou jusqu'à la déconnexion |
 | **Ta collection** : voitures, dates, lieux saisis, **positions GPS** si tu les as enregistrées, notes, déclinaisons, favoris, voitures personnalisées, pseudo, missions, liste d'amis et fil d'activité | Te la rendre sur un autre appareil | Tant que le compte existe |
 | **Tes photos** | Idem | Tant que le compte existe |
+| **Volume stocké** (nombre de photos, octets) | Appliquer le quota de stockage du compte | Tant que le compte existe |
+| **Voitures retirées** (identifiant de la voiture, date du retrait) | Faire disparaître la voiture de tes autres appareils | Tant que le compte existe |
 
 Précisions vérifiables dans le code :
 - Les photos prises dans l'app sont réencodées avant d'être enregistrées : leurs

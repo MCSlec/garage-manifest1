@@ -45,6 +45,24 @@ Guide détaillé : `cloud/DEPLOIEMENT.md`.
 5. [ ] **Me donner l'adresse du Worker** (`https://garage-comptes.<…>.workers.dev`) :
    je renseigne `COMPTE_URL` et je livre (bump de version).
 
+## 2 bis. 🟡 Quotas et facture (après déploiement)
+
+- [ ] **Valider les quotas proposés** (réglables sans toucher au code, `wrangler.toml`) :
+  5 000 photos et 1,5 Go par compte, 50 Go pour tout le service. Base de calcul :
+  une photo de l'app pèse ≈ 330 Ko (mesuré), un compte plein coûte ≈ 0,02 $/mois.
+- [ ] **Créer une alerte de facturation** Cloudflare **et** Anthropic (console) :
+  la seule garantie qui ne dépend pas du code.
+
+## 2 ter. 🔴 Relais IA — décisions avant lancement public
+
+Revue faite le 29/09 (détail dans le rapport du 29/09) : le relais répond à
+n'importe qui, sans limite. Décisions à prendre avant que je le corrige :
+- [ ] **Plafond global quotidien** d'identifications (proposition : 3 000/jour
+  ≈ 10 $/jour au pire).
+- [ ] **Quota anonyme par appareil / IP** (proposition : 30/jour) et quota plus
+  haut pour un compte connecté (proposition : 200/jour).
+- [ ] **Retirer `/notify`** (plus appelé par l'app ; ouvert à tous, sans limite).
+
 ## 3. ⚖️ Avant d'ouvrir les comptes au public
 
 Tout est dans `cloud/CONFIDENTIALITE.md` :

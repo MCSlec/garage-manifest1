@@ -419,7 +419,7 @@ incrémenter conjointement :**
 2. `VERSION` (`"garage-v…"`) dans `sw.js` (ligne ~12).
 
 Ces deux numéros sont **tenus synchronisés** (au 28/09/2026 : `gm-specs.js` →
-`20.190.0`, `sw.js` → `garage-v20.190.0`). `VERSION_MODULE` s'affiche en outre
+`20.191.0`, `sw.js` → `garage-v20.191.0`). `VERSION_MODULE` s'affiche en outre
 dans l'UI via `grefferVersion()`, ce qui permet de vérifier de visu quelle version
 tourne réellement sur l'appareil.
 
@@ -726,11 +726,25 @@ GMGarage.importer(data, { fusion })   → { n, rejected }
 | `PUT /garage` exige `If-Match` (428 sinon), 409 si la version a bougé | Deux appareils ne s'écrasent jamais en silence ; le client restaure en fusion puis renvoie |
 | Photo refusée si son contenu ne correspond pas à son empreinte | Personne ne peut substituer une photo à une autre |
 | Clés du limiteur de débit **hachées** ; purge nocturne (`scheduled`) de l'échu | Minimisation RGPD : ni IP ni adresse d'un non-inscrit lisibles, rien d'échu conservé |
+| Limiteur de débit, essai de code et réservation de quota : **une seule instruction** chacun (upsert / `UPDATE … RETURNING`) | Un « lire puis écrire » laisse passer des requêtes simultanées : 50 codes envoyés au lieu de 3, 8 photos au lieu de 4 (reproduit au banc, dont la fausse base **simule la latence** — sans elle, aucune course n'apparaît) |
+| `/photos/manquantes` liste le préfixe du compte (1 appel / 1 000 photos) ; > 5 000 empreintes → 413, jamais de troncature | Offre gratuite : 1 000 appels aux services Cloudflare par requête |
+| Garage ≤ 1,9 Mo **en octets** ; `donnees` doit être un objet | D1 refuse toute ligne > 2 Mo |
+| **Quota** par compte et plafond global (`QUOTA_*`, réglables dans `wrangler.toml`) ; photo déjà stockée = idempotente, non comptée | Un compte gratuit ne peut pas remplir le stockage ni la facture |
 
 **Côté client :**
 - **En sommeil par défaut** : `COMPTE_URL = ''` → aucun panneau, aucune requête
   (pas même un pré-vol CORS — vérifié au banc). Les bancs l'activent par
   `window.GM_COMPTE_URL`.
+- **Synchronisation** : chaque prise porte `maj` (dernière modification) ; « Retirer
+  du garage » laisse une **pierre tombale** datée (`META.supprimes`), exportée
+  avec la sauvegarde. À la fusion cloud, la version la plus récente gagne
+  (plus de concaténation des notes), les photos s'additionnent, et un retrait
+  plus récent que la dernière modification supprime la prise **sur tous les
+  appareils**. « Tout effacer » reste une remise à zéro locale, non propagée.
+  La fusion des doublons de catalogue (`FUSIONS`, `fusionnerPrise`) est une
+  autre fonction, inchangée.
+- **Restauration** : une photo injoignable (hors 404) interrompt tout — sinon la
+  sauvegarde qui suit un conflit effacerait du cloud une photo qui existe.
 - Le code n'est envoyé qu'avec l'adresse **demandée sur cet appareil**
   (`emailEnAttente`), et la saisie reprend si l'app est fermée le temps de lire
   ses mails. Champ `autocomplete="one-time-code"` : remplissage automatique.
