@@ -71,8 +71,11 @@ function extraireCars(html) {
 /* VARIANTS (cases de déclinaison) : même extraction par équilibrage, pour
    un littéral d'objet. Sert au contrôle des FUSIONS : la case à cocher
    pendant la migration doit exister, au caractère près. */
-function extraireVariants(html) {
-  const ancre = html.indexOf('const VARIANTS = {');
+function extraireVariants(html) { return extraireObjet(html, 'VARIANTS'); }
+/* INFO (moteur / puissance de la première page de fiche) : même extraction. */
+function extraireInfo(html) { return extraireObjet(html, 'INFO'); }
+function extraireObjet(html, nom) {
+  const ancre = html.indexOf(`const ${nom} = {`);
   if (ancre === -1) return {};
   const debut = html.indexOf('{', ancre);
   let profondeur = 0, i = debut, dansChaine = null, echappe = false;
@@ -786,6 +789,28 @@ function auditer() {
       if (v.nm != null && estHsd(idCat, v)) {
         signaler('ALERTE', 'HYBRIDE HSD', `${idCat}/${t.id}/${v.id} : variante hybride Toyota/Lexus avec un couple (${v.nm} Nm) (§4.4)`);
       }
+    }
+  }
+
+  /* --- E quater. INFO ↔ SPECS : deux puissances pour la même voiture ----
+     index.html affiche en PREMIÈRE page la puissance de INFO ; gm-specs.js
+     greffe en dernière page celle de la fiche SPECS. Sans sélecteur de
+     motorisation, le joueur voit les deux : elles doivent se recouvrir.
+     35 écarts au premier passage (29/09), tous tranchés sur source : la fiche
+     décrivait souvent une AUTRE version que l'entrée (635 CSi → M635CSi,
+     EB110 → Super Sport, Phaeton → W12), ou INFO était périmé (Gemera à
+     1 700 ch jamais produite). Tolérance ± 7 % autour de la plage d'INFO :
+     « ≈ 280 ch » n'est pas en désaccord avec 283. */
+  const INFO = extraireInfo(html);
+  const nombres = t => (String(t).replace(/\s/g, '').match(/\d+/g) || []).map(Number).filter(n => n >= 5 && n < 20000);
+  for (const c of carsFusionnes) {
+    const i = INFO[c.id], f = SPECS[MAP[c.id]];
+    if (!i || !i.hp || !f || f.ch == null || MOTOR_SPECS[c.id]) continue;
+    const v = nombres(i.hp); if (!v.length) continue;
+    const bas = Math.min(...v), haut = Math.max(...v);
+    if (f.ch < bas * 0.93 || f.ch > haut * 1.07) {
+      signaler('ALERTE', 'INFO ↔ SPECS',
+        `${c.id} : première page « ${i.hp} », fiche technique ${f.ch} ch — deux puissances contradictoires pour la même voiture`);
     }
   }
 

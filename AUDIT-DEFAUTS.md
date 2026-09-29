@@ -43,41 +43,14 @@ version (§4.5 bis) : 635 CSi (portait la M635CSi), XK8 (portait la XKR), Lotus
 Elan (portait la Sprint), LS 400 (puissance sans référent), Opel GT (SAE sans
 couple assorti) ; Charger : `INFO` élargi à la V6 de base.
 
-**Restent 29**, à trancher cas par cas sur source. La plupart sont des légendes ou
-des voitures de course, où `INFO` cite une autre version (course, qualification,
-lignée entière) : ce n'est pas forcément la fiche qui a tort.
+**29 septembre, suite : les 29 restants tranchés sur source → 0 écart sur 382.**
+- **La fiche décrivait une autre version** (§4.5 bis), corrigée : EB110 (Super Sport → GT), Miura (P400 SV → P400), Agera RS et Czinger 21C (option payante → série), Jensen (7.2 → 6.3), Thunderbird 1955 (312 → 292), Crown Victoria (Police Interceptor → civile), Avanti (R2 compresseur → R1), Phaeton (W12 → V6 TDI), XK120 (SE → standard), D8 GTO (JD70 → 2013), AMC Javelin/AMX (401 → AMX 390), SP2 (SAE → DIN).
+- **Voitures de course décrites en version routière**, alors que l'entrée est en catégorie « Course » : RS200 et Metro 6R4 (250 ch → 450 / 416 ch de rallye), R390 GT1 (550 → 650 ch de course).
+- **`INFO` périmé ou faux**, corrigé : Gemera (1 700 ch jamais produite → HV8 2 332 ch), MP4/4 (« 900+ ch en qualif » : impossible en 1988 avec une pression de suralimentation limitée à 2,5 bar → 685 ch), 935 (→ 845 ch).
+- **L'entrée couvre une lignée** : `INFO` élargi à la plage réelle (Century, M6, Cord, MS670, Rocket, RX-7, Tatra, S1 E2).
+- **Valeurs impossibles retirées** : Radical SR3 (280 Nm pour un 1.5 d'origine moto → couple retiré, SR3 de 2002 à 252 bhp) ; Ultima (RS-1020 : 1 034 ch et 920 Nm, V8 6.2 et non 6.8).
 
-| Entrée | Fiche | `INFO` (puissance) | Fiche (ch · cylindrée) |
-|---|---|---|---|
-| `bugatti-eb110` | Bugatti EB110 Super Sport | ≈ 560 ch | 611 ch 3.5L |
-| `lambo-miura` | Lamborghini Miura P400 SV | ≈ 350 ch | 385 ch 3.9L |
-| `koenigsegg-agera-rs` | Koenigsegg Agera RS | ≈ 1160 ch | 1360 ch 5L |
-| `koenigsegg-gemera` | Koenigsegg Gemera | ≈ 1700 ch | 2300 ch 5L |
-| `mazda-rx7` | Mazda RX-7 (FD) | ≈ 280 ch | 255 ch 1.308L |
-| `czinger-21c` | Czinger 21C | ≈ 1250 ch | 1350 ch 2.9L |
-| `mclaren-mp44` | McLaren MP4/4 (F1 1988) | ≈ 900+ ch (qualif) | 685 ch 1.5L |
-| `audi-s1-e2` | Audi Sport quattro S1 E2 | ≈ 550+ ch | 500 ch 2.1L |
-| `ford-rs200` | Ford RS200 | ≈ 450 ch (course) | 250 ch 1.8L |
-| `mg-metro-6r4` | MG Metro 6R4 | ≈ 410 ch | 250 ch 3L |
-| `radical-sr3` | Radical SR3 | ≈ 226–232 ch | 260 ch 1.5L |
-| `jensen-interceptor` | Jensen Interceptor | ≈ 330 ch | 390 ch 7.2L |
-| `toyota-century` | Toyota Century | ≈ 280 ch | 431 ch 5L |
-| `bmw-m6` | BMW M6 | ≈ 507 ch | 560 ch 4.4L |
-| `ultima-gtr` | Ultima GTR / RS | ≈ 534–720 ch | 1020 ch 6.8L |
-| `ford-thunderbird-55` | Ford Thunderbird (1955) | ≈ 198 ch | 215 ch 4.8L |
-| `ford-crown-victoria` | Ford Crown Victoria | ≈ 220 ch | 250 ch 4.6L |
-| `amc-javelin` | AMC Javelin / AMX | ≈ 315 ch | 340 ch 6.4L |
-| `cord-810` | Cord 810 / 812 | ≈ 170 ch | 127 ch 4.7L |
-| `studebaker-avanti` | Studebaker Avanti | ≈ 240 ch | 290 ch 4.7L |
-| `vw-phaeton` | Volkswagen Phaeton | ≈ 420 ch (W12) | 450 ch 6L |
-| `jaguar-xk120` | Jaguar XK120 | ≈ 160 ch | 180 ch 3.4L |
-| `tatra-t87` | Tatra T87 | ≈ 85 ch | 75 ch 3L |
-| `porsche-935` | Porsche 935 « Moby Dick » | ≈ 750+ ch | 845 ch 3.2L |
-| `matra-ms670` | Matra MS670 | ≈ 450 ch | 490 ch 3L |
-| `donkervoort-d8` | Donkervoort D8 GTO | ≈ 385 ch | 415 ch 2.5L |
-| `vw-sp2` | Volkswagen SP2 | ≈ 65 ch | 75 ch 1.7L |
-| `nissan-r390` | Nissan R390 GT1 | ≈ 650 ch | 550 ch 3.5L |
-| `brabus-rocket` | Brabus Rocket 1000 | ≈ 730–900 ch | 1000 ch 4.5L |
+Le contrôle est désormais **permanent** : `banc-audit.js`, E quater (ALERTE), vérifié par mutation.
 
 **Proposition d'architecture** (non appliquée : change le contenu affiché) : pour
 toute voiture dotée d'une fiche, dériver la puissance de `INFO` depuis `SPECS`

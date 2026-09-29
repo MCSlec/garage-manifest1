@@ -390,7 +390,7 @@ incrémenter conjointement :**
 2. `VERSION` (`"garage-v…"`) dans `sw.js` (ligne ~12).
 
 Ces deux numéros sont **tenus synchronisés** (au 28/09/2026 : `gm-specs.js` →
-`20.185.0`, `sw.js` → `garage-v20.185.0`). `VERSION_MODULE` s'affiche en outre
+`20.186.0`, `sw.js` → `garage-v20.186.0`). `VERSION_MODULE` s'affiche en outre
 dans l'UI via `grefferVersion()`, ce qui permet de vérifier de visu quelle version
 tourne réellement sur l'appareil.
 
@@ -429,6 +429,7 @@ Ce qu'il attrape, et que ni l'œil ni `node --check` ne voient :
 | **Règle GTA dans les sélecteurs** | Une variante `MOTOR_SPECS` dont le libellé nomme une déclinaison qui a **sa propre entrée** (même marque, modèle qui prolonge celui de base : « 206 » → « 206 RC ») doit sortir du sélecteur de base (§4.5). Le commentaire annonçant ce contrôle existait **sans code** : il a laissé passer la 206 RC, les 106 Rallye / GTI, les Xantia Activa et un sélecteur de 205 qui ne contenait **que** des GTI. Vérifié par mutation. |
 | **Hybrides Toyota / Lexus sans couple** | La règle §4.4 (aucun couple système sur un HSD) était écrite mais pas contrôlée : la Corolla l'enfreignait sur sa fiche **et** deux variantes (dont une note affirmant « couple cumulé »), la Century aussi — c'était le couple du seul thermique. Toute fiche ou variante hybride Toyota/Lexus (hors Course) portant un `nm` remonte. Vérifié par mutation. |
 | **Marque en double** | Une marque écrite de deux façons (« MINI » / « Mini ») apparaît deux fois dans le filtre et échappe aux listes comparées à l'identique : la liste premium disait `'Mini'`, et la Cooper « commun » passait « courant » à l'exécution. Comparaison sans casse, accents ni ponctuation → ERREUR. Vérifié par mutation. |
+| **`INFO` ↔ `SPECS`** | `index.html` affiche en **première page** une puissance (`INFO`) indépendante de celle de la fiche technique greffée (`SPECS`). Sans sélecteur, le joueur voit les deux : elles doivent se recouvrir (± 7 % autour de la plage d'`INFO`). 35 écarts au premier passage, tous tranchés sur source le 29/09 — le plus souvent une fiche décrivant **une autre version** que l'entrée (EB110 Super Sport, Phaeton W12, RS200 routière pour une entrée « Course »). Vérifié par mutation. |
 | **Divergences `CARS` / `CATALOGUE_PLUS`** | Un id déclaré des deux côtés : `CARS` fait autorité, l'autre déclaration est **perdue en silence**. |
 | **Fiche ↔ variante** | La fiche `SPECS` et une variante `MOTOR_SPECS` qui décrivent le **même moteur** (appariées sur la cylindrée ± 60 cm³ **et** la puissance ± 6 ch) doivent afficher les mêmes chiffres, sinon le joueur lit deux valeurs selon qu'il a touché au sélecteur. 25 cas au premier passage (206 : 111 / 120 Nm ; C6 : 240 ch avec la cylindrée du 2.7 ; MR2 : 1 100 / 1 270 kg). Un champ `flou` d'un côté est ignoré (l'écart est annoncé). Exemptions nominatives : `MEME_MOTEUR_AUTRE_GENERATION`. Vérifié par mutation. |
 
