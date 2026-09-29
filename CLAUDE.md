@@ -48,6 +48,15 @@ aucune chaîne de dépendances à maintenir, aucune rupture liée à une montée
 version tierce. **N'introduis jamais de dépendance externe** (CDN, package, lib)
 sans que ce soit explicitement demandé et argumenté.
 
+**Seule bibliothèque tierce : Leaflet (carte), HÉBERGÉE DANS LE DÉPÔT** —
+`vendor/leaflet/`, v1.9.4 tirée du registre npm, licence BSD-2 jointe. Jusqu'au
+29/09 elle était chargée depuis cdnjs sans contrôle d'intégrité : un CDN
+compromis aurait exécuté son code dans l'app, et la carte ne s'affichait pas
+hors ligne. **Jamais de CDN** : une bibliothèque indispensable se copie dans
+`vendor/`, se met en cache (`EXTRAS` de `sw.js`) et se teste (`banc-carte.js`).
+Les **tuiles** de la carte (images OpenStreetMap) restent externes : la carte
+du monde ne s'embarque pas, et une image n'exécute aucun code.
+
 ### 1.3 — Jamais réécrire `index.html` en entier
 `index.html` fait ~3 900 lignes et concentre l'app complète. **Interdiction de le
 régénérer, de le reformater globalement, ou de le remplacer d'un bloc.**
@@ -390,7 +399,7 @@ incrémenter conjointement :**
 2. `VERSION` (`"garage-v…"`) dans `sw.js` (ligne ~12).
 
 Ces deux numéros sont **tenus synchronisés** (au 28/09/2026 : `gm-specs.js` →
-`20.186.0`, `sw.js` → `garage-v20.186.0`). `VERSION_MODULE` s'affiche en outre
+`20.187.0`, `sw.js` → `garage-v20.187.0`). `VERSION_MODULE` s'affiche en outre
 dans l'UI via `grefferVersion()`, ce qui permet de vérifier de visu quelle version
 tourne réellement sur l'appareil.
 
@@ -520,6 +529,7 @@ modification n'impose aucun bump de version.
 | `ai-relay-worker.js` | Relais IA Cloudflare — déployé **à part**, hors dossier statique |
 | `banc-v1.html` | ⚠️ **Contient le prototype complet du « Rouleau »** (~737 lignes), pas un simple banc jetable — voir §8 bis. Hors cache, ne pas livrer comme app, **et ne jamais supprimer** |
 | `gm-rouleau.js` | Le Rouleau extrait (§8 bis), non intégré ; banc `banc-rouleau.js` |
+| `vendor/leaflet/` | Leaflet 1.9.4 hébergé dans le dépôt (§1.2) ; banc `banc-carte.js` : aucun script ni style chargé depuis un autre domaine |
 | `banc-imports.js` | Banc navigateur des **fichiers importés hostiles** (sauvegarde, profil d'équipage) : aucune charge ne doit s'exécuter, à l'import comme au redémarrage (DT-09, DT-10) ; contrat `data-car-id` |
 | `AUDIT-DEFAUTS.md` | Rapport de la chasse aux défauts du 29/09 : corrigé, et reste à décider |
 | `banc-i18n.js` → `I18N.md` | Recensement des textes d'interface (préparation i18n). `I18N.md` est **généré** : relancer `node banc-i18n.js --md`, ne jamais l'éditer à la main |

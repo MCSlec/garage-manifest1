@@ -3869,10 +3869,14 @@ const VARIANTS = {
     if (leafletReady) return leafletReady;
     leafletReady = new Promise((res, rej) => {
       const css = document.createElement("link");
-      css.rel = "stylesheet"; css.href = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css";
+      /* Leaflet est HÉBERGÉ DANS LE DÉPÔT (vendor/leaflet, v1.9.4 du registre npm) :
+         plus aucun code tiers chargé depuis un CDN, et le moteur de carte est mis
+         en cache par le service worker. Seules les tuiles (images) viennent encore
+         d'OpenStreetMap : la carte du monde ne s'embarque pas. */
+      css.rel = "stylesheet"; css.href = "vendor/leaflet/leaflet.css";
       document.head.appendChild(css);
       const s = document.createElement("script");
-      s.src = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js";
+      s.src = "vendor/leaflet/leaflet.js";
       s.onload = res; s.onerror = () => { leafletReady = null; rej(new Error("offline")); };
       document.head.appendChild(s);
     });
