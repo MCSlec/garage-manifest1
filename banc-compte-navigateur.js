@@ -334,8 +334,9 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   const R2 = await telephone(false);
   await espionnerRelais(R2, repondre(429, { error: "Limite d'identifications du jour atteinte sur cet appareil : choisis la voiture à la main, ou reviens demain" }));
   await capturer(R2);
-  await R2.page.waitForFunction(() => /Limite d'identifications/.test(document.querySelector('#toast')?.textContent || ''), null, { timeout: 8000 }).catch(() => {});
-  v('relais · limite atteinte (429) : le message du relais est montré, pas un code HTTP', /choisis la voiture à la main/.test(await R2.page.textContent('#toast')), await R2.page.textContent('#toast'));
+  // Depuis le parcours P0, le résultat s'affiche dans l'écran de capture, plus dans un message bref.
+  await R2.page.waitForFunction(() => /Limite d'identifications/.test(document.querySelector('#capBody')?.textContent || ''), null, { timeout: 8000 }).catch(() => {});
+  v('relais · limite atteinte (429) : le message du relais est montré, pas un code HTTP', /choisis la voiture à la main/.test(await R2.page.textContent('#capBody')) && !/HTTP/.test(await R2.page.textContent('#capBody')), await R2.page.textContent('#capBody'));
   // (e) relais pas encore mis à jour (refuse le jeton) : nouvel essai anonyme
   await S1.ctx.unroute(u => true).catch(() => {});
   const vuesAncien = await espionnerRelais(S1, (route, h) => h.authorization ? route.abort('failed') : repondre(200, [])(route));

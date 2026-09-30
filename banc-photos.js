@@ -63,7 +63,8 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   await ajouterPhotoVia('peugeot-205');
   v('sous le plafond (205 peu commune : 7/8) : la photo est ajoutée', (await nbPhotos('peugeot-205')) === 8, await nbPhotos('peugeot-205'));
   await ajouterPhotoVia('peugeot-205');
-  const toast = await page.textContent('#toast');
+  // Au plafond, le parcours P0 affiche un panneau « Prise mise à jour » (E8) qui dit ce qui a été gardé.
+  const toast = (await page.textContent('#p0Maj').catch(() => '')) || '';
   v('au plafond (8/8) : prise enregistrée sans la nouvelle photo', (await nbPhotos('peugeot-205')) === 8, await nbPhotos('peugeot-205'));
   v('… avec un message qui donne la limite et la rareté', /Limite de 8 photos/.test(toast) && /peu commun/i.test(toast), toast);
   /* F40 (légendaire → 30) déjà à 31 (ancienne version) : rien n'est retiré */

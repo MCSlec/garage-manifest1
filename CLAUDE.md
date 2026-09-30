@@ -436,7 +436,7 @@ incrémenter conjointement :**
 2. `VERSION` (`"garage-v…"`) dans `sw.js` (ligne ~12).
 
 Ces deux numéros sont **tenus synchronisés** (au 30/09/2026 : `gm-specs.js` →
-`20.194.0`, `sw.js` → `garage-v20.194.0`). `VERSION_MODULE` s'affiche en outre
+`20.195.0`, `sw.js` → `garage-v20.195.0`). `VERSION_MODULE` s'affiche en outre
 dans l'UI via `grefferVersion()`, ce qui permet de vérifier de visu quelle version
 tourne réellement sur l'appareil.
 
@@ -575,6 +575,7 @@ modification n'impose aucun bump de version.
 | `vendor/leaflet/` | Leaflet 1.9.4 hébergé dans le dépôt (§1.2) ; banc `banc-carte.js` : aucun script ni style chargé depuis un autre domaine |
 | `vendor/protomaps-leaflet/` | Moteur de rendu de **notre** carte (§1.2), chargé seulement si `CARTE_URL` est renseignée ; banc `banc-carte-perso.js` (fabrique une vraie archive PMTiles) ; guide `cloud/CARTE.md` |
 | `banc-relais.js` | Banc serveur du relais IA : quotas (dont rafale simultanée), taille/format d'image, origine, route unique, erreurs sans détail, fermeture sans D1 |
+| `banc-p0.js` | Banc navigateur du parcours **capture → révélation** (`design/SPEC-P0-*.md`) : analyse visible, écran selon le statut du matcher (sûr / ambigu / pistes faibles / rien / erreurs nommées), résultat tardif ignoré, révélation sans confettis en 3 paliers toujours sombre, « Ce que ça débloque » aux vrais compteurs, lot compact + bilan, mouvement réduit. `node banc-p0.js <dossier>` enregistre les captures |
 | `banc-photos.js` | Banc navigateur des limites de photos : plafond par rareté (`PHOTOS_PAR_RARETE`), taille par photo, recompression des anciennes photos (`GMGarage.normaliserPhotos`), suppression d'une photo et non-résurrection à la fusion cloud (pierres tombales) |
 | `banc-imports.js` | Banc navigateur des **fichiers importés hostiles** (sauvegarde, profil d'équipage) : aucune charge ne doit s'exécuter, à l'import comme au redémarrage (DT-09, DT-10) ; contrat `data-car-id` |
 | `AUDIT-DEFAUTS.md` | Rapport de la chasse aux défauts du 29/09 : corrigé, et reste à décider |

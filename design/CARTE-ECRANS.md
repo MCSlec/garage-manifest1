@@ -133,6 +133,13 @@ pas ce qui est enregistré.**
 
 ## 8. Défauts d'UX relevés en faisant la carte (hors design pur)
 
+> ✅ **Corrigés le 30/09 (v20.195.0)** : 1 à 4, par le parcours P0 (`design/SPEC-P0-*.md`,
+> banc `banc-p0.js`). Les sections 2 ci-dessus décrivent l'état **d'avant** ; le
+> nouvel enchaînement est : source → analyse (`draft.step="analyse"`) → résultat
+> (`"resultat"`, `p0ResultatHTML()`) → formulaire → `showReveal()` → `showDebloque()`,
+> ou `showMaj()` (déjà au garage), ou `flashCapture()` + `showBilanLot()` (lot).
+> Restent ouverts : 5 et 6.
+
 1. **Aucun état « analyse en cours »** pendant la reconnaissance (jusqu'à 15 s).
 2. **`AMBIGU` présenté comme sûr** : un seul nom affiché, la seconde piste cachée.
 3. **`AUCUNE_CORRESPONDANCE_SURE` muet** : le joueur ne sait pas que l'IA n'a rien trouvé.

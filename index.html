@@ -348,20 +348,95 @@
   .fact p{ margin:0; font:400 13px/1.55 var(--sans); color:var(--fg); }
   .cat-desc{ margin:10px 2px 0; font:400 12px/1.5 var(--sans); color:var(--dim); }
 
-  /* ---- Révélation de capture ---- */
-  #revealWrap{ position:fixed; inset:0; z-index:200; display:flex; align-items:center; justify-content:center; background:rgba(5,5,7,.9); backdrop-filter:blur(6px); animation:rvFade .25s ease; }
+  /* ---- Révélation de capture (P0, DESIGN.md §10) ----
+     TOUJOURS sombre, même en thème clair (décision du 30/09) : c'est un moment
+     « cinéma ». Couleurs donc écrites en dur, pas en variables de thème.
+     Trois paliers de halo (data-palier) au lieu des confettis d'avant :
+     1 courant/commun · 2 peu commun/rare · 3 épique/légendaire. */
+  #revealWrap{ position:fixed; inset:0; z-index:200; display:flex; align-items:center; justify-content:center; background:rgba(5,5,7,.92); backdrop-filter:blur(6px); animation:rvFade .22s ease-out; }
   @keyframes rvFade{ from{opacity:0} }
-  .rv-card{ width:min(78vw,320px); border-radius:18px; padding:26px 20px 22px; text-align:center; background:linear-gradient(165deg,var(--panel),#101014); border:1px solid var(--line); position:relative; animation:rvPop .55s cubic-bezier(.2,1.6,.35,1); box-shadow:0 0 60px -10px var(--rv,#666); }
-  @keyframes rvPop{ 0%{transform:scale(.4) rotateY(90deg);opacity:0} 60%{transform:scale(1.06) rotateY(0)} 100%{transform:scale(1)} }
-  .rv-card .ph{ width:100%; aspect-ratio:4/3; border-radius:12px; overflow:hidden; background:#0a0a0c; display:flex; align-items:center; justify-content:center; border:1px solid var(--line); }
+  .rv-card{ width:min(80vw,320px); border-radius:18px; padding:24px 20px 20px; text-align:center; background:#161618; border:1px solid #27272a; color:#f4f4f5; position:relative; animation:rvPop .3s cubic-bezier(.2,.8,.2,1); box-shadow:0 0 0 0 transparent; }
+  .rv-card[data-palier="1"]{ animation:rvPop .3s cubic-bezier(.2,.8,.2,1), rvHalo1 .4s ease-out forwards; }
+  .rv-card[data-palier="2"]{ animation:rvPop .3s cubic-bezier(.2,.8,.2,1), rvHalo2 .4s ease-out forwards; }
+  .rv-card[data-palier="3"]{ animation:rvPop .3s cubic-bezier(.2,.8,.2,1), rvHalo3 .4s ease-out forwards; }
+  @keyframes rvPop{ from{ transform:translateY(14px); opacity:0 } }
+  @keyframes rvHalo1{ to{ box-shadow:0 0 28px -14px var(--rv) } }
+  @keyframes rvHalo2{ to{ box-shadow:0 0 46px -12px var(--rv) } }
+  @keyframes rvHalo3{ to{ box-shadow:0 0 72px -8px var(--rv) } }
+  .rv-card .ph{ width:100%; aspect-ratio:4/3; border-radius:12px; overflow:hidden; background:#0a0a0c; display:flex; align-items:center; justify-content:center; border:1px solid #27272a; }
   .rv-card .ph img{ width:100%; height:100%; object-fit:cover; }
-  .rv-new{ font:700 10px/1 var(--mono); letter-spacing:.2em; text-transform:uppercase; color:var(--rv,#fff); margin-bottom:12px; }
-  .rv-name{ font:700 20px/1.2 var(--sans); margin-top:14px; }
-  .rv-sub{ font:400 13px/1.3 var(--sans); color:var(--muted); margin-top:4px; }
-  .rv-pts{ display:inline-flex; margin-top:12px; padding:7px 14px; border-radius:999px; font:700 13px/1 var(--mono); background:color-mix(in srgb,var(--rv) 18%,transparent); color:var(--rv,#fff); }
-  .rv-tap{ margin-top:16px; font:500 11px/1 var(--mono); color:var(--dim); }
-  .cf{ position:absolute; top:-6px; width:8px; height:14px; border-radius:2px; opacity:.9; animation:cfFall 1.4s ease-in forwards; }
-  @keyframes cfFall{ to{ transform:translateY(110vh) rotate(720deg); opacity:0; } }
+  .rv-new{ font:700 10px/1 var(--mono); letter-spacing:.2em; text-transform:uppercase; color:#a1a1aa; margin-bottom:12px; }
+  .rv-rar{ display:inline-flex; align-items:center; gap:7px; margin-top:14px; font:700 10px/1 var(--mono); letter-spacing:.16em; text-transform:uppercase; color:var(--rv); }
+  .rv-rar i{ width:8px; height:8px; border-radius:50%; background:var(--rv); }
+  .rv-name{ font:700 21px/1.2 var(--sans); margin-top:8px; color:#f4f4f5; }
+  .rv-sub{ font:400 13px/1.3 var(--sans); color:#a1a1aa; margin-top:4px; }
+  .rv-pts{ display:inline-flex; margin-top:12px; padding:7px 14px; border-radius:999px; font:700 13px/1 var(--mono); background:color-mix(in srgb,var(--rv) 16%,transparent); color:var(--rv); }
+  .rv-tap{ display:block; margin:16px auto 0; padding:8px 12px; font:500 11px/1 var(--mono); color:#71717a; }
+
+  /* ---- Capture : analyse et résultats (P0 E3–E4) ---- */
+  .p0-lot{ font:600 11px/1 var(--mono); letter-spacing:.12em; text-transform:uppercase; color:var(--muted2); margin:0 0 10px; }
+  .p0-ph{ border-radius:12px; overflow:hidden; border:1px solid var(--line2); background:#0a0a0c; }
+  .p0-ph img{ width:100%; display:block; object-fit:cover; max-height:38vh; }
+  .p0-ph.grande img{ max-height:52vh; }
+  .p0-etat{ margin-top:16px; text-align:center; }
+  .p0-k{ font:600 10px/1 var(--mono); letter-spacing:.16em; text-transform:uppercase; color:var(--muted2); }
+  .p0-t{ font:700 19px/1.25 var(--sans); margin-top:8px; }
+  .p0-s{ font:400 13px/1.45 var(--sans); color:var(--muted); margin-top:6px; }
+  .p0-d{ font:500 11px/1 var(--mono); color:var(--muted2); margin-top:8px; }
+  .p0-barre{ height:2px; border-radius:2px; background:var(--line); overflow:hidden; margin:16px auto 0; width:140px; }
+  .p0-barre i{ display:block; height:100%; width:40%; background:var(--muted); border-radius:2px; animation:p0Barre .9s ease-in-out infinite alternate; }
+  @keyframes p0Barre{ from{ transform:translateX(-10%) } to{ transform:translateX(160%) } }
+  .p0-actions{ display:flex; flex-direction:column; gap:8px; margin-top:18px; }
+  .p0-actions .btn{ width:100%; display:flex; align-items:center; justify-content:center; gap:6px; text-align:center; min-height:46px; }
+  .p0-actions .btn .icon{ width:18px; height:18px; flex:none; }
+  .p0-lien{ display:block; width:100%; margin-top:10px; padding:10px; text-align:center; font:500 13px/1.3 var(--sans); color:var(--muted); min-height:44px; }
+  .p0-cands{ display:flex; flex-direction:column; gap:8px; margin-top:14px; }
+  .p0-cand{ display:flex; align-items:center; justify-content:space-between; gap:12px; width:100%; min-height:52px; padding:12px 14px; border:1px solid var(--line); border-radius:10px; background:var(--panel2); text-align:left; animation:p0Entre .12s ease-out both; }
+  .p0-cand:active{ border-color:var(--line2); }
+  .p0-cand b{ font:600 14px/1.25 var(--sans); }
+  .p0-cand small{ display:block; font:400 11px/1.3 var(--mono); color:var(--muted2); margin-top:3px; }
+  .p0-cand .pc{ font:700 13px/1 var(--mono); color:var(--muted); flex:none; }
+  .p0-cand:nth-child(2){ animation-delay:.12s } .p0-cand:nth-child(3){ animation-delay:.24s }
+  @keyframes p0Entre{ from{ opacity:0; transform:translateY(6px) } }
+  .p0-etat, .p0-cands, .p0-actions{ animation:p0Entre .2s ease-out both; }
+  .src-list{ display:flex; flex-direction:column; gap:10px; }
+  .src-row{ display:flex; align-items:center; gap:14px; width:100%; min-height:64px; padding:12px 14px; border:1px solid var(--line); border-radius:12px; background:var(--panel2); text-align:left; animation:p0Entre .2s ease-out both; }
+  .src-row:nth-child(2){ animation-delay:.03s } .src-row:nth-child(3){ animation-delay:.06s }
+  .src-row:active{ border-color:var(--red); }
+  .src-row .icon{ width:24px; height:24px; color:var(--muted); flex:none; }
+  .src-row b{ display:block; font:600 14px/1.2 var(--sans); }
+  .src-row small{ display:block; font:400 12px/1.3 var(--sans); color:var(--muted2); margin-top:3px; }
+
+  /* ---- Après l'ajout : ce que ça débloque, fiche mise à jour, lot (P0 E7–E9) ---- */
+  .p0-tete{ display:flex; align-items:center; gap:12px; }
+  .p0-tete .mini{ width:64px; height:48px; border-radius:8px; overflow:hidden; flex:none; background:#0a0a0c; border:1px solid var(--line); }
+  .p0-tete .mini img{ width:100%; height:100%; object-fit:cover; }
+  .p0-tete b{ display:block; font:700 15px/1.25 var(--sans); }
+  .p0-tete small{ display:block; font:400 12px/1.3 var(--sans); color:var(--muted); margin-top:2px; }
+  .p0-gains{ display:flex; flex-direction:column; gap:14px; margin-top:18px; }
+  .p0-gain .rail-head{ display:flex; justify-content:space-between; gap:10px; font-size:13px; }
+  .p0-gain .rail-head .v{ font-family:var(--mono); color:var(--muted); }
+  .p0-badge{ display:inline-flex; align-items:center; gap:6px; margin-top:6px; padding:4px 9px; border-radius:999px; border:1px solid var(--line2); font:600 11px/1 var(--mono); color:var(--txt); }
+  .p0-vchips{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .p0-lotliste{ display:flex; flex-direction:column; gap:6px; margin-top:14px; max-height:40vh; overflow-y:auto; }
+  .p0-lotliste button{ display:flex; align-items:center; gap:10px; width:100%; min-height:44px; padding:8px 10px; border:1px solid var(--line); border-radius:10px; background:var(--panel2); text-align:left; font:500 13px/1.25 var(--sans); }
+  .p0-lotliste .dot{ width:8px; height:8px; border-radius:50%; flex:none; }
+  #p0Flash{ position:fixed; left:50%; top:calc(12px + var(--st)); z-index:230; transform:translateX(-50%); display:flex; align-items:center; gap:10px; width:min(92vw,360px); padding:8px 12px 8px 8px; border-radius:12px; background:#161618; border:1px solid #27272a; color:#f4f4f5; box-shadow:0 0 30px -12px var(--rv); pointer-events:none; animation:p0Flash 1.6s ease-out forwards; }
+  #p0Flash img{ width:52px; height:40px; border-radius:7px; object-fit:cover; flex:none; }
+  #p0Flash b{ display:block; font:600 13px/1.2 var(--sans); }
+  #p0Flash small{ display:block; font:700 10px/1 var(--mono); letter-spacing:.12em; text-transform:uppercase; color:var(--rv); margin-top:4px; }
+  @keyframes p0Flash{ 0%{ opacity:0; transform:translate(-50%,-8px) } 12%,80%{ opacity:1; transform:translate(-50%,0) } 100%{ opacity:0 } }
+
+  /* Réglage « réduire les animations » du téléphone : plus aucun mouvement dans
+     le parcours de capture (DESIGN.md §18) ; l'information reste identique. */
+  @media (prefers-reduced-motion: reduce){
+    #revealWrap, .rv-card, .p0-etat, .p0-cands, .p0-actions, .p0-cand, .src-row{ animation:none !important; }
+    .rv-card[data-palier="1"]{ box-shadow:0 0 28px -14px var(--rv); }
+    .rv-card[data-palier="2"]{ box-shadow:0 0 46px -12px var(--rv); }
+    .rv-card[data-palier="3"]{ box-shadow:0 0 72px -8px var(--rv); }
+    .p0-barre i{ animation:none; width:100%; opacity:.5; }
+    #p0Flash{ animation:none; opacity:1; }
+  }
 
   /* ---- Rang & missions ---- */
   .rankbar{ display:flex; align-items:center; gap:12px; padding:12px 14px; }
@@ -429,13 +504,6 @@
   .cfav .icon{ width:13px; height:13px; fill:currentColor; }
 
   /* ---- Popup de reconnaissance ---- */
-  #recogWrap{ position:fixed; inset:0; z-index:210; display:flex; align-items:center; justify-content:center; background:rgba(5,5,7,.88); backdrop-filter:blur(6px); animation:rvFade .2s ease; padding:24px; }
-  .rc-card{ width:min(88vw,340px); border-radius:16px; padding:20px; background:var(--panel); border:1px solid var(--line); animation:rvPop .4s cubic-bezier(.2,1.6,.35,1); }
-  .rc-k{ font:600 10px/1 var(--mono); letter-spacing:.15em; text-transform:uppercase; color:var(--dim); margin-bottom:10px; }
-  .rc-name{ font:700 19px/1.25 var(--sans); }
-  .rc-conf{ margin-top:6px; font:500 12px/1 var(--mono); color:var(--rare); }
-  .rc-actions{ display:flex; flex-direction:column; gap:8px; margin-top:18px; }
-  .rc-actions .btn{ width:100%; text-align:center; }
 
   /* ---- Confirmation & saisie in-app (remplacent confirm()/prompt()) ---- */
   #confirmWrap{ position:fixed; inset:0; z-index:260; display:flex; align-items:center; justify-content:center; background:rgba(5,5,7,.88); backdrop-filter:blur(6px); animation:rvFade .2s ease; padding:24px; }
@@ -2978,6 +3046,10 @@ const VARIANTS = {
   // et « voiture non reconnue » produisaient tous le même silence, rendant tout diagnostic
   // terrain impossible (DT-07).
   let lastAiError = null;
+  /* Nature de l'échec, pour que l'écran de capture dise la BONNE chose (P0 E4d) :
+     'relais' (aucun relais) · 'quota' (429, limite du jour) · 'panne' (relais en
+     erreur ou réponse inattendue) · 'delai' (15 s) · 'horsligne' (injoignable). */
+  let lastAiErrorKind = null;
   /* Dernier résultat complet du matcher (statut, marge, scores détaillés).
      identifyCar() ne renvoie que {id, confidence} pour ne rien casser chez
      ses appelants ; l'interface qui veut distinguer CONFIRME / AMBIGU /
@@ -2991,9 +3063,9 @@ const VARIANTS = {
       ? window.GMMatcher : null;
   }
   async function identifyCar(thumbDataUrl) {
-    lastAiError = null;
+    lastAiError = null; lastAiErrorKind = null;
     const url = resolveAiEndpoint();
-    if (!/^https:\/\//.test(url)) { lastAiError = "Aucun relais IA valide — saisie manuelle"; return []; }
+    if (!/^https:\/\//.test(url)) { lastAiError = "Aucun relais IA valide — saisie manuelle"; lastAiErrorKind = "relais"; return []; }
     try {
       const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 15000);
       /* Compte connecté → quota du compte au relais (plus large que l'anonyme).
@@ -3015,10 +3087,11 @@ const VARIANTS = {
       if (!res.ok) {
         let msg = ""; try { msg = String((await res.json()).error || "").slice(0, 200); } catch {}
         lastAiError = (res.status === 429 && msg) ? msg : `Relais IA indisponible (HTTP ${res.status})`;
+        lastAiErrorKind = res.status === 429 ? "quota" : "panne";
         return [];
       }
       const guesses = await res.json();
-      if (!Array.isArray(guesses)) { lastAiError = "Réponse du relais IA inattendue"; return []; }
+      if (!Array.isArray(guesses)) { lastAiError = "Réponse du relais IA inattendue"; lastAiErrorKind = "panne"; return []; }
       /* Rapprochement délégué à gm-matcher.js quand il est là : il sépare
          aiConfidence / catalogScore / finalConfidence et expose la marge
          entre les deux premiers candidats, ce que matchCatalog() ne sait
@@ -3047,6 +3120,7 @@ const VARIANTS = {
       lastAiError = (e && e.name === "AbortError")
         ? "Relais IA : délai dépassé (15 s)"
         : "Relais IA injoignable — hors ligne ?";
+      lastAiErrorKind = (e && e.name === "AbortError") ? "delai" : "horsligne";
       return [];
     }
   }
@@ -3063,6 +3137,69 @@ const VARIANTS = {
   /* ---------- Capture (caméra + galerie) ---------- */
   let stream = null, draft = null;
   function stopCamera() { if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; } }
+
+  /* ---- Parcours P0 « capture → révélation » (design/SPEC-P0-*.md) ----
+     Textes réunis ici pour le futur chantier i18n (I18N.md). L'app parle à la
+     première personne quand elle hésite (décision du propriétaire, 30/09). */
+  const TXT_P0 = {
+    analyseK: "Analyse en cours", analyseT: "J'essaie d'identifier cette voiture…", analyseD: "Jusqu'à 15 s",
+    manuel: "Choisir manuellement", nonClasse: "Voiture introuvable → Non classé",
+    trouveK: "Modèle trouvé", confiance: "Confiance de reconnaissance", oui: "Oui, c'est elle", non: "Ce n'est pas mon véhicule",
+    ambiguT: "J'hésite entre plusieurs modèles", ambiguS: "Vérifie celui qui correspond à ta voiture.", aucunDeCes: "Aucun de ces modèles",
+    faibleT: "Je ne suis pas sûr", faibleS: "Voici les pistes que j'ai trouvées.",
+    aucuneT: "Je n'ai pas trouvé de correspondance sûre", aucuneS: "Tu peux choisir la voiture manuellement.",
+    erreurs: {
+      horsligne: ["Tu es hors ligne", "Choisis la voiture manuellement."],
+      delai: ["L'analyse a pris trop de temps", "Choisis la voiture manuellement."],
+      quota: ["La reconnaissance n'est plus disponible aujourd'hui", "Choisis la voiture à la main, ou reviens demain."],
+      relais: ["Reconnaissance indisponible", "Choisis la voiture manuellement."],
+      panne: ["Reconnaissance indisponible", "Choisis la voiture manuellement."],
+    },
+    nouvelle: "Nouvelle capture", toucher: "Toucher pour continuer",
+    debloqueT: "Ce que ça débloque", plusUn: "+1 voiture au garage", voirFiche: "Voir la fiche",
+    majT: "Fiche mise à jour", majPriseT: "Prise mise à jour", majS: "Ta prise a été ajoutée à sa fiche.", photoAjoutee: "Photo ajoutée",
+    lotT: "Lot terminé", terminer: "Terminer",
+  };
+  /* Jeton global de l'analyse en cours : un résultat qui arrive APRÈS que le
+     joueur a choisi à la main, repris une photo, fermé la feuille ou ouvert une
+     autre capture est ignoré — il n'écrase jamais un choix (SPEC-P0-ARBITRAGES P1). */
+  let p0Jeton = 0;
+  const palierRarete = (r) => { const k = (RARITY[r] || RARITY.courant).rank; return k >= RARITY.epique.rank ? 3 : k >= RARITY.peucommun.rank ? 2 : 1; };
+  const nomVoiture = (c) => `${c.c} ${escapeHtml(c.brand)} ${escapeHtml(c.model)}`;
+  const lotHTML = () => draft && draft.lot ? `<p class="p0-lot">Photo ${draft.lot.index} / ${draft.lot.total}</p>` : "";
+
+  function p0ResultatHTML() {
+    const r = draft.resultat, T = TXT_P0;
+    const cand = (x) => `<button class="p0-cand" data-cap="choix" data-id="${escapeHtml(x.id)}"><span><b>${nomVoiture(CARS_BY_ID[x.id])}</b></span><span class="pc">${Math.round(x.confidence * 100)} %</span></button>`;
+    const manuel = (principal) => `<button class="btn${principal ? " red" : ""}" data-cap="manuel"${principal ? "" : ""}>${T.manuel}</button>`;
+    const nonClasse = `<button class="p0-lien" data-cap="nonclasse">${T.nonClasse}</button>`;
+    if (r.type === "confirme") {
+      const x = r.cands[0];
+      return `<div class="p0-etat"><div class="p0-k">${T.trouveK}</div><div class="p0-t">${nomVoiture(CARS_BY_ID[x.id])}</div><div class="p0-s">${T.confiance} : ${Math.round(x.confidence * 100)} %</div></div>
+        <div class="p0-actions"><button class="btn red" data-cap="choix" data-id="${escapeHtml(x.id)}">${icon("check","icon")}&nbsp; ${T.oui}</button><button class="btn" data-cap="manuel">${T.non}</button></div>`;
+    }
+    if (r.type === "ambigu") {
+      const ecart = typeof r.marge === "number" ? Math.round(r.marge * 100) : null;
+      return `<div class="p0-etat"><div class="p0-t">${T.ambiguT}</div><div class="p0-s">${T.ambiguS}</div></div>
+        <div class="p0-cands">${r.cands.map(cand).join("")}</div>
+        ${ecart !== null ? `<p class="p0-d" style="text-align:center">Écart : ${ecart} point${ecart > 1 ? "s" : ""}</p>` : ""}
+        <button class="p0-lien" data-cap="manuel">${T.aucunDeCes}</button>`;
+    }
+    if (r.type === "faible") {
+      return `<div class="p0-etat"><div class="p0-t">${T.faibleT}</div><div class="p0-s">${T.faibleS}</div></div>
+        <div class="p0-cands">${r.cands.map(cand).join("")}</div>
+        <div class="p0-actions">${manuel(false)}</div>${nonClasse}`;
+    }
+    if (r.type === "aucune") {
+      return `<div class="p0-etat"><div class="p0-t">${T.aucuneT}</div><div class="p0-s">${T.aucuneS}</div></div>
+        <div class="p0-actions">${manuel(true)}</div>${nonClasse}`;
+    }
+    // Erreur : le quota affiche le message PRÉCIS du relais (appareil ou service entier).
+    const [titre, texte] = T.erreurs[r.erreur] || T.erreurs.panne;
+    const detail = r.erreur === "quota" && r.message ? r.message : texte;
+    return `<div class="p0-etat"><div class="p0-k">Reconnaissance</div><div class="p0-t">${titre}</div><div class="p0-s">${escapeHtml(detail)}</div></div>
+      <div class="p0-actions">${manuel(true)}</div>`;
+  }
 
   function openCapture(lockCarId) {
     const rec = lockCarId ? state.spots.get(lockCarId) : null;
@@ -3094,14 +3231,28 @@ const VARIANTS = {
     const body = $("#capBody");
     if (draft.step === "source") {
       body.innerHTML = `
-        <div class="src-grid">
-          <button class="src" data-cap="camera">${icon("camera")}<small>Appareil photo</small></button>
-          <button class="src" data-cap="gallery">${icon("image")}<small>Importer une photo</small></button>
+        <div class="src-list">
+          <button class="src-row" data-cap="camera">${icon("camera")}<span><b>Appareil photo</b><small>Prendre une photo</small></span></button>
+          <button class="src-row" data-cap="gallery">${icon("image")}<span><b>Importer une photo</b><small>Choisir une photo</small></span></button>
+          ${draft.lockCar ? "" : `<button class="src-row" data-cap="batch">${icon("image")}<span><b>Importer un lot</b><small>Choisir plusieurs photos</small></span></button>`}
         </div>
-        <button class="btn" data-cap="batch" style="width:100%;margin-top:10px">${icon("image","icon")}&nbsp; Importer un lot (plusieurs photos)</button>
-        <p class="dim" style="font-size:12px;margin-top:14px;text-align:center;font-family:var(--mono)">L'appareil photo capture en direct · l'import sert aux voitures déjà photographiées · le lot enchaîne toute ta galerie (Monaco, Prenois…)</p>
         <input type="file" id="fileInput" accept="image/*" style="display:none" />
       `;
+    } else if (draft.step === "analyse") {
+      // E3 : la photo, et l'annonce claire que l'analyse tourne (plus de formulaire prématuré).
+      body.innerHTML = `
+        ${lotHTML()}
+        <div class="p0-ph grande"><img src="${draft.photo}" alt="Ta photo" /></div>
+        <div class="p0-etat" role="status" aria-live="polite">
+          <div class="p0-k">${TXT_P0.analyseK}</div>
+          <div class="p0-s" style="font-size:15px;color:var(--txt)">${TXT_P0.analyseT}</div>
+          <div class="p0-barre" aria-hidden="true"><i></i></div>
+          <div class="p0-d">${TXT_P0.analyseD}</div>
+        </div>
+        <button class="p0-lien" data-cap="manuel">${TXT_P0.manuel}</button>
+      `;
+    } else if (draft.step === "resultat") {
+      body.innerHTML = `${lotHTML()}<div class="p0-ph"><img src="${draft.photo}" alt="Ta photo" /></div><div role="status" aria-live="polite">${p0ResultatHTML()}</div>`;
     } else if (draft.step === "camera") {
       body.innerHTML = `
         <div class="cam" id="camWrap">
@@ -3118,6 +3269,7 @@ const VARIANTS = {
         ? `<div class="spec" style="margin-top:4px"><dt>Modèle</dt><dd>${CARS_BY_ID[draft.lockCar].c} ${escapeHtml(CARS_BY_ID[draft.lockCar].brand)} ${escapeHtml(CARS_BY_ID[draft.lockCar].model)}</dd></div>`
         : modelPickerHTML();
       body.innerHTML = `
+        ${lotHTML()}
         <div class="preview">
           <img src="${draft.photo}" alt="prise" />
           <div class="re">
@@ -3195,7 +3347,7 @@ const VARIANTS = {
   }
   function modelPickerHTML() {
     return `
-      <div class="search">${icon("search")}<input id="pickQ" placeholder="Quel modèle ?" value="${escapeHtml(draft.q)}" /></div>
+      <div class="search">${icon("search")}<input id="pickQ" placeholder="Rechercher une voiture" value="${escapeHtml(draft.q)}" /></div>
       <div class="picklist" id="pickList">${pickItemsHTML()}</div>
       <div id="customZone">${customZoneHTML()}</div>`;
   }
@@ -3207,8 +3359,9 @@ const VARIANTS = {
       video.srcObject = stream;
       await video.play().catch(()=>{});
     } catch (e) {
-      if (wrap) wrap.innerHTML = `<div class="err">${icon("camera","icon")}<div>Accès à l'appareil photo indisponible.<br>Autorise la caméra, ou utilise l'import galerie.</div>
-        <button class="btn" data-cap="gallery">${icon("image","icon")}&nbsp; Importer une photo</button></div>`;
+      if (wrap) wrap.innerHTML = `<div class="err">${icon("camera","icon")}<div><b style="color:var(--txt)">Accès à l'appareil photo refusé</b><br>Autorise l'accès à l'appareil photo dans les réglages de ton téléphone.</div>
+        <button class="btn red" data-cap="gallery">${icon("image","icon")}&nbsp; Importer une photo</button>
+        <button class="btn" data-cap="source">Retour</button></div>`;
     }
   }
 
@@ -3222,46 +3375,29 @@ const VARIANTS = {
     await afterPhoto();
   }
 
+  /* E3 → E4 : on n'affiche plus le formulaire pendant que la reconnaissance
+     tourne. Le résultat du matcher choisit l'écran — sûr, ambigu, pistes
+     faibles, rien, ou une erreur NOMMÉE — au lieu d'une popup unique qui
+     présentait une hésitation comme une certitude et restait muette sur
+     « rien trouvé » (design/CARTE-ECRANS.md §8). */
   async function afterPhoto() {
-    draft.candidates = [];
-    draft.step = "form";
-    renderCaptureBody();
-    if (draft.lockCar) return; // voiture déjà verrouillée (ajout de photo depuis une fiche) : pas de reconnaissance
-    try {
-      const cands = await identifyCar(draft.photo);
-      const valid = cands.filter(c => CARS_BY_ID[c.id] && !CARS_BY_ID[c.id].custom);
-      if (valid.length) showRecogPopup(valid[0]);
-      else if (lastAiError) toast(lastAiError); // silence volontaire si le relais a répondu sans trouver
-    } catch {}
-  }
-
-  /* ---------- Popup de reconnaissance photo ---------- */
-  function showRecogPopup(cand) {
-    const c = CARS_BY_ID[cand.id]; if (!c) return;
-    const pct = typeof cand.confidence === "number" ? Math.round(cand.confidence * (cand.confidence <= 1 ? 100 : 1)) : null;
-    const w = document.createElement("div");
-    w.id = "recogWrap";
-    w.innerHTML = `
-      <div class="rc-card">
-        <div class="rc-k">${icon("search","icon")} Modèle trouvé</div>
-        <div class="rc-name">${c.c} ${escapeHtml(c.brand)} ${escapeHtml(c.model)}</div>
-        ${pct!==null ? `<div class="rc-conf">Confiance de reconnaissance : ${pct}%</div>` : ""}
-        <div class="rc-actions">
-          <button class="btn red" data-recog="yes">${icon("check","icon")}&nbsp; Oui, c'est elle</button>
-          <button class="btn" data-recog="no">Ce n'est pas mon véhicule</button>
-        </div>
-      </div>`;
-    document.body.appendChild(w);
-    w.addEventListener("click", (e) => {
-      if (e.target !== w && !e.target.closest("[data-recog]")) return;
-      const act = e.target.closest("[data-recog]")?.dataset.recog;
-      if (act === "yes") { draft.carId = cand.id; draft.candidates = [cand.id]; }
-      // "no" ou clic hors carte : on laisse le champ de recherche du formulaire ouvert pour une saisie manuelle
-      w.remove();
-      renderCaptureBody();
-      if (act === "yes") { const el = document.querySelector(`[data-pick="${cand.id}"]`); if (el) el.scrollIntoView({block:"nearest"}); }
-      else { const q = $("#pickQ"); if (q) q.focus(); }
-    });
+    draft.candidates = []; draft.resultat = null;
+    // Photo ajoutée depuis une fiche, ou modèle déjà choisi (photo reprise) : rien à identifier.
+    if (draft.lockCar || draft.carId) { draft.step = "form"; renderCaptureBody(); return; }
+    const jeton = draft.jeton = ++p0Jeton;
+    draft.step = "analyse"; renderCaptureBody();
+    let cands = [];
+    try { cands = await identifyCar(draft.photo); } catch {}
+    if (!draft || draft.jeton !== jeton || draft.step !== "analyse" || !$("#capBody")) return;   // résultat tardif : ignoré
+    const valid = cands.filter(c => CARS_BY_ID[c.id] && !CARS_BY_ID[c.id].custom).slice(0, 3);
+    draft.candidates = valid.map(c => c.id);
+    let type;
+    if (lastAiErrorKind) type = "erreur";
+    else if (lastMatch) type = lastMatch.statut === "CONFIRME" ? "confirme" : lastMatch.statut === "AMBIGU" ? "ambigu" : "faible";
+    else type = "confirme";   // repli matchCatalog (gm-matcher.js absent) : pas de statut, on propose le meilleur
+    if (type !== "erreur" && !valid.length) type = "aucune";
+    draft.resultat = { type, cands: valid, marge: lastMatch ? lastMatch.marge : null, erreur: lastAiErrorKind, message: lastAiError };
+    draft.step = "resultat"; renderCaptureBody();
   }
 
   async function handleFile(file) {
@@ -3334,19 +3470,27 @@ const VARIANTS = {
     state.flash = id;
     const isNew = !prev;
 
-    // Import par lot : on enchaîne sans fermer
+    if (draft.lot) { if (isNew) draft.lot.nouvelles.push(id); else draft.lot.majs++; }
+
+    // Import par lot : on enchaîne sans fermer. Révélation COMPACTE, non bloquante
+    // (décision du 30/09) : un lot de 30 photos ne doit pas coûter 30 écrans à toucher.
     if (draft.queue && draft.queue.length) {
       const f = draft.queue.shift();
-      draft.carId = null; draft.photo = null; draft.note = ""; draft.candidates = []; draft.q = "";
-      toast(`${CARS_BY_ID[id].model} ajoutée ✓ · reste ${draft.queue.length + 1}`);
+      draft.carId = null; draft.photo = null; draft.note = ""; draft.candidates = []; draft.q = ""; draft.resultat = null; draft.showCustom = false;
+      if (draft.lot) draft.lot.index++;
+      if (isNew) flashCapture(id); else toast(refus || `${CARS_BY_ID[id].model} : ${TXT_P0.majT.toLowerCase()}`);
       await handleFile(f);
       checkMissions();
       return;
     }
 
+    const lot = draft.lot, verrou = draft.lockCar;
     closeOverlay();
     render();
-    if (isNew) showReveal(id); else toast(refus || "Fiche mise à jour");
+    if (lot) showBilanLot(lot);                                              // fin de lot : un seul bilan
+    else if (verrou && !refus) { openDetail(id); toast(TXT_P0.photoAjoutee); } // photo ajoutée depuis la fiche : on y revient
+    else if (isNew) showReveal(id);                                          // E6 puis E7
+    else showMaj(id, refus);                                                 // E8
     checkMissions();
     setTimeout(() => { if (state.flash === id) { state.flash = null; render(); } }, 1500); // sinon la classe .flash restait collée (DT-18)
   }
@@ -4047,28 +4191,113 @@ const VARIANTS = {
   }
 
   /* ====================================================== RÉVÉLATION DE CAPTURE */
+  /* E6 — Révélation. Plus de confettis (DESIGN.md §10) : la rareté s'exprime
+     par un halo en trois paliers et par la vibration. `.rv-card img` est un
+     contrat (recadrage de gm-specs.js) : ne pas renommer. */
   function showReveal(carId) {
     const c = CARS_BY_ID[carId]; if (!c) return;
-    const rec = state.spots.get(carId), col = rColor(c.r), ph = cover(rec);
-    const big = RARITY[c.r].rank >= RARITY.epique.rank;
-    const conf = big ? Array.from({length:34}, (_,i) => {
-      const cols = [col, "#ffffff", "#e0322c", "#f5c542"];
-      return `<span class="cf" style="left:${(Math.random()*100).toFixed(1)}%;background:${cols[i%4]};animation-delay:${(Math.random()*.5).toFixed(2)}s;animation-duration:${(1.1+Math.random()).toFixed(2)}s"></span>`;
-    }).join("") : "";
+    const rec = state.spots.get(carId), col = rColor(c.r), ph = cover(rec), palier = palierRarete(c.r);
     const w = document.createElement("div");
     w.id = "revealWrap"; w.style.setProperty("--rv", col);
-    w.innerHTML = `${conf}
-      <div class="rv-card" style="--rv:${col}">
-        <div class="rv-new">Nouvelle capture — ${RARITY[c.r].label}</div>
-        <div class="ph">${ph ? `<img src="${ph}" />` : `<svg viewBox="0 0 24 24" class="icon" style="width:56px;height:56px;color:${col}">${P.car}</svg>`}</div>
-        <div class="rv-name">${c.c} ${escapeHtml(c.model)}</div>
-        <div class="rv-sub">${escapeHtml(c.brand)} · ${escapeHtml(c.cat)}</div>
+    w.setAttribute("role", "dialog"); w.setAttribute("aria-label", `${TXT_P0.nouvelle} : ${c.brand} ${c.model}`);
+    w.innerHTML = `
+      <div class="rv-card" data-palier="${palier}" style="--rv:${col}">
+        <div class="rv-new">${TXT_P0.nouvelle}</div>
+        <div class="ph">${ph ? `<img src="${ph}" alt="" />` : `<svg viewBox="0 0 24 24" class="icon" style="width:56px;height:56px;color:${col}">${P.car}</svg>`}</div>
+        <div class="rv-rar"><i></i>${escapeHtml(RARITY[c.r].label)}</div>
+        <div class="rv-name">${nomVoiture(c)}</div>
+        <div class="rv-sub">${escapeHtml(c.cat)}${c.yr ? ` · ${escapeHtml(c.yr)}` : ""}</div>
         <div class="rv-pts">+${RARITY[c.r].pts} pts</div>
-        <div class="rv-tap">toucher pour continuer</div>
+        <button class="rv-tap">${TXT_P0.toucher}</button>
       </div>`;
-    w.addEventListener("click", () => { w.remove(); openDetail(carId); }, { once:true });
+    w.addEventListener("click", () => { w.remove(); showDebloque(carId); }, { once:true });
     document.body.appendChild(w);
-    if (navigator.vibrate) { try { navigator.vibrate(big ? [40,60,80] : 25); } catch {} }
+    if (navigator.vibrate) { try { navigator.vibrate(palier === 3 ? [40,60,80] : 25); } catch {} }
+  }
+
+  /* Une ligne de progression, dans le langage des rails de complétude du Garage. */
+  const pctCatalogue = (st) => `${st.count && !st.pct ? "moins de 1" : st.pct} % du catalogue`;
+  const railP0 = (label, have, total, extra = "") => `
+    <div class="p0-gain"><div class="rail-head"><span class="l">${label}</span><span class="v">${have} / ${total}</span></div>
+      <div class="rail"><i style="width:${total ? Math.round(have / total * 100) : 0}%"></i></div>${extra}</div>`;
+  /* Collections thématiques de gm-specs.js (onglet Défis) auxquelles appartient la
+     voiture — lues par le contrat window.GMSpecs, jamais par un nom privé. */
+  function collectionsDe(carId) {
+    const GS = window.GMSpecs, out = [];
+    if (!GS || !Array.isArray(GS.COLLECS)) return out;
+    for (const col of GS.COLLECS) {
+      try { if (!col.t(carId)) continue; } catch { continue; }
+      const membres = CARS.filter(x => { try { return col.t(x.id); } catch { return false; } });
+      if (membres.length >= 2) out.push({ n: col.n, have: membres.filter(x => has(x.id)).length, total: membres.length });
+    }
+    return out.slice(0, 2);
+  }
+
+  /* E7 — Ce que ça débloque : uniquement des compteurs réels (computeStats). */
+  function showDebloque(carId) {
+    const c = CARS_BY_ID[carId]; if (!c) return;
+    const st = computeStats(), rec = state.spots.get(carId), ph = cover(rec), col = rColor(c.r);
+    const rr = st.byRarity[c.r], mq = st.brandList.find(x => x.brand === c.brand);
+    const vars = (typeof VARIANTS !== "undefined" && VARIANTS[carId]) || null;
+    const vHave = vars ? vars.filter(v => (rec && rec.variants || []).includes(v)) : [];
+    const lignes = [
+      railP0("Garage", st.count, TOTAL, `<p class="p0-d" style="margin-top:6px">${pctCatalogue(st)}</p>`),
+      rr ? railP0(`<span style="color:${col}">●</span> ${escapeHtml(RARITY[c.r].label)}`, rr.have, rr.total) : "",
+      mq ? railP0(escapeHtml(c.brand), mq.have, mq.total, mq.have === 1 ? `<span class="p0-badge">★ Première ${escapeHtml(c.brand)}</span>` : "") : "",
+      vars ? railP0("Déclinaisons", vHave.length, vars.length, `<div class="p0-vchips">${vars.map(v => `<span class="vchip ${vHave.includes(v) ? "have" : "miss"}">${escapeHtml(v)}</span>`).join("")}</div>`) : "",
+      ...collectionsDe(carId).map(k => railP0(escapeHtml(k.n), k.have, k.total)),
+    ].join("");
+    openSheet(`
+      <div class="sh-head"><h3>${TXT_P0.debloqueT}</h3><button class="iconbtn" data-close="1" aria-label="Fermer">${icon("x")}</button></div>
+      <div class="sh-body">
+        <div class="p0-tete"><div class="mini">${ph ? `<img src="${ph}" alt="" />` : ""}</div>
+          <div><b>${nomVoiture(c)}</b><small>+${RARITY[c.r].pts} pts · ${TXT_P0.plusUn}</small></div></div>
+        <div class="p0-gains">${lignes}</div>
+      </div>
+      <div class="sh-foot"><button class="btn red" data-car="${escapeHtml(carId)}" style="flex:1">${TXT_P0.voirFiche}</button></div>`);
+  }
+
+  /* E8 — Voiture déjà au garage (ou photo refusée au plafond) : pas de fausse
+     révélation, un panneau qui dit ce qui a été gardé. */
+  function showMaj(carId, refus) {
+    const c = CARS_BY_ID[carId]; if (!c) return;
+    const ph = cover(state.spots.get(carId));
+    openSheet(`
+      <div class="sh-head"><h3>${refus ? TXT_P0.majPriseT : TXT_P0.majT}</h3><button class="iconbtn" data-close="1" aria-label="Fermer">${icon("x")}</button></div>
+      <div class="sh-body" id="p0Maj">
+        ${ph ? `<div class="p0-ph"><img src="${ph}" alt="" /></div>` : ""}
+        <div class="p0-etat" role="status"><div class="p0-t">${nomVoiture(c)}</div><div class="p0-s">${escapeHtml(refus || TXT_P0.majS)}</div></div>
+      </div>
+      <div class="sh-foot"><button class="btn" data-close="1" style="flex:1">Fermer</button><button class="btn red" data-car="${escapeHtml(carId)}" style="flex:2">${TXT_P0.voirFiche}</button></div>`);
+  }
+
+  /* E9 — Révélation compacte pendant un lot : non bloquante, disparaît seule. */
+  function flashCapture(carId) {
+    const c = CARS_BY_ID[carId]; if (!c) return;
+    document.getElementById("p0Flash")?.remove();
+    const f = document.createElement("div");
+    f.id = "p0Flash"; f.setAttribute("role", "status"); f.style.setProperty("--rv", rColor(c.r));
+    const ph = cover(state.spots.get(carId));
+    f.innerHTML = `${ph ? `<img src="${ph}" alt="" />` : ""}<div><b>${nomVoiture(c)}</b><small>${escapeHtml(RARITY[c.r].label)} · +${RARITY[c.r].pts} pts</small></div>`;
+    document.body.appendChild(f);
+    setTimeout(() => f.remove(), 1700);
+    if (navigator.vibrate) { try { navigator.vibrate(palierRarete(c.r) === 3 ? [40,60,80] : 20); } catch {} }
+  }
+
+  /* Fin de lot : un seul bilan au lieu d'une révélation par photo. */
+  function showBilanLot(lot) {
+    const st = computeStats(), n = lot.nouvelles.length, m = lot.majs;
+    const titre = n ? `${n} nouvelle${n > 1 ? "s" : ""} voiture${n > 1 ? "s" : ""}` : "Aucune nouvelle voiture";
+    const liste = lot.nouvelles.map(id => { const c = CARS_BY_ID[id]; return c ? `<button data-car="${escapeHtml(id)}"><span class="dot" style="background:${rColor(c.r)}"></span><span style="flex:1">${nomVoiture(c)}</span><small class="p0-d" style="margin:0">+${RARITY[c.r].pts} pts</small></button>` : ""; }).join("");
+    openSheet(`
+      <div class="sh-head"><h3>${TXT_P0.lotT}</h3><button class="iconbtn" data-close="1" aria-label="Fermer">${icon("x")}</button></div>
+      <div class="sh-body" id="p0Bilan">
+        <div class="p0-etat" style="margin-top:0" role="status"><div class="p0-t">${titre}</div>
+          <div class="p0-s">${m} fiche${m > 1 ? "s" : ""} mise${m > 1 ? "s" : ""} à jour · ${lot.total} photos</div></div>
+        ${liste ? `<div class="p0-lotliste">${liste}</div>` : ""}
+        <div class="p0-gains">${railP0("Garage", st.count, TOTAL, `<p class="p0-d" style="margin-top:6px">${pctCatalogue(st)}</p>`)}</div>
+      </div>
+      <div class="sh-foot"><button class="btn red" data-close="1" style="flex:1">${TXT_P0.terminer}</button></div>`);
   }
 
   /* ====================================================== CARTE DE CHASSE */
@@ -4438,10 +4667,18 @@ const VARIANTS = {
     if (t.dataset.car) { openDetail(t.dataset.car); return; }
 
     if (t.dataset.cap) {
+      const cap = t.dataset.cap;
+      if (cap==="manuel") { draft.step="form"; renderCaptureBody(); const q = $("#pickQ"); if (q) q.focus(); return; }
+      if (cap==="choix") { if (CARS_BY_ID[t.dataset.id]) draft.carId = t.dataset.id; draft.step="form"; renderCaptureBody(); const el = draft.carId && document.querySelector(`[data-pick="${draft.carId}"]`); if (el) el.scrollIntoView({block:"nearest"}); return; }
+      if (cap==="nonclasse") { draft.step="form"; draft.showCustom=true; renderCaptureBody(); const b = $("#cBrand"); if (b) b.focus(); return; }
+      if (cap==="source") { stopCamera(); draft.step="source"; renderCaptureBody(); return; }
       if (t.dataset.cap==="camera") { draft.step="camera"; renderCaptureBody(); }
       else if (t.dataset.cap==="batch") {
         const inp = document.createElement("input"); inp.type = "file"; inp.accept = "image/*"; inp.multiple = true;
-        inp.onchange = () => { const fs = [...(inp.files||[])]; if (!fs.length) return; draft.queue = fs.slice(1); handleFile(fs[0]); };
+        inp.onchange = () => { const fs = [...(inp.files||[])]; if (!fs.length) return; draft.queue = fs.slice(1);
+          // Suivi du lot (révélations compactes puis bilan final, décision du 30/09).
+          draft.lot = fs.length > 1 ? { total: fs.length, index: 1, nouvelles: [], majs: 0 } : null;
+          handleFile(fs[0]); };
         inp.click();
       }
       else { const fi = $("#fileInput"); if (fi) fi.click(); }

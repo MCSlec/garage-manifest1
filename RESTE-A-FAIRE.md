@@ -148,9 +148,11 @@ Capacitor autour du même code) :
 
 - [x] Spécification P0 reçue de ChatGPT (`design/SPEC-P0-CHATGPT.md`), confrontée au code
   (`design/SPEC-P0-ARBITRAGES.md`).
-- [ ] 🟡 **Trois arbitrages P0** (`design/SPEC-P0-ARBITRAGES.md` §3) : révélation dans
-  les lots, l'app qui dit « je », révélation toujours sombre ; puis « go » pour
-  l'implémentation.
+- [x] Arbitrages P0 rendus et parcours implémenté (v20.195.0, captures dans
+  `design/p0-captures-apres/`).
+- [ ] 🟡 **Fiche voiture à aligner sur les maquettes** (`design/maquette-fiche-giulia*.png`) :
+  aujourd'hui deux pages à faire glisser, sans onglets ni grille à icônes. Chantier à lancer
+  sur ton « go », écarts de données déjà listés dans `DESIGN.md` §0.
 
 - [ ] Sauvegarde cloud **manuelle** (bouton, choix par défaut) ou automatique.
 - [ ] Photos sauvegardées : **toutes** (choix par défaut, dédupliquées) ou la

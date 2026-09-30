@@ -22,7 +22,7 @@
 |---|---|---|
 | P1 | « Choisir manuellement » **pendant** l'analyse (E3) | Le résultat de l'IA qui arrive ensuite est **ignoré** : il ne doit ni ouvrir une popup, ni écraser un choix déjà fait |
 | P2 | Photo déjà verrouillée (« Ajouter une photo » depuis une fiche) | Pas d'analyse : on passe directement à E5 (comportement actuel conservé) |
-| P3 | Accessibilité | E3 → E4 annoncés aux lecteurs d'écran (`aria-live="polite"`) ; focus sur l'action principale de chaque état |
+| P3 | Accessibilité | E3 → E4 annoncés aux lecteurs d'écran (`aria-live="polite"`, `role="status"`). **Pas** de focus automatique : sur mobile il dessine un contour parasite sans rien apporter de plus que l'annonce |
 | P4 | « Mouvement réduit » | Une seule règle CSS `@media (prefers-reduced-motion: reduce)` pour tout le parcours |
 | P5 | Contrats à préserver (`CARTE-ECRANS.md` §7) | `.rv-card img` (recadrage), `#overlay`, `.sheet`, `#fileInput`, `[data-fab]`, `[data-car]` : conservés tels quels |
 | P6 | Fonctions de données | `saveDraft()`, `identifyCar()`, `GMMatcher.rapprocher()` **inchangées** : le P0 change l'affichage, pas ce qui est enregistré |
@@ -32,6 +32,6 @@
 
 | # | Question | Recommandation de l'agent |
 |---|---|---|
-| D-A | **Lot de photos** : révélation complète + « Ce que ça débloque » **pour chaque** voiture (la spec), ou révélation **compacte** pendant le lot (~1,5 s, sans écran E7) et **un seul bilan** à la fin (« Lot terminé : 7 nouvelles voitures, 2 fiches mises à jour ») ? | **Compacte + bilan final** : un lot de 30 photos de Monaco avec 30 révélations et 30 écrans E7 à toucher devient une corvée |
-| D-B | La spec fait parler l'app **à la première personne** (« J'hésite… », « Je ne suis pas sûr ») ; l'app actuelle ne dit jamais « je » | Garder le « je » : il rend l'hésitation de l'IA humaine et honnête. Mais c'est un ton de marque, donc ton choix |
-| D-C | Révélation **toujours sur fond sombre**, même en thème clair (la spec) | D'accord : c'est un moment « cinéma », comme un écran de lancement |
+| D-A ✅ **compact** (30/09) | **Lot de photos** : révélation complète + « Ce que ça débloque » **pour chaque** voiture (la spec), ou révélation **compacte** pendant le lot (~1,5 s, sans écran E7) et **un seul bilan** à la fin (« Lot terminé : 7 nouvelles voitures, 2 fiches mises à jour ») ? | **Compacte + bilan final** : un lot de 30 photos de Monaco avec 30 révélations et 30 écrans E7 à toucher devient une corvée |
+| D-B ✅ **oui** (30/09) | La spec fait parler l'app **à la première personne** (« J'hésite… », « Je ne suis pas sûr ») ; l'app actuelle ne dit jamais « je » | Garder le « je » : il rend l'hésitation de l'IA humaine et honnête. Mais c'est un ton de marque, donc ton choix |
+| D-C ✅ **oui** (30/09) | Révélation **toujours sur fond sombre**, même en thème clair (la spec) | D'accord : c'est un moment « cinéma », comme un écran de lancement |

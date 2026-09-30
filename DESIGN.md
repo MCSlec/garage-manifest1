@@ -5,7 +5,9 @@
 > est au design ce que `CLAUDE.md` est au code : toute nouvelle interface se
 > vérifie contre lui.
 >
-> Maquette de référence : [`design/maquette-fiche-giulia.png`](design/maquette-fiche-giulia.png)
+> Maquettes de référence : [`design/maquette-fiche-giulia.png`](design/maquette-fiche-giulia.png)
+> et [`design/maquette-fiche-giulia-2.png`](design/maquette-fiche-giulia-2.png) (fiche : onglets
+> Fiche · Photos · Histoire, sélecteur de motorisation, grille technique à icônes, photo du joueur datée).
 > (8 écrans : identification, fiche technique, sélecteur de motorisation,
 > photos, dimensions, générations, historique, fiche éditoriale).
 
@@ -30,6 +32,10 @@ maquette.** L'app affiche ce que contiennent `CARS`, `CATALOGUE_PLUS`, `SPECS`,
 | « Le savais-tu ? » | `INFO.fact` existe pour **499** voitures (déjà affiché « Le saviez-vous ») — **pas** pour la Giulia | Affiché quand il existe |
 | Écran d'identification : « Moteur sélectionné : 2.0 Turbo 200 » | L'IA identifie un **modèle**, jamais une motorisation | La motorisation est choisie par le joueur, pas déduite de la photo |
 | Photos constructeur | Photo **du joueur** (`photos[cover]`) | La maquette illustre la mise en page ; l'app montre la capture réelle |
+| *(maquette 2)* Courbes de puissance / couple | **Aucune donnée**, et aucune source fiable par voiture | Pas de graphique ; le « compteur » de puissance peut afficher `ch` (donnée réelle) |
+| *(maquette 2)* « Élue Voiture de l'année 2018 » | **Faux** : la Voiture européenne de l'année 2018 est le Volvo XC40 | Jamais de texte éditorial non sourcé (`CLAUDE.md` §4) |
+| *(maquette 2)* « Points forts », « Note atelier » | Contenu subjectif **absent** des données | Masqué tant qu'il n'est pas rédigé et relu |
+| *(maquette 2)* « Photo prise dans la rue · 12/09/2024 », n° de collection | **Existent** : date et lieu de la prise ; un numéro d'ordre se calcule | Reprenables tels quels |
 
 Ce qui **existe** et que la maquette reprend fidèlement : confiance de
 l'identification (`GMMatcher.rapprocher()` → `statut`, `finalConfidence`),
