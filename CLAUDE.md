@@ -580,6 +580,7 @@ modification n'impose aucun bump de version.
 | `AUDIT-DEFAUTS.md` | Rapport de la chasse aux défauts du 29/09 : corrigé, et reste à décider |
 | `banc-i18n.js` → `I18N.md` | Recensement des textes d'interface (préparation i18n). `I18N.md` est **généré** : relancer `node banc-i18n.js --md`, ne jamais l'éditer à la main |
 | `index-1.html` | Ancienne copie de travail d'`index.html` — **non servie**, ne pas confondre avec le fichier de prod |
+| `DESIGN.md` + `design/` | **Direction visuelle de référence** (brief du propriétaire du 30/09, maquette de la fiche Giulia) et écarts maquette ↔ données. À lire **avant** toute interface. La maquette n'est **pas** une source de données |
 | `CONTEXT.md` | État projet, décisions, journal des chantiers (le *pourquoi*) |
 | `RESTE-A-FAIRE.md` | Ce que **seul l'humain** peut faire (comptes, paiements, mentions légales, décisions). **À tenir à jour à chaque livraison** : ajouter ce qu'une livraison lui demande, retirer ce qui est fait |
 | `README.md` | Documentation utilisateur/fonctionnelle (le *quoi*) |
