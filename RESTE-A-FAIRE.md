@@ -146,9 +146,11 @@ Capacitor autour du même code) :
 
 ## 5. 🟡 Décisions produit en attente
 
-- [ ] **Design P0 « capture → révélation »** : envoyer à ChatGPT le prompt du
-  30/09 (avec les captures), me rapporter sa réponse telle quelle. Carte écrans ↔
-  code : `design/CARTE-ECRANS.md`.
+- [x] Spécification P0 reçue de ChatGPT (`design/SPEC-P0-CHATGPT.md`), confrontée au code
+  (`design/SPEC-P0-ARBITRAGES.md`).
+- [ ] 🟡 **Trois arbitrages P0** (`design/SPEC-P0-ARBITRAGES.md` §3) : révélation dans
+  les lots, l'app qui dit « je », révélation toujours sombre ; puis « go » pour
+  l'implémentation.
 
 - [ ] Sauvegarde cloud **manuelle** (bouton, choix par défaut) ou automatique.
 - [ ] Photos sauvegardées : **toutes** (choix par défaut, dédupliquées) ou la
