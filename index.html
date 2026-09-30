@@ -3368,8 +3368,7 @@ const VARIANTS = {
     return `
       <div class="detail-hero" style="border-radius:12px;overflow:hidden">
         ${ph ? `<img src="${ph}" />` : `<svg viewBox="0 0 24 24" class="icon" style="width:64px;height:64px;color:${col}">${P.car}</svg>`}
-        <span class="chip" style="position:absolute;left:12px;top:12px;background:rgba(9,9,11,.62);border:1px solid ${col}44;color:var(--muted);backdrop-filter:blur(6px)"><span style="width:8px;height:8px;border-radius:50%;background:${col};box-shadow:0 0 8px ${col}88"></span>${RARITY[c.r].label}</span>
-      </div>
+        <span class="chip" style="position:absolute;left:12px;top:12px;background:rgba(9,9,11,.62);border:1px solid ${col}44;color:var(--muted);backdrop-filter:blur(6px)"><span style="width:8px;height:8px;border-radius:50%;background:${col};box-shadow:0 0 8px ${col}88"></span>${RARITY[c.r].label}</span>      </div>
       ${strip}
       <div class="detail-title"><div><h2>${escapeHtml(c.model)}</h2><p class="muted">${c.c} ${escapeHtml(c.brand)}</p></div>
         <div style="display:flex;align-items:center;gap:8px">
@@ -3521,6 +3520,31 @@ const VARIANTS = {
   }
 
   async function setCover(carId, i) { const rec = state.spots.get(carId); if (!rec) return; rec.cover = i; rec.maj = new Date().toISOString(); await Store.put(rec); openDetail(carId); render(); }
+  /* Supprime UNE photo — appelée par la corbeille posée sur la photo par
+     gm-specs.js (grefferSuppressionPhoto), via window.GMGarage.supprimerPhoto.
+     Avant, gm-specs écrivait lui-même dans IndexedDB : ni `maj`, ni état en
+     mémoire, ni pierre tombale — la photo revenait à la synchronisation.
+     Règle conservée : jamais la DERNIÈRE photo (retirer la voiture est le bon
+     geste). Pierre tombale datée : la fusion cloud ne la fait pas revenir. */
+  async function supprimerPhoto(src) {
+    /* La fiche OUVERTE d'abord : une même image peut figurer dans deux prises
+       (import sur deux voitures) — chercher « la première qui la contient »
+       supprimait la photo d'une autre voiture (défaut de l'ancienne version). */
+    const ouverte = activeDetail && state.spots.get(activeDetail);
+    const rec = ouverte && ouverte.photos.includes(src) ? ouverte
+      : [...state.spots.values()].find(r => Array.isArray(r.photos) && r.photos.includes(src));
+    if (!rec) return { ok: false, raison: "introuvable" };
+    if (rec.photos.length <= 1) return { ok: false, raison: "derniere" };
+    const i = rec.photos.indexOf(src), couv = rec.cover || 0;
+    const h = await empreintePhoto(src), maintenant = new Date().toISOString();
+    rec.photos.splice(i, 1);
+    rec.cover = Math.max(0, Math.min(rec.photos.length - 1, i <= couv ? couv - 1 : couv));   // même règle que l'ancienne version
+    rec.maj = maintenant;
+    await Store.put(rec);
+    if (h) { META.photosSupprimees = { ...(META.photosSupprimees || {}), [h]: maintenant }; await saveMeta(); }
+    toast("Photo supprimée"); if (activeDetail === rec.carId) openDetail(rec.carId); render();
+    return { ok: true };
+  }
   async function toggleFavorite(carId) {
     const rec = state.spots.get(carId); if (!rec) return;
     rec.favorite = !rec.favorite;
@@ -3685,9 +3709,39 @@ const VARIANTS = {
     return out;
   }
   const retireeApres = (prise, supprimes) => !!supprimes[prise.carId] && tDate(prise.maj) <= tDate(supprimes[prise.carId]);
+  /* Pierres tombales de PHOTOS : { empreinte → date de suppression }. Les photos
+     s'additionnent à la fusion : sans elles, une photo supprimée revenait de
+     l'autre appareil. Empreinte = SHA-256 des OCTETS décodés, comme gm-compte.js
+     (le texte base64 d'une même image peut différer). null si le navigateur
+     n'offre pas crypto.subtle (page non sécurisée) : suppression locale seule. */
+  async function empreintePhoto(p) {
+    try {
+      const m = /^data:[^;,]+;base64,(.+)$/.exec(p || ""); if (!m || !crypto.subtle) return null;
+      const bin = atob(m[1]), o = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) o[i] = bin.charCodeAt(i);
+      return [...new Uint8Array(await crypto.subtle.digest("SHA-256", o))].map(b => b.toString(16).padStart(2, "0")).join("");
+    } catch { return null; }
+  }
+  function sanitizePhotosSupprimees(raw) {
+    const out = {};
+    if (raw && typeof raw === "object" && !Array.isArray(raw))
+      for (const [h, d] of Object.entries(raw).filter(([h, d]) => /^[0-9a-f]{64}$/.test(h) && isoValide(d))
+                                               .sort((a, b) => tDate(b[1]) - tDate(a[1])).slice(0, 5000)) out[h] = d;
+    return out;
+  }
+  /* Retire d'une prise les photos portant une pierre tombale ; recale la couverture. */
+  async function sansPhotosSupprimees(rec, tombes) {
+    if (!Object.keys(tombes).length || !rec.photos.length) return 0;
+    const garde = [];
+    for (const p of rec.photos) if (!tombes[await empreintePhoto(p)]) garde.push(p);
+    const n = rec.photos.length - garde.length;
+    if (n) { const couv = rec.photos[rec.cover || 0]; rec.photos = garde; rec.cover = Math.max(0, garde.indexOf(couv)); }
+    return n;
+  }
   /* Deux versions d'une même prise : la plus récemment modifiée donne note,
-     favori, déclinaisons, lieu, date et couverture ; les photos s'additionnent
-     (l'app ne retire jamais une photo seule). À égalité, l'appareil fait autorité.
+     favori, déclinaisons, lieu, date et couverture ; les photos s'additionnent,
+     SAUF celles supprimées sur l'un des appareils (sansPhotosSupprimees, appliquée
+     par importerDonnees après cette fusion). À égalité, l'appareil fait autorité.
      Plus de concaténation des notes : une note réécrite remplace l'ancienne. */
   function fusionnerDistante(locale, distante) {
     const recente = tDate(distante.maj) > tDate(locale.maj) ? distante : locale;
@@ -3748,6 +3802,7 @@ const VARIANTS = {
         let n = 0, rejected = 0, retirees = 0;
         // Fusion cloud : les retraits des DEUX appareils s'appliquent aux deux.
         const supprimes = fusion ? unirSupprimes(sanitizeSupprimes(META.supprimes), sanitizeSupprimes(data.meta && data.meta.supprimes)) : null;
+        const photosSupprimees = fusion ? sanitizePhotosSupprimees(unirSupprimes(sanitizePhotosSupprimees(META.photosSupprimees), sanitizePhotosSupprimees(data.meta && data.meta.photosSupprimees))) : null;
         for (const rec of spots) {
           let clean = sanitizeSpot(rec);
           const f = !clean && rec && typeof rec === "object" ? fusionVers(rec.carId) : null;
@@ -3758,14 +3813,15 @@ const VARIANTS = {
           await Store.put(clean); state.spots.set(clean.carId, clean); n++;
         }
         if (fusion) {
-          // Retraits faits sur l'AUTRE appareil : on les applique ici aussi.
+          // Retraits (voitures ET photos) faits sur l'AUTRE appareil : on les applique
+          // ici aussi, sur toutes les prises — celles qu'on vient d'importer comprises.
           for (const [id, rec] of [...state.spots]) {
-            if (!retireeApres(rec, supprimes)) continue;
+            if (!retireeApres(rec, supprimes)) { if (await sansPhotosSupprimees(rec, photosSupprimees)) await Store.put(rec); continue; }
             await Store.del(id); state.spots.delete(id); retirees++;
           }
           // « Non classé » dont plus aucune prise ne dépend : elles ne réapparaissent pas dans le sélecteur.
           for (const c of [...CUSTOM_REG.list]) if (supprimes[c.id] && !state.spots.has(c.id)) { await deleteCustomCar(c.id); delete CARS_BY_ID[c.id]; }
-          META = { ...META, supprimes };
+          META = { ...META, supprimes, photosSupprimees };
           await saveMeta();
         }
         if (data.meta && typeof data.meta === "object") {
@@ -3796,6 +3852,7 @@ const VARIANTS = {
     exporter: () => donneesExport(),
     importer: async (data, options) => { const r = await importerDonnees(data, options); render(); return r; },
     normaliserPhotos: () => normaliserPhotos(),
+    supprimerPhoto: (src) => supprimerPhoto(src),
   });
   async function resetAll() {
     if (!await askConfirm("Effacer TOUTES tes prises et photos ? Cette action est irréversible.", "Tout effacer", true)) return;
@@ -4388,8 +4445,7 @@ const VARIANTS = {
     }
     if (t.dataset.pick) { draft.carId = t.dataset.pick; renderCaptureBody(); return; }
     if (t.dataset.var !== undefined && draft) { const v = t.dataset.var; if (draft.variants.has(v)) draft.variants.delete(v); else draft.variants.add(v); const z=$("#varZone"); if (z) z.innerHTML = variantChipsHTML(); return; }
-    if (t.hasAttribute("data-setcover")) { if (activeDetail) setCover(activeDetail, +t.dataset.setcover); return; }
-    if (t.dataset.addphoto) { if (activeDetail) { closeOverlay(); openCapture(activeDetail); } return; }
+    if (t.hasAttribute("data-setcover")) { if (activeDetail) setCover(activeDetail, +t.dataset.setcover); return; }    if (t.dataset.addphoto) { if (activeDetail) { closeOverlay(); openCapture(activeDetail); } return; }
     if (t.hasAttribute("data-dot")) { const pager=$("#pager"); if(pager) pager.scrollTo({ left:+t.dataset.dot*pager.clientWidth, behavior:"smooth" }); return; }
     if (t.dataset.release) { const rid = t.dataset.release; (async () => { if (await askConfirm("Retirer cette voiture du garage ?", "Retirer", true)) release(rid); })(); return; }
     if (t.dataset.favtoggle) { toggleFavorite(t.dataset.favtoggle); return; }
@@ -4473,7 +4529,7 @@ const VARIANTS = {
       // Ce qui a été persisté avant DT-09 / DT-10 repasse par les mêmes filtres qu'à l'import.
       META = { ...META, bonus:entierBorne(META.bonus), missions:sanitizeMissions(META.missions),
                friends:sanitizeFriends(META.friends), feed:sanitizeFeed(META.feed), name:String(META.name ?? "").slice(0,24),
-               supprimes:sanitizeSupprimes(META.supprimes) };
+               supprimes:sanitizeSupprimes(META.supprimes), photosSupprimees:sanitizePhotosSupprimees(META.photosSupprimees) };
       for (const rec of all) {
         if (rec.carId === "__meta__" || rec.carId === "__customcars__") continue;
         if (CARS_BY_ID[rec.carId]) state.spots.set(rec.carId, rec);

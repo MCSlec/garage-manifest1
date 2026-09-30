@@ -85,6 +85,54 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   v(`ancienne photo de ${(octets(lourde) / 1048576).toFixed(1)} Mo : recompressée sous 1,5 Mo, toujours une image valide`,
     n === 1 && octets(m3.photos[0]) <= 1.5 * 1048576 && Math.max(...taille) <= 1280, `${n} · ${(octets(m3.photos[0]) / 1048576).toFixed(2)} Mo · ${taille}`);
   v('… et les photos déjà légères ne sont pas touchées', m3.photos[1] === photo(1) && m3.photos.length === 2);
+
+  /* Supprimer UNE photo : la corbeille greffée par gm-specs.js sur la photo
+     affichée (.gsup-btn), qui passe désormais par window.GMGarage.supprimerPhoto */
+  const empreinte = (d) => require('crypto').createHash('sha256').update(Buffer.from(d.split(',')[1], 'base64')).digest('hex');
+  const meta = async () => (await idb('all')).find(r => r.carId === '__meta__') || {};
+  const supprimerVia = async (id) => {
+    await page.evaluate(() => document.querySelector('[data-tab="collection"]')?.click()); await page.waitForTimeout(250);
+    await page.evaluate(i => document.querySelector(`[data-car="${i}"]`)?.click(), id);
+    await page.waitForSelector('#overlay .detail-hero .gsup-btn', { state: 'attached', timeout: 5000 });
+    await page.evaluate(() => document.querySelector('#overlay .detail-hero .gsup-btn').click());
+    await page.waitForTimeout(700);
+  };
+  v('un seul bouton « supprimer cette photo » sur la fiche (pas de doublon avec l\'existant)',
+    await page.evaluate(() => document.querySelectorAll('[data-delphoto]').length === 0));
+  await idb('put', [{ ...prise('peugeot-205', 8), cover: 3 }]);
+  await page.reload({ waitUntil: 'networkidle' }); await pret();
+  await supprimerVia('peugeot-205');
+  const p205 = (await idb('all')).find(r => r.carId === 'peugeot-205');
+  v('corbeille de la photo : la photo AFFICHÉE (couverture) disparaît, les autres restent dans l\'ordre',
+    p205.photos.length === 7 && !p205.photos.includes(photo(3)) && p205.photos[3] === photo(4) && p205.cover === 2, `${p205.photos.length} · couverture ${p205.cover}`);
+  const f40 = (await idb('all')).find(r => r.carId === 'ferrari-f40');
+  v('… et JAMAIS dans une autre voiture qui contient la même image (F40 : photo identique conservée)',
+    f40.photos.length === 31 && f40.photos.includes(photo(3)), f40.photos.length);
+  v('… sans rechargement de la page : la fiche reste ouverte, à jour',
+    await page.evaluate(() => !!document.querySelector('#overlay .detail-hero') && document.querySelectorAll('#overlay .thumbstrip .ts').length === 7));
+  v('… horodatée (maj) et laissant une pierre tombale à l\'empreinte des octets, comme gm-compte.js',
+    !!p205.maj && !!((await meta()).photosSupprimees || {})[empreinte(photo(3))]);
+  await ajouterPhotoVia('peugeot-205');
+  v('… et la place libérée sous le plafond est réutilisable (7 → 8)', (await nbPhotos('peugeot-205')) === 8, await nbPhotos('peugeot-205'));
+
+  /* Synchronisation : la photo supprimée ne revient pas, et une suppression faite ailleurs s'applique ici */
+  const distante = { ...prise('peugeot-205', 8), maj: '2020-01-01T00:00:00.000Z' };   // l'autre appareil a encore photo(3)
+  await page.evaluate(d => window.GMGarage.importer(d, { fusion: true }), { app: 'garage-manifest', version: 1, spots: [distante], meta: {}, custom: { list: [] } });
+  const apres = (await idb('all')).find(r => r.carId === 'peugeot-205');
+  v('fusion cloud : la photo supprimée ici ne revient PAS depuis l\'autre appareil', !apres.photos.includes(photo(3)), apres.photos.length);
+  const tombeAilleurs = { [empreinte(photo(5))]: new Date().toISOString() };
+  await page.evaluate(d => window.GMGarage.importer(d, { fusion: true }), { app: 'garage-manifest', version: 1, spots: [], meta: { photosSupprimees: tombeAilleurs }, custom: { list: [] } });
+  const apres2 = (await idb('all')).find(r => r.carId === 'peugeot-205');
+  v('fusion cloud : une photo supprimée sur l\'AUTRE appareil disparaît aussi ici', !apres2.photos.includes(photo(5)) && apres2.photos.includes(photo(4)), apres2.photos.length);
+  const exportee = await page.evaluate(() => window.GMGarage.exporter());
+  v('… et les pierres tombales voyagent avec la sauvegarde (export)', Object.keys(exportee.meta.photosSupprimees || {}).length === 2);
+
+  await idb('put', [prise('bmw-m3', 1)]);
+  await page.reload({ waitUntil: 'networkidle' }); await pret();
+  await supprimerVia('bmw-m3');
+  const m3b = (await idb('all')).find(r => r.carId === 'bmw-m3');
+  v('dernière photo : refusée, avec un message (règle d\'origine conservée)',
+    m3b && m3b.photos.length === 1 && await page.evaluate(() => /Dernière photo/.test(document.querySelector('.gsup-btn')?.title || '')), m3b && m3b.photos.length);
   v('aucune erreur JS', erreurs.length === 0, erreurs.join(' | '));
 
   await nav.close(); serveur.close();

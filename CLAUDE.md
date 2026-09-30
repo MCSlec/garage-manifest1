@@ -435,8 +435,8 @@ incrémenter conjointement :**
 1. `VERSION_MODULE` dans `gm-specs.js` (ligne ~22).
 2. `VERSION` (`"garage-v…"`) dans `sw.js` (ligne ~12).
 
-Ces deux numéros sont **tenus synchronisés** (au 28/09/2026 : `gm-specs.js` →
-`20.192.0`, `sw.js` → `garage-v20.192.0`). `VERSION_MODULE` s'affiche en outre
+Ces deux numéros sont **tenus synchronisés** (au 30/09/2026 : `gm-specs.js` →
+`20.193.0`, `sw.js` → `garage-v20.193.0`). `VERSION_MODULE` s'affiche en outre
 dans l'UI via `grefferVersion()`, ce qui permet de vérifier de visu quelle version
 tourne réellement sur l'appareil.
 
@@ -575,7 +575,7 @@ modification n'impose aucun bump de version.
 | `vendor/leaflet/` | Leaflet 1.9.4 hébergé dans le dépôt (§1.2) ; banc `banc-carte.js` : aucun script ni style chargé depuis un autre domaine |
 | `vendor/protomaps-leaflet/` | Moteur de rendu de **notre** carte (§1.2), chargé seulement si `CARTE_URL` est renseignée ; banc `banc-carte-perso.js` (fabrique une vraie archive PMTiles) ; guide `cloud/CARTE.md` |
 | `banc-relais.js` | Banc serveur du relais IA : quotas (dont rafale simultanée), taille/format d'image, origine, route unique, erreurs sans détail, fermeture sans D1 |
-| `banc-photos.js` | Banc navigateur des limites de photos : plafond par rareté (`PHOTOS_PAR_RARETE`), taille par photo, recompression des anciennes photos (`GMGarage.normaliserPhotos`) |
+| `banc-photos.js` | Banc navigateur des limites de photos : plafond par rareté (`PHOTOS_PAR_RARETE`), taille par photo, recompression des anciennes photos (`GMGarage.normaliserPhotos`), suppression d'une photo et non-résurrection à la fusion cloud (pierres tombales) |
 | `banc-imports.js` | Banc navigateur des **fichiers importés hostiles** (sauvegarde, profil d'équipage) : aucune charge ne doit s'exécuter, à l'import comme au redémarrage (DT-09, DT-10) ; contrat `data-car-id` |
 | `AUDIT-DEFAUTS.md` | Rapport de la chasse aux défauts du 29/09 : corrigé, et reste à décider |
 | `banc-i18n.js` → `I18N.md` | Recensement des textes d'interface (préparation i18n). `I18N.md` est **généré** : relancer `node banc-i18n.js --md`, ne jamais l'éditer à la main |
@@ -723,6 +723,8 @@ restauration du garage entre appareils. Guide : `cloud/DEPLOIEMENT.md`.
 ```
 GMGarage.exporter()                   → { app, version, spots, meta, custom }  (= fichier d'export)
 GMGarage.importer(data, { fusion })   → { n, rejected }
+GMGarage.normaliserPhotos()           → nombre de photos recompressées
+GMGarage.supprimerPhoto(src)          → { ok } | { ok:false, raison:'derniere'|'introuvable' }
 ```
 
 - `gm-compte.js` **ne touche jamais** à IndexedDB ni à `state` : tout passe par
@@ -767,6 +769,16 @@ GMGarage.importer(data, { fusion })   → { n, rejected }
   existantes au-delà ; 1,5 Mo par photo côté app (recompression plutôt que
   refus), 2 Mo côté serveur ; les anciennes photos trop lourdes sont ramenées
   au format actuel par `GMGarage.normaliserPhotos()` avant chaque sauvegarde.
+  **Supprimer une photo** : la corbeille posée sur la photo par `gm-specs.js`
+  (`grefferSuppressionPhoto`, `.gsup-btn` — il n'en existe **qu'une**) appelle
+  `window.GMGarage.supprimerPhoto(src)` ; l'écriture directe dans IndexedDB ne
+  reste qu'en repli pour un `index.html` ancien en cache. La fiche **ouverte**
+  est cherchée d'abord (une même image peut figurer dans deux prises), la
+  dernière photo est refusée, et la suppression laisse une **pierre tombale**
+  `META.photosSupprimees` { empreinte SHA-256 des octets → date }, même
+  empreinte que `gm-compte.js`. Les photos s'additionnant à la fusion
+  cloud, c'est **elle seule** qui empêche la photo de revenir d'un autre appareil
+  (`sansPhotosSupprimees`, appliquée à toutes les prises après l'import en fusion).
 - **Restauration** : une photo injoignable (hors 404) interrompt tout — sinon la
   sauvegarde qui suit un conflit effacerait du cloud une photo qui existe.
 - Le code n'est envoyé qu'avec l'adresse **demandée sur cet appareil**

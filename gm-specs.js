@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.192.0';
+  const VERSION_MODULE = '20.193.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -13128,6 +13128,20 @@
   }
 
   async function supprimerPhoto(src, bouton) {
+    /* Chemin nominal (30/09) : l'app fait la suppression elle-même, via son
+       contrat window.GMGarage — état en mémoire, date de modification et
+       pierre tombale de synchronisation compris. Écrire ici directement dans
+       IndexedDB laissait la photo revenir à la fusion cloud. Le chemin direct
+       ci-dessous ne sert plus que de repli pour un index.html plus ancien
+       encore en cache. */
+    const garage = global.GMGarage;
+    if (garage && typeof garage.supprimerPhoto === 'function') {
+      try {
+        const r = await garage.supprimerPhoto(src);
+        if (r && r.raison === 'derniere') signalerDernierePhoto(bouton);
+      } catch (e) { console.warn('[GMSpecs] suppression de photo impossible', e); }
+      return;
+    }
     try {
       const db = await ouvrirGarage();
       if (!db.objectStoreNames.contains('spots')) return;
@@ -13139,15 +13153,7 @@
       const sp = tous.find(x => Array.isArray(x.photos) && x.photos.indexOf(src) >= 0);
       if (!sp) { console.warn('[GMSpecs] photo introuvable en base'); return; }
 
-      if (sp.photos.length <= 1) {
-        /* Dernière photo : on ne laisse pas la capture sans image. On le dit
-           plutôt que de refuser en silence. */
-        const t0 = bouton.title;
-        bouton.title = 'Dernière photo — utilise la corbeille pour retirer la voiture';
-        bouton.classList.add('gsup-non');
-        setTimeout(() => { bouton.title = t0; bouton.classList.remove('gsup-non'); }, 2600);
-        return;
-      }
+      if (sp.photos.length <= 1) { signalerDernierePhoto(bouton); return; }
 
       const i = sp.photos.indexOf(src);
       sp.photos = sp.photos.filter(p => p !== src);
@@ -13165,6 +13171,14 @@
       });
       rechargerSurFiche(sp.carId);
     } catch (e) { console.warn('[GMSpecs] suppression de photo impossible', e); }
+  }
+  /* Dernière photo : on ne laisse pas la capture sans image. On le dit
+     plutôt que de refuser en silence. */
+  function signalerDernierePhoto(bouton) {
+    const t0 = bouton.title;
+    bouton.title = 'Dernière photo — utilise la corbeille pour retirer la voiture';
+    bouton.classList.add('gsup-non');
+    setTimeout(() => { bouton.title = t0; bouton.classList.remove('gsup-non'); }, 2600);
   }
 
   /* ======================================================================

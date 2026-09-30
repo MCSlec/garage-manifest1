@@ -57,6 +57,7 @@ la marque et le modèle proposés.
 | **Tes photos** | Idem | Tant que le compte existe |
 | **Volume stocké** (nombre de photos, octets) | Appliquer le quota de stockage du compte | Tant que le compte existe |
 | **Voitures retirées** (identifiant de la voiture, date du retrait) | Faire disparaître la voiture de tes autres appareils | Tant que le compte existe |
+| **Photos supprimées** (empreinte SHA-256 de la photo, date de suppression — jamais la photo elle-même) | Faire disparaître la photo de tes autres appareils | Tant que le compte existe (5 000 plus récentes au plus) |
 
 Précisions vérifiables dans le code :
 - Les photos prises dans l'app sont réencodées avant d'être enregistrées : leurs
