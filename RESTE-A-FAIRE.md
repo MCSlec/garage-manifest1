@@ -146,6 +146,10 @@ Capacitor autour du même code) :
 
 ## 5. 🟡 Décisions produit en attente
 
+- [ ] **Design P0 « capture → révélation »** : envoyer à ChatGPT le prompt du
+  30/09 (avec les captures), me rapporter sa réponse telle quelle. Carte écrans ↔
+  code : `design/CARTE-ECRANS.md`.
+
 - [ ] Sauvegarde cloud **manuelle** (bouton, choix par défaut) ou automatique.
 - [ ] Photos sauvegardées : **toutes** (choix par défaut, dédupliquées) ou la
   couverture seulement.

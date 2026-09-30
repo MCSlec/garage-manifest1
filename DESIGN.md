@@ -23,9 +23,11 @@ maquette.** L'app affiche ce que contiennent `CARS`, `CATALOGUE_PLUS`, `SPECS`,
 | Badge **« Rare »** | Rareté de jeu **peu commun** | Le badge affiche `catalogue.rarete`, jamais une valeur écrite dans le design |
 | Diesel **2.2 JTDM 150 / 180**, Essence 200 **et** 280 | Diesel **136 / 160 / 190** ; Essence **200** ; Veloce **280 Q4 / 210 Q4** | Le sélecteur liste `MOTOR_SPECS` tel quel |
 | « Giulia (2016–2020) **1ère génération** / (2020–2024) **2ème génération** » | Une seule génération, **Type 952** (2015–), restylée en 2020 | Les générations viennent de `GENS` ; un restylage n'est pas une génération |
-| 0–100 km/h, Vmax, consommation, CO₂ | **Absents** des données (chantier D, **non lancé** sur décision du propriétaire) | Ces lignes **n'apparaissent pas** tant que les données n'existent pas — pas de case vide « — », pas de valeur inventée |
+| 0–100 km/h, Vmax | Présents pour **63** (0–100) et **91** (Vmax) voitures sur 1 071, via `INFO` — **pas** pour la Giulia | La ligne s'affiche **si et seulement si** la donnée existe — pas de case vide « — », pas de valeur inventée |
+| Consommation, CO₂ | **Absents** (chantier D, **non lancé** sur décision du propriétaire) | Section masquée |
 | Dimensions (hauteur, largeur, empattement), portes, places, coffre, poids tractable, équipement | **Absents** des données | Idem : section masquée, pas de données inventées |
-| « Comparaison rapide » (Série 3, Classe C, A4) et « Le savais-tu ? » | **Aucune donnée** de ce type | Hors périmètre tant qu'une source n'existe pas |
+| « Comparaison rapide » (Série 3, Classe C, A4) | **Aucune donnée** de ce type | Hors périmètre tant qu'une source n'existe pas |
+| « Le savais-tu ? » | `INFO.fact` existe pour **499** voitures (déjà affiché « Le saviez-vous ») — **pas** pour la Giulia | Affiché quand il existe |
 | Écran d'identification : « Moteur sélectionné : 2.0 Turbo 200 » | L'IA identifie un **modèle**, jamais une motorisation | La motorisation est choisie par le joueur, pas déduite de la photo |
 | Photos constructeur | Photo **du joueur** (`photos[cover]`) | La maquette illustre la mise en page ; l'app montre la capture réelle |
 
@@ -35,6 +37,9 @@ sélecteur type → variante (`MOTOR_SPECS`), puissance / couple / cylindrée /
 masse / architecture / boîte / transmission (`SPECS`, variantes), générations
 et déclinaisons (`GENS`, `VARIANTS`), galerie et couverture (`photos`, `cover`),
 date et lieu de la prise.
+
+La correspondance détaillée écran ↔ code est dans
+[`design/CARTE-ECRANS.md`](design/CARTE-ECRANS.md).
 
 ---
 
