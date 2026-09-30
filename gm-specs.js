@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.193.0';
+  const VERSION_MODULE = '20.194.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -13137,7 +13137,7 @@
     const garage = global.GMGarage;
     if (garage && typeof garage.supprimerPhoto === 'function') {
       try {
-        const r = await garage.supprimerPhoto(src);
+        const r = await garage.supprimerPhoto(src, { confirmer: true });   // la boîte de confirmation est celle de l'app
         if (r && r.raison === 'derniere') signalerDernierePhoto(bouton);
       } catch (e) { console.warn('[GMSpecs] suppression de photo impossible', e); }
       return;

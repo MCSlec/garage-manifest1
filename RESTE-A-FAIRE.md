@@ -66,6 +66,22 @@ Guide détaillé : `cloud/DEPLOIEMENT.md`.
 - [ ] Après la bascule : **une** capture de test et un coup d'œil au journal
   (`npx wrangler tail`) — le banc simule l'API, il ne remplace pas un vrai appel.
 
+## 2 quater. 🌐 Ce que l'app contacte encore à l'extérieur (état au 30/09)
+
+Le **code** de l'app (scripts, styles, polices, bibliothèques) ne vient plus que
+de chez nous (`vendor/`, aucun CDN — vérifié par `banc-carte.js`). Restent des
+**échanges de données** :
+
+- [ ] **Tuiles de la carte → OpenStreetMap**, à chaque ouverture de l'onglet
+  carte, tant que `CARTE_URL` est vide. Se règle en déployant notre carte (§4).
+- [ ] 🟡 **Photo → fournisseur d'IA** (Anthropic ou Google) via notre relais,
+  à chaque reconnaissance automatique. Notre relais n'est qu'un intermédiaire :
+  le modèle reste chez un tiers. À décider si tu veux aller plus loin (piste :
+  un modèle hébergé chez Cloudflare, qui héberge déjà le relais).
+- [ ] 🟡 **Lien « Ouvrir dans Maps » → Google Maps**, seulement si tu touches le
+  lien sur la fiche. À décider : le garder, ou le remplacer par notre carte.
+- Comptes (Cloudflare, Resend) : en sommeil tant que `COMPTE_URL` est vide.
+
 ## 3. ⚖️ Avant d'ouvrir les comptes au public
 
 Tout est dans `cloud/CONFIDENTIALITE.md` :

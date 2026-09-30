@@ -436,7 +436,7 @@ incrémenter conjointement :**
 2. `VERSION` (`"garage-v…"`) dans `sw.js` (ligne ~12).
 
 Ces deux numéros sont **tenus synchronisés** (au 30/09/2026 : `gm-specs.js` →
-`20.193.0`, `sw.js` → `garage-v20.193.0`). `VERSION_MODULE` s'affiche en outre
+`20.194.0`, `sw.js` → `garage-v20.194.0`). `VERSION_MODULE` s'affiche en outre
 dans l'UI via `grefferVersion()`, ce qui permet de vérifier de visu quelle version
 tourne réellement sur l'appareil.
 
@@ -724,7 +724,7 @@ restauration du garage entre appareils. Guide : `cloud/DEPLOIEMENT.md`.
 GMGarage.exporter()                   → { app, version, spots, meta, custom }  (= fichier d'export)
 GMGarage.importer(data, { fusion })   → { n, rejected }
 GMGarage.normaliserPhotos()           → nombre de photos recompressées
-GMGarage.supprimerPhoto(src)          → { ok } | { ok:false, raison:'derniere'|'introuvable' }
+GMGarage.supprimerPhoto(src, { confirmer }) → { ok } | { ok:false, raison:'derniere'|'annule'|'introuvable' }
 ```
 
 - `gm-compte.js` **ne touche jamais** à IndexedDB ni à `state` : tout passe par
@@ -774,7 +774,9 @@ GMGarage.supprimerPhoto(src)          → { ok } | { ok:false, raison:'derniere'
   `window.GMGarage.supprimerPhoto(src)` ; l'écriture directe dans IndexedDB ne
   reste qu'en repli pour un `index.html` ancien en cache. La fiche **ouverte**
   est cherchée d'abord (une même image peut figurer dans deux prises), la
-  dernière photo est refusée, et la suppression laisse une **pierre tombale**
+  dernière photo est refusée **sans** boîte de confirmation (on ne confirme pas
+  pour ensuite refuser), sinon la boîte de l'app (`askConfirm`, comme « Retirer du
+  garage ») est demandée par `gm-specs.js` via `{ confirmer:true }` ; la suppression laisse une **pierre tombale**
   `META.photosSupprimees` { empreinte SHA-256 des octets → date }, même
   empreinte que `gm-compte.js`. Les photos s'additionnant à la fusion
   cloud, c'est **elle seule** qui empêche la photo de revenir d'un autre appareil

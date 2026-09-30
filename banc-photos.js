@@ -90,17 +90,25 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
      affichée (.gsup-btn), qui passe désormais par window.GMGarage.supprimerPhoto */
   const empreinte = (d) => require('crypto').createHash('sha256').update(Buffer.from(d.split(',')[1], 'base64')).digest('hex');
   const meta = async () => (await idb('all')).find(r => r.carId === '__meta__') || {};
-  const supprimerVia = async (id) => {
+  /* reponse : '1' confirme, '0' annule, null = aucune boîte attendue */
+  const supprimerVia = async (id, reponse = '1') => {
     await page.evaluate(() => document.querySelector('[data-tab="collection"]')?.click()); await page.waitForTimeout(250);
     await page.evaluate(i => document.querySelector(`[data-car="${i}"]`)?.click(), id);
     await page.waitForSelector('#overlay .detail-hero .gsup-btn', { state: 'attached', timeout: 5000 });
     await page.evaluate(() => document.querySelector('#overlay .detail-hero .gsup-btn').click());
+    if (reponse !== null) {
+      await page.waitForSelector(`#confirmWrap [data-cf="${reponse}"]`, { timeout: 5000 });
+      await page.click(`#confirmWrap [data-cf="${reponse}"]`);
+    }
     await page.waitForTimeout(700);
   };
   v('un seul bouton « supprimer cette photo » sur la fiche (pas de doublon avec l\'existant)',
     await page.evaluate(() => document.querySelectorAll('[data-delphoto]').length === 0));
   await idb('put', [{ ...prise('peugeot-205', 8), cover: 3 }]);
   await page.reload({ waitUntil: 'networkidle' }); await pret();
+  await supprimerVia('peugeot-205', '0');
+  v('corbeille de la photo : une confirmation est demandée, et « Annuler » ne supprime rien',
+    (await nbPhotos('peugeot-205')) === 8 && await page.evaluate(() => !document.querySelector('#confirmWrap')), await nbPhotos('peugeot-205'));
   await supprimerVia('peugeot-205');
   const p205 = (await idb('all')).find(r => r.carId === 'peugeot-205');
   v('corbeille de la photo : la photo AFFICHÉE (couverture) disparaît, les autres restent dans l\'ordre',
@@ -129,10 +137,11 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
 
   await idb('put', [prise('bmw-m3', 1)]);
   await page.reload({ waitUntil: 'networkidle' }); await pret();
-  await supprimerVia('bmw-m3');
+  await supprimerVia('bmw-m3', null);
   const m3b = (await idb('all')).find(r => r.carId === 'bmw-m3');
   v('dernière photo : refusée, avec un message (règle d\'origine conservée)',
     m3b && m3b.photos.length === 1 && await page.evaluate(() => /Dernière photo/.test(document.querySelector('.gsup-btn')?.title || '')), m3b && m3b.photos.length);
+  v('… et SANS demander de confirmation pour ensuite refuser', await page.evaluate(() => !document.querySelector('#confirmWrap')));
   v('aucune erreur JS', erreurs.length === 0, erreurs.join(' | '));
 
   await nav.close(); serveur.close();

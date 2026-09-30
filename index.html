@@ -3526,7 +3526,7 @@ const VARIANTS = {
      mémoire, ni pierre tombale — la photo revenait à la synchronisation.
      Règle conservée : jamais la DERNIÈRE photo (retirer la voiture est le bon
      geste). Pierre tombale datée : la fusion cloud ne la fait pas revenir. */
-  async function supprimerPhoto(src) {
+  async function supprimerPhoto(src, { confirmer = false } = {}) {
     /* La fiche OUVERTE d'abord : une même image peut figurer dans deux prises
        (import sur deux voitures) — chercher « la première qui la contient »
        supprimait la photo d'une autre voiture (défaut de l'ancienne version). */
@@ -3535,6 +3535,10 @@ const VARIANTS = {
       : [...state.spots.values()].find(r => Array.isArray(r.photos) && r.photos.includes(src));
     if (!rec) return { ok: false, raison: "introuvable" };
     if (rec.photos.length <= 1) return { ok: false, raison: "derniere" };
+    /* Confirmation APRÈS le refus « dernière photo » : on ne demande pas une
+       confirmation pour ensuite refuser. Même boîte que « Retirer du garage ». */
+    if (confirmer && !await askConfirm("Supprimer cette photo ? La voiture reste dans ton garage.", "Supprimer", true)) return { ok: false, raison: "annule" };
+    if (!rec.photos.includes(src)) return { ok: false, raison: "introuvable" };   // modifiée pendant que la boîte était ouverte
     const i = rec.photos.indexOf(src), couv = rec.cover || 0;
     const h = await empreintePhoto(src), maintenant = new Date().toISOString();
     rec.photos.splice(i, 1);
@@ -3852,7 +3856,7 @@ const VARIANTS = {
     exporter: () => donneesExport(),
     importer: async (data, options) => { const r = await importerDonnees(data, options); render(); return r; },
     normaliserPhotos: () => normaliserPhotos(),
-    supprimerPhoto: (src) => supprimerPhoto(src),
+    supprimerPhoto: (src, options) => supprimerPhoto(src, options),
   });
   async function resetAll() {
     if (!await askConfirm("Effacer TOUTES tes prises et photos ? Cette action est irréversible.", "Tout effacer", true)) return;
