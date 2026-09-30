@@ -39,7 +39,12 @@ la marque et le modèle proposés.
 - **[À COMPLÉTER — au lancement : la durée pendant laquelle le fournisseur
   d'IA conserve les requêtes reçues par son API, et son engagement de ne pas
   s'en servir pour entraîner ses modèles, d'après ses conditions commerciales
-  en vigueur.]**
+  en vigueur.]** ⚠️ Point sensible pour **Gemini en offre gratuite** : les
+  conditions de Google prévoient que les contenus d'un service non payant
+  peuvent servir à améliorer ses produits, avec un régime différent pour les
+  utilisateurs établis dans l'Espace économique européen. **[À VÉRIFIER dans
+  les « Gemini API Additional Terms of Service » en vigueur avant d'activer
+  Gemini, et l'écrire ici tel quel.]**
 
 ## Ce qui est collecté quand tu crées un compte
 
@@ -92,7 +97,7 @@ données ne servent qu'à te rendre ton garage.
 |---|---|---|
 | **Cloudflare, Inc.** | Hébergement du serveur (Workers), de la base (D1) et des photos (R2) | Tout ce qui est listé plus haut |
 | **Resend** | Envoi de l'e-mail de connexion | Ton adresse e-mail et le code |
-| **Fournisseur du modèle d'IA** (aujourd'hui **Anthropic, PBC** ; **[À DÉCIDER]** — voir `RESTE-A-FAIRE.md`) | Reconnaissance de la voiture sur la photo | La photo envoyée à l'identification, sans ton adresse ni ton identifiant (le relais ne transmet que l'image) |
+| **Fournisseur du modèle d'IA** : **Anthropic, PBC** (Claude) ou **Google LLC** (Gemini), selon le réglage `IA_FOURNISSEUR` du relais, plus l'autre si un secours `IA_SECOURS` est configuré. **[À COMPLÉTER — nommer ici le ou les fournisseurs réellement actifs au lancement.]** | Reconnaissance de la voiture sur la photo | La photo envoyée à l'identification, sans ton adresse ni ton identifiant (le relais ne transmet que l'image) |
 
 Ces sociétés sont établies aux **États-Unis**. **[À COMPLÉTER — vérifier au
 moment du lancement leur adhésion au Data Privacy Framework UE–États-Unis ou

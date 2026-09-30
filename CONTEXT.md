@@ -344,8 +344,12 @@ sans qu'aucune erreur JS ne le signale).
 `gemini-2.5-flash-lite`, fermé aux nouveaux comptes Google (erreur 404,
 diagnostiquée via les logs Observability de Cloudflare) → bascule vers
 `gemini-3.1-flash-lite` → migration complète vers Claude (`claude-haiku-4-5-20251001`)
-entre fin juillet et mi-septembre 2026. Toute référence à Gemini dans
-d'anciennes notes ou captures est **obsolète**.
+entre fin juillet et mi-septembre 2026. ⚠️ Cette bascule n'avait **pas** été
+validée par le propriétaire, qui dispose d'un quota Gemini gratuit. Depuis le
+30/09, le relais est **multi-fournisseur** (`IA_FOURNISSEUR` = `anthropic` |
+`gemini`, secours facultatif `IA_SECOURS`) : le choix lui revient, au
+redéploiement, sans toucher au code. Modèle Gemini par défaut :
+`gemini-3.1-flash-lite` (stable depuis le 07/05/2026).
 
 ⚠️ **Une clé API Google a été accidentellement exposée dans une capture
 d'écran** au tout début du projet — révoquée et remplacée à l'époque, sans

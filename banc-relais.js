@@ -45,14 +45,21 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   sqlite.exec(fs.readFileSync(path.join(__dirname, 'cloud', 'schema.sql'), 'utf8'));
   const env = { DB: d1(sqlite), ANTHROPIC_API_KEY: 'test', APP_ORIGIN: 'https://app.test' };
 
-  // API Anthropic simulée : compte les appels (= coût), peut répondre en erreur.
-  let appelsIA = 0, modeIA = 'ok';
+  // API Anthropic et Gemini simulées : comptent les appels (= coût), peuvent
+  // répondre en erreur, gardent la dernière requête pour en vérifier la forme.
+  let appelsIA = 0, modeIA = 'ok', appelsGemini = 0, modeGemini = 'ok', derniereGemini = null;
   const fetchReel = globalThis.fetch;
-  globalThis.fetch = async (url) => {
+  globalThis.fetch = async (url, init = {}) => {
     if (String(url).startsWith('https://api.anthropic.com/')) {
       appelsIA++;
       if (modeIA === 'erreur') return new Response('{"type":"error","error":{"message":"clé interne sk-ant-SECRET invalide"}}', { status: 401 });
       return new Response(JSON.stringify({ content: [{ type: 'text', text: '[{"brand":"Porsche","model":"911 GT3","confidence":0.9}]' }] }), { status: 200 });
+    }
+    if (String(url).startsWith('https://generativelanguage.googleapis.com/')) {
+      appelsGemini++; derniereGemini = { url: String(url), headers: new Headers(init.headers), corps: JSON.parse(init.body) };
+      if (modeGemini === 'quota') return new Response('{"error":{"code":429,"message":"Quota exceeded for AIza-SECRET","status":"RESOURCE_EXHAUSTED"}}', { status: 429 });
+      if (modeGemini === 'reseau') throw new TypeError('fetch failed');
+      return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: '[{"brand":"Alpine","model":"A110 S","confidence":0.8}]' }] } }] }), { status: 200 });
     }
     throw new Error('réseau interdit au banc : ' + url);
   };
@@ -133,6 +140,51 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   const texteErreur = await r.text();
   v('erreur de l\'API : 502 générique, aucun détail interne renvoyé', r.status === 502 && !/sk-ant|SECRET|clé interne/.test(texteErreur), texteErreur.slice(0, 120));
   modeIA = 'ok';
+
+  /* Fournisseur au choix (IA_FOURNISSEUR), secours facultatif (IA_SECOURS) */
+  const envG = { ...env, IA_FOURNISSEUR: 'gemini', GEMINI_API_KEY: 'AIza-SECRET' };
+  let [a0, g0] = [appelsIA, appelsGemini];
+  r = await appel({ envX: envG, ipFixe: '10.3.3.1' });
+  const propG = r.status === 200 ? await r.json() : null;
+  v('IA_FOURNISSEUR=gemini : Gemini est appelé, pas Anthropic, et le contrat de réponse est le même',
+    propG && propG[0] && propG[0].model === 'A110 S' && typeof propG[0].confidence === 'number' && appelsGemini === g0 + 1 && appelsIA === a0, `${r.status} ${JSON.stringify(propG)}`);
+  v('… image transmise telle quelle (inline_data, type et données) avec le même prompt',
+    derniereGemini && derniereGemini.corps.contents[0].parts[0].inline_data.mime_type === 'image/jpeg'
+      && 'data:image/jpeg;base64,' + derniereGemini.corps.contents[0].parts[0].inline_data.data === IMAGE
+      && /marque et le modèle/.test(derniereGemini.corps.contents[0].parts[1].text));
+  v('… clé en en-tête, JAMAIS dans l\'URL (journalisée), modèle stable par défaut',
+    derniereGemini && derniereGemini.headers.get('x-goog-api-key') === 'AIza-SECRET' && !/AIza|key=/.test(derniereGemini.url) && /models\/gemini-3\.1-flash-lite:generateContent$/.test(derniereGemini.url), derniereGemini && derniereGemini.url);
+  r = await appel({ envX: { ...envG, GEMINI_MODELE: 'gemini-3.5-flash-lite' }, ipFixe: '10.3.3.1' });
+  v('… modèle remplaçable par variable, sans toucher au code', /models\/gemini-3\.5-flash-lite:/.test(derniereGemini.url), derniereGemini.url);
+
+  modeGemini = 'quota'; [a0, g0] = [appelsIA, appelsGemini];
+  r = await appel({ envX: envG, ipFixe: '10.3.3.2' });
+  const texteQuota = await r.text();
+  v('quota Gemini épuisé, SANS secours : 502 générique, Anthropic jamais appelé (aucune dépense surprise)',
+    r.status === 502 && appelsIA === a0 && !/AIza|SECRET|RESOURCE/.test(texteQuota), `${r.status} ${texteQuota} · Anthropic ${appelsIA - a0}`);
+  const avantSecours = sqlite.prepare('SELECT SUM(compte) AS n FROM limites').get().n;
+  r = await appel({ envX: { ...envG, IA_SECOURS: 'anthropic' }, ipFixe: '10.3.3.3' });
+  const propS = r.status === 200 ? await r.json() : null;
+  v('quota Gemini épuisé, AVEC IA_SECOURS=anthropic : Claude prend le relais, le joueur a sa réponse',
+    propS && propS[0] && propS[0].model === '911 GT3' && appelsIA === a0 + 1, `${r.status} · Anthropic ${appelsIA - a0}`);
+  v('… et l\'identification n\'est comptée qu\'une fois (appareil + service), secours ou pas',
+    sqlite.prepare('SELECT SUM(compte) AS n FROM limites').get().n - avantSecours === 2);
+  modeGemini = 'reseau';
+  r = await appel({ envX: { ...envG, IA_SECOURS: 'anthropic' }, ipFixe: '10.3.3.3' });
+  v('Gemini injoignable (panne réseau) : le secours prend aussi le relais', r.status === 200, r.status);
+  modeGemini = 'ok';
+  [a0, g0] = [appelsIA, appelsGemini];
+  r = await appel({ envX: { ...envG, GEMINI_API_KEY: undefined, IA_SECOURS: 'anthropic' }, ipFixe: '10.3.3.4' });
+  v('clé Gemini absente, secours configuré : Claude répond (Gemini n\'est pas appelé sans clé)', r.status === 200 && appelsGemini === g0 && appelsIA === a0 + 1, r.status);
+
+  const limitesAvant = sqlite.prepare('SELECT COALESCE(SUM(compte),0) AS n FROM limites').get().n;
+  [a0, g0] = [appelsIA, appelsGemini];
+  r = await appel({ envX: { ...env, IA_FOURNISSEUR: 'gemnii' }, ipFixe: '10.3.3.5' });
+  v('fournisseur mal orthographié : refus (500 générique), aucun appel, aucun quota consommé',
+    r.status === 500 && appelsIA === a0 && appelsGemini === g0 && sqlite.prepare('SELECT COALESCE(SUM(compte),0) AS n FROM limites').get().n === limitesAvant, r.status);
+  r = await appel({ envX: { ...envG, GEMINI_API_KEY: undefined }, ipFixe: '10.3.3.6' });
+  v('aucune clé pour le fournisseur choisi : refus (500), aucun quota consommé',
+    r.status === 500 && sqlite.prepare('SELECT COALESCE(SUM(compte),0) AS n FROM limites').get().n === limitesAvant, r.status);
 
   /* Sans base de limites : fermé, jamais ouvert */
   const avantSansDB = appelsIA;

@@ -57,15 +57,14 @@ Guide détaillé : `cloud/DEPLOIEMENT.md`.
   avec compte) et `/notify` supprimé — **faits dans le code**.
 - [ ] **Redéployer le relais** avec la liaison D1 `DB` et la variable `APP_ORIGIN`
   (README §3bis). Tant que ce n'est pas fait, c'est l'ANCIEN relais, ouvert, qui tourne.
-- [ ] 🟡 **Choisir le fournisseur d'IA** : Claude Haiku (payant dès le 1er appel)
-  ou Gemini Flash-Lite (quota gratuit quotidien), ou « go multi-fournisseur »
-  (les deux, bascule par une variable). Voir le rapport du 29/09.
-
-## 2 quater. 💬 Propositions en attente de ta réponse (je ne relance plus)
-
-- [ ] `/security-review` sur le relais et les comptes, avant le redéploiement.
-- [ ] Bouton « supprimer cette photo » (changement d'interface) : sans lui, une
-  voiture arrivée à son plafond de photos ne peut plus faire de place.
+- [x] Relais **multi-fournisseur** (Claude ou Gemini, bascule par la variable
+  `IA_FOURNISSEUR`, secours facultatif `IA_SECOURS`) — **fait dans le code** le 30/09.
+- [ ] 🟡 **Régler le fournisseur** au redéploiement (README §3bis, étape 3) :
+  `anthropic` (défaut, payant) ou `gemini` (clé gratuite sur aistudio.google.com),
+  avec ou sans secours. Pour Gemini, lire d'abord le point « offre gratuite » de
+  `cloud/CONFIDENTIALITE.md`.
+- [ ] Après la bascule : **une** capture de test et un coup d'œil au journal
+  (`npx wrangler tail`) — le banc simule l'API, il ne remplace pas un vrai appel.
 
 ## 3. ⚖️ Avant d'ouvrir les comptes au public
 

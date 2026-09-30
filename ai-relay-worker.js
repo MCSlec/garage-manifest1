@@ -1,8 +1,9 @@
 // ============================================================================
 // ai-relay-worker.js — Relais de reconnaissance auto pour Garage Manifest
 // ============================================================================
-// Rôle : recevoir une photo, demander à un modèle de vision (Claude) d'identifier
-// la marque et le modèle du véhicule, renvoyer des propositions en texte libre.
+// Rôle : recevoir une photo, demander à un modèle de vision (Claude ou Gemini,
+// au choix) d'identifier la marque et le modèle du véhicule, renvoyer des
+// propositions en texte libre.
 // Le rapprochement avec le catalogue (742+ voitures, IDs internes) se fait côté
 // app, PAS ici — ce relais reste générique et n'a jamais besoin de connaître le
 // catalogue. C'est un choix d'architecture délibéré : le catalogue peut grossir
@@ -32,13 +33,27 @@
 //   L'ancienne route /notify (signalement par e-mail) est supprimée : plus
 //   appelée par l'app, elle était ouverte à tous sans limite.
 //
+// FOURNISSEUR (30/09) : une variable, aucun changement de code ni d'app.
+//   IA_FOURNISSEUR = "anthropic" (défaut, Claude Haiku, payant dès le 1er appel)
+//                  | "gemini"    (Gemini Flash-Lite, quota gratuit quotidien)
+//   IA_SECOURS     = l'autre nom, FACULTATIF : tenté seulement si le premier
+//                    échoue (quota du fournisseur épuisé, panne, clé absente).
+//                    Absent = pas de secours, donc aucune dépense surprise.
+//   Mêmes quotas, même prompt, même contrat de réponse quel que soit le
+//   fournisseur : l'app ne voit aucune différence. Une identification n'est
+//   comptée qu'une fois, même si le secours prend le relais.
+//
 // Déploiement : voir README.md, section « Reconnaissance IA ».
-//   Secret : wrangler secret put ANTHROPIC_API_KEY
+//   Secrets : wrangler secret put ANTHROPIC_API_KEY  et/ou  GEMINI_API_KEY
 //   Liaison D1 « DB » : la base des comptes (cloud/schema.sql) ; variable APP_ORIGIN.
 // ============================================================================
 
-const MODEL = "claude-haiku-4-5-20251001"; // rapide et économique ; "claude-sonnet-5" pour plus de précision
 const ANTHROPIC_VERSION = "2023-06-01";
+// Modèles par défaut, remplaçables sans toucher au code (ANTHROPIC_MODELE, GEMINI_MODELE).
+const MODELES_DEFAUT = {
+  anthropic: "claude-haiku-4-5-20251001",   // rapide et économique
+  gemini: "gemini-3.1-flash-lite",          // stable depuis le 07/05/2026
+};
 
 const PROMPT = `Tu identifies la marque et le modèle du véhicule visible sur cette photo.
 Réponds UNIQUEMENT avec un tableau JSON strict, sans texte autour, sans balises markdown.
@@ -112,13 +127,103 @@ function json(obj, status, env) {
 }
 
 // ============================================================================
+// Fournisseurs. Chacun reçoit la même image et le même prompt, et rend le
+// TEXTE brut du modèle ({ texte }) ou un échec ({ echec }). Le détail d'un
+// échec ne part que dans le journal Cloudflare, jamais vers le navigateur.
+// La clé est envoyée en EN-TÊTE, jamais dans l'URL (qui peut être journalisée).
+// ============================================================================
+const FOURNISSEURS = {
+  anthropic: {
+    cle: "ANTHROPIC_API_KEY",
+    async appeler(env, mediaType, base64Data) {
+      const r = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": env.ANTHROPIC_API_KEY,
+          "anthropic-version": ANTHROPIC_VERSION,
+        },
+        body: JSON.stringify({
+          model: env.ANTHROPIC_MODELE || MODELES_DEFAUT.anthropic,
+          max_tokens: 300,
+          messages: [
+            {
+              role: "user",
+              content: [
+                { type: "image", source: { type: "base64", media_type: mediaType, data: base64Data } },
+                { type: "text", text: PROMPT },
+              ],
+            },
+          ],
+        }),
+      });
+      if (!r.ok) return { echec: `HTTP ${r.status} ${(await r.text().catch(() => "")).slice(0, 500)}` };
+      const data = await r.json();
+      return { texte: (data?.content || []).map((b) => b?.text || "").join("") };
+    },
+  },
+  gemini: {
+    cle: "GEMINI_API_KEY",
+    async appeler(env, mediaType, base64Data) {
+      const modele = encodeURIComponent(env.GEMINI_MODELE || MODELES_DEFAUT.gemini);
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modele}:generateContent`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-goog-api-key": env.GEMINI_API_KEY },
+        body: JSON.stringify({
+          contents: [{ parts: [{ inline_data: { mime_type: mediaType, data: base64Data } }, { text: PROMPT }] }],
+          // Marge plus large que pour Claude : sur certains modèles Gemini, la
+          // réflexion interne consomme une partie du budget de sortie.
+          generationConfig: { maxOutputTokens: 1024, responseMimeType: "application/json" },
+        }),
+      });
+      if (!r.ok) return { echec: `HTTP ${r.status} ${(await r.text().catch(() => "")).slice(0, 500)}` };
+      const data = await r.json();
+      const parts = data?.candidates?.[0]?.content?.parts || [];
+      return { texte: parts.map((p) => p?.text || "").join("") };
+    },
+  },
+};
+
+/* Premier fournisseur, puis le secours s'il est configuré. Un nom inconnu est
+   une erreur de configuration : on le signale et on refuse, plutôt que de
+   deviner (et de facturer) un autre fournisseur. */
+function fournisseursConfigures(env) {
+  const premier = String(env.IA_FOURNISSEUR || "anthropic").trim().toLowerCase();
+  const secours = String(env.IA_SECOURS || "").trim().toLowerCase();
+  const noms = [premier, ...(secours && secours !== premier ? [secours] : [])];
+  const inconnu = noms.find((n) => !FOURNISSEURS[n]);
+  if (inconnu) { console.error(`[relais] fournisseur inconnu « ${inconnu} » (IA_FOURNISSEUR / IA_SECOURS : anthropic ou gemini)`); return null; }
+  return noms;
+}
+
+async function demanderAuModele(env, mediaType, base64Data) {
+  const noms = fournisseursConfigures(env);
+  if (!noms) return null;
+  for (const nom of noms) {
+    const f = FOURNISSEURS[nom];
+    if (!env[f.cle]) { console.error(`[relais] ${f.cle} absente (wrangler secret put ${f.cle}) : ${nom} ignoré`); continue; }
+    try {
+      const res = await f.appeler(env, mediaType, base64Data);
+      if (res.texte !== undefined) return res.texte;
+      console.error(`[relais] erreur ${nom}`, res.echec);
+    } catch (err) {
+      console.error(`[relais] appel ${nom} impossible`, err);
+    }
+  }
+  return null;
+}
+
+// ============================================================================
 // Identification par photo. Le prompt et le contrat de réponse sont INCHANGÉS ;
 // seuls les garde-fous d'entrée (taille, format, quotas) et les messages
 // d'erreur (plus aucun détail interne) ont été ajoutés le 29/09.
 // ============================================================================
 async function identifier(request, env) {
-  if (!env.ANTHROPIC_API_KEY) {
-    console.error("[relais] ANTHROPIC_API_KEY absente (wrangler secret put)");
+  // Configuration vérifiée AVANT de compter : une erreur de réglage ne doit
+  // pas consommer le quota des joueurs.
+  const noms = fournisseursConfigures(env);
+  if (!noms || !noms.some((n) => env[FOURNISSEURS[n].cle])) {
+    if (noms) console.error(`[relais] aucune clé pour ${noms.join(" / ")} (wrangler secret put)`);
     return json({ error: "Identification indisponible" }, 500, env);
   }
 
@@ -155,42 +260,11 @@ async function identifier(request, env) {
     return json({ error: "Reconnaissance automatique en pause pour aujourd'hui : choisis la voiture à la main" }, 429, env);
   }
 
-  let anthropicRes;
-  try {
-    anthropicRes = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": env.ANTHROPIC_API_KEY,
-        "anthropic-version": ANTHROPIC_VERSION,
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        max_tokens: 300,
-        messages: [
-          {
-            role: "user",
-            content: [
-              { type: "image", source: { type: "base64", media_type: mediaType, data: base64Data } },
-              { type: "text", text: PROMPT },
-            ],
-          },
-        ],
-      }),
-    });
-  } catch (err) {
-    console.error("[relais] appel Anthropic impossible", err);
-    return json({ error: "Identification indisponible" }, 502, env);
-  }
+  // Le détail d'un échec reste dans le journal Cloudflare, jamais dans la réponse.
+  const texteModele = await demanderAuModele(env, mediaType, base64Data);
+  if (texteModele === null) return json({ error: "Identification indisponible" }, 502, env);
 
-  if (!anthropicRes.ok) {
-    // Le détail reste dans le journal Cloudflare, jamais dans la réponse au navigateur.
-    console.error("[relais] erreur Anthropic", anthropicRes.status, (await anthropicRes.text().catch(() => "")).slice(0, 500));
-    return json({ error: "Identification indisponible" }, 502, env);
-  }
-
-  const data = await anthropicRes.json();
-  const raw = (data?.content || []).map((b) => b?.text || "").join("").trim();
+  const raw = texteModele.trim();
   const cleaned = raw.replace(/^```json\s*/i, "").replace(/^```\s*/, "").replace(/```\s*$/, "").trim();
 
   let guesses = [];

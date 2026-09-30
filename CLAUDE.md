@@ -109,6 +109,13 @@ compte n'est exigé pour capturer. Côté app, le jeton de session n'est envoyé
 **qu'au relais officiel** (`AI_ENDPOINT_DEFAULT`), jamais à un relais
 personnalisé. `/notify` n'existe plus.
 
+**Fournisseur au choix** (30/09) : `IA_FOURNISSEUR` = `anthropic` (défaut) ou
+`gemini` ; `IA_SECOURS` facultatif, appelé **seulement** si le premier échoue —
+jamais de secours implicite (dépense surprise). Même prompt, mêmes quotas, même
+contrat de réponse : un nouveau fournisseur s'ajoute comme une entrée de
+`FOURNISSEURS` (clé en **en-tête**, jamais dans l'URL), et `banc-relais.js`
+repasse. Une erreur de configuration refuse **avant** de consommer un quota.
+
 Même règle pour les **comptes** (§8 quinquies) : le serveur `cloud/compte-worker.js`
 se déploie à part ; la clé d'envoi d'e-mails (`RESEND_API_KEY`) est un secret du
 Worker. Le navigateur ne porte que l'adresse publique du Worker (`COMPTE_URL`) et
