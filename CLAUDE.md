@@ -787,6 +787,12 @@ jamais d'attente qu'on la lui réclame.
 **Format de la demande** (court, une par moment opportun, pas de relance si
 refusée tant que le contexte ne change pas) :
 
+> ⚠️ **Une question en attente se pose UNE fois, puis se tait** (règle du
+> propriétaire, 30/09). On ne la répète pas en fin de message, ni à chaque
+> vérification périodique, ni à chaque livraison : elle vit dans
+> `RESTE-A-FAIRE.md`, où le propriétaire la retrouve quand il veut. Pas de
+> vérification de PR programmée sans demande : c'est lui qui relance.
+
 ```
 🔧 Proposition : /nom-de-la-commande  (sur quoi)
    Pourquoi maintenant : l'événement qui la rend utile
