@@ -117,6 +117,32 @@ pas : `cloud/CARTE.md`. Nécessite le compte Cloudflare et le domaine du §2.
 5. [ ] Coller la **règle CORS** du guide sur le bucket.
 6. [ ] **Me donner l'adresse du fichier** (`https://carte.…/france.pmtiles`) :
    je renseigne `CARTE_URL` et je livre.
+7. [ ] 🟡 **Design de la carte** : aujourd'hui le style **standard clair** de
+   protomaps, identique en thème sombre (une carte claire dans une app sombre).
+   Palette clair + sombre à définir (ChatGPT possible, sur la base du brief
+   donné le 30/09) ; je la branche ensuite dans le moteur, sans toucher au code.
+
+## 4 bis. 📱 Plus tard : App Store / Google Play (à anticiper, rien à faire maintenant)
+
+Ce qui changera quand l'app passera en application native (enveloppe type
+Capacitor autour du même code) :
+- **Comptes développeur** : Apple 99 $/an, Google 25 $ une fois.
+- **Une étape de construction** (Xcode, Android Studio) : exception à la règle
+  « aucune dépendance » de `CLAUDE.md` §1.2, à décider le moment venu.
+- **Adresse de l'app** : elle ne sera plus `mcslec.github.io` mais une adresse
+  interne (`capacitor://localhost` sur iPhone) → à ajouter dans `APP_ORIGIN`
+  du relais et du serveur de comptes, sinon ils refusent l'app (403).
+- **Apple refuse les simples sites emballés** (règle 4.2) : l'appareil photo
+  natif, la carte et le hors-ligne jouent pour nous.
+- **Suppression de compte dans l'app** exigée par Apple : déjà faite.
+- **« Se connecter avec Apple »** : non exigé, on n'utilise ni Google ni
+  Facebook pour se connecter.
+- **Fiches de confidentialité des stores** : à remplir à partir de
+  `cloud/CONFIDENTIALITE.md` (photo envoyée à l'IA, e-mail, position GPS).
+- **Carte** : les serveurs d'OpenStreetMap n'acceptent pas le trafic d'une app
+  publique → **notre carte (§4) devient obligatoire** avant la sortie.
+- **Service worker** : peu utile en natif (les fichiers sont dans l'app) ;
+  comportement à vérifier sur iPhone au moment du chantier.
 
 ## 5. 🟡 Décisions produit en attente
 
