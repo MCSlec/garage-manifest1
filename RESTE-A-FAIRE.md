@@ -61,6 +61,25 @@ politique de confidentialité avant d'ouvrir l'app au public.
 
 Guide détaillé : `cloud/DEPLOIEMENT.md`.
 
+**➜ Voie gratuite, pour essayer sur toi seul (prête depuis la v20.196.0)** —
+`cloud/DEPLOIEMENT.md`, section « Mode essai gratuit ». Ni domaine, ni carte :
+1. [ ] Dans `cloud/`, copier `wrangler.toml.exemple` en `wrangler.toml`, **supprimer
+   le bloc `[[r2_buckets]]`**, mettre `MAIL_FROM = "Garage Manifest <onboarding@resend.dev>"`.
+2. [ ] `npx wrangler login`, puis base D1 + schéma (étape 3 du guide). **Pas** de R2.
+3. [ ] Secrets : `npx wrangler secret put RESEND_API_KEY` (ta clé Resend) et
+   `CODE_SECRET` (`openssl rand -base64 32`). Puis `npx wrangler deploy`.
+4. [ ] **Me donner l'adresse du Worker** affichée par `deploy` : je renseigne
+   `COMPTE_URL` et je livre.
+5. [ ] Sur ton téléphone : Réglages → Compte → **l'adresse de ton compte Resend**
+   (toute autre adresse ne recevra rien), code reçu, « Sauvegarder ». Le panneau doit
+   dire « Collection seule ».
+
+⚠️ Une fois `COMPTE_URL` livrée, le panneau « Compte » est visible par **tout le
+monde** : un autre joueur qui tente sa chance ne recevra pas de code (Resend refuse).
+Rien ne casse, mais c'est déroutant : à garder court, ou à dire autour de toi.
+
+**Voie complète (ouverture au public)** :
+
 1. [ ] Créer un compte **Cloudflare** (gratuit).
 2. [ ] Acheter un **nom de domaine** (≈ 10 €/an) — nécessaire pour que Resend
    écrive à n'importe quelle adresse.
@@ -187,7 +206,7 @@ Capacitor autour du même code) :
   aujourd'hui deux pages à faire glisser, sans onglets ni grille à icônes. Chantier à lancer
   sur ton « go », écarts de données déjà listés dans `DESIGN.md` §0.
 
-- [ ] **Comptes en mode essai, gratuit** (« go comptes essai ») : je rends R2 facultatif
+- [x] **Comptes en mode essai, gratuit** (« go comptes essai », fait le 01/10, v20.196.0 — à toi : §2, voie gratuite) : je rends R2 facultatif
   dans `compte-worker.js` (sauvegarde de la collection **sans les photos** quand
   `PHOTOS` est absent, refus net des envois de photos, banc mis à jour). Resend sans
   domaine n'écrit qu'à ton adresse : ça sert à éprouver le parcours de connexion sur

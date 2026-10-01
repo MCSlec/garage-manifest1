@@ -9,6 +9,8 @@ compatibility_date = "2026-09-01"
 # Origine EXACTE de l'app (protocole + domaine, sans chemin ni « / » final).
 APP_ORIGIN = "https://mcslec.github.io"
 # Expéditeur des e-mails : domaine vérifié chez Resend.
+# Mode essai sans domaine : "Garage Manifest <onboarding@resend.dev>" (n'écrit
+# qu'à l'adresse du compte Resend).
 MAIL_FROM = "Garage Manifest <connexion@ton-domaine.fr>"
 # Quotas de stockage photo (facultatifs : sans eux, les valeurs par défaut du
 # Worker s'appliquent — 5 000 photos et 1,5 Go par compte, 50 Go au total).
@@ -26,6 +28,9 @@ binding = "DB"
 database_name = "garage-comptes"
 database_id = "À-REMPLIR-après-wrangler-d1-create"
 
+# Stockage des photos. FACULTATIF : supprime ce bloc pour le mode essai gratuit
+# (R2 demande une carte bancaire) — collection sauvée, photos restées sur le
+# téléphone. Voir DEPLOIEMENT.md, « Mode essai gratuit ».
 [[r2_buckets]]
 binding = "PHOTOS"
 bucket_name = "garage-photos"

@@ -49,8 +49,18 @@
 //   DELETE /compte               Bearer           → 200 (tout est effacé)
 //
 // LIAISONS ET VARIABLES (wrangler.toml)
-//   DB (D1), PHOTOS (R2), APP_ORIGIN, MAIL_FROM
+//   DB (D1), PHOTOS (R2, facultatif), APP_ORIGIN, MAIL_FROM
 //   Secrets : RESEND_API_KEY, CODE_SECRET  (wrangler secret put …)
+//
+// MODE ESSAI SANS PHOTOS (01/10, offre gratuite)
+//   R2 exige une carte bancaire, même pour son offre gratuite. Sans liaison
+//   PHOTOS, le serveur sauvegarde la collection (voitures, dates, notes,
+//   lieux) et répond 501 à TOUTES les routes de photos. 501 et non 404 ou 500 :
+//   « ce serveur ne le fait pas » est un état de configuration, stable, que le
+//   client distingue d'une panne passagère (gm-compte.js) — il continue alors
+//   la sauvegarde sans photos au lieu de l'interrompre. Les empreintes restent
+//   dans la collection : le jour où R2 est branché, la sauvegarde suivante
+//   envoie les photos manquantes, sans migration.
 // ============================================================================
 
 const DUREE_CODE_MS     = 10 * 60 * 1000;          // code : 10 min
@@ -348,12 +358,12 @@ async function toutesLesPhotos(env, u) {
 async function routeExport(env, u) {
   const info = await env.DB.prepare('SELECT email, cree FROM utilisateurs WHERE id = ?').bind(u.id).first();
   const g = await env.DB.prepare('SELECT version, maj, donnees FROM garages WHERE utilisateur = ?').bind(u.id).first();
-  const photos = (await toutesLesPhotos(env, u)).map(k => k.split('/').pop());
+  const photos = env.PHOTOS ? (await toutesLesPhotos(env, u)).map(k => k.split('/').pop()) : [];
   return json(env, { email: info.email, cree: info.cree, garage: g ? { version: g.version, maj: g.maj, donnees: JSON.parse(g.donnees) } : null, photos });
 }
 
 async function routeSupprimer(env, u) {
-  const cles = await toutesLesPhotos(env, u);
+  const cles = env.PHOTOS ? await toutesLesPhotos(env, u) : [];
   for (let i = 0; i < cles.length; i += 1000) await env.PHOTOS.delete(cles.slice(i, i + 1000));
   const email = (await env.DB.prepare('SELECT email FROM utilisateurs WHERE id = ?').bind(u.id).first())?.email;
   await env.DB.batch([
@@ -408,6 +418,8 @@ export default {
       }
       if (p === '/garage' && req.method === 'GET') return await routeGarageLire(env, u);
       if (p === '/garage' && req.method === 'PUT') return await routeGarageEcrire(req, env, u);
+      // Mode essai sans R2 : un seul contrôle, AVANT toute route de photos (voir en tête).
+      if (!env.PHOTOS && (p === '/photos' || p.startsWith('/photos/'))) return json(env, { erreur: 'Ce serveur ne sauvegarde pas les photos', photos: false }, 501);
       if (p === '/photos/manquantes' && req.method === 'POST') return await routePhotosManquantes(req, env, u);
       const mp = /^\/photos\/([0-9a-f]{64})$/.exec(p);
       if (mp && req.method === 'PUT') return await routePhotoEcrire(req, env, u, mp[1]);

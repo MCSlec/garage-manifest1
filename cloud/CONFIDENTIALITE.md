@@ -54,7 +54,7 @@ la marque et le modèle proposés.
 | **Code de connexion** (scellé par HMAC, jamais le code lui-même) et nombre d'essais | Vérifier le code quand tu le tapes | 10 minutes de validité, 5 essais, usage unique ; effacé à la purge nocturne suivante |
 | **Session** (empreinte SHA-256 seulement) | Rester connecté sans recevoir un code à chaque fois | 90 jours, ou jusqu'à la déconnexion |
 | **Ta collection** : voitures, dates, lieux saisis, **positions GPS** si tu les as enregistrées, notes, déclinaisons, favoris, voitures personnalisées, pseudo, missions, liste d'amis et fil d'activité | Te la rendre sur un autre appareil | Tant que le compte existe |
-| **Tes photos** | Idem | Tant que le compte existe |
+| **Tes photos**, désignées dans ta collection par leur empreinte SHA-256 | Idem | Tant que le compte existe. **Mode essai** (serveur sans stockage photo) : aucune photo ne quitte ton téléphone ; seules leurs empreintes figurent dans la collection sauvée |
 | **Volume stocké** (nombre de photos, octets) | Appliquer le quota de stockage du compte | Tant que le compte existe |
 | **Voitures retirées** (identifiant de la voiture, date du retrait) | Faire disparaître la voiture de tes autres appareils | Tant que le compte existe |
 | **Photos supprimées** (empreinte SHA-256 de la photo, date de suppression — jamais la photo elle-même) | Faire disparaître la photo de tes autres appareils | Tant que le compte existe (5 000 plus récentes au plus) |

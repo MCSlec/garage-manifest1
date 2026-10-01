@@ -36,7 +36,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_COMPTE = '2.0.0';
+  const VERSION_COMPTE = '2.1.0';
 
   /* Adresse du Worker de comptes, SANS « / » final.
      Ex. 'https://garage-comptes.<ton-compte>.workers.dev'. Vide = en sommeil.
@@ -48,6 +48,10 @@
   const CLE = 'gm-compte';
   const CONCURRENCE_PHOTOS = 3;
   const LOT_EMPREINTES = 1000;     // le serveur refuse au-delà de 5 000 par requête : on reste loin
+  /* Serveur sans stockage photo (mode essai, compte-worker.js) : état de
+     configuration STABLE, à ne pas confondre avec une panne. On continue sans
+     les photos — elles restent sur l'appareil — et on le dit. */
+  const SANS_PHOTOS = 501;
 
   // ------------------------------------------------------------ état ----
   const lireEtat = () => { try { return JSON.parse(localStorage.getItem(CLE)) || {}; } catch (_) { return {}; } };
@@ -59,7 +63,7 @@
     const e = lireEtat();
     const enAttente = !e.session && e.emailEnAttente && Date.now() - (e.codeDemande || 0) < DUREE_CODE_MS ? e.emailEnAttente : null;
     return { configure: !!base, connecte: !!(base && e.session), email: e.email || null, codeEnvoyeA: enAttente,
-             version: e.version || 0, derniereSauvegarde: e.derniere || null };
+             version: e.version || 0, derniereSauvegarde: e.derniere || null, sansPhotos: !!e.sansPhotos };
   }
 
   // ------------------------------------------------------------- réseau --
@@ -150,11 +154,22 @@
       }
       spots.push({ ...s, photos: emp });
     }
-    const toutes = [...photos.keys()], manquantes = [];
-    for (let i = 0; i < toutes.length; i += LOT_EMPREINTES) {
-      const r = await api('POST', '/photos/manquantes', { corps: { empreintes: toutes.slice(i, i + LOT_EMPREINTES) } });
-      manquantes.push(...r.manquantes);
+    const toutes = [...photos.keys()];
+    let manquantes = [], sansPhotos = false;
+    try {
+      for (let i = 0; i < toutes.length; i += LOT_EMPREINTES) {
+        const r = await api('POST', '/photos/manquantes', { corps: { empreintes: toutes.slice(i, i + LOT_EMPREINTES) } });
+        manquantes.push(...r.manquantes);
+      }
+    } catch (err) {
+      if (err.statut !== SANS_PHOTOS) throw err;
+      // Les empreintes restent dans la collection : quand le serveur aura son
+      // stockage, la sauvegarde suivante enverra ces photos, sans migration.
+      sansPhotos = true; manquantes = [];
     }
+    /* Mémorisé dans les deux sens : le panneau suit le serveur le jour où il
+       gagne son stockage photo. Sans photo locale, on ne sait rien : on laisse. */
+    if (toutes.length) ecrireEtat({ ...lireEtat(), sansPhotos });
     let faites = 0;
     await enParallele(manquantes, CONCURRENCE_PHOTOS, async (h) => {
       const o = photos.get(h);
@@ -165,7 +180,7 @@
     try {
       const r = await api('PUT', '/garage', { corps: { donnees: { ...donnees, spots } }, entetes: { 'If-Match': String(e.version || 0) } });
       ecrireEtat({ ...lireEtat(), version: r.version, derniere: new Date().toISOString() });
-      return { version: r.version, photosEnvoyees: manquantes.length, voitures: spots.length };
+      return { version: r.version, photosEnvoyees: manquantes.length, voitures: spots.length, photosNonSauvegardees: sansPhotos ? toutes.length : 0 };
     } catch (err) {
       /* 409 : un autre appareil a sauvé entre-temps. On récupère sa version en
          FUSION (le local fait autorité, le cloud apporte ce qui manque), puis
@@ -190,8 +205,9 @@
     const toutes = [...new Set((g.donnees.spots || []).flatMap(s => Array.isArray(s.photos) ? s.photos : []))]
       .filter(h => /^[0-9a-f]{64}$/.test(h));
     const aTelecharger = toutes.filter(h => !locales.has(h));
-    let faites = 0, echecs = 0;
+    let faites = 0, echecs = 0, sansPhotos = false;
     await enParallele(aTelecharger, CONCURRENCE_PHOTOS, async (h) => {
+      if (sansPhotos) return;                        // serveur sans photos : inutile d'insister
       try {
         const r = await api('GET', `/photos/${h}`, { reponseBrute: true });
         // L'empreinte garantit les octets, pas l'en-tête : type en liste blanche.
@@ -206,6 +222,9 @@
            interrompt tout, sinon la sauvegarde suivante — automatique après un
            conflit — réécrirait le garage cloud SANS cette photo, qui serait
            perdue alors qu'elle existe (trouvé par /code-review). */
+        /* 501 : ce serveur ne garde AUCUNE photo. Rien n'existe au cloud, donc
+           rien ne peut se perdre : ce n'est pas un échec, on continue sans. */
+        if (err && err.statut === SANS_PHOTOS) { sansPhotos = true; return; }
         if (!err || err.statut !== 404) echecs++;
       }
       progres && progres({ etape: 'photos', faites: ++faites, total: aTelecharger.length });
@@ -214,8 +233,8 @@
     const donnees = { ...g.donnees, spots: (g.donnees.spots || []).map(s => ({
       ...s, photos: (Array.isArray(s.photos) ? s.photos : []).map(h => locales.get(h)).filter(Boolean) })) };
     const r = await global.GMGarage.importer(donnees, { fusion: true });
-    ecrireEtat({ ...lireEtat(), version: g.version });
-    return { voitures: r.n, rejetees: r.rejected, retirees: r.retirees || 0, photosTelechargees: aTelecharger.length, version: g.version };
+    ecrireEtat({ ...lireEtat(), version: g.version, ...(aTelecharger.length ? { sansPhotos } : {}) });
+    return { voitures: r.n, rejetees: r.rejected, retirees: r.retirees || 0, photosTelechargees: sansPhotos ? 0 : aTelecharger.length, sansPhotos, version: g.version };
   }
 
   async function supprimerCompte() {
@@ -240,7 +259,7 @@
     const e = etat();
     const corps = e.connecte ? `
           <div class="srow"><div class="l"><b>Connecté</b><span>${esc(e.email)}${e.derniereSauvegarde ? ` · dernière sauvegarde le ${esc(new Date(e.derniereSauvegarde).toLocaleString('fr-FR'))}` : ''}</span></div><button class="btn" data-gcp="deconnecter">Se déconnecter</button></div>
-          <div class="srow"><div class="l"><b>Sauvegarder dans le cloud</b><span>Collection et photos, retrouvables sur tous tes appareils</span></div><button class="btn red" data-gcp="sauvegarder">Sauvegarder</button></div>
+          <div class="srow"><div class="l"><b>Sauvegarder dans le cloud</b><span>${e.sansPhotos ? 'Collection seule, retrouvable sur tous tes appareils : ce serveur ne garde pas les photos, elles restent sur ce téléphone' : 'Collection et photos, retrouvables sur tous tes appareils'}</span></div><button class="btn red" data-gcp="sauvegarder">Sauvegarder</button></div>
           <div class="srow"><div class="l"><b>Récupérer mon garage</b><span>Ajoute ici ce qui est sauvé dans le cloud, sans rien effacer</span></div><button class="btn" data-gcp="restaurer">Récupérer</button></div>
           <div class="srow"><div class="l"><b>Supprimer mon compte</b><span>Efface ton compte et tout ce qui est sauvé dans le cloud (ce téléphone garde son garage)</span></div><button class="btn red ghost" data-gcp="supprimer">Supprimer</button></div>` : e.codeEnvoyeA ? `
           <div class="srow"><div class="l"><b>Code envoyé</b><span>à ${esc(e.codeEnvoyeA)} — valable 10 minutes</span></div><button class="btn" data-gcp="changer">Changer d'adresse</button></div>
@@ -290,12 +309,14 @@
       } else if (action === 'sauvegarder') {
         dire('Sauvegarde en cours…');
         const r = await sauvegarder({ progres: p => dire(`Envoi des photos : ${p.faites}/${p.total}`) });
-        message = `Sauvegardé : ${r.voitures} voiture${r.voitures > 1 ? 's' : ''}, ${r.photosEnvoyees} nouvelle${r.photosEnvoyees > 1 ? 's' : ''} photo${r.photosEnvoyees > 1 ? 's' : ''}.`;
+        message = r.photosNonSauvegardees
+          ? `Sauvegardé : ${r.voitures} voiture${r.voitures > 1 ? 's' : ''}, sans les photos (ce serveur ne les garde pas : elles restent sur ce téléphone).`
+          : `Sauvegardé : ${r.voitures} voiture${r.voitures > 1 ? 's' : ''}, ${r.photosEnvoyees} nouvelle${r.photosEnvoyees > 1 ? 's' : ''} photo${r.photosEnvoyees > 1 ? 's' : ''}.`;
         rafraichir();
       } else if (action === 'restaurer') {
         dire('Récupération en cours…');
         const r = await restaurer({ progres: p => dire(`Photos : ${p.faites}/${p.total}`) });
-        message = r.rien ? 'Rien n\'est encore sauvé dans le cloud.' : `Récupéré : ${r.voitures} voiture${r.voitures > 1 ? 's' : ''}${r.retirees ? ` · ${r.retirees} retirée${r.retirees > 1 ? 's' : ''} sur un autre appareil` : ''}.`;
+        message = r.rien ? 'Rien n\'est encore sauvé dans le cloud.' : `Récupéré : ${r.voitures} voiture${r.voitures > 1 ? 's' : ''}${r.retirees ? ` · ${r.retirees} retirée${r.retirees > 1 ? 's' : ''} sur un autre appareil` : ''}${r.sansPhotos ? ', sans les photos (ce serveur ne les garde pas)' : ''}.`;
         rafraichir();
       } else if (action === 'deconnecter') {
         await deconnecter(); message = 'Déconnecté.'; rafraichir();

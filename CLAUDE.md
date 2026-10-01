@@ -435,8 +435,8 @@ incrémenter conjointement :**
 1. `VERSION_MODULE` dans `gm-specs.js` (ligne ~22).
 2. `VERSION` (`"garage-v…"`) dans `sw.js` (ligne ~12).
 
-Ces deux numéros sont **tenus synchronisés** (au 30/09/2026 : `gm-specs.js` →
-`20.195.0`, `sw.js` → `garage-v20.195.0`). `VERSION_MODULE` s'affiche en outre
+Ces deux numéros sont **tenus synchronisés** (au 01/10/2026 : `gm-specs.js` →
+`20.196.0`, `sw.js` → `garage-v20.196.0`). `VERSION_MODULE` s'affiche en outre
 dans l'UI via `grefferVersion()`, ce qui permet de vérifier de visu quelle version
 tourne réellement sur l'appareil.
 
@@ -753,6 +753,7 @@ GMGarage.supprimerPhoto(src, { confirmer }) → { ok } | { ok:false, raison:'der
 | `/photos/manquantes` liste le préfixe du compte (1 appel / 1 000 photos) ; > 5 000 empreintes → 413, jamais de troncature | Offre gratuite : 1 000 appels aux services Cloudflare par requête |
 | Garage ≤ 1,9 Mo **en octets** ; `donnees` doit être un objet | D1 refuse toute ligne > 2 Mo |
 | **Quota** par compte et plafond global (`QUOTA_*`, réglables dans `wrangler.toml`) ; photo déjà stockée = idempotente, non comptée | Un compte gratuit ne peut pas remplir le stockage ni la facture |
+| **R2 facultatif** (01/10, mode essai gratuit) : sans liaison `PHOTOS`, toutes les routes `/photos…` répondent **501** `{photos:false}` (après le 401), la collection se sauve normalement | R2 exige une carte bancaire. 501 = état de configuration **stable** : le client continue sans photos (et le dit), alors qu'une panne passagère (5xx, réseau) **interrompt** la restauration. Ne jamais confondre les deux : traiter un 503 comme un 501 ferait réécrire le cloud sans des photos qui existent |
 
 **Côté client :**
 - **En sommeil par défaut** : `COMPTE_URL = ''` → aucun panneau, aucune requête

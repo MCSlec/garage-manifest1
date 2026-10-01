@@ -344,6 +344,41 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   const postsAncien = vuesAncien.filter(x => x.methode === 'POST');
   v('relais · ancien relais qui refuse le jeton : second essai anonyme, la capture fonctionne', postsAncien.length === 2 && !!postsAncien[0].auth && !postsAncien[1].auth, JSON.stringify(postsAncien));
 
+  /* 4 sexies. Mode essai sans R2 (offre gratuite) : collection sans photos, puis R2 branché */
+  sqlite.prepare('DELETE FROM limites').run();
+  const r2Reel = env.PHOTOS; delete env.PHOTOS;
+  const E1 = await telephone(), E2 = await telephone();
+  await idb(E1.page, 'put', [prise('ferrari-f40', [PH('X'), PH('Y')]), prise('peugeot-205', [PH('Z')])]);
+  await recharger(E1.page); await connecter(E1.page, 'essai@exemple.fr');
+  await ouvrirReglages(E1.page); await cliquer(E1.page, 'sauvegarder', 'Sauvegardé');
+  const ce = cloudDe('essai@exemple.fr');
+  v('essai sans R2 · sauvegarde réussie : les 2 voitures sont au cloud', ce && ce.donnees.spots.length === 2, JSON.stringify(ce && ce.version));
+  v('essai sans R2 · le message dit que les photos ne sont pas sauvées', /sans les photos/.test(await E1.page.textContent('#gcp-msg')), await E1.page.textContent('#gcp-msg'));
+  v('essai sans R2 · le panneau annonce « Collection seule »', /Collection seule/.test(await E1.page.textContent('#gcp-compte')));
+  v('essai sans R2 · le téléphone garde toutes ses photos', (await garage(E1.page))['ferrari-f40'].photos.length === 2);
+  await connecter(E2.page, 'essai@exemple.fr');
+  await ouvrirReglages(E2.page); await cliquer(E2.page, 'restaurer', 'Récupéré');
+  const gE2 = await garage(E2.page);
+  v('essai sans R2 · téléphone neuf : les 2 voitures récupérées, sans photo, sans interruption',
+    !!gE2['ferrari-f40'] && !!gE2['peugeot-205'] && gE2['ferrari-f40'].photos.length === 0, JSON.stringify(Object.keys(gE2)));
+  v('essai sans R2 · … et le message le dit', /sans les photos/.test(await E2.page.textContent('#gcp-msg')), await E2.page.textContent('#gcp-msg'));
+  await E2.page.evaluate(() => document.querySelector('[data-tab="collection"]')?.click()); await E2.page.waitForTimeout(300);
+  await E2.page.evaluate(() => document.querySelector('[data-car="ferrari-f40"]')?.click());
+  const ficheSansPhoto = await E2.page.waitForSelector('.detail-shell[data-car-id="ferrari-f40"]', { timeout: 5000 }).then(() => true, () => false);
+  v('essai sans R2 · la fiche d\'une voiture sans photo s\'ouvre (aucune erreur JS, vérifié en fin de banc)', ficheSansPhoto);
+  await recharger(E2.page);                                   // referme la fiche, qui masquerait les Réglages
+  // Aller-retour : E1 récupère puis resauve — ses photos locales ne sont pas perdues
+  await ouvrirReglages(E1.page); await cliquer(E1.page, 'restaurer', 'Récupéré');
+  v('essai sans R2 · E1 récupère depuis le cloud sans photo : ses photos locales restent', (await garage(E1.page))['ferrari-f40'].photos.length === 2);
+  // R2 branché plus tard : la sauvegarde suivante envoie les photos, sans migration
+  env.PHOTOS = r2Reel;
+  const photosAvant = env.PHOTOS._m.size;
+  await ouvrirReglages(E1.page); await cliquer(E1.page, 'sauvegarder', 'Sauvegardé');
+  v('R2 branché ensuite : la sauvegarde suivante envoie les 3 photos, sans migration', env.PHOTOS._m.size - photosAvant === 3 && /3 nouvelles photos/.test(await E1.page.textContent('#gcp-msg')), await E1.page.textContent('#gcp-msg'));
+  v('R2 branché ensuite : le panneau repasse à « Collection et photos »', /Collection et photos/.test(await E1.page.textContent('#gcp-compte')) && !(await E1.page.evaluate(() => window.GMCompte.etat().sansPhotos)));
+  await ouvrirReglages(E2.page); await cliquer(E2.page, 'restaurer', 'Récupéré');
+  v('R2 branché ensuite : le téléphone neuf récupère enfin les photos', (await garage(E2.page))['ferrari-f40'].photos.length === 2);
+
   /* 5. Suppression du compte */
   const idPilote = sqlite.prepare("SELECT id FROM utilisateurs WHERE email = 'pilote@exemple.fr'").get().id;
   await ouvrirReglages(A.page); await cliquer(A.page, 'supprimer', 'Compte supprimé');

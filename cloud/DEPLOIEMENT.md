@@ -20,6 +20,20 @@
 `wrangler` est un **outil de déploiement** sur ton poste, pas une dépendance de
 l'app : rien n'est ajouté à ce que le navigateur télécharge (CLAUDE.md §1.2).
 
+## Mode essai gratuit (sans domaine, sans carte bancaire)
+
+Pour éprouver la connexion et la sauvegarde **sur ta seule adresse**, sans rien
+payer. Deux différences avec le déploiement complet :
+
+| Étape | Mode essai | Pourquoi |
+|---|---|---|
+| 4. R2 | **Sautée** : supprime le bloc `[[r2_buckets]]` de `wrangler.toml` | R2 demande une carte bancaire, même pour son offre gratuite. Sans lui, le Worker sauvegarde la collection et répond 501 aux routes de photos ; l'app continue **sans les photos** et le dit (« Collection seule ») |
+| 5. Resend | Pas de domaine : saute l'étape 2 de Resend, et mets `MAIL_FROM = "Garage Manifest <onboarding@resend.dev>"` | Adresse d'essai de Resend : elle n'écrit **qu'à l'adresse de ton compte Resend**. Tout autre e-mail échoue |
+
+Le jour où tu passes au complet : crée le bucket (étape 4), remets le bloc
+`[[r2_buckets]]`, `npx wrangler deploy`. La sauvegarde suivante envoie les
+photos manquantes d'elle-même, sans migration (vérifié au banc).
+
 ## Étapes
 
 Toutes les commandes se lancent **depuis le dossier `cloud/`**.
@@ -145,7 +159,7 @@ détail est dans ce journal.
 ## Avant toute modification du serveur
 
 ```sh
-node banc-compte.js              # le Worker réel, D1 et R2 simulés (61 tests)
+node banc-compte.js              # le Worker réel, D1 et R2 simulés (69 tests, dont le mode essai sans R2)
 node banc-compte-navigateur.js   # app + Worker de bout en bout dans Chromium (47 tests)
 node banc-relais.js              # le relais IA réel, D1 simulée, IA interceptée (18 tests)
 ```

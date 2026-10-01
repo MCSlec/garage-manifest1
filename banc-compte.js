@@ -291,6 +291,30 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   delete env.QUOTA_GLOBAL_OCTETS;
   await appel('DELETE', '/compte', { session: sR });
 
+  /* Mode essai sans R2 (offre gratuite) : collection sauvée, photos refusées en 501 */
+  const r2Reel = env.PHOTOS; delete env.PHOTOS;
+  ip = 270; const sE = await connecter('essai@exemple.fr');
+  v('sans R2 : la connexion par code fonctionne', !!sE);
+  r = await appel('PUT', '/garage', { session: sE, corps: { donnees: { spots: [{ carId: 'ferrari-f40', photos: [shaQ(photoQ(900))] }] } }, entetes: { 'If-Match': '0' } });
+  v('sans R2 : la collection se sauvegarde', r.status === 200, r.status);
+  r = await appel('GET', '/garage', { session: sE });
+  const gE = r.status === 200 ? await r.json() : null;
+  v('sans R2 : la collection se relit, empreintes de photos conservées (pour le jour où R2 arrive)', gE && gE.donnees.spots[0].photos[0] === shaQ(photoQ(900)));
+  r = await appel('POST', '/photos/manquantes', { session: sE, corps: { empreintes: [shaQ(photoQ(900))] } });
+  const corpsE = r.status === 501 ? await r.json() : {};
+  v('sans R2 : liste des photos manquantes → 501, marquée « photos:false » (état stable, pas une panne)', r.status === 501 && corpsE.photos === false, r.status);
+  r = await appel('PUT', `/photos/${shaQ(photoQ(900))}`, { session: sE, brut: photoQ(900), type: 'image/jpeg' });
+  const r2b = await appel('GET', `/photos/${shaQ(photoQ(900))}`, { session: sE });
+  v('sans R2 : envoi et lecture de photo → 501, sans erreur interne', r.status === 501 && r2b.status === 501, `${r.status} / ${r2b.status}`);
+  r = await appel('POST', '/photos/manquantes', { corps: { empreintes: [] } });
+  v('sans R2 : sans session, toujours 401 d\'abord (la configuration ne se lit pas anonymement)', r.status === 401, r.status);
+  r = await appel('GET', '/compte/export', { session: sE });
+  const exE = r.status === 200 ? await r.json() : {};
+  v('sans R2 : l\'export RGPD fonctionne (liste de photos vide)', r.status === 200 && Array.isArray(exE.photos) && exE.photos.length === 0 && !!exE.garage, r.status);
+  r = await appel('DELETE', '/compte', { session: sE });
+  v('sans R2 : la suppression du compte fonctionne et efface tout', r.status === 200 && !sqlite.prepare("SELECT 1 FROM utilisateurs WHERE email='essai@exemple.fr'").get(), r.status);
+  env.PHOTOS = r2Reel;
+
   /* RGPD : export, déconnexion, suppression */
   r = await appel('GET', '/compte/export', { session: sA });
   const ex = await r.json();
