@@ -34,8 +34,10 @@ améliorer ses produits (régime UE à vérifier, `cloud/CONFIDENTIALITE.md`). �
 politique de confidentialité avant d'ouvrir l'app au public.
 
 **En pause tant qu'on reste gratuit** (ils demandent de payer) :
-- **Comptes et sauvegarde cloud** (§2) : Resend n'écrit à n'importe quelle adresse qu'avec
-  un nom de domaine (≈ 10 €/an). Le code reste prêt, en sommeil.
+- **Comptes et sauvegarde cloud** (§2) : **deux** verrous payants. Resend n'écrit à
+  n'importe quelle adresse qu'avec un nom de domaine (≈ 10 €/an) ; et le serveur range
+  les photos dans **R2** (liaison `PHOTOS`, obligatoire dans `compte-worker.js`), qui
+  demande une carte bancaire. Le code reste prêt, en sommeil (`COMPTE_URL` vide).
 - **Notre carte** (§4) : le stockage R2 de Cloudflare demande une carte bancaire même pour
   son offre gratuite (à revérifier le moment venu), plus un domaine.
 - **Clé Anthropic** : si un crédit existe, désactive la recharge automatique ; une fois
@@ -63,6 +65,11 @@ Guide détaillé : `cloud/DEPLOIEMENT.md`.
 2. [ ] Acheter un **nom de domaine** (≈ 10 €/an) — nécessaire pour que Resend
    écrive à n'importe quelle adresse.
 3. [ ] Créer **un** compte **Resend** et y vérifier le domaine (SPF / DKIM).
+   - [x] Compte Resend créé, offre gratuite, **sans domaine** (01/10). Sans domaine,
+     Resend n'envoie qu'à l'adresse du titulaire du compte : suffisant pour un essai
+     sur toi seul, pas pour d'autres joueurs. La clé `RESEND_API_KEY` est un secret
+     du Worker : ne la colle jamais dans l'app, ni dans un message.
+   - [ ] Vérifier le domaine (après l'étape 2).
    ⚠️ Un seul compte : il n'y a qu'un type d'e-mail (le code de connexion), et
    ouvrir plusieurs comptes gratuits pour contourner la limite est interdit
    par la politique d'utilisation de Resend (risque : blocage, donc plus
@@ -180,6 +187,11 @@ Capacitor autour du même code) :
   aujourd'hui deux pages à faire glisser, sans onglets ni grille à icônes. Chantier à lancer
   sur ton « go », écarts de données déjà listés dans `DESIGN.md` §0.
 
+- [ ] **Comptes en mode essai, gratuit** (« go comptes essai ») : je rends R2 facultatif
+  dans `compte-worker.js` (sauvegarde de la collection **sans les photos** quand
+  `PHOTOS` est absent, refus net des envois de photos, banc mis à jour). Resend sans
+  domaine n'écrit qu'à ton adresse : ça sert à éprouver le parcours de connexion sur
+  ton téléphone, pas à ouvrir les comptes au public.
 - [ ] Sauvegarde cloud **manuelle** (bouton, choix par défaut) ou automatique.
 - [ ] Photos sauvegardées : **toutes** (choix par défaut, dédupliquées) ou la
   couverture seulement.
