@@ -160,8 +160,8 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   modeGemini = 'quota'; [a0, g0] = [appelsIA, appelsGemini];
   r = await appel({ envX: envG, ipFixe: '10.3.3.2' });
   const texteQuota = await r.text();
-  v('quota Gemini épuisé, SANS secours : 502 générique, Anthropic jamais appelé (aucune dépense surprise)',
-    r.status === 502 && appelsIA === a0 && !/AIza|SECRET|RESOURCE/.test(texteQuota), `${r.status} ${texteQuota} · Anthropic ${appelsIA - a0}`);
+  v('quota gratuit de Gemini épuisé, SANS secours : 429 « en pause pour aujourd\'hui » (pas une panne), Anthropic jamais appelé, aucun détail du fournisseur',
+    r.status === 429 && /en pause pour aujourd/.test(texteQuota) && appelsIA === a0 && !/AIza|SECRET|RESOURCE/.test(texteQuota), `${r.status} ${texteQuota} · Anthropic ${appelsIA - a0}`);
   const avantSecours = sqlite.prepare('SELECT SUM(compte) AS n FROM limites').get().n;
   r = await appel({ envX: { ...envG, IA_SECOURS: 'anthropic' }, ipFixe: '10.3.3.3' });
   const propS = r.status === 200 ? await r.json() : null;

@@ -14,6 +14,33 @@
 
 ---
 
+## 0. 💶 Mode gratuit — décision du 01/10 : rien de payant pour l'instant
+
+Ce qui tourne **gratuitement**, sans carte bancaire :
+- **App** : GitHub Pages.
+- **Relais IA** : Cloudflare Workers + D1 (offres gratuites) avec **Gemini en offre
+  gratuite** (clé sur aistudio.google.com, **sans activer la facturation**).
+  Réglages : `IA_FOURNISSEUR = gemini`, **pas** de `IA_SECOURS`. Quand le quota gratuit
+  du jour est épuisé, le joueur lit « en pause pour aujourd'hui » et choisit à la main
+  (géré dans le code depuis le 01/10).
+- **Carte** : tuiles OpenStreetMap (gratuites, attribution obligatoire → point 1).
+
+Règle d'or : **n'enregistre aucune carte bancaire** (Google AI Studio, Cloudflare).
+Sans moyen de paiement, un service gratuit **refuse** au-delà de son quota au lieu de
+facturer : c'est la meilleure protection, meilleure qu'une alerte.
+
+⚠️ Contrepartie de Gemini gratuit : Google peut se servir des photos envoyées pour
+améliorer ses produits (régime UE à vérifier, `cloud/CONFIDENTIALITE.md`). À dire dans la
+politique de confidentialité avant d'ouvrir l'app au public.
+
+**En pause tant qu'on reste gratuit** (ils demandent de payer) :
+- **Comptes et sauvegarde cloud** (§2) : Resend n'écrit à n'importe quelle adresse qu'avec
+  un nom de domaine (≈ 10 €/an). Le code reste prêt, en sommeil.
+- **Notre carte** (§4) : le stockage R2 de Cloudflare demande une carte bancaire même pour
+  son offre gratuite (à revérifier le moment venu), plus un domaine.
+- **Clé Anthropic** : si un crédit existe, désactive la recharge automatique ; une fois
+  Gemini vérifié, retire `ANTHROPIC_API_KEY` du relais.
+
 ## 1. ⚖️ Déjà en production — à trancher en premier
 
 - [ ] **Attribution OpenStreetMap incomplète sur la carte actuelle.** La
@@ -48,8 +75,8 @@ Guide détaillé : `cloud/DEPLOIEMENT.md`.
 ## 2 bis. 🟡 Quotas et facture (après déploiement)
 
 - [x] Quotas de stockage validés le 29/09 (5 000 photos / 1,5 Go par compte, 50 Go au total).
-- [ ] **Créer une alerte de facturation** Cloudflare **et** chez le fournisseur d'IA :
-  la seule garantie qui ne dépend pas du code.
+- [ ] ~~Alerte de facturation~~ → **sans objet en mode gratuit** (§0 : aucune carte
+  enregistrée = aucune facture possible). À remettre le jour où un service payant est activé.
 
 ## 2 ter. 🔴 Relais IA
 
@@ -59,9 +86,8 @@ Guide détaillé : `cloud/DEPLOIEMENT.md`.
   (README §3bis). Tant que ce n'est pas fait, c'est l'ANCIEN relais, ouvert, qui tourne.
 - [x] Relais **multi-fournisseur** (Claude ou Gemini, bascule par la variable
   `IA_FOURNISSEUR`, secours facultatif `IA_SECOURS`) — **fait dans le code** le 30/09.
-- [ ] 🟡 **Régler le fournisseur** au redéploiement (README §3bis, étape 3) :
-  `anthropic` (défaut, payant) ou `gemini` (clé gratuite sur aistudio.google.com),
-  avec ou sans secours. Pour Gemini, lire d'abord le point « offre gratuite » de
+- [ ] **Régler le fournisseur** au redéploiement (README §3bis, étape 3) :
+  **`gemini`, sans secours** (mode gratuit, §0). Pour Gemini, lire d'abord le point « offre gratuite » de
   `cloud/CONFIDENTIALITE.md`.
 - [ ] Après la bascule : **une** capture de test et un coup d'œil au journal
   (`npx wrangler tail`) — le banc simule l'API, il ne remplace pas un vrai appel.

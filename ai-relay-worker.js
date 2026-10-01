@@ -157,7 +157,7 @@ const FOURNISSEURS = {
           ],
         }),
       });
-      if (!r.ok) return { echec: `HTTP ${r.status} ${(await r.text().catch(() => "")).slice(0, 500)}` };
+      if (!r.ok) return { echec: `HTTP ${r.status} ${(await r.text().catch(() => "")).slice(0, 500)}`, statut: r.status };
       const data = await r.json();
       return { texte: (data?.content || []).map((b) => b?.text || "").join("") };
     },
@@ -176,7 +176,7 @@ const FOURNISSEURS = {
           generationConfig: { maxOutputTokens: 1024, responseMimeType: "application/json" },
         }),
       });
-      if (!r.ok) return { echec: `HTTP ${r.status} ${(await r.text().catch(() => "")).slice(0, 500)}` };
+      if (!r.ok) return { echec: `HTTP ${r.status} ${(await r.text().catch(() => "")).slice(0, 500)}`, statut: r.status };
       const data = await r.json();
       const parts = data?.candidates?.[0]?.content?.parts || [];
       return { texte: parts.map((p) => p?.text || "").join("") };
@@ -196,21 +196,28 @@ function fournisseursConfigures(env) {
   return noms;
 }
 
+/* Renvoie { texte } ou { epuise } ou {} (échec). `epuise` : TOUS les fournisseurs
+   essayés ont répondu 429 — en offre gratuite (Gemini sans facturation), c'est le
+   quota du jour du fournisseur qui est atteint, pas une panne : le joueur doit
+   lire « en pause pour aujourd'hui », pas « indisponible ». */
 async function demanderAuModele(env, mediaType, base64Data) {
   const noms = fournisseursConfigures(env);
-  if (!noms) return null;
+  if (!noms) return {};
+  let essais = 0, quotas = 0;
   for (const nom of noms) {
     const f = FOURNISSEURS[nom];
     if (!env[f.cle]) { console.error(`[relais] ${f.cle} absente (wrangler secret put ${f.cle}) : ${nom} ignoré`); continue; }
+    essais++;
     try {
       const res = await f.appeler(env, mediaType, base64Data);
-      if (res.texte !== undefined) return res.texte;
+      if (res.texte !== undefined) return { texte: res.texte };
+      if (res.statut === 429) quotas++;
       console.error(`[relais] erreur ${nom}`, res.echec);
     } catch (err) {
       console.error(`[relais] appel ${nom} impossible`, err);
     }
   }
-  return null;
+  return essais && quotas === essais ? { epuise: true } : {};
 }
 
 // ============================================================================
@@ -261,8 +268,10 @@ async function identifier(request, env) {
   }
 
   // Le détail d'un échec reste dans le journal Cloudflare, jamais dans la réponse.
-  const texteModele = await demanderAuModele(env, mediaType, base64Data);
-  if (texteModele === null) return json({ error: "Identification indisponible" }, 502, env);
+  const reponse = await demanderAuModele(env, mediaType, base64Data);
+  if (reponse.epuise) return json({ error: "Reconnaissance automatique en pause pour aujourd'hui : choisis la voiture à la main" }, 429, env);
+  if (reponse.texte === undefined) return json({ error: "Identification indisponible" }, 502, env);
+  const texteModele = reponse.texte;
 
   const raw = texteModele.trim();
   const cleaned = raw.replace(/^```json\s*/i, "").replace(/^```\s*/, "").replace(/```\s*$/, "").trim();
