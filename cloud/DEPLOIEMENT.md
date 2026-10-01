@@ -23,7 +23,8 @@ l'app : rien n'est ajouté à ce que le navigateur télécharge (CLAUDE.md §1.2
 ## Mode essai gratuit (sans domaine, sans carte bancaire)
 
 Pour éprouver la connexion et la sauvegarde **sur ta seule adresse**, sans rien
-payer. Deux différences avec le déploiement complet :
+payer. **Version pas à pas dans le navigateur, sans ligne de commande :
+`TUTO-GRATUIT.md`** à la racine du dépôt. Deux différences avec le déploiement complet :
 
 | Étape | Mode essai | Pourquoi |
 |---|---|---|

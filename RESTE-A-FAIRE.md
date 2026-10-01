@@ -14,6 +14,9 @@
 
 ---
 
+> 🧭 **Par où commencer ?** `TUTO-GRATUIT.md` : tout ce qui suit, pas à pas, dans
+> le navigateur, sans ligne de commande (base D1, relais IA Gemini, comptes en essai).
+
 ## 0. 💶 Mode gratuit — décision du 01/10 : rien de payant pour l'instant
 
 Ce qui tourne **gratuitement**, sans carte bancaire :
@@ -34,10 +37,11 @@ améliorer ses produits (régime UE à vérifier, `cloud/CONFIDENTIALITE.md`). �
 politique de confidentialité avant d'ouvrir l'app au public.
 
 **En pause tant qu'on reste gratuit** (ils demandent de payer) :
-- **Comptes et sauvegarde cloud** (§2) : **deux** verrous payants. Resend n'écrit à
-  n'importe quelle adresse qu'avec un nom de domaine (≈ 10 €/an) ; et le serveur range
-  les photos dans **R2** (liaison `PHOTOS`, obligatoire dans `compte-worker.js`), qui
-  demande une carte bancaire. Le code reste prêt, en sommeil (`COMPTE_URL` vide).
+- **Comptes ouverts au public** (§2) : **deux** verrous payants. Resend n'écrit à
+  n'importe quelle adresse qu'avec un nom de domaine (≈ 10 €/an) ; les photos vont dans
+  **R2**, qui demande une carte bancaire. En attendant : **mode essai gratuit** (depuis
+  la v20.196.0, R2 est facultatif) — connexion à ta seule adresse, collection sauvée
+  sans les photos. `TUTO-GRATUIT.md`, parties C à E.
 - **Notre carte** (§4) : le stockage R2 de Cloudflare demande une carte bancaire même pour
   son offre gratuite (à revérifier le moment venu), plus un domaine.
 - **Clé Anthropic** : si un crédit existe, désactive la recharge automatique ; une fois
@@ -62,7 +66,8 @@ politique de confidentialité avant d'ouvrir l'app au public.
 Guide détaillé : `cloud/DEPLOIEMENT.md`.
 
 **➜ Voie gratuite, pour essayer sur toi seul (prête depuis la v20.196.0)** —
-`cloud/DEPLOIEMENT.md`, section « Mode essai gratuit ». Ni domaine, ni carte :
+**`TUTO-GRATUIT.md`, parties A, C, D, E** (tout dans le navigateur). Résumé, pour qui
+préfère la ligne de commande (`cloud/DEPLOIEMENT.md`, « Mode essai gratuit ») :
 1. [ ] Dans `cloud/`, copier `wrangler.toml.exemple` en `wrangler.toml`, **supprimer
    le bloc `[[r2_buckets]]`**, mettre `MAIL_FROM = "Garage Manifest <onboarding@resend.dev>"`.
 2. [ ] `npx wrangler login`, puis base D1 + schéma (étape 3 du guide). **Pas** de R2.
@@ -109,7 +114,7 @@ Rien ne casse, mais c'est déroutant : à garder court, ou à dire autour de toi
 - [x] Plafonds validés le 29/09 (3 000/jour au total, 30/jour sans compte, 200/jour
   avec compte) et `/notify` supprimé — **faits dans le code**.
 - [ ] **Redéployer le relais** avec la liaison D1 `DB` et la variable `APP_ORIGIN`
-  (README §3bis). Tant que ce n'est pas fait, c'est l'ANCIEN relais, ouvert, qui tourne.
+  (**`TUTO-GRATUIT.md`, parties A et B** ; README §3bis). Tant que ce n'est pas fait, c'est l'ANCIEN relais, ouvert, qui tourne.
 - [x] Relais **multi-fournisseur** (Claude ou Gemini, bascule par la variable
   `IA_FOURNISSEUR`, secours facultatif `IA_SECOURS`) — **fait dans le code** le 30/09.
 - [ ] **Régler le fournisseur** au redéploiement (README §3bis, étape 3) :
