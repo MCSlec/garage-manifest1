@@ -13,6 +13,31 @@
 
 ---
 
+## Ton point de départ (reconstitué depuis GitHub, 02/10)
+
+Ce que GitHub permet de déduire : l'historique de `main`, où tu déposes tes
+fichiers à la main (« Add files via upload »), et le code du relais tel que tu
+l'as déposé le 31/08. Ce sont des **déductions** : ton tableau de bord Cloudflare
+fait foi.
+
+| Élément | État probable | Indice dans GitHub |
+|---|---|---|
+| App en ligne | Version du 21/09 : aucun des travaux récents | Dernier dépôt sur `main` le 21/09 |
+| Relais `silent-firefly-2620` | Version du 31/08 : **Claude Haiku** (Anthropic, payant), **sans plafond**, ouvert à tout site (`CORS *`) | `ai-relay-worker.js` sur `main` ; le relevé du 18/09 dans `CONTEXT.md` confirme Claude |
+| Ta « clé API de reco » | Une clé **Anthropic** (`ANTHROPIC_API_KEY`) | Seule clé lue par ce relais |
+| Secret Resend sur le relais | Sans doute présent (`RESEND_API_KEY`) | Route `/notify` de ce relais, jamais appelée par l'app |
+| Compte Resend | Sans doute ouvert avec **dijon.autodetail@gmail.com** | `/notify` écrivait à cette adresse depuis `onboarding@resend.dev`, ce que Resend ne permet que vers l'adresse du compte |
+| Clé Gemini | Peut-être encore dans AI Studio | Le relais tournait sur Gemini en juillet |
+| Base D1 | **Aucune** | Aucun code déposé n'en a jamais utilisé |
+
+⚠️ **Conséquence : la partie B est urgente.** L'adresse de ton relais actuel est
+publique (elle figure dans l'app) et il n'a **aucune limite**. N'importe qui peut
+l'appeler en boucle, à tes frais sur ta clé Anthropic. Ça coûte surtout si la
+recharge automatique est active. Le relais du tuto ferme cette porte : plafonds,
+Gemini gratuit, refus des autres sites.
+
+---
+
 ## La règle n° 1 : les clés ne voyagent pas
 
 Tu vas manipuler **trois secrets** : la clé Gemini, la clé Resend et le secret des
@@ -108,8 +133,10 @@ range comptes et collections. Elle doit exister avant tout le reste.
 
 ### B1. La clé Gemini (Google) — réutilise celle que tu as déjà
 
-Ton relais a démarré sur Gemini en juillet : tu as donc **déjà** un compte Google AI
-Studio, et probablement une clé.
+La clé que ton relais utilise aujourd'hui est très probablement une clé
+**Anthropic** (Claude, payante). Pour rester gratuit, il en faut une **Gemini**. Ton
+relais a démarré sur Gemini en juillet : tu as donc **déjà** un compte Google AI
+Studio, et peut-être encore une clé.
 
 - [ ] Va sur **aistudio.google.com/app/apikey**, connecte-toi avec le **même** compte
   Google qu'en juillet.
@@ -218,7 +245,12 @@ moi.
   Si tu la perds, supprime-la et recrée-en une.
 - [ ] **Note l'adresse e-mail de ton compte Resend** (en haut à droite, ou
   *Settings*). C'est **la seule** adresse qui pourra recevoir un code tant qu'on n'a
-  pas de domaine.
+  pas de domaine. D'après GitHub, c'est probablement **dijon.autodetail@gmail.com**
+  (voir « Ton point de départ ») : vérifie-le ici.
+- ℹ️ Une ancienne clé Resend est peut-être enregistrée sur le relais (`/notify`).
+  Cloudflare ne réaffiche jamais un secret, et Resend ne montre une clé qu'une fois :
+  on ne la récupère pas. On en crée une neuve, dédiée aux comptes. Si une ancienne
+  clé figure dans la liste Resend, supprime-la une fois la partie B faite.
 
 ### C2. Fabriquer le secret des codes
 
