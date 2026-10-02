@@ -349,7 +349,10 @@ Cloudflare… le chemin qui demandait le moins de manipulation »), **jamais dé
 GitHub**. Clé passée en `?key=` dans l'URL ; `/notify` ouvert à tous, avec injection
 HTML possible dans l'e-mail (champ photo validé sur son seul préfixe) ; CORS reflété,
 aucun plafond. Même nom de clé, même modèle, même contrat de réponse que le nouveau
-relais : la migration ne change rien côté app. Le fichier Haiku déposé sur
+relais : la migration ne change rien côté app. Reconnaissance **confirmée fonctionnelle** par le
+propriétaire le 02/10 (« elle nomme directement la bonne voiture ») : sa clé `AQ.` est
+donc acceptée en `?key=` sur son compte. Le nouveau relais passe par l'en-tête
+`x-goog-api-key`, la méthode documentée par Google pour ces clés. Le fichier Haiku déposé sur
 GitHub (11/08 → 31/08) **n'a jamais été collé dans Cloudflare** : il n'a jamais
 tourné, et rien n'a été facturé par Anthropic. Le propriétaire n'a jamais demandé
 Haiku. ⚠️ Leçon : le code sur GitHub n'est **pas** le code déployé. Un relevé fait
