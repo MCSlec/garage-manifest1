@@ -342,8 +342,14 @@ sans qu'aucune erreur JS ne le signale).
 **Modèle réellement en production (constaté sur le tableau de bord Cloudflare le
 02/10/2026) : Gemini.** Le relais déployé n'a **aucune** clé Anthropic, mais porte
 `GEMINI_API_KEY` (format `AQ.`, en Variable texte et non en Secret) et un reste de
-`RESEND_API_KEY`, sans aucune liaison D1. Il tourne donc sur le code **Gemini de
-juillet**, jamais remplacé, et la reconnaissance marche. Le fichier Haiku déposé sur
+`RESEND_API_KEY`, sans aucune liaison D1. Code relu le 02/10 (copié du tableau de
+bord par le propriétaire) : version **Gemini `gemini-3.1-flash-lite` du 31/08**, écrite
+par une IA (« repassé sur Gemini : la clé ANTHROPIC_API_KEY manquait côté
+Cloudflare… le chemin qui demandait le moins de manipulation »), **jamais déposée sur
+GitHub**. Clé passée en `?key=` dans l'URL ; `/notify` ouvert à tous, avec injection
+HTML possible dans l'e-mail (champ photo validé sur son seul préfixe) ; CORS reflété,
+aucun plafond. Même nom de clé, même modèle, même contrat de réponse que le nouveau
+relais : la migration ne change rien côté app. Le fichier Haiku déposé sur
 GitHub (11/08 → 31/08) **n'a jamais été collé dans Cloudflare** : il n'a jamais
 tourné, et rien n'a été facturé par Anthropic. Le propriétaire n'a jamais demandé
 Haiku. ⚠️ Leçon : le code sur GitHub n'est **pas** le code déployé. Un relevé fait

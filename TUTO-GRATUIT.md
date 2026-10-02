@@ -20,13 +20,14 @@ Constaté sur la page **Settings** de `silent-firefly-2620` :
 | Élément | État **constaté** | Ce que ça veut dire |
 |---|---|---|
 | Clé Anthropic | **Aucune** | Claude Haiku n'a **jamais tourné** : le fichier Haiku déposé sur GitHub n'a jamais été collé dans Cloudflare. **Rien n'a été facturé, rien ne peut l'être.** |
-| `GEMINI_API_KEY` | Présente, en **Variable** (texte en clair), clé au format `AQ.` | Le relais tourne sur le code **Gemini** de juillet, et la reconnaissance marche. C'est ta « clé API de reco » |
+| `GEMINI_API_KEY` | Présente, en **Variable** (texte en clair), clé au format `AQ.` | C'est ta « clé API de reco ». Le relais tourne sur une version **Gemini** (`gemini-3.1-flash-lite`) écrite le **31/08**, qui n'a **jamais été déposée sur GitHub** |
 | `RESEND_API_KEY` | Présente, en **Variable** (texte en clair) | Reste de l'ancien signalement par e-mail ; le code actuel ne s'en sert pas |
 | Liaisons (*Bindings*) | **Aucune** | Pas de base D1 : la partie A est à faire |
 | App en ligne | Version du 21/09 (d'après GitHub) | Aucun des travaux récents n'est en ligne |
 | Compte Resend | Sans doute **dijon.autodetail@gmail.com** (d'après GitHub) | À vérifier en C1 |
 
-**Deux défauts à corriger**, et la partie B les règle :
+**Quatre défauts à corriger**, tous réglés par la partie B (le nouveau code remplace
+entièrement l'actuel) :
 1. **Le relais n'a aucune limite.** Son adresse est publique. Avec Gemini gratuit, un
    abus ne te coûte rien, mais il peut épuiser ton quota du jour, et la
    reconnaissance s'arrête alors pour toi aussi.
@@ -34,6 +35,12 @@ Constaté sur la page **Settings** de `silent-firefly-2620` :
    en clair à quiconque ouvre ce tableau de bord, et dans toute capture d'écran ; un
    Secret est chiffré, et même toi tu ne peux plus le relire. Les étapes B4 et C1
    les passent en Secret.
+3. **La clé Gemini part dans l'adresse de la requête** (`?key=…`). Une adresse se
+   retrouve dans les journaux et les outils intermédiaires ; Google demande l'en-tête.
+4. **La route `/notify` est ouverte à tous.** N'importe qui peut faire envoyer des
+   e-mails à dijon.autodetail@gmail.com, sur ton quota Resend, et y glisser du HTML
+   de son choix (le champ photo n'est vérifié que sur son début). L'app ne l'a jamais
+   appelée : le nouveau relais la supprime.
 
 > **Bonne nouvelle sur le format `AQ.`** Google ne délivre plus que ce nouveau
 > format de clé, et il n'accepte la clé que dans l'**en-tête** de la requête
