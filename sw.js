@@ -4,12 +4,12 @@
    cache suffit à rendre toute l'app disponible hors-ligne. Les données (photos,
    collection) vivent dans IndexedDB côté page, pas ici.
 
-   v13.6.0 — gm-specs.js : vague 5 (France — Peugeot, Citroën, Renault, Alpine, Matra, Bugatti).
+   v20.187.0 — Leaflet hébergé dans le dépôt : plus aucun CDN.
              Le numéro DOIT être incrémenté à chaque modification d'un fichier
              mis en cache, sinon l'ancienne copie est resservie indéfiniment.
 */
 
-const VERSION = "garage-v20.115.0";
+const VERSION = "garage-v20.196.0";
 
 /* ESSENTIEL : sans ces fichiers, l'app ne démarre pas hors-ligne.
    Mis en cache de façon atomique — si l'un manque, l'installation doit échouer
@@ -26,6 +26,13 @@ const SHELL = [
    sans casser le service worker entre-temps. */
 const EXTRAS = [
   "./gm-specs.js",
+  "./gm-matcher.js",
+  "./gm-compte.js",
+  "./vendor/leaflet/leaflet.js",
+  "./vendor/leaflet/leaflet.css",
+  "./vendor/protomaps-leaflet/protomaps-leaflet.js",
+  "./vendor/leaflet/images/layers.png",
+  "./vendor/leaflet/images/layers-2x.png",
   "./icon-192.png",
   "./icon-512.png",
   "./icon-maskable-512.png",
@@ -79,7 +86,8 @@ self.addEventListener("fetch", (event) => {
   // Navigations (ouverture de l'app) → réseau d'abord, app-shell en repli hors-ligne.
   if (req.mode === "navigate") {
     event.respondWith(
-      fetch(req).catch(() => caches.match("./index.html", { ignoreSearch: true }))
+      fetch(req).catch(() => caches.match("./index.html", { ignoreSearch: true })
+        .then((r) => r || Response.error()))
     );
     return;
   }
@@ -98,7 +106,7 @@ self.addEventListener("fetch", (event) => {
           caches.open(VERSION).then((c) => c.put(req, copie)).catch(() => {});
         }
         return res;
-      }).catch(() => caches.match(req, { ignoreSearch: true }))
+      }).catch(() => caches.match(req, { ignoreSearch: true }).then((r) => r || Response.error()))
     );
     return;
   }
@@ -116,7 +124,10 @@ self.addEventListener("fetch", (event) => {
             caches.open(VERSION).then((cache) => cache.put(req, copie)).catch(() => {});
           }
           return res;
-        }).catch(() => cached);
+        /* Ici `cached` est forcément vide (sinon on l'aurait servi) : le renvoyer
+           passait `undefined` à respondWith, qui lève une TypeError au lieu d'un
+           simple échec réseau. Response.error() donne l'échec propre attendu. */
+        }).catch(() => Response.error());
       })
     );
   }
