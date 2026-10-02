@@ -119,6 +119,7 @@ qu'il en parle.
 | Pourquoi les choix ont été faits ; journal daté | `CONTEXT.md` (journal en fin de fichier, section relais) |
 | Ce que seul le propriétaire peut faire | `RESTE-A-FAIRE.md` |
 | Déploiement pas à pas, dans le navigateur | `TUTO-GRATUIT.md` |
+| Brancher les connecteurs Cloudflare / Resend, ouvrir une session sur la bonne branche | `TUTO-CONNECTEURS.md` |
 | Déploiement en ligne de commande, invariants serveur | `cloud/DEPLOIEMENT.md` |
 | Collecte de données (RGPD) | `cloud/CONFIDENTIALITE.md`, **dans le même commit** que tout changement de collecte |
 | Direction visuelle | `DESIGN.md`, `design/` |

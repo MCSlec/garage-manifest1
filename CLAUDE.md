@@ -607,6 +607,7 @@ modification n'impose aucun bump de version.
 | `DESIGN.md` + `design/` | **Direction visuelle de référence** (brief du propriétaire du 30/09, maquette de la fiche Giulia) et écarts maquette ↔ données. À lire **avant** toute interface. La maquette n'est **pas** une source de données |
 | `CONTEXT.md` | État projet, décisions, journal des chantiers (le *pourquoi*) |
 | `PASSATION.md` | **Relais entre sessions** : état prouvé de la production, prochaine étape, décisions en attente, pièges. À lire en premier, à mettre à jour (en remplaçant) en fin de session |
+| `TUTO-CONNECTEURS.md` | Tuto du propriétaire : brancher les connecteurs Cloudflare (et Resend) à Claude, ouvrir une session sur la bonne branche, ce qu'une session bien démarrée doit faire |
 | `TUTO-GRATUIT.md` | Tuto pas à pas, **tout dans le navigateur** (tableau de bord Cloudflare, pas de ligne de commande), du mode gratuit : base D1, relais IA Gemini, comptes en essai. Le propriétaire déploie depuis le tableau de bord (son relais `silent-firefly-2620` en vient) : tout changement de liaison, variable ou secret d'un Worker s'y reporte |
 | `RESTE-A-FAIRE.md` | Ce que **seul l'humain** peut faire (comptes, paiements, mentions légales, décisions). **À tenir à jour à chaque livraison** : ajouter ce qu'une livraison lui demande, retirer ce qui est fait |
 | `README.md` | Documentation utilisateur/fonctionnelle (le *quoi*) |
