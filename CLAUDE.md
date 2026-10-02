@@ -30,6 +30,25 @@ Trois fichiers portent la logique, et ils ont chacun un rôle strict :
 
 ---
 
+## 0 bis. Règles permanentes du propriétaire (à respecter d'une session à l'autre)
+
+Posées au fil des échanges. Une nouvelle session ne voit **pas** les conversations
+précédentes : ces règles n'existent que parce qu'elles sont écrites ici.
+
+| Règle | Origine |
+|---|---|
+| **Branche de travail : `claude/create-claude-documentation-8eo2t7`** (PR #1). Ne jamais repartir de `main`, qui a plus de 100 commits de retard | Continuité du chantier |
+| **Jamais de merge de la PR #1 sans demande explicite** (« merge »). `main` = l'app en ligne | Propriétaire, 22/09 |
+| **Rien de payant pour l'instant** : offres gratuites seulement, **aucune carte bancaire** nulle part (`RESTE-A-FAIRE.md` §0) | Propriétaire, 01/10 |
+| **Les clés et secrets ne passent jamais par la conversation** : le propriétaire les colle lui-même dans Cloudflare (type *Secret*). Ne jamais en créer une qui s'afficherait dans l'échange (connecteur Resend compris) | Tuto, 01/10 |
+| **Le tableau de bord Cloudflare fait foi, pas le dépôt.** Le relais déployé n'est pas `ai-relay-worker.js` du dépôt (voir `CONTEXT.md`, relais) : constater avant d'affirmer | Erreur du 02/10 |
+| **Aucune modification d'un compte du propriétaire** (Cloudflare, Resend…) **sans annoncer l'action et attendre son « go »** | Propriétaire, 02/10 |
+| **`RESTE-A-FAIRE.md` : une ligne n'est cochée que si le propriétaire dit qu'elle est faite**, jamais par déduction | Propriétaire |
+| **Une question en attente se pose une fois**, puis vit dans `RESTE-A-FAIRE.md` (§8 sexies) ; pas de vérification programmée de la PR | Propriétaire, 30/09 |
+| **Point d'entrée pour les déploiements : `TUTO-GRATUIT.md`** (tout dans le navigateur, le propriétaire n'utilise pas la ligne de commande) | 01/10 |
+
+---
+
 ## 1. Contraintes d'architecture (INVARIANTS)
 
 Ces choix sont structurants. Les casser, c'est casser le modèle de déploiement,
