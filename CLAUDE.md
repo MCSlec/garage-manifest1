@@ -32,6 +32,10 @@ Trois fichiers portent la logique, et ils ont chacun un rôle strict :
 
 ## 0 bis. Règles permanentes du propriétaire (à respecter d'une session à l'autre)
 
+> 🧭 **Nouvelle session ? Lis d'abord `PASSATION.md`** : état réel de la production
+> (prouvé, avec la source), prochaine étape concrète, décisions en attente, pièges
+> déjà payés. Mets-le à jour en fin de session.
+
 Posées au fil des échanges. Une nouvelle session ne voit **pas** les conversations
 précédentes : ces règles n'existent que parce qu'elles sont écrites ici.
 
@@ -602,6 +606,7 @@ modification n'impose aucun bump de version.
 | `index-1.html` | Ancienne copie de travail d'`index.html` — **non servie**, ne pas confondre avec le fichier de prod |
 | `DESIGN.md` + `design/` | **Direction visuelle de référence** (brief du propriétaire du 30/09, maquette de la fiche Giulia) et écarts maquette ↔ données. À lire **avant** toute interface. La maquette n'est **pas** une source de données |
 | `CONTEXT.md` | État projet, décisions, journal des chantiers (le *pourquoi*) |
+| `PASSATION.md` | **Relais entre sessions** : état prouvé de la production, prochaine étape, décisions en attente, pièges. À lire en premier, à mettre à jour (en remplaçant) en fin de session |
 | `TUTO-GRATUIT.md` | Tuto pas à pas, **tout dans le navigateur** (tableau de bord Cloudflare, pas de ligne de commande), du mode gratuit : base D1, relais IA Gemini, comptes en essai. Le propriétaire déploie depuis le tableau de bord (son relais `silent-firefly-2620` en vient) : tout changement de liaison, variable ou secret d'un Worker s'y reporte |
 | `RESTE-A-FAIRE.md` | Ce que **seul l'humain** peut faire (comptes, paiements, mentions légales, décisions). **À tenir à jour à chaque livraison** : ajouter ce qu'une livraison lui demande, retirer ce qui est fait |
 | `README.md` | Documentation utilisateur/fonctionnelle (le *quoi*) |
