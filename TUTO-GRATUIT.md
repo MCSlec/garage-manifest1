@@ -13,28 +13,32 @@
 
 ---
 
-## Ton point de départ (reconstitué depuis GitHub, 02/10)
+## Ton point de départ (vérifié sur ton tableau de bord Cloudflare, 02/10)
 
-Ce que GitHub permet de déduire : l'historique de `main`, où tu déposes tes
-fichiers à la main (« Add files via upload »), et le code du relais tel que tu
-l'as déposé le 31/08. Ce sont des **déductions** : ton tableau de bord Cloudflare
-fait foi.
+Constaté sur la page **Settings** de `silent-firefly-2620` :
 
-| Élément | État probable | Indice dans GitHub |
+| Élément | État **constaté** | Ce que ça veut dire |
 |---|---|---|
-| App en ligne | Version du 21/09 : aucun des travaux récents | Dernier dépôt sur `main` le 21/09 |
-| Relais `silent-firefly-2620` | Version du 31/08 : **Claude Haiku** (Anthropic, payant), **sans plafond**, ouvert à tout site (`CORS *`) | `ai-relay-worker.js` sur `main` ; le relevé du 18/09 dans `CONTEXT.md` confirme Claude |
-| Ta « clé API de reco » | **Inconnu.** Tu n'as jamais demandé de clé Anthropic : c'est sans doute ta clé **Gemini** de juillet. Le relais du 31/08 ne lit pourtant **que** `ANTHROPIC_API_KEY` | Si ce code tourne sur Cloudflare sans clé Anthropic, chaque identification échoue (« HTTP 500 ») et rien n'est facturé |
-| Secret Resend sur le relais | Sans doute présent (`RESEND_API_KEY`) | Route `/notify` de ce relais, jamais appelée par l'app |
-| Compte Resend | Sans doute ouvert avec **dijon.autodetail@gmail.com** | `/notify` écrivait à cette adresse depuis `onboarding@resend.dev`, ce que Resend ne permet que vers l'adresse du compte |
-| Clé Gemini | Peut-être encore dans AI Studio | Le relais tournait sur Gemini en juillet |
-| Base D1 | **Aucune** | Aucun code déposé n'en a jamais utilisé |
+| Clé Anthropic | **Aucune** | Claude Haiku n'a **jamais tourné** : le fichier Haiku déposé sur GitHub n'a jamais été collé dans Cloudflare. **Rien n'a été facturé, rien ne peut l'être.** |
+| `GEMINI_API_KEY` | Présente, en **Variable** (texte en clair), clé au format `AQ.` | Le relais tourne sur le code **Gemini** de juillet, et la reconnaissance marche. C'est ta « clé API de reco » |
+| `RESEND_API_KEY` | Présente, en **Variable** (texte en clair) | Reste de l'ancien signalement par e-mail ; le code actuel ne s'en sert pas |
+| Liaisons (*Bindings*) | **Aucune** | Pas de base D1 : la partie A est à faire |
+| App en ligne | Version du 21/09 (d'après GitHub) | Aucun des travaux récents n'est en ligne |
+| Compte Resend | Sans doute **dijon.autodetail@gmail.com** (d'après GitHub) | À vérifier en C1 |
 
-⚠️ **Le relais actuel n'a aucune limite.** Son adresse est publique (elle figure
-dans l'app). **S'il porte une clé Anthropic**, n'importe qui peut l'appeler en
-boucle à tes frais. **Sans clé Anthropic**, rien n'est facturé, mais la
-reconnaissance ne marche pas. Dans les deux cas, la partie B règle le problème :
-plafonds, Gemini gratuit, refus des autres sites.
+**Deux défauts à corriger**, et la partie B les règle :
+1. **Le relais n'a aucune limite.** Son adresse est publique. Avec Gemini gratuit, un
+   abus ne te coûte rien, mais il peut épuiser ton quota du jour, et la
+   reconnaissance s'arrête alors pour toi aussi.
+2. **Les deux clés sont en « Variable », pas en « Secret ».** Une Variable s'affiche
+   en clair à quiconque ouvre ce tableau de bord, et dans toute capture d'écran ; un
+   Secret est chiffré, et même toi tu ne peux plus le relire. Les étapes B4 et C1
+   les passent en Secret.
+
+> **Bonne nouvelle sur le format `AQ.`** Google ne délivre plus que ce nouveau
+> format de clé, et il n'accepte la clé que dans l'**en-tête** de la requête
+> (`x-goog-api-key`), pas dans l'adresse. C'est exactement ce que fait le nouveau
+> relais : ta clé actuelle y fonctionnera telle quelle.
 
 ---
 
@@ -131,21 +135,19 @@ range comptes et collections. Elle doit exister avant tout le reste.
 
 ## Partie B — Le relais IA avec Gemini gratuit (≈ 20 min)
 
-### B1. La clé Gemini (Google) — réutilise celle que tu as déjà
+### B1. La clé Gemini — tu l'as déjà, on la met à l'abri
 
-Pour rester gratuit, il faut une clé **Gemini**. Ton relais a démarré sur Gemini en
-juillet : tu as donc **déjà** un compte Google AI Studio, et sans doute encore cette
-clé. C'est très probablement « la clé API de reco » dont tu te souviens.
+Ta clé Gemini est déjà enregistrée sur le relais (voir « Ton point de départ »), et
+elle marche. On la réutilise telle quelle, il faut juste la copier avant de la passer
+en Secret à l'étape B4.
 
-- [ ] Va sur **aistudio.google.com/app/apikey**, connecte-toi avec le **même** compte
-  Google qu'en juillet.
-- [ ] **Une clé figure dans la liste ?** Vérifie que son projet affiche une offre
-  **gratuite** (*Free tier*, pas de facturation). Si AI Studio te laisse la copier,
-  copie-la. Sinon, ou si tu as un doute, **Create API key** dans ce même projet : une
-  clé de plus ne coûte rien. Tu pourras supprimer l'ancienne une fois B5 réussie.
-- [ ] **Aucune clé ?** **Create API key**. Si Google propose de choisir un projet,
-  laisse-le en créer un.
-- [ ] **Copie la clé** et garde l'onglet ouvert (tu la colleras à l'étape B4).
+- [ ] Cloudflare → `silent-firefly-2620` → **Settings** → *Variables and secrets* →
+  ligne **`GEMINI_API_KEY`** → crayon ✏️ : la valeur complète s'affiche.
+  **Copie-la** dans un endroit provisoire de ton ordinateur (un brouillon de note,
+  pas un message), puis ferme sans rien modifier.
+- [ ] Vérifie sur **aistudio.google.com/app/apikey** que le projet de cette clé est en
+  offre **gratuite** (*Free tier*). S'il affiche une facturation active, préviens-moi
+  avant d'aller plus loin.
 
 > **L'erreur 404 de juillet ne reviendra pas.** Elle venait du **modèle**
 > (`gemini-2.5-flash-lite`, fermé aux nouveaux comptes), pas de ta clé. Le relais
@@ -178,14 +180,19 @@ jamais appelée.
 ### B3. Relier la base au relais
 
 - [ ] Retour sur la page de **silent-firefly-2620** → onglet **Settings** → section
-  **Bindings** → **Add** → **D1 database**.
+  **Bindings** → **Add binding** → **D1 database**.
 - [ ] **Variable name : `DB`** (deux majuscules, rien d'autre).
 - [ ] **D1 database : `garage-comptes`** → **Deploy** (ou *Save*).
 
 ### B4. Les réglages du relais
 
-Toujours dans **Settings** → section **Variables and Secrets** → **Add**, une ligne
-à la fois :
+**D'abord, passer la clé Gemini en Secret.** Cloudflare ne convertit pas une Variable
+en Secret : on la supprime puis on la recrée.
+- [ ] Ligne **`GEMINI_API_KEY`** → corbeille 🗑️ → confirme. (Tu as copié sa valeur en
+  B1 : sinon, arrête-toi et fais B1.)
+
+Puis **Add variable**, une ligne à la fois. Dans la fenêtre, le champ **Type** propose
+*Text* ou *Secret* :
 
 | Type | Nom (exactement) | Valeur |
 |---|---|---|
@@ -194,16 +201,14 @@ Toujours dans **Settings** → section **Variables and Secrets** → **Add**, un
 | **Text** | `APP_ORIGIN` | `https://mcslec.github.io` (sans `/` à la fin, sans `garage-manifest1`) |
 
 - [ ] Les trois lignes sont ajoutées, puis **Deploy**.
+- [ ] **Efface la copie provisoire** de la clé Gemini sur ton ordinateur : elle vit
+  désormais, chiffrée, chez Cloudflare.
 - [ ] S'il existe une ligne **`IA_SECOURS`** : supprime-la (icône corbeille ou
   « … » → *Delete*). Un secours vers Anthropic serait payant.
-- [ ] S'il existe des lignes **`RESEND_API_KEY`** ou **`NOTIFY_TO`** sur le relais :
-  supprime-les. Elles servaient à l'ancienne route `/notify` (signalement par e-mail),
+- [ ] Supprime la ligne **`RESEND_API_KEY`** du relais (et `NOTIFY_TO` s'il y en a une). Elles servaient à l'ancienne route `/notify` (signalement par e-mail),
   supprimée le 29/09. Un secret que plus aucun code ne lit n'apporte rien et reste
   un risque. ⚠️ Ne touche pas à celles du serveur de comptes (partie C) : lui s'en
   sert.
-- [ ] S'il existe une ligne **`ANTHROPIC_API_KEY`** : **laisse-la pour l'instant**. Tu
-  la supprimeras une fois le test B5 réussi (sans `IA_SECOURS`, elle n'est jamais
-  utilisée).
 
 > **Pourquoi `APP_ORIGIN` sans le chemin ?** Une *origine*, c'est le protocole et le
 > domaine, sans rien après : `https://mcslec.github.io`. Le navigateur l'annonce à
@@ -215,17 +220,16 @@ Toujours dans **Settings** → section **Variables and Secrets** → **Add**, un
 Les bancs de test **simulent** Gemini : ils prouvent la logique, pas que Google
 accepte réellement notre requête. Seul un vrai appel le prouve.
 
-- [ ] Cloudflare → **silent-firefly-2620** → onglet **Logs** → démarre le flux en
-  direct (*Begin log stream* / *Live*). Laisse cet onglet ouvert.
+- [ ] Cloudflare → **silent-firefly-2620** → onglet **Observability** → journaux en
+  direct (*Live* / *Real-time logs*). Laisse cet onglet ouvert.
 - [ ] Sur ton téléphone, ouvre l'app, photographie une voiture (ou importe une photo
   nette d'une voiture connue).
 - ✅ **Réussi** si :
   - l'app propose une voiture (ou plusieurs, à départager) ;
   - dans les journaux, la requête apparaît avec le statut **200**, et **aucune** ligne
     `[relais]` en rouge.
-- [ ] Une fois réussi : **Settings → Variables and Secrets → supprime
-  `ANTHROPIC_API_KEY`**, puis **Deploy**. Va aussi sur **console.anthropic.com** →
-  *Billing* et **désactive la recharge automatique** (*auto-reload*) s'il y en a une.
+- ℹ️ Aucune clé Anthropic n'est enregistrée sur ton relais : rien à supprimer de ce
+  côté, et rien ne peut être facturé par Anthropic.
 
 🎉 **À la fin de B, la reconnaissance photo tourne gratuitement**, avec des
 plafonds : 30 identifications par jour et par appareil sans compte, 3 000 par jour
@@ -246,10 +250,10 @@ moi.
   *Settings*). C'est **la seule** adresse qui pourra recevoir un code tant qu'on n'a
   pas de domaine. D'après GitHub, c'est probablement **dijon.autodetail@gmail.com**
   (voir « Ton point de départ ») : vérifie-le ici.
-- ℹ️ Une ancienne clé Resend est peut-être enregistrée sur le relais (`/notify`).
-  Cloudflare ne réaffiche jamais un secret, et Resend ne montre une clé qu'une fois :
-  on ne la récupère pas. On en crée une neuve, dédiée aux comptes. Si une ancienne
-  clé figure dans la liste Resend, supprime-la une fois la partie B faite.
+- [ ] Dans la liste **API Keys** de Resend, **supprime l'ancienne clé** (celle qui
+  était enregistrée en clair sur le relais). Elle a été visible en
+  texte clair, et plus aucun code ne s'en sert. Une clé neuve, rangée en Secret, ne
+  traîne nulle part.
 
 ### C2. Fabriquer le secret des codes
 
@@ -287,7 +291,7 @@ pas soi-même, on le fait tirer par la machine.
 
 ### C4. Relier la base
 
-- [ ] **garage-comptes** → **Settings** → **Bindings** → **Add** → **D1 database**
+- [ ] **garage-comptes** → **Settings** → **Bindings** → **Add binding** → **D1 database**
   → nom **`DB`**, base **`garage-comptes`** → **Deploy**.
 - [ ] **N'ajoute PAS de liaison R2.** Son absence, c'est précisément le mode essai :
   le serveur sauvegarde la collection et laisse les photos sur ton téléphone. (R2
@@ -295,7 +299,7 @@ pas soi-même, on le fait tirer par la machine.
 
 ### C5. Les réglages du serveur
 
-**Settings → Variables and Secrets → Add**, une ligne à la fois :
+**Settings → Variables and Secrets → Add variable**, une ligne à la fois (champ **Type** : *Text* ou *Secret*) :
 
 | Type | Nom (exactement) | Valeur |
 |---|---|---|
@@ -387,7 +391,7 @@ exact et une capture d'écran **où aucune clé n'est visible**.
 
 Ton app en ligne (version actuelle de `main`) affiche une erreur du relais sous la
 forme **« Relais IA indisponible (HTTP xxx) »**. Le nombre `xxx` désigne la cause,
-et les journaux (onglet **Logs** du relais) la précisent.
+et les journaux (onglet **Observability** du relais) la précisent.
 
 | Code dans l'app | Ligne dans les journaux | Cause | Remède |
 |---|---|---|---|

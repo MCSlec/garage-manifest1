@@ -339,8 +339,17 @@ sans qu'aucune erreur JS ne le signale).
 **Endpoint du relay (codé en dur, aucune config utilisateur nécessaire) :**
 `https://silent-firefly-2620.cyril-lapopin.workers.dev`
 
-**Modèle utilisé :** `claude-haiku-4-5-20251001` via l'API Anthropic.
-**Historique de migration :** le relay utilisait initialement
+**Modèle réellement en production (constaté sur le tableau de bord Cloudflare le
+02/10/2026) : Gemini.** Le relais déployé n'a **aucune** clé Anthropic, mais porte
+`GEMINI_API_KEY` (format `AQ.`, en Variable texte et non en Secret) et un reste de
+`RESEND_API_KEY`, sans aucune liaison D1. Il tourne donc sur le code **Gemini de
+juillet**, jamais remplacé, et la reconnaissance marche. Le fichier Haiku déposé sur
+GitHub (11/08 → 31/08) **n'a jamais été collé dans Cloudflare** : il n'a jamais
+tourné, et rien n'a été facturé par Anthropic. Le propriétaire n'a jamais demandé
+Haiku. ⚠️ Leçon : le code sur GitHub n'est **pas** le code déployé. Un relevé fait
+sur le fichier du dépôt (« vérifié le 18/09 par grep ») ne dit rien du Worker en
+production ; seul le tableau de bord fait foi.
+**Historique (d'après le dépôt) :** le relay utilisait initialement
 `gemini-2.5-flash-lite`, fermé aux nouveaux comptes Google (erreur 404,
 diagnostiquée via les logs Observability de Cloudflare) → bascule vers
 `gemini-3.1-flash-lite` → migration complète vers Claude (`claude-haiku-4-5-20251001`)
@@ -732,6 +741,7 @@ sur 1 017 fiches. **Programme, pas session.**
 | 01/10/2026 | **Mode gratuit** (décision du propriétaire : rien de payant pour l'instant). Relais : quand **tous** les fournisseurs essayés répondent 429 (quota gratuit de Gemini épuisé), réponse **429 « en pause pour aujourd'hui »** au lieu de 502 « indisponible » — l'app l'affiche comme une pause, pas une panne. `banc-relais.js` 29/29, vérifié par mutation. `RESTE-A-FAIRE.md` §0 : Gemini gratuit sans secours, aucune carte bancaire enregistrée ; comptes et carte à nous en pause (domaine, R2) | aucune (relais déployé à part) | `ai-relay-worker.js`, `banc-relais.js`, `README.md`, `RESTE-A-FAIRE.md`, `CONTEXT.md` |
 | 01/10/2026 | **Comptes en mode essai gratuit** (« go comptes essai »). Serveur : R2 devient **facultatif** — sans liaison `PHOTOS`, les routes `/photos…` répondent **501** `{photos:false}` (après le 401), export et suppression fonctionnent, la collection se sauve. App (`gm-compte.js` 2.1.0) : 501 = état stable → sauvegarde et restauration continuent **sans photos** et le disent (« Collection seule ») ; une panne passagère interrompt toujours la restauration. Empreintes gardées : R2 branché plus tard, la sauvegarde suivante envoie les photos sans migration. Resend sans domaine : `onboarding@resend.dev`, n'écrit qu'au titulaire. `banc-compte.js` 69/69 (+8), `banc-compte-navigateur.js` 58/58 (+11), 3 mutations détectées | `20.196.0` | `cloud/compte-worker.js`, `gm-compte.js`, `banc-compte*.js`, `cloud/DEPLOIEMENT.md`, `cloud/wrangler.toml.exemple`, `cloud/CONFIDENTIALITE.md`, `CLAUDE.md`, `RESTE-A-FAIRE.md`, `sw.js`, `gm-specs.js` |
 | 01/10/2026 | **`TUTO-GRATUIT.md`** (demande du propriétaire : « tuto étape par étape super bien détaillé »). Tout dans le **navigateur** : le relais `silent-firefly-2620` porte un nom généré par le tableau de bord, donc pas de ligne de commande. Ordre imposé par les dépendances : base D1 (partagée par les deux Workers) → relais (Gemini, `DB`, `APP_ORIGIN`, test réel + journaux) → serveur de comptes sans R2 → adresse → test. Constat : l'app en ligne (`main`) a 105 commits de retard ; le nouveau relais lui reste compatible (même contrat `POST {image}`), mais le test des comptes sur téléphone attend la fusion de la PR #1. Dépannage écrit à partir des vraies réponses du code (codes HTTP affichés par l'app de `main`, lignes `[relais]` des journaux) | aucune (documentation) | `TUTO-GRATUIT.md`, `RESTE-A-FAIRE.md`, `cloud/DEPLOIEMENT.md`, `CLAUDE.md`, `CONTEXT.md` |
+| 02/10/2026 | **État réel du relais établi sur capture du tableau de bord** : aucune clé Anthropic → Haiku n'a jamais tourné ; `GEMINI_API_KEY` (clé `AQ.`) et `RESEND_API_KEY` en **Variable texte clair**, aucune liaison. Le code Gemini de juillet tourne toujours. Clés `AQ.` : Google n'accepte que l'en-tête `x-goog-api-key` (pas `?key=`), ce que fait le nouveau relais. `TUTO-GRATUIT.md` adapté : réutiliser la clé Gemini en la passant en **Secret** (copier, supprimer, recréer), supprimer `RESEND_API_KEY` du relais et la clé correspondante chez Resend, journaux sous *Observability*. Mes affirmations précédentes (« Haiku tourne », « clé Anthropic, à tes frais ») étaient des déductions tirées du dépôt, fausses : corrigées | aucune (documentation) | `TUTO-GRATUIT.md`, `CONTEXT.md`, `RESTE-A-FAIRE.md` |
 
 ---
 

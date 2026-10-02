@@ -44,8 +44,8 @@ politique de confidentialité avant d'ouvrir l'app au public.
   sans les photos. `TUTO-GRATUIT.md`, parties C à E.
 - **Notre carte** (§4) : le stockage R2 de Cloudflare demande une carte bancaire même pour
   son offre gratuite (à revérifier le moment venu), plus un domaine.
-- **Clé Anthropic** : si un crédit existe, désactive la recharge automatique ; une fois
-  Gemini vérifié, retire `ANTHROPIC_API_KEY` du relais.
+- ~~Clé Anthropic~~ → **sans objet** : constaté le 02/10, le relais n'en porte aucune ;
+  il tourne sur Gemini depuis juillet.
 
 ## 1. ⚖️ Déjà en production — à trancher en premier
 
