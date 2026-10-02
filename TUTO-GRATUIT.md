@@ -24,17 +24,17 @@ fait foi.
 |---|---|---|
 | App en ligne | Version du 21/09 : aucun des travaux récents | Dernier dépôt sur `main` le 21/09 |
 | Relais `silent-firefly-2620` | Version du 31/08 : **Claude Haiku** (Anthropic, payant), **sans plafond**, ouvert à tout site (`CORS *`) | `ai-relay-worker.js` sur `main` ; le relevé du 18/09 dans `CONTEXT.md` confirme Claude |
-| Ta « clé API de reco » | Une clé **Anthropic** (`ANTHROPIC_API_KEY`) | Seule clé lue par ce relais |
+| Ta « clé API de reco » | **Inconnu.** Tu n'as jamais demandé de clé Anthropic : c'est sans doute ta clé **Gemini** de juillet. Le relais du 31/08 ne lit pourtant **que** `ANTHROPIC_API_KEY` | Si ce code tourne sur Cloudflare sans clé Anthropic, chaque identification échoue (« HTTP 500 ») et rien n'est facturé |
 | Secret Resend sur le relais | Sans doute présent (`RESEND_API_KEY`) | Route `/notify` de ce relais, jamais appelée par l'app |
 | Compte Resend | Sans doute ouvert avec **dijon.autodetail@gmail.com** | `/notify` écrivait à cette adresse depuis `onboarding@resend.dev`, ce que Resend ne permet que vers l'adresse du compte |
 | Clé Gemini | Peut-être encore dans AI Studio | Le relais tournait sur Gemini en juillet |
 | Base D1 | **Aucune** | Aucun code déposé n'en a jamais utilisé |
 
-⚠️ **Conséquence : la partie B est urgente.** L'adresse de ton relais actuel est
-publique (elle figure dans l'app) et il n'a **aucune limite**. N'importe qui peut
-l'appeler en boucle, à tes frais sur ta clé Anthropic. Ça coûte surtout si la
-recharge automatique est active. Le relais du tuto ferme cette porte : plafonds,
-Gemini gratuit, refus des autres sites.
+⚠️ **Le relais actuel n'a aucune limite.** Son adresse est publique (elle figure
+dans l'app). **S'il porte une clé Anthropic**, n'importe qui peut l'appeler en
+boucle à tes frais. **Sans clé Anthropic**, rien n'est facturé, mais la
+reconnaissance ne marche pas. Dans les deux cas, la partie B règle le problème :
+plafonds, Gemini gratuit, refus des autres sites.
 
 ---
 
@@ -133,10 +133,9 @@ range comptes et collections. Elle doit exister avant tout le reste.
 
 ### B1. La clé Gemini (Google) — réutilise celle que tu as déjà
 
-La clé que ton relais utilise aujourd'hui est très probablement une clé
-**Anthropic** (Claude, payante). Pour rester gratuit, il en faut une **Gemini**. Ton
-relais a démarré sur Gemini en juillet : tu as donc **déjà** un compte Google AI
-Studio, et peut-être encore une clé.
+Pour rester gratuit, il faut une clé **Gemini**. Ton relais a démarré sur Gemini en
+juillet : tu as donc **déjà** un compte Google AI Studio, et sans doute encore cette
+clé. C'est très probablement « la clé API de reco » dont tu te souviens.
 
 - [ ] Va sur **aistudio.google.com/app/apikey**, connecte-toi avec le **même** compte
   Google qu'en juillet.
