@@ -74,7 +74,9 @@ range comptes et collections. Elle doit exister avant tout le reste.
   *(Cloudflare réorganise parfois son menu : si tu ne le trouves pas, tape « D1 »
   dans la barre de recherche en haut du tableau de bord.)*
 
-- [ ] **A3. Créer la base.** Bouton **Create** (ou « Create database »).
+- [ ] **A3. Créer la base.** *Une base `garage-comptes` figure déjà dans la liste ?
+  Ne la recrée pas : ouvre-la et passe directement à A4.* Sinon, bouton **Create** (ou
+  « Create database »).
   - Nom : **`garage-comptes`**, exactement, en minuscules avec le tiret.
   - Emplacement (*location*) : laisse le choix automatique, ou choisis l'Europe
     occidentale.
@@ -104,12 +106,24 @@ range comptes et collections. Elle doit exister avant tout le reste.
 
 ## Partie B — Le relais IA avec Gemini gratuit (≈ 20 min)
 
-### B1. Créer la clé Gemini (Google)
+### B1. La clé Gemini (Google) — réutilise celle que tu as déjà
 
-- [ ] Va sur **aistudio.google.com/app/apikey**, connecte-toi avec ton compte Google.
-- [ ] **Create API key**. Si Google propose de choisir un projet, laisse-le en créer
-  un.
+Ton relais a démarré sur Gemini en juillet : tu as donc **déjà** un compte Google AI
+Studio, et probablement une clé.
+
+- [ ] Va sur **aistudio.google.com/app/apikey**, connecte-toi avec le **même** compte
+  Google qu'en juillet.
+- [ ] **Une clé figure dans la liste ?** Vérifie que son projet affiche une offre
+  **gratuite** (*Free tier*, pas de facturation). Si AI Studio te laisse la copier,
+  copie-la. Sinon, ou si tu as un doute, **Create API key** dans ce même projet : une
+  clé de plus ne coûte rien. Tu pourras supprimer l'ancienne une fois B5 réussie.
+- [ ] **Aucune clé ?** **Create API key**. Si Google propose de choisir un projet,
+  laisse-le en créer un.
 - [ ] **Copie la clé** et garde l'onglet ouvert (tu la colleras à l'étape B4).
+
+> **L'erreur 404 de juillet ne reviendra pas.** Elle venait du **modèle**
+> (`gemini-2.5-flash-lite`, fermé aux nouveaux comptes), pas de ta clé. Le relais
+> utilise désormais `gemini-3.1-flash-lite`, un modèle stable.
 - [ ] ⚠️ **N'active jamais la facturation** (*Set up billing*, *Upgrade*). Sans
   facturation, tu restes sur l'offre gratuite : quand le quota du jour est épuisé,
   l'app affiche « en pause pour aujourd'hui », et le joueur choisit sa voiture à la
@@ -156,6 +170,11 @@ Toujours dans **Settings** → section **Variables and Secrets** → **Add**, un
 - [ ] Les trois lignes sont ajoutées, puis **Deploy**.
 - [ ] S'il existe une ligne **`IA_SECOURS`** : supprime-la (icône corbeille ou
   « … » → *Delete*). Un secours vers Anthropic serait payant.
+- [ ] S'il existe des lignes **`RESEND_API_KEY`** ou **`NOTIFY_TO`** sur le relais :
+  supprime-les. Elles servaient à l'ancienne route `/notify` (signalement par e-mail),
+  supprimée le 29/09. Un secret que plus aucun code ne lit n'apporte rien et reste
+  un risque. ⚠️ Ne touche pas à celles du serveur de comptes (partie C) : lui s'en
+  sert.
 - [ ] S'il existe une ligne **`ANTHROPIC_API_KEY`** : **laisse-la pour l'instant**. Tu
   la supprimeras une fois le test B5 réussi (sans `IA_SECOURS`, elle n'est jamais
   utilisée).
