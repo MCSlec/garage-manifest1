@@ -33,7 +33,8 @@ la marque et le modèle proposés.
 - Pour plafonner les abus (et la facture), il compte les identifications du
   jour **par appareil** (adresse IP) ou **par compte** si tu es connecté. Ces
   compteurs ne gardent qu'une **empreinte** SHA-256, jamais l'IP ni
-  l'identifiant en clair, et sont effacés sous 48 heures par la purge nocturne.
+  l'identifiant en clair, et sont effacés sous 48 heures par la purge nocturne
+  du relais lui-même (il ne dépend pas du serveur de comptes pour cela).
 - Pour ne rien envoyer du tout : Réglages → vide le champ « Endpoint de
   reconnaissance IA » et choisis la voiture à la main.
 - **[À COMPLÉTER — au lancement : la durée pendant laquelle le fournisseur
@@ -96,7 +97,7 @@ données ne servent qu'à te rendre ton garage.
 
 | Prestataire | Rôle | Données |
 |---|---|---|
-| **Cloudflare, Inc.** | Hébergement du serveur (Workers), de la base (D1) et des photos (R2) | Tout ce qui est listé plus haut |
+| **Cloudflare, Inc.** | Hébergement du serveur (Workers), de la base (D1) et des photos (R2). La base est créée sous **juridiction UE** : elle est stockée et traitée dans l'Union européenne (réglage fixé à sa création, constaté le 04/10/2026 par l'API Cloudflare : `jurisdiction: "eu"`) | Tout ce qui est listé plus haut |
 | **Resend** | Envoi de l'e-mail de connexion | Ton adresse e-mail et le code |
 | **Fournisseur du modèle d'IA** : **Anthropic, PBC** (Claude) ou **Google LLC** (Gemini), selon le réglage `IA_FOURNISSEUR` du relais, plus l'autre si un secours `IA_SECOURS` est configuré. **[À COMPLÉTER — nommer ici le ou les fournisseurs réellement actifs au lancement.]** | Reconnaissance de la voiture sur la photo | La photo envoyée à l'identification, sans ton adresse ni ton identifiant (le relais ne transmet que l'image) |
 

@@ -32,6 +32,10 @@
 //   Sans base D1, le relais REFUSE de travailler (503) : jamais ouvert.
 //   L'ancienne route /notify (signalement par e-mail) est supprimée : plus
 //   appelée par l'app, elle était ouverte à tous sans limite.
+//   Purge nocturne (07/10) : les compteurs échus sont effacés par le relais
+//   LUI-MÊME (handler `scheduled`, déclencheur cron « 17 3 * * * ») — avant,
+//   seul le serveur de comptes purgeait, et sans lui les empreintes d'IP
+//   s'accumulaient sans fin, contrairement à cloud/CONFIDENTIALITE.md.
 //
 // FOURNISSEUR (30/09) : une variable, aucun changement de code ni d'app.
 //   IA_FOURNISSEUR = "anthropic" (défaut, Claude Haiku, payant dès le 1er appel)
@@ -95,6 +99,19 @@ async function compter(env, cleClaire, max) {
      ON CONFLICT (cle) DO UPDATE SET compte = compte + 1
      RETURNING compte`).bind(cle, jour).first();
   return !!l && l.compte <= max;
+}
+/* Purge nocturne (RGPD art. 5.1.e, minimisation) : un compteur ne sert que
+   le jour de sa clé ; ensuite, ce n'est plus qu'une empreinte d'IP gardée
+   pour rien. La table `limites` est PARTAGÉE avec cloud/compte-worker.js :
+   purger plus tôt que sa plus longue fenêtre (24 h, « 10 codes par jour et
+   par adresse ») remettrait ses compteurs à zéro et rouvrirait l'envoi de
+   codes. D'où la même règle que lui, au caractère près — banc-relais.js
+   vérifie les deux bornes (pas avant 24 h, et tout est parti la nuit
+   suivante, donc sous 48 h comme l'annonce CONFIDENTIALITE.md). */
+const PURGE_LIMITES_APRES_MS = JOUR_MS;
+async function purger(env, maintenant) {
+  const r = await env.DB.prepare("DELETE FROM limites WHERE fenetre < ?").bind(maintenant - PURGE_LIMITES_APRES_MS).run();
+  return { limites: (r && r.meta && r.meta.changes) || 0 };
 }
 /* Session d'un compte (facultative) : un jeton valide donne le quota du compte ;
    absent ou invalide, on reste en anonyme — la capture ne doit jamais dépendre
@@ -300,6 +317,19 @@ async function identifier(request, env) {
 
 // ============================================================================
 export default {
+  /* Déclencheur cron du tableau de bord (Settings → Trigger events). L'heure
+     de référence est celle de la planification, pas l'horloge : une purge
+     relancée en retard efface ce qu'elle aurait effacé à l'heure. */
+  async scheduled(evenement, env, ctx) {
+    if (!env.DB) { console.error("[relais] purge impossible : liaison D1 « DB » absente"); return; }
+    const maintenant = Number(evenement && evenement.scheduledTime) || Date.now();
+    const travail = purger(env, maintenant)
+      .then((n) => { console.log("[relais] purge", JSON.stringify(n)); return n; })
+      .catch((err) => { console.error("[relais] purge en échec", err); });
+    if (ctx && ctx.waitUntil) ctx.waitUntil(travail);
+    return travail;
+  },
+
   async fetch(request, env) {
     if (request.method === "OPTIONS") {
       return new Response(null, { status: 204, headers: corsHeaders(env) });

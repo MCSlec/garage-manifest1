@@ -5,8 +5,9 @@
 > Il dit **où on en est, ce qui est prouvé, ce qui reste, et les pièges déjà payés**.
 > Le détail vit ailleurs ; ici, on pointe vers lui.
 >
-> **Dernière mise à jour : 02/10/2026**, en fin de session (branche
-> `claude/create-claude-documentation-8eo2t7`, version `20.196.0`).
+> **Dernière mise à jour : 07/10/2026** (branche
+> `claude/create-claude-documentation-8eo2t7`, version `20.196.0`). **Partie B du
+> tuto en cours, à moitié faite** : lire le §2 avant toute instruction au propriétaire.
 > **À mettre à jour à chaque fin de session** : remplacer, ne pas empiler (l'historique
 > est dans `CONTEXT.md` et `git log`).
 
@@ -25,8 +26,8 @@
    export NODE_PATH=$PWD/.claude/outils-bancs/node_modules CHROMIUM=/opt/pw-browsers/chromium-1194/chrome-linux/chrome
    for f in banc-*.js; do node $f >/dev/null 2>&1 && echo "OK $f" || echo "ÉCHEC $f"; done
    ```
-   Dernier passage complet : **17/17 verts** (01/10, v20.196.0). Depuis : documentation
-   seulement, aucun code.
+   Dernier passage complet : **17/17 verts** (07/10, v20.196.0), après l'ajout de la
+   purge nocturne au relais (`ai-relay-worker.js`, hors cache : aucun bump).
 4. **Connecteurs** : si « Cloudflare Developer Platform » est branché, **constater**
    l'état réel du compte (Workers, variables, liaisons, D1) et le comparer au §2
    ci-dessous avant d'affirmer quoi que ce soit.
@@ -44,31 +45,47 @@ faux. Seul le tableau de bord Cloudflare fait foi.
 | Élément | État | Source |
 |---|---|---|
 | **App en ligne** (GitHub Pages, construite depuis `main`) | Version du **21/09**. Aucun travail fait depuis le 22/09 n'est en ligne | `git log origin/main` |
-| **Relais IA** `silent-firefly-2620.cyril-lapopin.workers.dev` | Code **Gemini** `gemini-3.1-flash-lite`, écrit par une IA le **31/08**, **jamais déposé sur GitHub**. Clé passée en `?key=`. Route `/notify` ouverte (injection HTML possible dans l'e-mail). Pas de plafond, CORS qui renvoie n'importe quelle origine | Code collé par le propriétaire, 02/10 |
-| Reconnaissance photo | **Fonctionne** (« elle nomme directement la bonne voiture ») | Propriétaire, 02/10 |
-| Variables du relais | `GEMINI_API_KEY` (format `AQ.`) et `RESEND_API_KEY`, toutes deux en **Variable texte clair**, pas en Secret. **Aucune** clé Anthropic | Capture du tableau de bord, 02/10 |
-| Liaisons du relais | **Aucune** (pas de D1) | Idem |
-| Claude Haiku | **N'a jamais tourné.** Le propriétaire ne l'a jamais demandé ; une IA l'avait écrit, puis était revenue à Gemini faute de clé | Commentaire d'en-tête du code déployé |
-| Facturation | **Aucune possible** : pas de clé Anthropic ; Gemini en offre gratuite (à confirmer par le propriétaire dans AI Studio, étape B1) | Idem |
-| Compte Resend | Créé en offre gratuite, **sans domaine**. Adresse du compte probablement **dijon.autodetail@gmail.com** (l'ancien `/notify` y écrivait depuis `onboarding@resend.dev`) | Propriétaire (01/10) ; déduction (02/10), **à vérifier** |
-| Base D1, serveur de comptes | **N'existent pas encore** | Capture, 02/10 |
-| Comptes dans l'app | Code prêt et testé, **en sommeil** (`COMPTE_URL` vide dans `gm-compte.js`) | Dépôt |
+| **Base D1 `garage-comptes`** | **Existe**, juridiction **`eu`**, 6 tables + 2 index **identiques** à `cloud/schema.sql` (comparaison automatique). Id `e8f5ab27-78b9-40af-ae61-508a25afff13` | Connecteur, 04/10 (`d1_databases_list`, `sqlite_master`) |
+| **Relais IA** `silent-firefly-2620` — **code** | Toujours l'**ancien** (Gemini du 31/08, clé en `?key=`, `/notify` ouvert, CORS en miroir, aucun plafond, renvoie le détail des erreurs Google) | Connecteur, 02/10 (`workers_get_worker_code`) |
+| Relais — **réglages** | `GEMINI_API_KEY` = **Secret**, clé **neuve** « garage-manifest-relais » (projet « Projet Gemini 2 ») · `IA_FOURNISSEUR=gemini` · `APP_ORIGIN=https://mcslec.github.io` · **`RESEND_API_KEY` encore présente** (Variable en clair) · **aucune liaison** · aucun cron. Dernière modification 04/10 20:55 UTC | Capture du propriétaire 04/10 + `workers_list` 07/10 |
+| ⚠️ Reconnaissance photo **en ce moment** | **Non vérifiée** depuis le 04/10 : l'ancien code met la clé **neuve** dans `?key=`. Si Google la refuse sous cette forme, la reconnaissance est en panne jusqu'au collage du nouveau code (B2), qui passe par l'en-tête | Déduction, à vérifier |
+| Clés Gemini (AI Studio) | `…eeUw` « CARDEX » (l'**ancienne** du relais, à supprimer après B5) ; `…kvaw` « Default Gemini API Key » (inutilisée par le relais) ; la neuve. Les projets sont en **« Niveau sans frais »** | Captures du propriétaire, 04/10 |
+| Claude Haiku | **N'a jamais tourné**, aucune clé Anthropic : rien de facturable | Code déployé + réglages |
+| Compte Resend | Offre gratuite, **sans domaine**, **une** clé « Garage manifest » (27/08) — à révoquer. Historique d'envoi vide (rétention courte : ne prouve rien). Adresse du compte toujours **à vérifier** (C1) | Connecteur Resend, 02/10 |
+| R2 | Non activé (normal : mode essai, R2 exige une carte) | Connecteur, 02/10 |
+| Serveur de comptes | **N'existe pas** (partie C) | `workers_list`, 07/10 |
+| Comptes dans l'app | Code prêt et testé, **en sommeil** (`COMPTE_URL` vide) | Dépôt |
+
+**Ce que les connecteurs permettent** (vérifié le 07/10) : Cloudflare = lire les
+Workers et leur code, créer et interroger D1. **Pas** de juridiction à la création,
+**pas** d'écriture de variables, liaisons, cron ni code : tout cela se fait par le
+propriétaire, guidé. `workers_get_worker` **n'est pas appelé** : il pourrait renvoyer
+en clair les clés rangées en Variable. Resend = lire, et révoquer une clé (après « go »).
+Le conteneur **ne joint pas** `*.workers.dev` (politique réseau) : les sondages du
+relais se font depuis le navigateur du propriétaire (`TUTO-GRATUIT.md` B5).
 
 ---
 
 ## 3. Ce qui reste : la prochaine étape concrète
 
-**Le propriétaire n'a encore commencé aucune étape de `TUTO-GRATUIT.md`** (02/10).
-Il ne lance pas de ligne de commande : tout se fait dans le navigateur, ou par le
-connecteur Cloudflare s'il est branché.
+**État au 07/10 : A faite, B à moitié.** Le propriétaire ne lance pas de ligne de
+commande : tout se fait dans le navigateur (souvent **sur téléphone** : captures
+Android), ou par les connecteurs pour ce qu'ils savent faire. ⚠️ Dire **précisément
+ce qui reste** : une liste qui renumérote des étapes déjà faites lui fait croire
+qu'on lui fait tout refaire (vécu le 04/10).
 
-| Ordre | Partie du tuto | Qui | Débloque |
+| Ordre | Étape | Qui | État |
 |---|---|---|---|
-| 1 | **A** — créer la base D1 `garage-comptes` et y exécuter `cloud/schema.sql` | Propriétaire, ou session avec le connecteur, **après son « go »** | Tout le reste |
-| 2 | **B** — coller le nouveau `ai-relay-worker.js`, liaison `DB`, clé Gemini **repassée en Secret** (copier la valeur, supprimer, recréer), `IA_FOURNISSEUR=gemini` (**indispensable** : le défaut est `anthropic`), `APP_ORIGIN=https://mcslec.github.io`, supprimer `RESEND_API_KEY` du relais, puis une capture de test avec l'onglet *Observability* ouvert | Propriétaire (secrets) + session | Plafonds, clé dans l'en-tête, fin de `/notify` |
-| 3 | **C** — serveur de comptes `garage-comptes`, **sans R2** (mode essai), `MAIL_FROM=Garage Manifest <onboarding@resend.dev>`, nouvelle clé Resend, ancienne révoquée, `CODE_SECRET` tiré dans la console du navigateur | Propriétaire (secrets) + session | — |
-| 4 | **D** — le propriétaire donne l'adresse du Worker → renseigner `COMPTE_URL` dans `gm-compte.js`, augmenter la version (`VERSION_MODULE` + `sw.js`), relancer les bancs, livrer | Session | — |
-| 5 | **E** — test sur téléphone. **Exige la fusion de la PR #1** (l'app en ligne vient de `main`) | Propriétaire | Comptes en essai |
+| ✅ | **A** — base D1 `garage-comptes`, juridiction UE, schéma | Propriétaire (création) + connecteur (schéma, vérification) | Fait et prouvé le 04/10 |
+| ✅ | **B1** clé Gemini neuve ; **B4** Secret + `IA_FOURNISSEUR` + `APP_ORIGIN` | Propriétaire | Fait le 04/10 (capture) |
+| 1 | **B4 (fin)** — supprimer `RESEND_API_KEY` du relais | Propriétaire | **À faire** |
+| 2 | **B3** — liaison D1 `DB` → `garage-comptes` | Propriétaire | **À faire** |
+| 3 | **B2** — coller le nouveau `ai-relay-worker.js` (**celui du 07/10, avec purge**), puis la session relit le code déployé par le connecteur et le compare au dépôt | Propriétaire + session | À faire |
+| 4 | **B2 bis** — cron `17 3 * * *` sur le relais (**après** B2) | Propriétaire | À faire |
+| 5 | **B5** — sondage sans image (sur ordinateur, facultatif) puis vraie photo, onglet *Observability* ouvert ; ensuite supprimer la clé « CARDEX » | Propriétaire | À faire |
+| 6 | **C** — serveur de comptes, **sans R2**, `MAIL_FROM=Garage Manifest <onboarding@resend.dev>`, clé Resend neuve (l'ancienne révoquée), `CODE_SECRET`, cron **indispensable** | Propriétaire (secrets) + session | — |
+| 7 | **D** — adresse du Worker → `COMPTE_URL`, bump `VERSION_MODULE` + `sw.js`, bancs, livraison | Session | — |
+| 8 | **E** — test sur téléphone. **Exige la fusion de la PR #1** | Propriétaire | — |
 
 **Compatibilité vérifiée** : le nouveau relais et l'app de `main` utilisent le même
 contrat (`POST {image}` → `[{brand, model, variant, cues, confidence}]`), le même nom
@@ -108,6 +125,8 @@ qu'il en parle.
 | Format de clé Gemini `AQ.` | Rejeté en `?key=` chez beaucoup d'utilisateurs, accepté chez le propriétaire | Le nouveau relais passe par l'en-tête `x-goog-api-key` : ne pas revenir à `?key=` |
 | Confondre 501 et 503 côté comptes | Un 503 traité comme « pas de stockage photo » réécrirait le cloud sans des photos qui existent | `CLAUDE.md` §8 quinquies |
 | Relancer une question | Le propriétaire a demandé d'arrêter | Une fois, puis `RESTE-A-FAIRE.md` |
+| Supposer qu'un connecteur sait tout faire | Le connecteur Cloudflare ne règle ni juridiction, ni variables, ni liaisons | Lister ses outils (`ToolSearch`) avant de promettre une action |
+| Une purge qui vit dans un autre service | Le relais écrivait des empreintes d'IP que seul le serveur de comptes (pas encore déployé) effaçait | Chaque service purge ce qu'il écrit ; table partagée → même règle, vérifiée au banc |
 
 ---
 

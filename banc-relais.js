@@ -14,7 +14,8 @@
    par compte (session valide) et pour tout le service, y compris sous une
    rafale de requêtes simultanées ; il ne renvoie jamais de détail interne ;
    sans base de limites, il refuse de travailler plutôt que d'être ouvert.
-   /notify n'existe plus.
+   /notify n'existe plus. Il purge lui-même ses compteurs échus (cron), sans
+   jamais toucher à ceux, encore actifs, du serveur de comptes (table partagée).
 
    Usage : node banc-relais.js     (Node ≥ 22, aucune dépendance)
    ========================================================================== */
@@ -194,6 +195,34 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   /* Limites stockées hachées, comme celles des comptes */
   const cles = sqlite.prepare('SELECT cle FROM limites').all().map(x => x.cle);
   v('compteurs : ni IP ni identifiant en clair (empreintes seulement)', cles.length > 0 && cles.every(k => /^[0-9a-f]{64}$/.test(k)), JSON.stringify(cles.slice(0, 2)));
+
+  /* Purge nocturne (07/10). Avant, seul le serveur de comptes purgeait : sans
+     lui (partie C non déployée, ou cron oublié), les empreintes d'IP du relais
+     restaient en base indéfiniment, contrairement à CONFIDENTIALITE.md. */
+  v('le relais porte sa propre purge (handler scheduled)', typeof relais.scheduled === 'function');
+  const purge = typeof relais.scheduled === 'function' ? (...x) => relais.scheduled(...x) : async () => {};   // absente : échecs lisibles, pas de plantage
+  // La table est PARTAGÉE : la plus longue fenêtre du serveur de comptes est lue
+  // dans SON code, pour que l'allonger là-bas fasse échouer ce banc ici.
+  const srcCompte = fs.readFileSync(path.join(__dirname, 'cloud', 'compte-worker.js'), 'utf8');
+  const fenetres = [...srcCompte.matchAll(/fenetreMs:\s*([0-9*\s]+?)\s*}/g)].map(m => m[1].split('*').reduce((a, x) => a * Number(x), 1));
+  const fenetreMaxCompte = Math.max(...fenetres);
+  v('… fenêtres du serveur de comptes lues (garde-fou du test lui-même)', fenetres.length >= 4 && fenetres.every(Number.isFinite) && fenetreMaxCompte >= 3600e3, JSON.stringify(fenetres));
+  const maintenant = Date.now(), jour = Math.floor(maintenant / 86400e3) * 86400e3;
+  const poser = sqlite.prepare('INSERT INTO limites (cle, compte, fenetre) VALUES (?, 1, ?)');
+  poser.run('compteur-compte-encore-actif', maintenant - fenetreMaxCompte + 60e3);
+  poser.run('compteur-echu', maintenant - fenetreMaxCompte - 60e3);
+  const reste = (cle) => !!sqlite.prepare('SELECT 1 FROM limites WHERE cle = ?').get(cle);
+  const duJour = () => sqlite.prepare('SELECT COUNT(*) AS n FROM limites WHERE fenetre = ?').get(jour).n;
+  const avantPurge = duJour();
+  await purge({ scheduledTime: maintenant }, env, { waitUntil() {} });
+  v('purge : un compteur échu est effacé', !reste('compteur-echu'));
+  v('… jamais avant la plus longue fenêtre du serveur de comptes (sinon « 10 codes par jour » repartirait à zéro)', reste('compteur-compte-encore-actif'));
+  v('… ni les compteurs du jour en cours', avantPurge > 0 && duJour() === avantPurge, `${avantPurge} → ${duJour()}`);
+  await purge({ scheduledTime: jour + 86400e3 + (3 * 60 + 17) * 60e3 }, env, {});
+  v('la nuit suivante (cron 3 h 17 UTC) : plus aucun compteur de la veille, donc effacés sous 48 h comme promis', duJour() === 0, duJour());
+  let purgePlante = false;
+  try { await purge({ scheduledTime: maintenant }, { ...env, DB: undefined }, {}); } catch { purgePlante = true; }
+  v('purge sans base liée : journalisée, aucune exception', !purgePlante);
 
   globalThis.fetch = fetchReel; try { fs.unlinkSync(tmp); } catch {}
   let ko = 0; for (const x of res) { if (!x.ok) ko++; console.log(`  ${x.ok ? '\x1b[32m✓\x1b[0m' : '\x1b[31m✗\x1b[0m'} ${x.t}${!x.ok && x.d != null ? '  → ' + x.d : ''}`); }

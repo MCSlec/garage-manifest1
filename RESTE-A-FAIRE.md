@@ -122,6 +122,15 @@ Rien ne casse, mais c'est déroutant : à garder court, ou à dire autour de toi
   `cloud/CONFIDENTIALITE.md`.
 - [ ] Après la bascule : **une** capture de test et un coup d'œil au journal
   (`npx wrangler tail`) — le banc simule l'API, il ne remplace pas un vrai appel.
+- [ ] **Déclencheur de purge du relais** (`TUTO-GRATUIT.md` B2 bis, cron
+  `17 3 * * *`), **après** le collage du nouveau code. Ajouté le 07/10 : sans lui,
+  les empreintes d'IP du relais ne sont jamais effacées.
+- [ ] Après la réussite de B5 : **supprimer l'ancienne clé Gemini** « CARDEX »
+  (`…eeUw`) dans AI Studio. La clé « Default Gemini API Key » (`…kvaw`) ne sert pas
+  au relais : à supprimer si rien d'autre ne l'utilise (à toi de voir).
+- [ ] **Révoquer l'ancienne clé Resend** « Garage manifest » (27/08) : apparue en
+  partie sur des captures, plus utilisée par aucun code dès qu'elle quitte le
+  relais. Prévu en C1 ; je peux le faire plus tôt par le connecteur sur « go Resend ».
 
 ## 2 quater. 🌐 Ce que l'app contacte encore à l'extérieur (état au 30/09)
 
@@ -193,7 +202,9 @@ Capacitor autour du même code) :
   natif, la carte et le hors-ligne jouent pour nous.
 - **Suppression de compte dans l'app** exigée par Apple : déjà faite.
 - **« Se connecter avec Apple »** : non exigé, on n'utilise ni Google ni
-  Facebook pour se connecter.
+  Facebook pour se connecter. ⚠️ **Le deviendrait** si on ajoutait « Se connecter
+  avec Google » (règle 4.8 d'Apple : une connexion tierce impose une option
+  équivalente respectueuse de la vie privée) — voir §5.
 - **Fiches de confidentialité des stores** : à remplir à partir de
   `cloud/CONFIDENTIALITE.md` (photo envoyée à l'IA, e-mail, position GPS).
 - **Carte** : les serveurs d'OpenStreetMap n'acceptent pas le trafic d'une app
@@ -229,3 +240,25 @@ Capacitor autour du même code) :
   l'environnement Claude) : aujourd'hui seuls les résumés de recherche sont
   lisibles, ce qui ralentit le sourçage.
 - [ ] **Merger la PR #1** (jamais fait sans ta demande explicite).
+- [ ] 🟡 **« go google » — se connecter avec son compte Google** (question du 07/10).
+  Gratuit (identifiant OAuth Google Cloud, sans carte), et lève pour les joueurs qui
+  ont un compte Google la vraie limite du mode gratuit : sans domaine, Resend
+  n'écrit qu'à **ton** adresse. Le code e-mail reste pour les autres. **Risque à
+  lever d'abord** : sur iPhone, une app installée a un stockage séparé de Safari,
+  le problème qui a tué le lien magique (`CLAUDE.md` §8 quinquies) ; une connexion
+  Google par redirection peut y tomber. → Première étape proposée : une page d'essai
+  jetable, testée sur un **iPhone réel**, avant toute intégration. **Apple**
+  (« se connecter avec Apple ») : exige le programme développeur à 99 $/an, donc
+  pas maintenant (§0), et deviendrait obligatoire à la sortie App Store (§4 bis).
+- [ ] 🟡 **Déployer le relais depuis GitHub** (« Builds » de Cloudflare) **après** la
+  fusion de la PR #1, branche `main` uniquement : « merge » deviendrait aussi le feu
+  vert du déploiement, et la production serait par construction égale au dépôt.
+  Pas avant : le relais de `main` est l'ancien (Claude Haiku, sans clé → panne).
+  Demande un fichier `wrangler` pour le relais, à écrire pour qu'il n'efface pas
+  les réglages du tableau de bord.
+- [ ] 🟡 **Empreintes d'IP scellées par un secret** (HMAC au lieu de SHA-256 simple).
+  Une IPv4 n'a que 4 milliards de valeurs : son empreinte SHA-256 se retrouve par
+  essai exhaustif en quelques secondes sur une carte graphique. Aujourd'hui, la
+  vraie protection est la durée courte (purge sous 48 h). Avec un secret, une copie
+  de la base ne révélerait plus aucune IP. Coût : un secret de plus à coller par
+  toi dans chaque Worker. Concerne le relais **et** le serveur de comptes.

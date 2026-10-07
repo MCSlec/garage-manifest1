@@ -114,8 +114,15 @@ range comptes et collections. Elle doit exister avant tout le reste.
   Ne la recrée pas : ouvre-la et passe directement à A4.* Sinon, bouton **Create** (ou
   « Create database »).
   - Nom : **`garage-comptes`**, exactement, en minuscules avec le tiret.
-  - Emplacement (*location*) : laisse le choix automatique, ou choisis l'Europe
-    occidentale.
+  - Emplacement : choisis la **juridiction** *European Union (EU)* (rubrique
+    *Jurisdiction* / *Data location*), **pas** un simple indice de région
+    (*Location hint*). La juridiction **garantit** que les données (e-mails,
+    positions GPS des collections) restent dans l'UE ; l'indice n'est qu'un
+    « au mieux ». Elle ne se choisit **qu'à la création** : impossible de
+    l'ajouter ensuite sans recréer la base. Pas d'option de juridiction à
+    l'écran ? Ne crée rien et préviens-moi.
+    *(Fait ainsi le 04/10 : le connecteur Cloudflare ne sait pas régler la
+    juridiction, d'où la création à la main.)*
   - Valide avec **Create**.
 
 - [ ] **A4. Créer les tables.** Ouvre la base `garage-comptes` → onglet **Console**.
@@ -142,19 +149,30 @@ range comptes et collections. Elle doit exister avant tout le reste.
 
 ## Partie B — Le relais IA avec Gemini gratuit (≈ 20 min)
 
-### B1. La clé Gemini — tu l'as déjà, on la met à l'abri
+> **Ordre conseillé : B1 → B3 → B4 → B2 → B2 bis → B5** (et non dans l'ordre des
+> numéros). L'ancien code ignore les nouveaux réglages et lit la clé Gemini qu'elle
+> soit Variable ou Secret : en posant liaison et réglages **avant** le nouveau code,
+> la reconnaissance ne s'arrête pas une seconde. Dans l'ordre des numéros, le relais
+> répondrait 503 entre B2 et B3.
 
-Ta clé Gemini est déjà enregistrée sur le relais (voir « Ton point de départ »), et
-elle marche. On la réutilise telle quelle, il faut juste la copier avant de la passer
-en Secret à l'étape B4.
+### B1. Une clé Gemini neuve, dans le même projet
 
-- [ ] Cloudflare → `silent-firefly-2620` → **Settings** → *Variables and secrets* →
-  ligne **`GEMINI_API_KEY`** → crayon ✏️ : la valeur complète s'affiche.
-  **Copie-la** dans un endroit provisoire de ton ordinateur (un brouillon de note,
-  pas un message), puis ferme sans rien modifier.
-- [ ] Vérifie sur **aistudio.google.com/app/apikey** que le projet de cette clé est en
-  offre **gratuite** (*Free tier*). S'il affiche une facturation active, préviens-moi
-  avant d'aller plus loin.
+L'ancienne clé a vécu en texte clair (Variable) depuis l'été et a été en partie
+visible sur des captures : on en crée une **neuve**, collée directement dans un
+Secret, au lieu de recopier l'ancienne via un brouillon.
+
+- [ ] **Trouver le projet de la clé actuelle.** Cloudflare → `silent-firefly-2620` →
+  **Settings** → *Variables and secrets* → ligne `GEMINI_API_KEY` : relève ses
+  **4 derniers caractères** seulement. Sur **aistudio.google.com/app/apikey**, la clé
+  qui finit pareil indique son **projet**. *(Le 04/10 : `…eeUw`, « CARDEX », projet
+  « Projet Gemini 2 ».)*
+- [ ] Vérifie que ce projet affiche **« Niveau sans frais »** (*Free tier*). Si une
+  facturation est active, préviens-moi avant d'aller plus loin.
+- [ ] **Créer une clé API** → nom `garage-manifest-relais` → **même projet** (le quota
+  gratuit est compté par projet) → copie-la et enchaîne **directement** B4 : elle ne
+  va nulle part ailleurs que dans la case Secret de Cloudflare.
+- [ ] **Garde l'ancienne clé** jusqu'à la réussite de B5 (c'est le repli), puis
+  supprime-la dans AI Studio (⋮ → *Supprimer*).
 
 > **L'erreur 404 de juillet ne reviendra pas.** Elle venait du **modèle**
 > (`gemini-2.5-flash-lite`, fermé aux nouveaux comptes), pas de ta clé. Le relais
@@ -179,10 +197,25 @@ jamais appelée.
   **colle** (Ctrl+V / Cmd+V) : l'ancien code est remplacé.
 - [ ] **Deploy** (en haut à droite), confirme.
 
-> À partir de cet instant, le relais **refuse de travailler** (erreur 503) tant que la
-> base n'est pas reliée (B3). C'est voulu : un relais sans plafond serait un service
-> ouvert à tous. Enchaîne directement B3 et B4 ; pendant ces quelques minutes, l'app
-> propose simplement le choix manuel.
+> Dans l'ordre conseillé (B3 et B4 déjà faits), le nouveau code travaille dès cet
+> instant. Sinon, il **refuse de travailler** (erreur 503) tant que la base n'est pas
+> reliée (B3) : c'est voulu, un relais sans plafond serait un service ouvert à tous.
+>
+> Dis-moi « collé » : je relis par le connecteur le code **réellement déployé** et le
+> compare au fichier du dépôt (une copie tronquée se voit tout de suite).
+
+### B2 bis. La purge de nuit du relais (après B2)
+
+Le relais compte les identifications par appareil, sous forme d'**empreinte** de
+l'adresse IP. Chaque nuit, il efface les compteurs échus : c'est ce que promet
+`cloud/CONFIDENTIALITE.md` (« effacés sous 48 heures »). Sans ce réglage, ils
+resteraient en base indéfiniment.
+
+- [ ] **silent-firefly-2620** → **Settings** → **Trigger events** → **Cron triggers**
+  → **Add** → expression **`17 3 * * *`** → **Add/Deploy**.
+  (= tous les jours à 3 h 17 UTC. Gratuit : 5 déclencheurs par compte, on en utilise 2.)
+- ⚠️ **Après B2 seulement** : l'ancien code n'a pas de purge, le déclencheur
+  tomberait en erreur chaque nuit.
 
 ### B3. Relier la base au relais
 
@@ -198,18 +231,24 @@ en Secret : on la supprime puis on la recrée.
 - [ ] Ligne **`GEMINI_API_KEY`** → corbeille 🗑️ → confirme. (Tu as copié sa valeur en
   B1 : sinon, arrête-toi et fais B1.)
 
-Puis **Add variable**, une ligne à la fois. Dans la fenêtre, le champ **Type** propose
-*Text* ou *Secret* :
+Puis **Add variable**. Le formulaire actuel (« Add environment variable ») n'a pas de
+menu *Type* : c'est la case **Secret**, tout au bout de la ligne *Value* (sur
+téléphone, fais glisser la ligne ou tourne l'écran pour la voir). **Cochée = Secret,
+décochée = Text.** *+ Add* ajoute une ligne : on peut tout saisir d'un coup.
 
 | Type | Nom (exactement) | Valeur |
 |---|---|---|
-| **Secret** | `GEMINI_API_KEY` | la clé copiée en B1 |
+| **Secret** | `GEMINI_API_KEY` | la clé **neuve** créée en B1 |
 | **Text** | `IA_FOURNISSEUR` | `gemini` |
 | **Text** | `APP_ORIGIN` | `https://mcslec.github.io` (sans `/` à la fin, sans `garage-manifest1`) |
 
 - [ ] Les trois lignes sont ajoutées, puis **Deploy**.
-- [ ] **Efface la copie provisoire** de la clé Gemini sur ton ordinateur : elle vit
+- [ ] Contrôle : `GEMINI_API_KEY` affiche le type **Secret** et une valeur masquée.
+  Si tu la lis en clair, la case n'était pas cochée : supprime et recrée.
+- [ ] Copie n'importe quel mot pour **vider le presse-papier** : la clé vit
   désormais, chiffrée, chez Cloudflare.
+- [ ] Un **bandeau jaune** propose de recopier ces réglages dans un fichier
+  `wrangler` : il vise la ligne de commande, **ferme-le** (croix) sans rien recopier.
 - [ ] S'il existe une ligne **`IA_SECOURS`** : supprime-la (icône corbeille ou
   « … » → *Delete*). Un secours vers Anthropic serait payant.
 - [ ] Supprime la ligne **`RESEND_API_KEY`** du relais (et `NOTIFY_TO` s'il y en a une). Elles servaient à l'ancienne route `/notify` (signalement par e-mail),
@@ -226,6 +265,16 @@ Puis **Add variable**, une ligne à la fois. Dans la fenêtre, le champ **Type**
 
 Les bancs de test **simulent** Gemini : ils prouvent la logique, pas que Google
 accepte réellement notre requête. Seul un vrai appel le prouve.
+
+- [ ] *(Facultatif, sur ordinateur — ne consomme rien.)* Ouvre l'app
+  (`https://mcslec.github.io/garage-manifest1/`), **F12** → **Console**, colle :
+  ```js
+  fetch("https://silent-firefly-2620.cyril-lapopin.workers.dev/",{method:"POST",body:"{}"}).then(r=>console.log(r.status),e=>console.log("bloqué",e))
+  ```
+  Une requête **sans image** : le relais vérifie sa configuration **avant** de compter
+  un quota ou d'appeler Gemini, donc ce test ne coûte rien. **400** = tout est en place ·
+  **503** = liaison `DB` absente (B3) · **500** = `IA_FOURNISSEUR` ou clé (B4) ·
+  **« bloqué »** = `APP_ORIGIN` mal saisie (B4).
 
 - [ ] Cloudflare → **silent-firefly-2620** → onglet **Observability** → journaux en
   direct (*Live* / *Real-time logs*). Laisse cet onglet ouvert.
@@ -322,10 +371,13 @@ pas soi-même, on le fait tirer par la machine.
 > où tu auras un domaine, on la remplacera par `connexion@ton-domaine.fr`, et tout le
 > monde pourra recevoir un code.
 
-### C6. La purge de nuit (recommandé)
+### C6. La purge de nuit (indispensable)
 
 Chaque nuit, le serveur efface ce qui a expiré : codes non utilisés, sessions
-échues, compteurs anti-abus. C'est la règle RGPD « rien d'inutile n'est gardé ».
+échues, compteurs anti-abus. C'est la règle RGPD « rien d'inutile n'est gardé », et
+`cloud/CONFIDENTIALITE.md` la promet (« effacé à la purge nocturne suivante ») : sans
+ce déclencheur, la promesse serait fausse. *(Le relais a sa propre purge depuis le
+07/10, étape B2 bis : celle-ci couvre les codes et les sessions.)*
 
 - [ ] **garage-comptes** → **Settings** → **Trigger Events** (ou *Triggers*) →
   **Add** → **Cron Triggers** → expression **`17 3 * * *`** → **Add/Deploy**.
