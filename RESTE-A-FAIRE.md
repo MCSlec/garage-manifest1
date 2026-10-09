@@ -204,7 +204,8 @@ Capacitor autour du même code) :
 - **« Se connecter avec Apple »** : non exigé, on n'utilise ni Google ni
   Facebook pour se connecter. ⚠️ **Le deviendrait** si on ajoutait « Se connecter
   avec Google » (règle 4.8 d'Apple : une connexion tierce impose une option
-  équivalente respectueuse de la vie privée) — voir §5.
+  équivalente respectueuse de la vie privée) — voir §5 : la recommandation est de
+  livrer Google et Apple **ensemble**, à cette étape.
 - **Fiches de confidentialité des stores** : à remplir à partir de
   `cloud/CONFIDENTIALITE.md` (photo envoyée à l'IA, e-mail, position GPS).
 - **Carte** : les serveurs d'OpenStreetMap n'acceptent pas le trafic d'une app
@@ -240,16 +241,27 @@ Capacitor autour du même code) :
   l'environnement Claude) : aujourd'hui seuls les résumés de recherche sont
   lisibles, ce qui ralentit le sourçage.
 - [ ] **Merger la PR #1** (jamais fait sans ta demande explicite).
-- [ ] 🟡 **« go google » — se connecter avec son compte Google** (question du 07/10).
-  Gratuit (identifiant OAuth Google Cloud, sans carte), et lève pour les joueurs qui
-  ont un compte Google la vraie limite du mode gratuit : sans domaine, Resend
-  n'écrit qu'à **ton** adresse. Le code e-mail reste pour les autres. **Risque à
-  lever d'abord** : sur iPhone, une app installée a un stockage séparé de Safari,
-  le problème qui a tué le lien magique (`CLAUDE.md` §8 quinquies) ; une connexion
-  Google par redirection peut y tomber. → Première étape proposée : une page d'essai
-  jetable, testée sur un **iPhone réel**, avant toute intégration. **Apple**
-  (« se connecter avec Apple ») : exige le programme développeur à 99 $/an, donc
-  pas maintenant (§0), et deviendrait obligatoire à la sortie App Store (§4 bis).
+- [ ] 🟡 **Connexion Google et Apple** (questions des 07 et 09/10). **Recommandation :
+  le compte reste le nôtre** (base D1, identifiant aléatoire — déjà le cas, jamais
+  l'e-mail) ; Google, Apple et le code e-mail ne sont que des **façons de s'y
+  connecter** (table `identites` : fournisseur + identifiant chez lui → notre compte,
+  ajout sans migration). **Pas** de compte « de store » (Game Center, Play Jeux) comme
+  compte principal : propre à une plateforme, il perdrait la collection d'un joueur
+  qui change de téléphone, et n'existe pas dans la version web.
+  **Quand :** Google **et** Apple **ensemble, au passage en app native** (§4 bis) —
+  les 99 $ d'Apple seront payés de toute façon, la règle 4.8 impose Apple dès qu'on
+  propose Google, et en natif la connexion passe par la fenêtre système : le
+  problème de stockage séparé de l'iPhone (qui a tué le lien magique, `CLAUDE.md`
+  §8 quinquies) disparaît. Le serveur peut être préparé et testé au banc avant, en
+  sommeil. Google seul **en web** reste possible et gratuit, mais seulement après un
+  essai réussi sur un **iPhone réel**.
+  **Pièges écrits d'avance :** relier par l'identifiant stable du fournisseur
+  (`sub`), jamais par l'e-mail ; fusionner avec un compte e-mail existant seulement
+  si le fournisseur **certifie** l'adresse (`email_verified`), sinon prise de compte
+  possible ; Apple « Masquer mon e-mail » donne une adresse relais, qui ne reçoit nos
+  e-mails que si notre **domaine** est déclaré chez Apple ; Apple ne transmet nom et
+  e-mail qu'à la **première** connexion ; supprimer un compte doit **révoquer** son
+  jeton Apple ; Google et Apple à ajouter aux destinataires de `CONFIDENTIALITE.md`.
 - [ ] 🟡 **Déployer le relais depuis GitHub** (« Builds » de Cloudflare) **après** la
   fusion de la PR #1, branche `main` uniquement : « merge » deviendrait aussi le feu
   vert du déploiement, et la production serait par construction égale au dépôt.
