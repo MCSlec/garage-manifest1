@@ -254,7 +254,12 @@ Capacitor autour du même code) :
   problème de stockage séparé de l'iPhone (qui a tué le lien magique, `CLAUDE.md`
   §8 quinquies) disparaît. Le serveur peut être préparé et testé au banc avant, en
   sommeil. Google seul **en web** reste possible et gratuit, mais seulement après un
-  essai réussi sur un **iPhone réel**.
+  essai réussi sur un **iPhone réel**. ⚠️ En web, **pas** le bandeau « One Tap » de
+  Google : il exige de charger un script de Google dans l'app (contraire à
+  `CLAUDE.md` §1.2, « jamais de CDN »), qui contacte Google à chaque ouverture. À la
+  place : la page de connexion Google classique par redirection (OAuth avec PKCE),
+  deux touchers de plus, aucun code tiers dans l'app. Prérequis : parties B et C
+  faites (le serveur de comptes doit exister). Mot-clé : « go google web ».
   **Pièges écrits d'avance :** relier par l'identifiant stable du fournisseur
   (`sub`), jamais par l'e-mail ; fusionner avec un compte e-mail existant seulement
   si le fournisseur **certifie** l'adresse (`email_verified`), sinon prise de compte
