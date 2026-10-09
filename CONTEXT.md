@@ -1,14 +1,29 @@
 # Garage Manifest — Document de contexte projet
 
-> **Rôle de ce fichier :** état compacté du projet, injecté au démarrage de chaque
-> conversation. Il porte le *pourquoi* (décisions, contraintes, intentions) —
-> le *comment* vit dans `index.html`.
+> **Rôle de ce fichier :** état compacté du projet, à lire en premier par toute
+> IA (Claude Code inclus) qui reprend ce dépôt. Il porte le *pourquoi*
+> (décisions, contraintes, historique des bugs, chantiers en cours et
+> abandonnés) — le *comment* vit dans `index.html` et `gm-specs.js`.
 >
-> **Règle de maintenance :** mis à jour à la fin de chaque chantier, avant fermeture
-> de la conversation correspondante. Un `CONTEXT.md` périmé est pire qu'absent.
+> **Règle de maintenance :** mis à jour à la fin de chaque chantier, avant
+> fermeture de la conversation correspondante. Un `CONTEXT.md` périmé est pire
+> qu'absent — il fait perdre confiance dans tout le reste du fichier.
+>
+> Ce document a été recompilé le 22/09/2026 à partir de l'historique complet
+> de quatre conversations Claude.ai (23/07, 05/08, 17-18/09, 21-22/09) au
+> moment du passage du projet vers Claude Code. Certains chiffres (nombre de
+> voitures, versions) datent de la dernière conversation connue et doivent être
+> revérifiés contre le dépôt réel avant d'être cités comme à jour.
 
-**Dernière mise à jour :** 18 septembre 2026 (fin de chantier MOTOR_SPECS)
-**Version applicative de référence :** service worker `garage-v20.115.0` (vérifié sur `sw.js` réel)
+**Dernière mise à jour :** 22/09/2026
+**Version applicative de référence :** `gm-specs.js` v20.115.0 · `sw.js` garage-v20.115.0
+> ⚠️ **Réconcilié avec le dépôt réel le 22/09/2026 (import dans Claude Code).** Les
+> fichiers versionnés sont en **v20.115.0**, bien qu'ils contiennent déjà ~48 modèles /
+> ~156 variantes `MOTOR_SPECS`. Le journal du chantier 21-22/09 (§12) visait v20.116.0 :
+> le bump de version n'avait pas été appliqué/poussé au moment de la compilation de ce
+> document. À corriger lors de la prochaine livraison touchant `gm-specs.js` (règle §5 de
+> `CLAUDE.md`). Les comptages de ce fichier (fiches, variantes) restent des indications à
+> recroiser contre le code, jamais des vérités figées.
 
 ---
 
@@ -16,17 +31,29 @@
 
 **Nom :** Garage Manifest
 **Nature :** Progressive Web App personnelle de catalogage automobile — un « Pokédex pour voitures ».
-**Auteur / mainteneur :** Cyril
+**Auteur / mainteneur :** Cyril — passionné d'automobile et de motorsport, apprenti ingénieur (Chargé d'Affaires Études), habitué du circuit de Prenois/Dijon.
 **Déploiement :** GitHub Pages
-**URL de production :** https://mcslec.github.io/garage-manifest1/
-**Dépôt :** GitHub — MCSlec/garage-manifest1
+**URL de production :** `https://mcslec.github.io/garage-manifest1/`
+**Dépôt GitHub :** `MCSlec/garage-manifest1`
 
-**Objectif fonctionnel :** identifier, cataloguer et collectionner des véhicules croisés
-dans la vie réelle, à partir d'une photo prise au téléphone. Progression par missions,
-gestion de favoris, consultation hors-ligne.
+**Objectif fonctionnel :** identifier, cataloguer et collectionner des véhicules
+croisés dans la vie réelle, à partir d'une photo prise au téléphone. Progression
+par missions/défis, gestion de favoris, consultation hors-ligne totale.
 
-**Cible matérielle prioritaire :** Xiaomi 15 Ultra (usage terrain), Xiaomi Pad 7 (secondaire).
-Le rendu desktop est toléré, pas optimisé.
+**Cible matérielle prioritaire :** Xiaomi 15 Ultra (usage terrain), Xiaomi Pad 7
+(secondaire, utilisé aussi pour piloter Claude Code). Le rendu desktop est
+toléré, pas optimisé.
+
+**Modèle économique envisagé :** freemium — usage solo gratuit, création de
+« clan » payante (~5 €). Décision actée : **pas de publicité**, jamais.
+
+**Personnalité de travail de Cyril :** communication en français informel,
+instructions courtes et directes (« Go », « Goooo »), refuse qu'on s'arrête
+pour poser des questions entre deux features s'il a déjà donné le cap. Exige
+que les chiffres techniques (specs auto) soient vérifiés par une vraie source —
+préfixe `≈` si incertain, champ laissé vide si non fiable, **jamais de valeur
+inventée**. Apprécie les explications « rétro-ingénierie » qui montrent le
+raisonnement d'architecture, pas seulement le résultat.
 
 ---
 
@@ -37,205 +64,259 @@ argumentée explicitement, pas appliquée par défaut.
 
 | Contrainte | Décision | Justification |
 |---|---|---|
-| Distribution | Fichier `index.html` unique (+ modules `gm-*.js` séparés, chargés en réseau-d'abord) | Déployable par simple copie, aucun outillage, hébergement statique gratuit, auditabilité totale du code livré. Les modules `gm-specs.js`, `gm-rouleau.js` existent déjà à côté d'`index.html` — le futur `gm-matcher.js` suivra le même principe |
-| Stack | Vanilla JS, zéro dépendance | Pas de build step, pas de chaîne de dépendances à maintenir, pas de rupture liée à une montée de version tierce |
-| Persistance | IndexedDB | Volume potentiellement important (catalogue + photos), asynchrone donc non bloquant pour l'UI, quota très supérieur à localStorage |
-| Hors-ligne | Service Worker | Consultation du garage sans réseau, installabilité PWA (icône sur l'écran d'accueil) |
-| Accès IA | Relay Cloudflare Workers | Aucun secret côté client — le navigateur ne doit jamais porter la clé du modèle. Le Worker fait proxy, contrôle et éventuellement rate-limiting |
+| Distribution | `index.html` unique | Déployable par simple copie, aucun outillage, hébergement statique gratuit, auditabilité totale du code livré |
+| Stack | Vanilla JS, zéro dépendance, zéro build step | Pas de chaîne de dépendances à maintenir, pas de rupture liée à une montée de version tierce |
+| Persistance | IndexedDB | Volume important (catalogue + photos en dataURL), asynchrone donc non bloquant, quota très supérieur à localStorage |
+| Hors-ligne | Service Worker | Consultation du garage sans réseau, installabilité PWA (icône écran d'accueil) |
+| Accès IA | Relay Cloudflare Workers | Aucun secret côté client — le navigateur ne porte jamais la clé du modèle. Le Worker fait proxy et contrôle |
+| **Ne jamais réécrire `index.html` en entier** | Patchs ciblés uniquement, avec ancrage unique vérifié avant écriture | Le catalogue d'origine et tout le code existant ne doivent jamais être écrasés par erreur |
+
+### Invariants de code relevés (non écrits dans le code, mais respectés partout — à traiter comme des règles)
+
+1. **Rendu par chaînes.** Aucune manipulation de nœud DOM à la main : chaque
+   vue est une fonction pure `state → string` HTML, injectée par `innerHTML`.
+   Corollaire : tout texte d'origine utilisateur **doit** passer par `escapeHtml()`.
+2. **Délégation d'événements globale.** Trois écouteurs seulement (`click`,
+   `input`, `change`) posés sur `document`, dispatchés par attributs `data-*`.
+   Un nouveau contrôle = un nouvel attribut `data-*`, jamais un
+   `addEventListener` local. C'est ce choix qui rend le re-rendu `innerHTML`
+   sans effet de bord (les boutons de `gm-specs.js` type `data-car="…"` sont
+   captés gratuitement par cette délégation existante).
+3. **`CARS_BY_ID` est le point de vérité unique du lookup.** Les voitures
+   « Non classé » y sont injectées à chaud pour que *toutes* les vues
+   existantes fonctionnent sans modification. Ne jamais résoudre un `carId`
+   autrement.
+4. **Le catalogue est immuable en mémoire.** `CARS` n'est jamais muté ; les
+   ajouts utilisateur vivent dans `CUSTOM_REG`, à côté. (Note : `CARS` est
+   déclaré `const`, mais un tableau `const` reste modifiable en place —
+   `gm-specs.js` exploite ce point technique pour injecter ses modèles
+   manquants à chaud via `etendreCatalogue()`, sans jamais réassigner `CARS`.)
 
 ---
 
 ## 3. Modèle de données (IndexedDB)
 
-> _À compléter par rétro-documentation du code — non vérifié à ce jour._
-
-**Nom de la base :** _(à renseigner)_
-**Version du schéma :** _(à renseigner)_
+**Nom de la base :** `garage-manifest`
+**Version du schéma :** `1` (constante `VER`)
+**Module d'accès :** `Store`, IIFE dans `index.html`, API `open / isMemory / all / put / del / clear`
 
 ### Object stores
 
 | Store | keyPath | Auto-incrément | Index | Rôle |
 |---|---|---|---|---|
-| _(à compléter)_ | | | | |
+| `spots` | `"carId"` | non | aucun | Store **unique**. Contient trois natures d'enregistrements distinguées par la valeur de la clé |
+
+> ⚠️ Il n'existe qu'un seul object store. Métadonnées applicatives et registre
+> des voitures hors-catalogue vivent dans ce même store sous des clés
+> sentinelles (`__meta__`, `__customcars__`). Dette technique identifiée mais
+> jamais traitée : ça marche, ce n'est juste pas ce qu'un schéma propre aurait
+> fait dès le départ.
+
+### Les trois formes d'enregistrement du store `spots`
+
+**a) Prise de véhicule** — clé = l'`id` catalogue (ex. `"alpine-a110"`) ou un id
+custom (`"custom:…"`). Écrite par `saveDraft()`.
+
+```js
+{
+  carId:    "alpine-a110",          // clé primaire, = CARS[].id
+  at:       "2026-07-12T10:00:00Z", // ISO ; construit depuis la date locale à 12:00 (anti-décalage TZ)
+  loc:      "Monaco",               // libellé libre, trim
+  coords:   { lat: 43.73, lng: 7.42 } | null,
+  note:     "…",
+  photos:   [ "data:image/jpeg;base64,…", … ], // dataURL, JPEG q0.78–0.82, côté max 1280 px
+  cover:    0,                      // index dans photos[]
+  variants: [ "Phase 2 (1997-99)" ],// sous-ensemble de VARIANTS[carId]
+  favorite: false
+}
+```
+
+Ordre d'insertion des photos : `unshift` (nouvelle prise → devient la 1ʳᵉ) si le
+véhicule n'était pas encore verrouillé, `push` (ajout depuis une fiche
+existante) sinon.
+
+**b) Singleton métadonnées** — clé `"__meta__"`, variable `META`, écrite par `saveMeta()`.
+
+```js
+{
+  carId:    "__meta__",
+  bonus:    0,        // points de missions cumulés, additionnés au score de rareté
+  missions: { "2026-07-23": ["d-fr","d-suv"], "2026-S30": ["w-jdm"] }, // clé période → ids déjà crédités
+  friends:  [ { name, ts, score, count, rank, legends:[{id,at}] } ],
+  feed:     [ { who, id, at } ],  // borné à 50 entrées
+  name:     "",       // nom de pilote
+  ai:       ""        // URL du relais de reconnaissance (résolue par resolveAiEndpoint() si vide)
+}
+```
+
+**c) Singleton registre « Non classé »** — clé `"__customcars__"`, variable `CUSTOM_REG`.
+
+```js
+{
+  carId: "__customcars__",
+  list: [ {
+    id:    "custom:renault-avantime-phase-2-lx3k9f", // "custom:" + slug + Date.now().toString(36)
+    brand: "Renault", model: "Avantime phase 2", yr: "2002",
+    c:     "🏳️",        // drapeau "Non renseigné"
+    cat:   "Non classé",
+    r:     "commun",     // rareté forcée — n'entre pas au score
+    custom: true          // discriminant utilisé partout dans l'UI
+  } ]
+}
+```
 
 ### Stratégie de migration
 
-_(à compléter)_
+`onupgradeneeded` fait une seule chose : crée le store `spots` s'il n'existe
+pas, sinon ne fait rien. **Il n'y a pas de stratégie de migration versionnée.**
+Tant que `VER` reste à `1`, aucun risque. Le jour où `VER` passe à `2`, il
+faudra écrire un `switch` sur `e.oldVersion` — à anticiper avant d'en avoir
+besoin, pas après.
+
+**Repli mémoire :** si `indexedDB.open` échoue, `Store` bascule sur une `Map`
+en mémoire. L'app reste fonctionnelle mais volatile ; `Store.isMemory()`
+remonte l'info dans les Réglages.
+
+**Lecture externe non intrusive (utilisée par `gm-specs.js`) :** `gm-specs.js`
+ouvre `garage-manifest` en lecture seule, **sans jamais déclarer de numéro de
+version** — techniquement impossible de déclencher un `onupgradeneeded`, donc
+impossible d'altérer le schéma depuis ce module. Délai de sécurité de 1,5 s :
+si la base ne répond pas, l'affichage se fait quand même avec un ensemble vide.
 
 ---
 
 ## 4. Couche catalogue
 
-**Volumétrie :** 1 081 véhicules référencés, 1 234+ motorisations, 0 anomalie connue.
-**SPECS :** module séparé `gm-specs.js`, chargé réseau-d'abord via le service worker.
-Contient `SPECS` (fiche plate par clé), `GENS` (générations, avec parfois un sous-tableau
-`.m` de motorisations en **texte libre**, pas en chiffres exploitables), `MAP` (id
-catalogue → clé SPECS), `DERIVES` (ratios calculés à la volée : kg/ch, ch/t, ch/l, Nm/L,
-kg/Nm — jamais stockés), `PALIERS_RARETE` (rareté dérivée du volume de production —
-**non branché sur la rareté réellement affichée**, qui reste écrite à la main dans
-`index.html`, 6 paliers dont "Courant").
+**Volumétrie (dernier chiffre connu, à revérifier) :** ~1 075 véhicules,
+156 marques, 21 pays. Répartition par rareté (avant le dernier recalibrage à
+6 paliers) : commun 199 · peu commun 183 · rare 314 · épique 85 · légendaire 267.
 
-~~`gm-specs.js` chargé mais jamais consommé~~ — **affirmation fausse, corrigée le 18/09.**
-`gm-specs.js` se **greffe lui-même** dans chaque fiche via `greffer()`, déclenché par un
-`MutationObserver` sur `#overlay` : il repère la voiture par le titre `.info-head h2`, puis
-ajoute en fin de page `blocHTML(id)` = fiche technique (ratios kg/ch · ch/t · ch/L, masse,
-couple, cylindrée, À savoir) + bloc « Générations & motorisations » + moteurs. C'est ce
-rendu qu'on voit sur les captures (Falcon XB).
+**Format de stockage :** deux sources complémentaires, **toujours interroger
+les deux** :
+- `CARS` — tableau en dur dans `index.html`, catalogue d'origine.
+- `CATALOGUE_PLUS` — dans `gm-specs.js`, modèles ajoutés ensuite et injectés à
+  chaud dans `CARS_BY_ID` par `etendreCatalogue()`.
 
-**Répartition des rôles dans la fiche :**
-- `index.html` / `infoPageHTML()` : en-tête, sélecteur de motorisation, Moteur/Puissance,
-  identité (millésimes, origine, catégorie, rareté), verrou.
-- `gm-specs.js` / `greffer()` : tout le bloc chiffré et les générations.
-
-**Contrat entre les deux (marqueurs DOM) :**
-- `[data-verrou]` posé par index.html sur une voiture non spottée → `greffer()` ne greffe rien.
-- `[data-moto-actif="typeId|variantId"]` posé sur le sélecteur → `greffer()` calcule sa fiche
-  à partir de la variante (`ficheHTML(id, variante)` : champs mécaniques de la variante,
-  note/surnom/production du modèle, rupteur retiré car propre à un seul moteur).
+> ⚠️ **Piège vécu deux fois :** un audit qui ne cherche que dans `CARS`
+> conclut à tort que des voitures existantes sont absentes (`audi-s4`,
+> `audi-s5`, `toyota-supra-mk3` en ont fait les frais). Toujours croiser les
+> deux sources avant de déclarer un id manquant.
 
 ### Couche VARIANTS
 
-_Rôle exact : gestion des déclinaisons d'un même modèle. Existe et alimente l'affichage
-"Déclinaisons" dans `index.html` (liste de chips, présence/absence par entrée du garage).
-Distincte de `GENS` dans `gm-specs.js` — à clarifier si les deux doivent converger._
+Rôle : gestion des déclinaisons d'un même modèle (finition, phase, millésime)
+rattachées à une entrée parente du catalogue — ex. `VARIANTS['alfa-giulia'] =
+["Ti", "Veloce", "Quadrifoglio"]`. Active l'UI « Déclinaisons » (chips
+have/miss) dans la page photo. **Distinct de `MOTOR_SPECS`** (voir §4bis) —
+question ouverte, jamais tranchée : sont-ce deux vues du même concept, ou deux
+concepts qui vont finir par se contredire (ex. « Veloce » apparaît à la fois
+comme variante d'équipement et comme type de motorisation) ?
 
-**Structure :** _(à compléter)_
-**Règle de résolution :** _(à compléter)_
+### Système de rareté — 6 paliers (depuis v19.0.0)
 
-### Couche MOTOR_SPECS (multi-motorisations) — livrée
+| Palier | Points | Critère |
+|---|---|---|
+| **Courant** | 1 | Grande diffusion (citadine, berline, SUV, utilitaire…), encore produite après 2010 (critère = année de **fin** de production, pas de début), marque généraliste, sans mention sportive dans le nom |
+| **Commun** | 2 | Marques premium en version de base (Série 3, Classe A, A3) — volontairement distinctes du Courant, sinon le palier devenait un fourre-tout |
+| **Peu commun** | 4 | Versions sportives de grande diffusion (Cayman, A35, S3, M340i, Countryman JCW) |
+| **Rare** | 8 | Sportives de série à volumes modérés (Cayman S, 911 GTS, Panamera Turbo, A110 S) |
+| **Épique** | 20 | Séries limitées de quelques milliers (M2 CS, GT-R Nismo, 911 GT3 Cup) |
+| **Légendaire** | 50 | Voitures de course (GT3 R, GT3, AMG GT3…) et séries limitées sous ~1 000 exemplaires (M4 CSL, 911 R, RS2) |
 
-Structure **additive** dans `gm-specs.js`, placée juste avant l'objet `API`.
-Ne modifie ni `SPECS`, ni `GENS`, ni `MAP` — les 889 fiches mono-moteur existantes
-sont intactes.
+**Critère de classement = volume de production réel, jamais l'impression.**
 
-```
-MOTOR_SPECS[idCatalogue] = {
-  types: [ { id, label, variants: [ { id, label, ch, nm, kg, cyl,
-                                      arch, adm, pos, tx, bv, note } ] } ]
+> **Application aux voitures de course (22/09/2026).** 50 des 69 entrées
+> « Course » étaient déjà `legendaire`, 19 non — un écart systématique, pas
+> ponctuel. Tranché **par volume**, comme la règle l'impose, et non par
+> statut : 14 passent en `legendaire` (GT3 client, la plus diffusée étant
+> l'AMG GT3 à ~300 ex. ; GTE et Hypercar LMH/LMDh à quelques dizaines de
+> châssis ; Rally1 ; A110 Cup ~150), la Radical SR3 passe `rare` → `epique`
+> (~1 500 ex.). **Trois restent volontairement en place** : la 911 GT3 Cup
+> à `epique` (5 381 produites depuis 1990, 1 130 pour la seule 992 — la
+> règle la cite nommément à ce palier), la Dallara IR-18 à `epique` et les
+> Midget / Sprint Car à `rare`, types de châssis construits par milliers.
+> Effet sur le jeu : **+444 points sur un maximum de 19 092, soit +2,3 %**.
+
+Deux faux positifs corrigés au banc : (1) l'ancienneté se juge sur la fin de
+production, pas le début ; (2) `chMax` renvoyait la puissance max toutes
+générations confondues, ce qui faisait hériter une fiche générique de la
+puissance de sa variante sportive — critère de puissance retiré du calcul,
+le nom du modèle suffit à repérer une version sportive.
+
+### §4bis — `MOTOR_SPECS` : sélecteur de motorisation
+
+Pour les modèles où une seule fiche SPECS ne suffit pas (plusieurs
+motorisations disponibles à l'achat sur une même carrosserie — Giulia,
+Panamera, Mégane…), structure additive dans `gm-specs.js`, **jamais** de
+modification de `SPECS`/`GENS`/`MAP` existants :
+
+```js
+MOTOR_SPECS[catalogId] = {
+  types: [{
+    id, label,               // ex. id:'991-2', label:'991.2 (2019–2022)'
+    variants: [{
+      id, label, ch, nm, kg, cyl, arch, adm, pos, tx, bv,
+      note,                  // anecdote propre à CETTE motorisation
+      flou: ['ch','kg'],     // champs marqués ≈ (ex. valeurs soumises à la BoP en course)
+      nc: ['nm']             // champs jamais publiés → null, jamais inventés
+    }]
+  }]
 }
 ```
 
-Les champs de chaque variante sont **les mêmes que ceux de `SPECS`**, donc
-directement consommables par `DERIVES.calc()` (kg/ch, ch/t, ch/l, Nm/L, kg/Nm)
-sans logique de ratio supplémentaire à écrire.
+Chaque variante porte les mêmes champs que `SPECS`, pour compatibilité directe
+avec `DERIVES.calc()` (ratios kg/ch, ch/t, ch/L).
 
-**État au 18/09/2026 : 42 modèles, 129 variantes, 0 anomalie** (audit automatisé :
-ids vérifiés contre `CARS`, pas de doublon d'id de variante, aucun champ manquant,
-valeurs numériques valides).
+**État au 22/09/2026 : 50 modèles, 164 variantes, 0 anomalie d'audit.**
 
-Modèles couverts (nb de variantes) : alfa-giulia (6), landrover-defender (6),
-aston-vantage (5), peugeot-406-coupe (4), citroen-c6 (4), peugeot-106 (4),
-peugeot-504 (4), alfa-giulietta (3), mazda-mx5 (3), kia-stinger (3),
-opel-calibra (3), audi-tt (3), fiat-coupe (3), alfa-156 (3), alfa-147 (3),
-alfa-75 (3), toyota-gr-supra (2), skoda-octavia-rs (2), nissan-300zx (2),
-toyota-mr2 (2), alfa-gtv-916 (2), mercedes-190e (2), peugeot-205 (2),
-matra-murena (2), lancia-fulvia (2), jaguar-xjs (2), citroen-xantia (2),
-tvr-cerbera (2), porsche-panamera (6), peugeot-206 (6), renault-megane (4),
-bmw-m3 (2), porsche-911 (2), audi-r8 (3), audi-rs6 (2), porsche-718-boxster (3), audi-s3 (2), bmw-m5 (3), bmw-m2-cs (2), bmw-m4-cs (2), audi-s4 (4), audi-s5 (4).
+**Règle « GTA »** (nommée d'après le cas Alfa Giulietta/GTA) : une déclinaison
+qui a sa **propre fiche catalogue séparée** (911 Turbo/GT3/GT2 RS, M3 CSL/
+Touring, Golf R/R32, Mégane R.S./R26.R, 206 WRC) est **exclue** de
+`MOTOR_SPECS` du modèle de base — sinon la même voiture existe deux fois avec
+des chiffres potentiellement incohérents. Distinction : même
+identité/carrosserie avec différents moteurs → une seule fiche + sélecteur ;
+identité distincte (poids, rareté, nom différents, ex. Giulia GTA) → fiche
+catalogue séparée.
 
-**Modèles multi-générations** (catalogue couvrant plusieurs générations sur une
-seule fiche) : chaque **génération devient un `type`**, ses moteurs deviennent
-les variantes. Pas besoin de choisir une seule génération. Règle GTA appliquée :
-les déclinaisons qui ont leur propre fiche catalogue sont exclues de la fiche de
-base (911 Turbo/GT3/GT2 RS, M3 CSL/Touring, Golf R/R32, Mégane R.S./R26.R,
-206 WRC).
+**Multi-générations :** pour un id catalogue qui couvre plusieurs générations
+(911, M3, Panamera…), chaque **génération devient un `type`**, ses moteurs
+deviennent les `variants`. Pas besoin de choisir une seule génération à
+représenter.
 
-**Méthode de sélection :** scan automatisé de `GENS` → 266 fiches multi-lignes,
-filtrées par heuristique (libellés contenant cylindrée/carburant) → 57 vrais cas
-« choix moteur à l'achat sur la même carrosserie ». Écartés : les fourchettes
-vagues (« 1.0–1.4 »), les cas générations-différentes (911, M3, Golf GTI…), et
-~~3 ids « absents de `CARS` »~~ — **erreur corrigée le 18/09** : audi-s4, audi-s5 et
-toyota-supra-mk3 existent bien, dans `CATALOGUE_PLUS`. S4 et S5 traitées (vague 20) ;
-Supra A70 laissée de côté (poids et version Turbo non sourcés).
+**Convention course (voitures de compétition) :** puissance et masse sont
+fixées par la Balance of Performance (bride + lest ajustés course par course)
+→ toujours marquées `flou`. Le couple n'est jamais publié pour ces autos →
+`nm: null` déclaré dans `nc`, jamais estimé.
 
-**Chiffres :** tous vérifiés par recherche web au moment de la saisie (presse
-constructeur, zeperfs, autotijd, largus, automobile-sportive, cars-data…).
-Aucune valeur estimée. Variantes écartées faute de source fiable plutôt
-qu'approximées (ex. Calibra Turbo 4x4).
+**Convention hybrides :** `nm` stocke toujours le couple **cumulé** (thermique
++ électrique), jamais le couple thermique seul seul.
 
-**Couverture partielle assumée** : pour les multi-générations, seules les
-générations dont les chiffres ont pu être recoupés sont présentes (M3 : E46 et
-G80 seulement ; 911 : 992 seulement ; Mégane : III seulement). Mieux vaut une
-génération manquante qu'une génération approximée.
+**Contrat DOM entre `index.html` et `gm-specs.js` :**
+- `[data-moto-actif="typeId|variantId"]` posé sur le sélecteur par
+  `index.html` → lu par `varianteActive()` dans `gm-specs.js` pour savoir
+  quelle variante calculer.
+- `[data-verrou]` posé par `index.html` sur une voiture **non spottée** →
+  `greffer()` dans `gm-specs.js` ne greffe rien (voir §7, règle du verrou).
 
-**Écartés après recherche (motif documenté) :**
-- vw-golf-gti : puissances contradictoires d'une source à l'autre par génération
-- mercedes-e63 : une seule variante avec poids sourcé (E63 S W213, 612 ch, 1 880 kg) — un sélecteur à une seule entrée n'a pas de sens
-- R8 V8 4.2, RS6 C5/C6/C7, M3 E30/E36/E92/Competition : poids manquant ou contradictoire (RS6 C5 donnée à 1 667 kg ET 1 840 kg dans le même article)
+**Lecture obligatoire :** `MOTOR_SPECS`, `GENS`, `MAP` sont **privés à l'IIFE**
+de `gm-specs.js`. Seul `window.GMSpecs` (l'objet `API` exposé) est global.
+Tout code dans `index.html` qui a besoin de ces structures doit passer par
+`window.GMSpecs.MOTOR_SPECS`, `window.GMSpecs.GENS`, etc. — jamais par le nom
+de variable nu (`typeof MOTOR_SPECS` vaut toujours `"undefined"` depuis
+`index.html`, piège qui a fait planter le sélecteur pendant plusieurs sessions
+sans qu'aucune erreur JS ne le signale).
 
-- ford-gt40 : Mk I / Mk II / Mk IV sont des voitures de course distinctes, pas un choix moteur à l'achat
-- renault-21-turbo : même moteur 175 ch sur les deux versions, seule la transmission change (traction / Quadra) — hors périmètre « motorisation »
-- alfa-gtv6 : la 3.0 est une série d'homologation sud-africaine de 212 exemplaires, relevant plutôt d'une fiche à part (règle GTA)
-- Générations sans poids sourcé : S3 8L/8Y, M5 E28/E34/E39/G90
-
-**Liste des candidats issus du scan GENS : épuisée.**
-
-### ⚠️ Deux sources de catalogue — à ne jamais oublier
-
-Le catalogue affiché = `CARS` (dans `index.html`) **+** `CATALOGUE_PLUS` (dans
-`gm-specs.js`, 228 entrées), fusionnés au démarrage par `etendreCatalogue()`.
-Toute vérification « cette voiture existe-t-elle ? » doit interroger **les deux**.
-Erreur commise le 18/09 : recherche limitée à `CARS`, qui a fait croire que les
-M2 CS / M4 CSL manquaient et a écarté à tort 3 candidats MOTOR_SPECS.
-
-Inventaire BMW CS/CSL réel : 3.0 CSL (E9), M3 CSL (E46), M5 CS, M2 CS, M4 CSL.
-~~Manquent réellement : M3 CS, M4 CS~~ → **ajoutées le 18/09** dans les 4 structures
-(`CATALOGUE_PLUS`, `SPECS`, `GENS`, `MAP`), rareté épique. M3 CS sans `MOTOR_SPECS`
-(poids de la F80 CS non sourcé → une seule génération chiffrable).
-
-**Bug de données corrigé :** `SPECS['bmw-m2-cs']` affichait 550 ch / 650 Nm — les chiffres
-de la M4 CSL placée juste en dessous (copier-coller). Corrigé en 450 ch / 550 Nm / 2,979 L
-(F87 CS, sources autotijd + presse). Même famille d'erreur que le bug Giulia/Quadrifoglio :
-**une fiche voisine qui « bave » sur la suivante** — à surveiller lors des saisies en lot.
-
-### 🐛 Bug corrigé — le sélecteur ne s'affichait jamais
-
-`MOTOR_SPECS`, `GENS` et `MAP` sont **privés** au module `gm-specs.js` (déclarés
-dans son IIFE) ; seul `window.GMSpecs` est global. Le premier câblage testait
-`typeof MOTOR_SPECS !== "undefined"` → toujours faux → sélecteur et bloc
-Générations **jamais rendus**, sans aucune erreur (la garde avalait tout).
-Correctif : `MOTOR_SPECS` ajouté à l'objet `API`, et `index.html` lit
-`window.GMSpecs.MOTOR_SPECS / .GENS / .MAP`. Vérifié par exécution réelle du
-module dans un environnement simulé (38 modèles accessibles via `GMSpecs`).
-Leçon : `node --check` valide la syntaxe, pas le comportement — un test
-d'exécution est obligatoire pour tout câblage entre modules.
-
-### ✅ Banc navigateur — 18/09/2026
-
-`banc-motorisations.py` (Playwright, Chromium headless, viewport 412×915 type Xiaomi) :
-écrit de vrais spots dans IndexedDB (`garage-manifest` / `spots`), recharge, ouvre les
-fiches, clique le sélecteur, lit le DOM. **Premier test comportemental du chantier.**
-
-Deux bugs trouvés qu'aucune vérification syntaxique ne pouvait voir, corrigés et re-testés :
-1. Les chiffres du bloc greffé ne suivaient pas la motorisation (Giulia Diesel 190 affichait
-   le couple de la 2.0 essence ; M4 CS F82 affichait la masse de la G82).
-2. Le verrou fuyait : `greffer()` injectait masse/couple/ratios sur les voitures non spottées.
-Plus un doublon de bloc Générations (le mien + celui de gm-specs) supprimé.
-
-Résultat final : sélecteur OK, chiffres et ratios recalculés par variante (vérifiés à la
-main : 1 465 kg / 190 ch = 7,71 kg/ch), verrou étanche, 1 seul bloc Générations, 0 erreur JS.
-
-### Règle métier — verrouillage des specs
-
-Les specs d'une voiture **non encore spottée** ne sont pas affichées : la fiche
-montre un panneau « Fiche technique verrouillée » à la place du sélecteur, de la
-grille de specs, de l'anecdote et des générations. Mécanique de collection, pas
-détail d'affichage — **doit survivre à tout re-design**.
-
-⚠️ Effet de bord : Cyril ne peut pas vérifier visuellement les fiches des voitures
-qu'il n'a pas croisées. Contourné pour le développement par le banc Playwright, qui
-simule des spots dans IndexedDB sans toucher au code de l'app.
-
-### Chantier précédent — sélecteur multi-motorisations (UI)
-
-Constat : une fiche unique ment pour les modèles à plusieurs motorisations distinctes
-(essence/diesel/Veloce sur Giulia, essence/diesel sur Panamera, etc.). Critère de tri
-validé : moteur différent seul → même fiche + sélecteur ; modèle différent (poids,
-identité, rareté — ex. Giulia GTA) → fiche séparée, inchangé. Les 889 fiches mono-moteur
-existantes ne bougent pas (tout est additif). Six pistes visuelles comparées (canvas de
-design), contenu complet sur toutes : plaque constructeur, carnet d'atelier, stand et
-chrono, tableau de bord, plan côté, ticket de contrôle technique — direction finale pas
-encore choisie par Cyril.
+**Répartition des rôles dans le rendu de la fiche :**
+- `index.html` / `infoPageHTML()` : en-tête, sélecteur de motorisation,
+  Moteur/Puissance résumés, identité (millésimes, origine, catégorie, rareté),
+  panneau de verrou.
+- `gm-specs.js` / `greffer()` : tout le bloc chiffré détaillé (ratios, masse,
+  couple, cylindrée, À savoir, note de variante) + bloc « Générations &
+  motorisations » (lecture de `GENS`/`MAP`) + bloc « Le même bloc ailleurs »
+  (index inversé des architectures moteur à travers le catalogue).
+  `greffer()` est déclenché par un `MutationObserver` sur `#overlay` : il
+  repère la voiture ouverte via le titre `.info-head h2`, résout son id, et
+  ajoute en fin de page `blocHTML(id, varianteActive(page, id))`.
 
 ---
 
@@ -243,136 +324,459 @@ encore choisie par Cyril.
 
 ```
 [Capture / sélection photo]
+        ↓  redimensionnement côté client, JPEG q0.78–0.82, côté max 1280 px
+[Requête vers le relay Cloudflare Workers]
         ↓
-[POST {image: dataURL} vers le relay Cloudflare Workers]
+[Worker → API Anthropic → Claude]
         ↓
-[Worker → API Anthropic (Claude) → identifier()]
+[Réponse — actuellement texte libre, chantier en cours vers JSON structuré]
         ↓
-[Réponse : [{brand, model, confidence}] — texte libre pour brand/model]
-        ↓
-[matchCatalog() côté client : Dice coefficient sur bigrammes + bonus marque]
+[matchCatalog() : coefficient de Dice sur bigrammes contre CARS + customs]
         ↓
 [Proposition à l'utilisateur / enregistrement en base]
 ```
 
-**Modèle IA :** Claude, `claude-haiku-4-5-20251001`, via l'API Anthropic
-(`api.anthropic.com/v1/messages`, clé dans la variable secrète `ANTHROPIC_API_KEY`).
-✅ Vérifié le 18/09/2026 par grep direct sur le vrai `ai-relay-worker.js`. Corrige une
-mention antérieure erronée de Google Gemini dans un résumé de session plus ancien —
-le projet a changé de moteur entre fin juillet et le 17 septembre 2026 sans que ça soit
-tracé ici, d'où l'importance de ce fichier.
+**Endpoint du relay (codé en dur, aucune config utilisateur nécessaire) :**
+`https://silent-firefly-2620.cyril-lapopin.workers.dev`
 
-**Endpoint du relay :** codé en dur côté client pour que les testeurs n'aient rien à
-configurer. D'après une session antérieure : `https://silent-firefly-2620.cyril-lapopin.workers.dev`
-— à reconfirmer sur le fichier réel, pas revérifié dans la session du 18/09.
+**Modèle réellement en production (constaté sur le tableau de bord Cloudflare le
+02/10/2026) : Gemini.** Le relais déployé n'a **aucune** clé Anthropic, mais porte
+`GEMINI_API_KEY` (format `AQ.`, en Variable texte et non en Secret) et un reste de
+`RESEND_API_KEY`, sans aucune liaison D1. Code relu le 02/10 (copié du tableau de
+bord par le propriétaire) : version **Gemini `gemini-3.1-flash-lite` du 31/08**, écrite
+par une IA (« repassé sur Gemini : la clé ANTHROPIC_API_KEY manquait côté
+Cloudflare… le chemin qui demandait le moins de manipulation »), **jamais déposée sur
+GitHub**. Clé passée en `?key=` dans l'URL ; `/notify` ouvert à tous, avec injection
+HTML possible dans l'e-mail (champ photo validé sur son seul préfixe) ; CORS reflété,
+aucun plafond. Même nom de clé, même modèle, même contrat de réponse que le nouveau
+relais : la migration ne change rien côté app. Reconnaissance **confirmée fonctionnelle** par le
+propriétaire le 02/10 (« elle nomme directement la bonne voiture ») : sa clé `AQ.` est
+donc acceptée en `?key=` sur son compte. Le nouveau relais passe par l'en-tête
+`x-goog-api-key`, la méthode documentée par Google pour ces clés. Le fichier Haiku déposé sur
+GitHub (11/08 → 31/08) **n'a jamais été collé dans Cloudflare** : il n'a jamais
+tourné, et rien n'a été facturé par Anthropic. Le propriétaire n'a jamais demandé
+Haiku. ⚠️ Leçon : le code sur GitHub n'est **pas** le code déployé. Un relevé fait
+sur le fichier du dépôt (« vérifié le 18/09 par grep ») ne dit rien du Worker en
+production ; seul le tableau de bord fait foi.
+**Historique (d'après le dépôt) :** le relay utilisait initialement
+`gemini-2.5-flash-lite`, fermé aux nouveaux comptes Google (erreur 404,
+diagnostiquée via les logs Observability de Cloudflare) → bascule vers
+`gemini-3.1-flash-lite` → migration complète vers Claude (`claude-haiku-4-5-20251001`)
+entre fin juillet et mi-septembre 2026. ⚠️ Cette bascule n'avait **pas** été
+validée par le propriétaire, qui dispose d'un quota Gemini gratuit. Depuis le
+30/09, le relais est **multi-fournisseur** (`IA_FOURNISSEUR` = `anthropic` |
+`gemini`, secours facultatif `IA_SECOURS`) : le choix lui revient, au
+redéploiement, sans toucher au code. Modèle Gemini par défaut :
+`gemini-3.1-flash-lite` (stable depuis le 07/05/2026).
 
-**Format de requête :** `POST {image: dataURL}`.
-**Format de réponse actuel :** tableau `[{brand, model, confidence}]`, `brand`/`model` en
-texte libre (pas de structure marque/modèle/génération séparée). `matchCatalog()` dans
-`index.html` fait tout le rapprochement catalogue côté client.
-**Gestion d'erreur :** _(à compléter — non vérifié)_
+⚠️ **Une clé API Google a été accidentellement exposée dans une capture
+d'écran** au tout début du projet — révoquée et remplacée à l'époque, sans
+suite. À garder en tête si une ancienne capture ressort.
 
-### Chantier en cours — refonte confiance / matching
+### Algorithme de matching actuel (`matchCatalog`)
 
-**Objectif :** séparer ce que pense l'IA de ce que pense le moteur de rapprochement
-catalogue — aujourd'hui les deux notions sont mélangées dans un score unique difficile
-à interpréter.
+1. `normalizeText` : NFD → suppression des diacritiques → minuscules → tout
+   non `[a-z0-9 ]` devient espace → espaces compactés.
+2. `diceCoefficient(qFull, full)` avec `qFull = "marque modèle"` normalisé,
+   comparé aux ~1 075 entrées + les customs. Comptage des bigrammes
+   décrémental, correct sur les répétitions.
+3. Score = `min(1, similarité × 0.7 + bonusMarque 0.3)`. Le bonus est accordé
+   si la marque devinée est égale à, contient, ou est contenue dans la marque
+   catalogue.
+4. **Seuil anti faux-positifs : 0.32.** En dessous → `null`.
+5. Confiance finale = `score × (0.55 + 0.45 × confianceIA)`, arrondie au
+   centième. Même avec une confiance IA nulle, le rapprochement textuel
+   conserve 55 % de son poids.
+6. `identifyCar` déduplique par id (max), trie décroissant, **tronque à 3**.
+7. `afterPhoto` filtre ensuite les customs (`!CARS_BY_ID[c.id].custom`) : une
+   voiture « Non classé » ne peut **jamais** être proposée automatiquement,
+   même si `matchCatalog` la scanne.
 
-**Décisions prises (18/09/2026), issues d'un débat croisé avec une autre IA :**
-1. **P0 — sortie structurée côté prompt Claude** : faire produire
-   `{brand, model, generation, variant, year_range, confidence, alternatives[]}` plutôt
-   que du texte libre à parser côté client. Priorité la plus haute — un changement de
-   prompt, pas une réécriture d'architecture.
-2. **Trois confiances séparées** : `aiConfidence` / `catalogScore` / `finalConfidence`,
-   plus `margin = top1.score − top2.score` pour savoir si le système discrimine vraiment
-   ou devine.
-3. **`NO_CONFIDENT_MATCH`** comme état de premier ordre — ne jamais forcer le meilleur
-   candidat s'il n'est pas assez convaincant.
-4. **Instrumentation dès maintenant** (logger confirmations/corrections utilisateur),
-   **sans promettre de calibration statistique** — volume d'usage bêta-entre-potes
-   trop faible pour une vraie signification statistique par tranche de confiance.
-5. **`gm-matcher.js`**, module séparé indépendant du DOM :
-   `matchCatalog(aiResult, CARS) → {status, candidates, topCandidate, margin, diagnostics}`.
-6. **Contrat explicite** : Claude fait de la vision (hypothèse automobile structurée),
-   `gm-matcher.js` fait la décision catalogue. Claude ne choisit jamais un ID catalogue ;
-   le matcher ne refait jamais de la vision.
+**Coût :** O(n × longueur) par supposition, n = taille du catalogue.
+Imperceptible sur mobile ; à surveiller si le catalogue double.
 
-**Bloquant avant de dessiner `gm-matcher.js` précisément :** le vrai `ai-relay-worker.js`
-(prompt exact, parsing actuel de `identifier()`) — pas encore fourni.
+### Chantier « matching » — en cours, pas terminé
+
+**Diagnostic posé :** le système actuel confond deux notions différentes — la
+confiance du modèle de vision, et la qualité du rapprochement textuel avec le
+catalogue. Résultat concret : deux pourcentages affichés côte à côte
+(« IA 91 % », « Catalogue 74 % ») que personne ne sait interpréter, alors
+qu'un simple mot-clé mal orthographié peut donner deux scores identiques pour
+des raisons totalement différentes.
+
+**Plan validé, dans l'ordre :**
+1. **Sortie structurée côté prompt Claude (P0)** — faire produire
+   `{brand, model, generation, variant, year_range, confidence, alternatives[]}`
+   en JSON strict, plutôt que du texte libre parsé côté client au regex
+   (le maillon le plus fragile de toute la chaîne).
+2. **Trois niveaux de confiance distincts** — `aiConfidence`, `catalogScore`,
+   `finalConfidence`, avec une marge (`margin`) et la possibilité explicite de
+   remonter `NO_CONFIDENT_MATCH` plutôt que de forcer un candidat.
+3. **Instrumentation dès maintenant** — enregistrer confirmations/corrections
+   utilisateur, sans prétendre faire une calibration statistique sérieuse sur
+   quelques dizaines de cas.
+4. **Matcher séparé** — `gm-matcher.js`, indépendant du DOM et testable en
+   isolation avec `matchCatalog(aiResult, CARS)`.
+5. **Contrat explicite IA → matcher** — Claude produit une hypothèse
+   automobile structurée ; le matcher détermine ensuite ce qui correspond
+   réellement au catalogue. Deux responsabilités séparées, pas mélangées.
+
+**Règle d'affichage actée (contredite une fois par erreur dans une maquette
+externe, donc à répéter explicitement à toute IA de design) : ne jamais
+afficher un pourcentage brut comme une probabilité scientifique.** Utiliser
+« Très probable » + coches de correspondance visuelles, jamais le chiffre nu
+à côté. Corollaire : **l'affichage de confiance IA ne doit pas être retouché
+tant que `finalConfidence`/`NO_CONFIDENT_MATCH` n'existent pas réellement** —
+coder une UI pour un système qui n'existe pas encore est un piège classique.
+
+**Prérequis avant de toucher au code du matcher :** relire `ai-relay-worker.js`
+(le code réel du Worker Cloudflare) pour voir le prompt exact et le format de
+sortie actuel — jamais tranché sur hypothèse.
 
 ---
 
-## 6. Interface — structure à 5 onglets
+## 6. Interface — structure à 5 emplacements
 
-| Onglet | Fonction | État |
+Barre inférieure `nav.tabs`, construite par `renderChrome`. 5 emplacements,
+dont un bouton d'action central (FAB).
+
+| Emplacement | `state.tab` | Icône | Fonction | État |
+|---|---|---|---|---|
+| 1 | `defis` | `flag` | Rang, jauge de progression, défis du jour (2) et de la semaine (3) | Opérationnel |
+| 2 | `collection` | `car` | **Vue principale.** Tuiles de rareté, complétude par marque/pays, filtres, grille du catalogue, bloc « Non classé » | Opérationnel |
+| 3 | — | `plus` | **FAB**, pas un onglet : déclenche `openCapture(null)` | Opérationnel |
+| 4 | `favoris` | `star` | Grille des prises marquées `favorite:true`, triées par date décroissante | Opérationnel |
+| 5 | `plus` | `more` | Menu de navigation vers 4 sous-pages | Opérationnel |
+
+**Sous-pages accessibles depuis « Plus »** (bouton retour `subBackHTML`,
+l'onglet Plus reste visuellement actif via le `Set` `PLUS_PAGES`) :
+
+| `state.tab` | Titre | Contenu |
 |---|---|---|
-| _(à compléter)_ | | |
+| `map` | Carte de chasse | Leaflet + tuiles OSM, marqueurs colorés par rareté, popup → fiche |
+| `stats` | Statistiques & équipage | 6 cartes chiffrées, barres par rareté/catégorie, sparkline 6 mois, prises récentes, bloc Équipage |
+| `trophies` | Trophées | 14 badges (`BADGES`), état recalculé à chaque rendu |
+| `settings` | Réglages | Export/import JSON, install PWA, feedback, quota de stockage, état du SW, reset, nom de pilote, endpoint IA |
 
-**Parti pris ergonomique :** navigation par barre inférieure, atteignable au pouce
-en usage une main sur mobile.
+**Parti pris ergonomique :** navigation par barre inférieure, atteignable au
+pouce en usage une main sur mobile.
+
+### Fiche véhicule — pager swipeable à 2 pages
+
+Page 1 : photo(s) + lieu/date/note (uniquement si spottée). Page 2 : fiche
+technique. Carrousel en CSS natif (`scroll-snap-type: x mandatory`) — **aucun
+JS de gestuelle**, le navigateur gère le swipe et l'inertie, le JS se contente
+de synchroniser les points de pagination sur l'événement de scroll. Fluide à
+60 fps sur Xiaomi, zéro bug de geste.
 
 ---
 
-## 7. Moteur de missions
+## 7. Moteur de missions / défis
 
-**Principe :** _(à compléter)_
-**Modèle de données associé :** _(à compléter)_
-**Déclenchement / évaluation :** _(à compléter)_
+**Principe :** défis du jour (2) et de la semaine (3), générés et affichés
+dans l'onglet Défis. Chaque défi crédité ajoute des points (`bonus`) au score
+global, stockés par clé de période dans `META.missions` (ex. `"2026-07-23":
+["d-fr","d-suv"]`, `"2026-S30": ["w-jdm"]`) pour ne jamais créditer deux fois
+la même période.
+
+**Trophées :** 14 badges définis dans `BADGES`, état recalculé à chaque rendu
+(pas de stockage d'état de badge — dérivé de `state.spots` à la volée). Deux
+badges bonus ajoutés en cours de route : *Accès paddock* (3 voitures de
+course) et *Chasseur d'hypercars* (3 hypercars).
+
+**Collections mécaniques (chantier livré) :** deuxième classement du garage,
+sous les défis du jour dans l'onglet Défis. Range le catalogue non pas par
+critère administratif (marque, pays, rareté) mais par ce qu'un passionné a
+réellement en tête : architecture moteur, régime, position du bloc, doctrine.
+24 collections définies (« Le club Mezger », « La tournée du PRV », « Rotary
+Club », « Le mur des 9 000 », « Phares escamotables », « Kei cars », « La
+boîte à grille », « Pikes Peak », « Sous la tonne », « Les orphelines », « Un
+moteur de F1 sur la route »…). **Zéro donnée nouvelle** — ce sont des requêtes
+sur les motorisations déjà écrites dans `gm-specs.js`, +3 lignes par
+collection ajoutée. Lit le garage réel via ouverture IndexedDB en lecture
+seule sans déclarer de version (voir §3).
+
+**Distinctions (chantier livré) :** en tête de fiche technique, badge du type
+« 🏆 MEILLEUR RAPPORT POIDS/PUISSANCE DU CATALOGUE » quand le modèle figure
+dans le top 3 d'un classement. Rien ne s'affiche en dessous du podium — une
+distinction donnée à tous n'en est plus une.
+
+**Navigation en réseau (chantier livré) :** les puces « Le même bloc ailleurs »
+et les modèles cités dans les collections sont cliquables (`data-car="…"`),
+captés gratuitement par la délégation de clics déjà existante d'`index.html`
+— zéro nouvel écouteur d'événement ajouté.
+
+### Règle métier — verrouillage des specs (mécanique de collection, pas détail d'affichage)
+
+Les specs d'une voiture **non encore spottée** ne sont **jamais** affichées :
+la fiche montre un panneau « 🔒 Fiche technique verrouillée » à la place du
+sélecteur, de la grille de specs, de l'anecdote et des générations.
+**Doit survivre à tout re-design.** Marqueur DOM `[data-verrou]` posé côté
+`index.html`, lu côté `gm-specs.js` pour que `greffer()` n'injecte rien.
+
+⚠️ Effet de bord assumé : Cyril ne peut pas vérifier visuellement les fiches
+des voitures qu'il n'a pas croisées lui-même. Contourné pour le développement
+par un banc Playwright qui simule des spots réels dans IndexedDB sans jamais
+toucher au code de l'app — c'est la méthode de test standard du projet
+(voir §9).
 
 ---
 
 ## 8. Favoris
 
-**Implémentation :** _(à compléter)_
-**Impact UI :** _(à compléter)_
+**Implémentation :** flag `favorite: true` sur l'enregistrement `spots` de la
+voiture. Bascule via `data-favtoggle`.
+**Impact UI :** grille dédiée dans l'onglet Favoris, triée par date de prise
+décroissante.
 
 ---
 
-## 9. État d'avancement
+## 9. Méthode de test — banc Playwright
+
+**Depuis la session du 17-18/09, c'est la méthode de référence** pour toute
+modification touchant au rendu : `node --check` valide la syntaxe mais **ne
+prouve rien sur le comportement réel**. Deux bugs sérieux sont passés à
+travers une vérification syntaxique propre avant d'être trouvés au banc :
+- Le sélecteur de motorisation ne s'affichait jamais en production
+  (`typeof MOTOR_SPECS` toujours `undefined`, voir §4bis) — 0 erreur JS, rien
+  ne le signalait.
+- Le verrou de collection fuyait : `greffer()` injectait masse/couple/ratios
+  sur des voitures non spottées.
+
+**Protocole du banc :** Chromium headless (Playwright), viewport 412×915
+(dimensions Xiaomi), on écrit de **vrais spots** dans IndexedDB
+(`garage-manifest`/`spots`) via `indexedDB.open`, on recharge la page, on
+simule des clics réels (`data-car`, `data-moto-type`), on lit le DOM produit.
+Comparaison systématique avant/après patch. Screenshot de contrôle à chaque
+livraison significative.
+
+**Discipline de vague** (héritée du chantier des fiches techniques) : travail
+par lots de 13 à 15 éléments, vérification des ids contre le vrai fichier
+avant écriture, contrôle des doublons de clés après chaque vague, banc
+Playwright avant toute livraison. Ne jamais faire confiance à un contenu
+`view`-é en mémoire depuis plusieurs messages — revoir le fichier juste avant
+de l'éditer.
+
+---
+
+## 10. État d'avancement
 
 ### Terminé et stable
-- [x] Catalogue : 1 081 véhicules, 889 fiches SPECS complètes, 0 anomalie
-- [x] Correction rareté Ram 1500 / Ford F-150 (logique géographique)
-- [x] Bug `cyl:0` (affichage "0,0 L" sur les électriques) corrigé
-- [x] `rechargerSurFiche()` : réouverture de la bonne fiche après reload
-
-- [x] `MOTOR_SPECS` : 28 modèles / 84 variantes, audit à 0 anomalie (18/09/2026)
-- [x] Bug Quadrifoglio corrigé dans `SPECS['alfa-giulia']` (520 ch / 2,9 L → 200 ch / 1,995 L)
-- [x] Sélecteur de motorisation câblé dans `infoPageHTML()` + délégation de clics
-- [x] Verrouillage des specs tant que la voiture n'est pas spottée
-- [x] Bloc « Générations & motorisations » branché sur `GENS`/`MAP` (première consommation réelle de `gm-specs.js` par l'affichage)
+- [x] Catalogue étendu (~1 075 véhicules, 156 marques, 21 pays)
+- [x] Système de rareté à 6 paliers, recalibré sur le volume de production réel
+- [x] Navigation 5 emplacements + sous-pages « Plus »
+- [x] Fiche swipeable 2 pages (photo / technique), carrousel CSS natif
+- [x] Pipeline reconnaissance photo opérationnel (Cloudflare Worker + Claude Haiku)
+- [x] Export/import JSON (inclut META et customs)
+- [x] Service worker : cycle de mise à jour avec bandeau utilisateur, cache-first
+- [x] Protection XSS sur les imports photo, dialogues in-app (plus de `confirm()`/`prompt()` natifs)
+- [x] Fix du listener leak dans `setupFiche()` (accumulation de `pointermove`/`pointerup`/`resize` sur `window` à chaque ouverture de fiche)
+- [x] `MOTOR_SPECS` : 50 modèles / 164 variantes, sélecteur fonctionnel, testé au banc Playwright (22/09/2026)
+- [x] Verrou de collection étanche (specs invisibles tant que non spottée), testé au banc
+- [x] Bloc « Générations & motorisations » branché sur `GENS`/`MAP` — première vraie consommation de `gm-specs.js` par l'affichage
+- [x] Notes de variante affichées dans la fiche (« Cette version · … ») — étaient écrites depuis des sessions mais jamais rendues avant le 22/09
+- [x] Collections mécaniques (24), Distinctions (podium), navigation en réseau entre modèles
+- [x] **1 073/1 073 fiches techniques — couverture complète (24/09/2026).** Plus aucune entrée du catalogue n'ouvre sur un bloc vide. Neuf fiches sortent volontairement sans couple ou sans masse : chaque note dit laquelle et pourquoi, et `MANQUES.md` porte le détail du sourcing. Un champ absent est une information (« non communiqué »), pas un trou.
 
 ### En cours
-- [x] Sélecteur + verrou + bloc chiffré testés en navigateur réel (banc Playwright, 18/09)
-- [ ] Le rendu visuel sera repris par ChatGPT ; Claude reste sur data + logique métier
-- [ ] Refonte confiance / matching IA (voir §5) — bloqué sur l'obtention d'`ai-relay-worker.js`
-- [ ] Poursuite de `MOTOR_SPECS` sur les modèles restants (voir §4)
-
-### Bugs connus / comportements non résolus
-| # | Symptôme | Reproduction | Piste |
-|---|---|---|---|
-| 1 | ~~`SPECS['alfa-giulia']` contenait les chiffres de la Quadrifoglio~~ | — | **Corrigé le 18/09/2026** : remplacés par ceux de la 2.0 Turbo 200 réellement représentée |
-| 2 | Le même type de confusion s'est reproduit dans une maquette externe (0–100 de 3,9 s affiché sur une Giulia de base) — vigilance sur ce modèle | — | Toujours vérifier qu'une spec « Giulia » n'est pas en fait celle de la QV |
+- [ ] **204 fiches multi-générations restent sans sélecteur `MOTOR_SPECS`** — répartition connue par catégorie : SUV (45), Sportive (57), Berline (31), Classique (13), Citadine (15), Supercar (10), Youngtimer (11), Roadster (7), Hypercar (3), GT (3), Course (0, **traité le 22/09** : 917, 956/962, 205 T16, Impreza WRC, Mitjet 2L restaient — à vérifier l'état exact au dépôt)
+- [x] ~~fiches techniques non remplies~~ — **terminé le 24/09/2026**, voir ci-dessus
+- [x] ~~Chantier matching IA~~ — **`gm-matcher.js` livré** (22/09) : `finalConfidence`, `AUCUNE_CORRESPONDANCE_SURE`, catalogue injecté en paramètre, banc `node banc-matcher.js` 17/17. `matchCatalog()` reste en repli dans `identifyCar()`
+- [x] **Blocs « Générations » : 1 073/1 073 (100 %)**, terminé le 28/09 en treize vagues (G1 → G13). ⚠️ Mesure par `GENS[idCatalogue]`, la clé que lit le rendu (voir `CLAUDE.md` §2.2) ; `api-gens` vérifie que `fichePourInterface()` renvoie exactement ce que le rendu affiche sur les 1 073 entrées
+- [ ] Fiche à onglets (Fiche technique / Photos / Historique) — direction validée sur maquette, **pas implémentée**, périmètre élargi non couvert par le modèle de données actuel (dimensions, équipement, poids tractable, comparatif concurrents)
+- [ ] Vue cinématique du véhicule (caméra fluide autour de la voiture) — CSS/photos compositing **prouvé insuffisant** par test Playwright réel ; pistes restantes : vidéo en boucle non scrubbée, ou accepter des transitions photo statiques
+- [ ] Feature clan payante (freemium ~5€) — non commencée
+- [ ] `DEV_UNLOCK` (bypass du verrou pour vérification visuelle en dev) — proposé, jamais implémenté ; contourné pour l'instant par le banc Playwright
 
 ### Dette technique identifiée
-- `gm-specs.js` chargé mais non consommé par `index.html` (voir §4) — soit on câble, soit on assume que c'est un module dormant/futur et on le documente comme tel
-- Deux systèmes de rareté coexistent sans lien : `RARITY` (manuel, 6 paliers, dans `index.html`) et `PALIERS_RARETE` (dérivé de la production, dans `gm-specs.js`)
+- **Fiches « multi-architectures » (mesuré le 28/09 : 92 fiches, dont 37 « courantes » ou « communes »).**
+  Le champ `arch` ou `adm` décrit plusieurs moteurs à la fois (« 3 cyl. / électrique »,
+  « turbo / atmo ») alors que `ch`, `nm` et `cyl` n'appartiennent qu'à l'un d'eux — parfois
+  à deux versions différentes (2008 : puissance de l'électrique, cylindrée du thermique).
+  Mesure au fil des vagues : 92 (28/09 matin) → 65 (28/09 soir). Pas mis au banc en ALERTE : 92 alertes d'un coup, c'est un banc qu'on finit par ignorer.
+  Traité vague par vague dans le chantier E, les « courantes » d'abord : le sélecteur absorbe
+  les versions multiples et la fiche redevient mono-version (§4.5 bis). Liste : relancer la
+  requête du 28/09 (`arch`/`adm` contenant « / », « , électrique », « , hybride », « ou »).
+- Store IndexedDB unique portant trois natures d'enregistrements différentes via des clés sentinelles, plutôt que plusieurs stores dédiés.
+- Pas de stratégie de migration de schéma versionnée (`VER` reste à `1` depuis le début).
+- Ambiguïté non tranchée entre `VARIANTS` (finitions/phases) et les `types` de `MOTOR_SPECS` (motorisations) — risque de contradiction déjà repéré une fois sur Giulia/« Veloce ».
+- Historique de bugs de contamination de données par copie-adjacente : `SPECS['alfa-giulia']` a longtemps porté les chiffres de la Quadrifoglio au lieu de la 2.0 Turbo de base ; `SPECS['bmw-m2-cs']` a porté les chiffres de la M4 CSL. Motif récurrent à surveiller à chaque nouvelle vague : vérifier qu'une entrée fraîchement écrite ne « bave » pas sur sa voisine.
 
 ---
 
-## 10. Décisions écartées (et pourquoi)
+## 11. Décisions écartées (et pourquoi)
 
 | Option envisagée | Écartée parce que |
 |---|---|
-| Vue cinématique de fiche via compositing CSS de photos | Playwright a confirmé que le CSS ne peut pas reproduire un mouvement de caméra fluide autour du véhicule ; alternative retenue : vidéo Veo en boucle ou transitions statiques soignées (non tranché) |
-| Calibration statistique de la confiance IA dès maintenant | Volume d'usage bêta-entre-potes insuffisant pour une signification statistique réelle par tranche de confiance ; risque de fausse précision. Remplacé par : instrumentation seule, calibration différée à plus tard |
+| Rattachement automatique en masse des voitures « Non classé » vers le catalogue | Trois points de rupture (structure du registre, moment de démarrage de l'app, bandeau parfois invisible), aucun seuil de similarité ne distingue fiablement « GT3 R » de « GT3 RS » — remplacé par un bouton manuel sur chaque fiche, l'utilisateur tranche lui-même |
+| Fiches séparées par génération/phase dans le catalogue | Catalogue plat + couche `VARIANTS` préféré, pour ne pas multiplier les entrées d'un même modèle |
+| Afficher un pourcentage de confiance IA brut à l'écran | Anti-pattern identifié explicitement : donne une fausse impression de rigueur scientifique à un score qui ne l'est pas — remplacé par un jugement qualitatif (« Très probable ») |
+| Redesign complet de la fiche en un seul chantier (maquette à onglets) | Périmètre trop large d'un coup (nouveaux champs de données, comparatifs inventés, contradictions avec des règles déjà actées) — approche par couches préférée, en partant de ce qui tourne déjà |
+| Vue cinématique par scrubbing vidéo programmé (`currentTime`) | Les navigateurs mobiles bloquent le contrôle programmatique de lecture vidéo — affiche un simple bouton play au lieu de scrubber |
+| Publicité dans le modèle économique | Décision de principe, actée dès le début du projet |
 
 ---
 
-## 11. Journal des chantiers
+## 11 bis. Chantiers CADRÉS mais NON ENTAMÉS (ne pas démarrer sans demande)
 
-| Date | Chantier | Livré | Fichier mis à jour |
+Ces tâches sont décidées et spécifiées, mais volontairement repoussées. Les
+inscrire ici évite deux dérives : les redécouvrir dans six mois en devant
+casser l'existant, et les démarrer par zèle alors que la priorité est
+ailleurs.
+
+### A. Zone du futur bandeau publicitaire — *préparation seulement*
+
+**But :** réserver la place dans le layout mobile **maintenant**, pour ne pas
+avoir à refaire l'interface le jour où le bandeau arrive.
+
+- Bandeau **fixe en bas**, et **uniquement** ça. Pas d'interstitiel, pas de
+  plein écran, pas de pop-up, rien qui bloque l'utilisateur.
+- **Aucune régie branchée, aucun emplacement visible** tant que ce n'est pas
+  demandé : pas de bloc « PUBLICITÉ », pas de faux cadre.
+- Contraintes : hauteur de bandeau mobile classique ; ne recouvre jamais les
+  boutons ni le contenu ; `padding-bottom` correspondant sur le contenu
+  scrollable ; `env(safe-area-inset-bottom)` respecté ; comportement propre
+  sur desktop ; activable plus tard par une simple classe/id.
+- **Constat du 28/09 : le bandeau existe déjà** dans `gm-specs.js`
+  (`SPONSORS` par région, vide par défaut donc invisible, refermable pour la
+  session, mention « Publicité », fixe au-dessus de la barre d'onglets). Seul
+  écart avec ce cadrage : une fois actif, il **recouvre le bas du contenu**
+  (pas de `padding-bottom` sur la zone qui défile). Question de mise en page,
+  laissée à la décision de design.
+- **La pub est une couche externe de monétisation, jamais une mécanique de
+  jeu.** Elle ne doit influencer ni la fiche voiture, ni la boucle
+  capture → identification → confirmation → collection → fiche → progression.
+- Plus tard : ciblage par pays/langue.
+
+### B. Internationalisation — *préparation seulement*
+
+**But :** poser une base propre pour fr / en / es / de / it / pt, sans
+traduire quoi que ce soit maintenant.
+
+- Recenser les textes d'interface codés en dur et, **si** une abstraction
+  légère (`t("nav.collection")`) s'ajoute sans refonte, la préparer.
+- **Ne pas transformer tout le projet** si cela implique un gros chantier.
+- ⚠️ **Règle structurante : les DONNÉES automobiles ne se mélangent jamais
+  aux textes de traduction.** Un nom de modèle, une note de fiche, un libellé
+  de motorisation ne sont pas des chaînes d'UI. Les confondre rendrait le
+  catalogue intraduisible… et traduisible par erreur, ce qui est pire.
+
+> **État au 28/09 : recensement fait (option a), aucun code modifié.**
+> `node banc-i18n.js --md` → `I18N.md` : **547 textes d'interface distincts**
+> (index.html 379, gm-specs.js 161, gm-matcher.js 7) + 131 textes éditoriaux
+> (collections, à traiter comme les notes de fiche). Plus de 20 000 chaînes de
+> données écartées mécaniquement. Trois obstacles à un `t("clé")` naïf :
+> phrases coupées par des `${…}`, pluriels codés en français
+> (« voiture{…} née{…} »), et libellés de catégorie qui servent aussi de clés
+> de filtrage. Option (b) — le mécanisme `t()` — non lancée.
+
+### C. Extraction du Rouleau depuis `banc-v1.html` → `gm-rouleau.js`
+
+Voir `CLAUDE.md` §8 bis. À l'intégration, `onRevele` appellera
+`GMMatcher.rapprocher()`, pas `matchCatalog()`. Exige un banc navigateur
+dédié (rafale, hors-ligne, retry, reprise après fermeture brutale) **avant**
+tout branchement : c'est le seul chemin par lequel l'utilisateur ajoute des
+voitures.
+
+> **État au 28/09 : extraction et banc faits, intégration non commencée.**
+> `gm-rouleau.js` v1.0.1 + `banc-rouleau.js` (19/19). Reste l'intégration à
+> l'écran de capture, qui attend une décision de design (où la pellicule
+> apparaît, comment on ouvre une vue révélée).
+
+### D. Champs de performance (0–100, v-max, consommation, carburant)
+
+N'existent dans aucune structure. Les ajouter, c'est ~2 000 valeurs à sourcer
+sur 1 017 fiches. **Programme, pas session.**
+
+### E. Étape B — `MOTOR_SPECS` sur les 267 modèles sans sélecteur
+
+654 motorisations, ~4 000 valeurs. **Programme, pas session.**
+
+> **Priorité en cours, qui passe avant A→E :** la fiche voiture générique,
+> celle qui sert les 1 070 entrées avec la même architecture.
+
+---
+
+## 12. Journal des chantiers
+
+| Date | Chantier | Livré | Fichiers touchés |
 |---|---|---|---|
-| 17/09/2026 | Enrichissement SPECS massif (vagues A→BA) | 994/1075 fiches niveau "Elise", 31 doublons de clés résolus, bug `cyl:0` corrigé | `gm-specs.js` (v20.43.0 → v20.115.0) |
-| 18/09/2026 | Reprise après saturation de la conversation précédente ; correction Claude/Gemini sur le relais IA ; plan de refonte confiance/matching arrêté en débat croisé avec une autre IA ; 6 directions visuelles de fiche technique comparées (canvas) | `CONTEXT.md` remis à jour | `CONTEXT.md` |
-| 18/09/2026 | **Chantier MOTOR_SPECS** — 20 vagues : structure additive + 42 modèles / 129 variantes (dont 14 multi-générations) ; ajout M3 CS / M4 CS ; bug M2 CS corrigé ; **bug de câblage GMSpecs corrigé (sélecteur jamais affiché auparavant)**, tous chiffres vérifiés par recherche web ; sélecteur câblé dans `infoPageHTML()` ; verrouillage des specs non spottées ; bloc Générations branché sur `GENS` ; bug Quadrifoglio corrigé | `gm-specs.js`, `index.html` (non testés en navigateur) | `gm-specs.js`, `index.html`, `CONTEXT.md` |
+| 23/07/2026 | Lancement — catalogue, navigation 5 onglets, reconnaissance IA (Gemini à l'époque), déploiement GitHub Pages guidé | 743→927 voitures, 150 modèles/473 phases en VARIANTS, pipeline IA opérationnel | `index.html` |
+| 05/08/2026 | Documentation rétro (CONTEXT.md initial, 677 lignes), corpus de fixes v3.1→v3.4 (XSS, listener leak, PHOTO_SETS, endpoint IA codé en dur), exploration créative vue cinématique (abandonnée, CSS insuffisant) | 4 versions applicatives, `PROMPT_CLAUDE_DESIGN.md` produit pour Claude Design | `index.html`, `CONTEXT.md` |
+| 17-18/09/2026 | Enrichissement massif des fiches techniques (223→994/1075 « niveau Elise »), recalibrage rareté à 6 paliers, review externe vérifiée et partiellement confirmée, migration IA vers Claude Haiku confirmée | `gm-specs.js` v20.43.0→v20.115.0 | `index.html`, `gm-specs.js`, `sw.js` |
+| 21-22/09/2026 | Chantier `MOTOR_SPECS` (28→50 modèles, 84→164 variantes), fix critique IIFE (`window.GMSpecs`), verrou de collection, banc Playwright, fiches de course GT3 R/GT3 Cup, correctif du déploiement (`index.html` jamais poussé en prod), passage du projet vers Claude Code | `gm-specs.js` v20.116.0, `sw.js`, `index.html` (13 lignes de diff ciblé), `CLAUDE.md` créé sur le dépôt | `index.html`, `gm-specs.js`, `sw.js`, `CLAUDE.md` |
+| 22-23/09/2026 | `gm-matcher.js` (rapprochement IA→catalogue, 3 défauts réels corrigés dans le scoreur), `banc-audit.js` (56 anomalies → 0 : 50 clés dupliquées écrasées en silence, 67 déclarations fantômes, 1 fiche inatteignable, 7 fiches décrivant une autre voiture), `fichePourInterface()`, BoP sur les 69 fiches de course, refonte UI mobile étape 1 | `gm-specs.js` v20.136.0→v20.143.0 | `gm-matcher.js`, `banc-*.js`, `gm-specs.js`, `index.html`, `sw.js`, `CLAUDE.md`, `MANQUES.md` |
+| 24/09/2026 | **Comblement terminé : 96,2 % → 100,0 % (1 073/1 073).** 41 dernières fiches en six vagues par familles techniques. Trois arbitrages de norme tranchés (§4.4 ter) : Sportage 128 ch **ECE** contre 140 ch **JIS**, Shelby F-150 785 ch **SAE** → 796 ch (PS), Topolino 535 vs 740 kg (facteur 1,4 → deux grandeurs différentes, aucune reprise). Cas de règle : Rafale et Arkana E-Tech sortent **sans couple**, la boîte multimode à crabots n'additionnant pas les deux couples sur un arbre commun — même raisonnement que l'exception HSD. Citroën ZX 16v déparquée (les 163 ch pour 1,9 L qui bloquaient étaient une autre voiture). Nouveau `banc-rendu.js` : vérifie la puissance par ses **dérivées** et l'absence effective des champs non communiqués | `gm-specs.js` v20.144.0, `sw.js` `garage-v20.144.0` | `gm-specs.js`, `sw.js`, `MANQUES.md`, `banc-rendu.js`, `CONTEXT.md` |
+| 24-28/09/2026 | **Générations : 661 → 1 073/1 073 (100 %).** Treize vagues par familles, chaque affirmation recoupée avant écriture (une vingtaine de notes de moteur de recherche fausses écartées). En chemin, **57 fiches corrigées** qui décrivaient une autre voiture que leur entrée : puissances saisies en hp dans le champ `ch` (Demon 170, ZR-1, Tuatara, Hummer EV…), couple saisi comme puissance (968 : « 305 ch » = 305 Nm), fiches d'une autre génération (Taurus SHO EcoBoost sur une entrée 1989-1999, DBS 2007 sur une entrée 2018). **Nouveau contrôle « jumelles à distance »** au banc d'audit : le contrôle copie-voisine ne comparait que des fiches adjacentes ; étendu à toutes les paires, il a révélé 30 groupes identiques, dont ~26 entrées courantes affichant leur version sportive (CLA = CLA 45, Polo = Polo GTI, Panamera = Turbo S E-Hybrid…) — corrigées sur la version de base, chiffres sourcés. 7 alertes laissées à l'arbitrage (doublons de catalogue S3, Ghibli, 124 Spider ; jumelles non vérifiables) | `gm-specs.js` v20.159.0, `sw.js` `garage-v20.159.0` | `gm-specs.js`, `sw.js`, `index.html` (libellé quattro), `banc-audit.js`, `CLAUDE.md`, `CONTEXT.md` |
+| 28/09/2026 | **Second passage §4.5 bis : 32 fiches génériques de plus.** Heuristique hors banc (trop bruyante pour y entrer : 137 couples, dont une majorité légitimes) : une entrée courante au moins aussi puissante que sa déclinaison sportive. Ramenées à leur version de base, chiffres sourcés : Mégane (= R.S.), 508 (= PSE), 911 Carrera (= GTS), Cayenne (= Turbo E-Hybrid), Macan, X3 (= X3 M), Z3, F-Type (= R), Formentor (= VZ5), T-Roc (= R), Juke (= Nismo RS), Fiesta (= ST), Ram 1500 (= TRX), Passat, up!, Punto, Celica, Mustang, Defender, Range Rover, 406, Xantia, C4, C5, AX, ZX, 206, R5 (= 5 Turbo), Transporter, JCW, 190 E 2.5-16 (= Evo II), Integra Type R (DC2 portant la DC5). Laissées faute de source complète : R19, 205, Xsara, 405, 504, Range Rover Sport. Nouveaux doublons d'entrées signalés, non tranchés : A45 S / A 45 AMG, Challenger Hellcat ×2, Celica GT-Four ×2, Cayman / 718 Cayman | `gm-specs.js` v20.160.0, `sw.js` `garage-v20.160.0` | `gm-specs.js`, `sw.js`, `CONTEXT.md` |
+| 28/09/2026 | **Déclinaisons Porsche et préparateurs.** Kits **Manthey (MR)** ajoutés en lignes de générations (règle GTA : un kit sur une voiture existante n'est pas un modèle à part) : GT3 992, GT3 RS 991.2 et 992, GT2 RS 991.2 (6 min 43,300 s au Nürburgring, 2021). **7 nouvelles entrées** complètes (catalogue, fiche, `MAP`, `GENS`, `ARCHI`) : 911 GT2 (993/996/997), 911 S/T, RUF CTR3, RUF SCR (2018), Gemballa Avalanche, Marsien, Gunther Werks 400R. Pas de « TechArt GTstreet RS » : le modèle 992 reste la GTstreet R, dont la fiche est complétée (87 exemplaires). Avalanche et Marsien sans masse : non communiquée | `gm-specs.js` v20.161.0, `sw.js` `garage-v20.161.0` | `gm-specs.js`, `sw.js`, `CONTEXT.md` |
+| 28/09/2026 | **Fusion des doublons d'entrées, sans perte de collection.** Défaut trouvé en préparant la fusion : une prise enregistrée sous un id retiré n'était plus chargée au démarrage — les 21 doublons retirés depuis le 18/09 avaient fait disparaître en silence les voitures correspondantes des collections. Nouvelle table **`FUSIONS`** (id retiré → id conservé, et case de déclinaison à cocher) dont `DOUBLONS_A_RETIRER` est désormais dérivé ; migration au démarrage et à l'import dans `index.html`, idempotente, qui rend aussi leurs prises aux 21 anciens doublons. **9 paires fusionnées** : S3 / S3 Sportback-Berline, Ghibli / Ghibli (2013) → génération M157, 124 Spider ×2, A45 ×2, Challenger Hellcat ×2 (la Demon garde son entrée), Celica GT-Four / ST185 → génération ST185, Cayman / 718 Cayman → génération 718, Boxster / 718 Boxster → génération 718 (le sélecteur de motorisations passe au Boxster, sans la S qui a son entrée), Shelby GT500 ×2. Catalogue 1 080 → 1 071. **Les 4 paires « jumelles » tranchées par les sources** : Ascona et Manta affichaient toutes deux la 400 d'homologation avec un couple et une cylindrée faux → ramenées à l'Ascona B 2.0 S (100 ch) et à la Manta B GT/E (110 ch) ; Chevelle SS / El Camino portaient `ch:454` (la cylindrée en pouces cubes) au lieu de 456 ch ; Daytona / Superbird et 180SX / S13 sont bien mécaniquement jumelles mais pas de même masse (et le SR20DET fait 275 Nm, pas 264). Ghibli ramenée à la V6 350 (elle portait les 580 ch de la Trofeo), 124 Spider à la 140 ch, avec sélecteur 140 / Abarth 170. Bancs : audit 0 erreur · 0 alerte, `banc-fusions.js` 19/19 (et 15 échecs sans le patch), DOM 14/14, rendu 42/42, matcher 17/17 | `gm-specs.js` v20.162.0, `sw.js` `garage-v20.162.0` | `gm-specs.js`, `index.html`, `sw.js`, `banc-audit.js`, `banc-fusions.js`, `CLAUDE.md`, `CONTEXT.md` |
+| 28/09/2026 | **Étape B `MOTOR_SPECS`, vague E1** (chantier E lancé) : Golf VIII (1.0 TSI 110, 1.5 eTSI 150, 2.0 TDI 115 et 150) et Yaris XP210 (116h, 130h) — 51 modèles équipés. La fiche Yaris perd son couple (185 Nm) : aucun couple système n'existe sur un hybride Toyota (§4.4). **Correctif de rendu** : `ficheHTML()` forçait `flou: []` sur toute variante, alors que `fichePourInterface()` respectait le `flou` de la variante — une masse approximative de variante s'affichait comme ferme. **Limite de sourçage** : l'environnement bloque la lecture directe de largus, zeperfs, ultimatespecs, automobile-catalog et Wikipédia ; seuls les résumés de recherche sont accessibles. Requêtes formulées sans chiffres pour ne pas s'auto-confirmer, et masses de sources mêlées (DIN / UE) marquées ≈ | `gm-specs.js` v20.163.0, `sw.js` `garage-v20.163.0` | `gm-specs.js`, `sw.js`, `CLAUDE.md`, `CONTEXT.md` |
+| 28/09/2026 | **Vague E2** : Polo VI (MPI 80, TSI 95, TSI 110), Sandero III (SCe 65, TCe 90, ECO-G 100), Captur II (TCe 90, E-Tech 145, E-Tech plug-in 160), 2008 II (PureTech 100 et 130, BlueHDi 110, e-2008) — 55 modèles équipés. Fiches ramenées à leur version de base : **2008** (elle portait les 156 ch de l'e-2008 avec la cylindrée du thermique, incohérence interne du type Scénic) et **Captur** (hybride rechargeable 160 ch à 270 Nm non sourcés). Les hybrides E-Tech restent sans couple : Renault ne publie pas de couple système. Détail trouvé en sourçant : le TCe 90 du Sandero perd un rapport en 2022. **Incertitude héritée par les ratios** : kg/ch, ch/t et kg/Nm s'affichaient fermes sur une masse « ≈ » ; `DERIVES[x].dep` + `estFlou()`, même liste dans `fichePourInterface()`. Banc de rendu 51/51 (+ cas Captur « ≈ » hérité et Yaris HSD sans couple), mutation vérifiée | `gm-specs.js` v20.164.0, `sw.js` `garage-v20.164.0` | `gm-specs.js`, `sw.js`, `banc-rendu.js`, `CLAUDE.md`, `CONTEXT.md` |
+| 28/09/2026 | **Chantier C, première moitié : le Rouleau extrait.** `gm-rouleau.js` extrait de `banc-v1.html` au caractère près (le prototype reste intact). Nouveau banc `banc-rouleau.js`, 19 tests, dont ce que le banc embarqué ne prouvait pas : reprise après fermeture brutale, disjoncteur, purge à 7 jours (révélées supprimées, latentes conservées), « même forme, autre couleur », dissociation, persistance. **Défaut trouvé et corrigé (v1.0.1)** : `estErreurReseau()` testait `includes('5')`, si bien qu'une erreur 400 « 25 Mo maximum » ouvrait le disjoncteur et gelait la pellicule. Mutations vérifiées (reprise des vues orphelines : 2 échecs). Intégration à `index.html` non faite : elle touche l'écran de capture | aucune (module non chargé par l'app) | `gm-rouleau.js`, `banc-rouleau.js`, `CLAUDE.md`, `CONTEXT.md` |
+| 28/09/2026 | **Chantier B, option (a) : recensement des textes d'interface**, sans toucher au code. `banc-i18n.js` tokenise le JavaScript (chaînes, gabarits avec `${…}`, commentaires, expressions régulières) et le balisage, écarte mécaniquement les données automobiles (littéraux `CARS`, `INFO`, `VARIANTS`, `SPECS`, `GENS`, `MOTOR_SPECS`… repérés par équilibrage de crochets, plus tout nom de marque du catalogue) et génère `I18N.md` : 547 textes d'interface distincts + 131 éditoriaux. Les gabarits sont recomposés entiers avant de retirer les balises, si bien que les phrases paramétrées restent lisibles (« Capture {…} voiture{…} née{…} avant 1980 »). Au passage, **constat sur A** : le bandeau sponsor existe déjà, il ne manque que la marge qui l'empêche de recouvrir le contenu | aucune | `banc-i18n.js`, `I18N.md`, `CLAUDE.md`, `CONTEXT.md` |
+| 28/09/2026 | **Vague E3** : Corsa F (1.2 75, 1.2 Turbo 100, Corsa-e), Qashqai J12 (1.3 DIG-T 140 et 158, e-POWER 190), Tiguan II (1.5 TSI 150, 2.0 TDI 150), C4 III (PureTech 130, ë-C4) — 59 modèles équipés. Fiches ramenées à leur version de base : **Corsa** (elle affichait les chiffres de la 130 avec l'architecture « 3 cyl. / électrique ») et **Qashqai** (e-POWER 190 sur une entrée courante). Cas d'école de l'**hybride série** : l'e-POWER garde ses 330 Nm, qui sont le couple à la roue puisque seul le moteur électrique entraîne les roues, mais n'a ni cylindrée ni ch/L, sans signification quand le thermique ne fait que produire du courant | `gm-specs.js` v20.165.0, `sw.js` `garage-v20.165.0` | `gm-specs.js`, `sw.js`, `CLAUDE.md`, `CONTEXT.md` |
+| 28/09/2026 | **Vague E4** : Twingo III (SCe 65, TCe 90), Fiat 500 (1.2 69, TwinAir 85, Hybrid 70), Duster III (ECO-G 100, TCe 130, Hybrid 140), Ibiza V et Fabia IV (MPI 80, TSI 95) — 64 modèles équipés. **Les cinq fiches décrivaient une autre voiture que leur entrée** (§4.5 bis) : l'Ibiza affichait la Cupra, qui a sa propre entrée (192 ch), la Fabia une 1.5 TSI 150, le Duster un TCe 150 ; la Twingo et la 500 mêlaient chiffres électriques ou turbo et cylindrée thermique. Toutes ramenées à leur version de base. Twingo électrique et 500e non ajoutées : les résumés de recherche mélangeaient deux générations (Twingo III Z.E. / Twingo IV 2026) | `gm-specs.js` v20.166.0, `sw.js` `garage-v20.166.0` | `gm-specs.js`, `sw.js`, `CLAUDE.md`, `CONTEXT.md` |
+| 28/09/2026 | **Vague E5**, première vague tirée de la liste des fiches « multi-architectures » (§10 Dette) : Mokka B (1.2 Turbo 100 et 130, Mokka-e), Kona II (Hybrid 141, Electric 217), Picanto III (1.0 67, 1.2 79), Vitara IV (1.4 Boosterjet 129, 1.5 Hybrid 115) — 68 modèles équipés. Fiches ramenées à une seule version : le **Kona** affichait le Kona N (280 ch), une autre voiture ; le **Mokka** l'électrique avec la cylindrée du thermique. Couple : cumulé et publié sur le Kona Hybrid (parallèle à embrayage), absent sur le Vitara Hybrid AGS (non publié). MG ZS et Kona 1.0 T-GDi remis à plus tard : générations mal départagées par les sources | `gm-specs.js` v20.167.0, `sw.js` `garage-v20.167.0` | `gm-specs.js`, `sw.js`, `CLAUDE.md`, `CONTEXT.md` |
+| 28/09/2026 | **Vague E6** (liste « multi-architectures ») : Panda III (1.2 69, Hybrid 70), Superb III (1.5 TSI 150, 2.0 TDI 150), Fortwo 453 (1.0 71, EQ 82), Ypsilon IV (Hybride 100, Elettrica 156) — 72 modèles équipés. Cinq fiches ramenées à une seule version : Superb (portait la 2.0 TSI 280 4x4), Fortwo (portait la Brabus 109), Panda, Logan III (ECO-G 100, sans sélecteur faute d'un second moteur sourcé) et Ypsilon | `gm-specs.js` v20.168.0, `sw.js` `garage-v20.168.0` | `gm-specs.js`, `sw.js`, `CLAUDE.md`, `CONTEXT.md` |
+| 28/09/2026 | **Vague E7** (liste « multi-architectures ») : sélecteurs Mini F56 (One 102, Cooper 136), CX-5 II (2.0 G 165, 2.2 D 150), X1 U11 (18i, 18d) — 75 modèles équipés. Cinq fiches ramenées à une version : **Mini Cooper** (portait la Cooper S, qui a sa propre entrée), **CX-5** (puissance du 2.5 essence + couple du 2.2 diesel : deux moteurs dans une même fiche, ratios faux), **XC40** (Recharge Twin 408 ch → B3), **X1**, **Niro** (HEV 141, couple cumulé publié) | `gm-specs.js` v20.169.0, `sw.js` `garage-v20.169.0` | `gm-specs.js`, `sw.js`, `CLAUDE.md`, `CONTEXT.md` |
+| 28/09/2026 | **Liste « multi-architectures » : 92 → 65.** Texte d'architecture aligné sur les chiffres déjà présents, vérifiés ligne par ligne (Golf, Sandero, C3, Clio, Berlingo, Partner, Transit, Boxer, Ducato, Proace, Sprinter, Vito) : aucun chiffre ajouté, sauf la masse de la Golf, sourcée en E1. **208** : elle portait la puissance de l'e-208 avec la cylindrée du thermique → 208 II PureTech 100 ; son sélecteur, limité à la 208 I, reçoit la 208 II (PureTech 100, e-208). Laissés pour une vague sourcée : Kangoo (deux moteurs réellement mêlés), couple de la Clio E-Tech (non vérifié) | `gm-specs.js` v20.170.0, `sw.js` `garage-v20.170.0` | `gm-specs.js`, `sw.js`, `CLAUDE.md`, `CONTEXT.md` |
+| 28/09/2026 | **Vague E8** : sélecteurs Tucson IV et Sportage V (1.6 T-GDi 150, Hybrid 230), Arona (TSI 95, TSI 110) — 78 modèles équipés. Cinq fiches ramenées à leur version de base : Focus (portait la ST 2.3 de 280 ch, sans entrée propre, sur une entrée « courante »), Puma, Tucson et Sportage (hybride rechargeable 265 ch), Arona (1.5 TSI 150). Couple de l'hybride 230 non repris : les sources hésitent entre 265 Nm (thermique seul) et 350 Nm (système) | `gm-specs.js` v20.171.0, `sw.js` `garage-v20.171.0` | `gm-specs.js`, `sw.js`, `CLAUDE.md`, `CONTEXT.md` |
+| 28/09/2026 | **Troisième passage §4.5 bis : onze fiches « courantes » ou « communes » portaient exactement la version sportive qui a sa propre entrée** (violation directe de la règle GTA). Classe A = A45 S (421 ch), Classe C = C 63 S E Performance (680 ch), Classe E et GLE = 63 AMG (612 ch), A4 = RS4, A6 = RS6, Série 3 = M340i, Série 5 = M5 CS, Stelvio = Quadrifoglio, XC60 = T8 Polestar Engineered, 308 GT = 308 GTi. Toutes ramenées à leur version de base, chiffres sourcés (A 180, C 200, E 200, GLE 300 d, 35 TFSI, 40 TDI, 320i, 520i, Stelvio 2.2 160, XC60 B4, 308 GT THP 205) ; libellé « 308 GT / GTi » → « 308 GT ». **Pourquoi le passage précédent ne les avait pas vues** : il rapprochait les entrées par marque exacte, or l'A45 est rangée sous « Mercedes-AMG », pas « Mercedes ». Requête de contrôle (hors banc, faute de pouvoir la rendre muette sans douze exemptions de moteurs réellement partagés) : fiche courante/commune dont `ch` ET `nm` égalent ceux d'une entrée plus rare de la même racine de marque — 12 correspondances restantes, toutes des moteurs partagés vérifiés (PureTech 130, 6.2 V8 GM, B58…) | `gm-specs.js` v20.172.0, `sw.js` `garage-v20.172.0` | `gm-specs.js`, `sw.js`, `CLAUDE.md`, `CONTEXT.md` |
+| 28/09/2026 | **Neuf fiches « courantes » de plus** qui portaient la version la plus puissante de la gamme, sans entrée propre cette fois (le joueur qui croise une MG4 ou une Leaf ordinaire voyait les chiffres d'une version rare) : MG4 (XPower 435 ch → Standard 170), ID.3 (GTX 326 → Pro 204), Kodiaq (RS 245 → 1.5 TSI 150), Leaf (e+ 217 → 40 kWh 150), Mach-E (GT 487 → propulsion 269), 207 (RC 175 → 1.4 75), 5008 (→ PureTech 130), Zafira (OPC 240 → 1.6 115), Sharan (TSI 220 → TDI 150). Chiffres sourcés, masses « ≈ » | `gm-specs.js` v20.173.0, `sw.js` `garage-v20.173.0` | `gm-specs.js`, `sw.js`, `CLAUDE.md`, `CONTEXT.md` |
+| 28/09/2026 | **Sept fiches premium « communes »** ramenées à leur version de base : Q5 (portait le SQ5, qui a sa propre entrée → 40 TDI), Q7 (→ 45 TDI), Evoque (PHEV → P200, masse DIN de la fiche officielle Land Rover), F-Pace (SVR V8 → P250), XC90 et V60 (T8 → B5 / B4), DS 7 (E-Tense 4x4 300 → BlueHDi 130). **Écartés volontairement : Tesla Model 3 / Y et Polestar 2** — Tesla ne publie ni couple ni puissance commerciale, et les agrégateurs se contredisent (même moteur, 440 Nm d'un côté, 240 Nm de l'autre) : mieux vaut une fiche haut de gamme signalée qu'un chiffre de base inventé | `gm-specs.js` v20.174.0, `sw.js` `garage-v20.174.0` | `gm-specs.js`, `sw.js`, `CLAUDE.md`, `CONTEXT.md` |
+| 28/09/2026 | **Quatre fiches courantes de plus** ramenées à leur version de base : Zoé (→ R110, 108 ch / 225 Nm), Laguna (→ 1.5 dCi 110, masse ≈), 407 (→ 2.0 HDi 136 ; overboost 340 Nm signalé en note, pas en valeur ferme), PT Cruiser (→ 2.0 141 ch, masse ≈). **Reportés : Forester, Santa Fe, Explorer** — la fiche mêle plusieurs générations et l'arbitrage de génération doit précéder le chiffre (Explorer européen = PHEV uniquement) | `gm-specs.js` v20.175.0, `sw.js` `garage-v20.175.0` | `gm-specs.js`, `sw.js`, `CLAUDE.md`, `CONTEXT.md` |
+| 28/09/2026 | **Dix-huit fiches « communes »** ramenées à leur version de base (§4.5 bis) : A1 (→ 30 TFSI), Tonale (→ 1.5 Hybrid 130), MiTo (→ 1.4 78), 159 (→ 1.9 JTDm 150), 9-3 (→ 1.9 TiD 150), IS (→ 300h), RAV4 (→ 2.5 Hybride 218 2WD), C-HR (→ 1.8 Hybride 122), RX (→ 350h), Kuga (→ 1.5 EcoBoost 150, 3 cyl.), Compass (→ 1.3 T4 130), C5 Aircross et DS 4 (→ PureTech 130), Touran (→ 1.5 TSI 150), Vito (→ 114 CDI), Discovery (→ D250), bZ4X (→ traction 204), Clio (→ TCe 90). **Hybrides Toyota/Lexus : aucun couple** (§4.4). La Clio mêlait la puissance du TCe 140 et la cylindrée de l'E-Tech ; la variante `c5-tce-90` passe de 90 à 91 ch (67 kW) pour s'aligner. Masses en ≈ partout où les sources divergent selon finition | `gm-specs.js` v20.176.0, `sw.js` `garage-v20.176.0` | `gm-specs.js`, `sw.js`, `CLAUDE.md`, `CONTEXT.md` |
+| 28/09/2026 | **Cinq fiches de plus**, dont trois repérées par le contrôle « mêmes ch + Nm qu'une sportive » : 307 (portait le 2.0 16V 180 de la 206 RC → 1.6 16V 110), 309 (portait la GTI → GL 1.3 ; la note attribuait à tort le moteur de la 205 GTI à la GTI 16, qui reçoit en fait le 16 soupapes de la 405 Mi16 : corrigé), i3 (i3s → i3 170 ch), Forester (XT turbo → 2.0 e-Boxer 150, chiffres du thermique, Subaru ne publie pas de valeur système), Santa Fe (PHEV du IV → V HEV 215, sans couple : les fiches ne donnent que celui du thermique). **Reportés : Explorer, Silverado, Tahoe, Suburban** — gammes nord-américaines à moteurs multiples, chiffres en hp SAE : l'arbitrage de norme (§4.4 ter) et de version de référence doit précéder le chiffre | `gm-specs.js` v20.177.0, `sw.js` `garage-v20.177.0` | `gm-specs.js`, `sw.js`, `CLAUDE.md`, `CONTEXT.md` |
+| 28/09/2026 | **Contradictions fiche ↔ motorisation** : 25 cas où la fiche et la variante du sélecteur décrivaient le même moteur avec des chiffres différents, tranchés un par un sur source (206 1.4 : 120 Nm ; 106 : 88 Nm ; 156 TS : 187 Nm ; Giulietta 1.4 TB : 215 Nm ; 75 V6 America : 245 Nm / 1 250 kg ; 300ZX européenne : 283 ch / 375 Nm ; MR2 SW20 Turbo : 1 270 kg ; C6 : cylindrée 3.0 ; Cerbera : 420 bhp = 426 ch, la variante était en bhp ; Stinger GT 4x4 : 1 909 kg ; 308 III BVM6 : 1 258 kg…). **Deux sélecteurs déplacés (règle GTA)** : celui de la 205 ne contenait que les GTI → rattaché à la 205 GTI ; celui de la 504 ne décrivait que coupé et cabriolet → rattaché à la 504 Coupé. Fiches de base redéfinies : 205 GL 1.1, 504 GL 2.0, MX-5 ND 1.5, S4 B9. **Nouveau contrôle E bis** dans `banc-audit.js`, appariement sur la cylindrée, testé par mutation ; une exemption nominative (308 II / III) | `gm-specs.js` v20.178.0, `sw.js` `garage-v20.178.0` | `gm-specs.js`, `sw.js`, `banc-audit.js`, `CLAUDE.md`, `CONTEXT.md` |
+| 28/09/2026 | **Règle GTA appliquée aux sélecteurs** : le banc annonçait un contrôle GTA dans un commentaire, sans aucun code derrière. Implémenté (appariement « modèle qui prolonge la base » + suffixe en mot entier), il a trouvé 5 variantes décrivant une voiture qui a sa propre entrée. Xantia : tout le sélecteur était Activa → déplacé vers `citroen-xantia-activa` (masse du V6 : 1 468 kg, la fiche disait 1 350 et la variante 1 543). 106 : Rallye et S16 retirées ; la **106 Rallye** reçoit un sélecteur en deux **phases** (1.3 100 ch / 108 Nm ; 1.6 103 ch / 132 Nm) — sa fiche mêlait la puissance de la phase 2 et la masse de la phase 1. 206 : RC retirée, fiche 206 RC à 1 100 kg (1 037 et 1 159 coexistaient). Contrôle testé par mutation | `gm-specs.js` v20.179.0, `sw.js` `garage-v20.179.0` | `gm-specs.js`, `sw.js`, `banc-audit.js`, `CLAUDE.md`, `CONTEXT.md` |
+| 28/09/2026 | **Couples d'hybrides alignés sur §4.4** : Corolla (fiche 196 ch / 190 Nm = puissance du 2.0 et couple du seul thermique → E210 1.8 Hybrid 122 sans couple ; variantes 1.8 et 2.0 débarrassées de leur couple, note « couple cumulé » corrigée), Century (couple du V8 seul retiré), LC 500 (l'architecture « V8 (ou hybride) » décrivait deux voitures → V8). Hybrides Renault E-Tech : Clio E-Tech 145 et Bigster Hybrid 155 perdent leur couple « cumulé » (Renault publie 144 + 205 Nm et 170 + 205 Nm séparément, jamais de valeur système), comme Arkana, Austral et Rafale déjà sans couple. **Nouveau contrôle E ter** (HSD) dans `banc-audit.js`, testé par mutation | `gm-specs.js` v20.180.0, `sw.js` `garage-v20.180.0` | `gm-specs.js`, `sw.js`, `banc-audit.js`, `CLAUDE.md`, `CONTEXT.md` |
+| 28/09/2026 | **Fiches décrivant une autre voiture, repérées par leurs années** (millésimes de la fiche hors de ceux de l'entrée) : Corvette C5 (portait la C7 Z06, 659 ch → LS1 345 ch / 483 Nm), Abarth 500e (portait la Fiat 500e de 118 ch → 155 ch / 235 Nm), Charger berline (portait la SRT 392 → SXT 3.6 V6 en SAE net ; la note lui prêtait le « General Lee », qui est la Charger de 1969), Fabia RS (fiche RS II, entrée datée de la RS I et générations confondues dans `GENS` → deux générations 6Y / 5J, sélecteur, entrée étendue à 2003–2014). Noms de fiches corrigés : i30 N, Model S Plaid (couple Tesla non publié → ≈). Les 36 écarts restants sont des millésimes de lignée (la fiche date le nom, pas la génération), sans effet sur les chiffres | `gm-specs.js` v20.181.0, `sw.js` `garage-v20.181.0` | `gm-specs.js`, `sw.js`, `CLAUDE.md`, `CONTEXT.md` |
+| 29/09/2026 | **Chasse aux défauts du code** (détail dans `AUDIT-DEFAUTS.md`). Deux failles d'injection par fichier importé, **reproduites** avant correction : id de « Non classé » non filtré (DT-09) et amis de sauvegarde recopiés tels quels puis affichés sans échappement (DT-10) — filtres appliqués à l'import **et** au démarrage. `greffer()` résolvait la voiture par son titre et greffait la fiche de la vraie F40 sur une « Non classé » homonyme → marqueur `data-car-id` ajouté au contrat §3. Marques en double (MINI/Mini, NIO/Nio) : la Cooper « commun » passait « courant » à l'exécution → contrôle au banc. Service worker : repli `Response.error()`. `escapeHtml(0)`. 11 `aria-label`. Nouveau banc `banc-imports.js` (18 tests, mutation vérifiée). Non corrigé, à décider : Leaflet chargé sans SRI, observateur de greffe non regroupé, taille des imports | `gm-specs.js` v20.182.0, `sw.js` `garage-v20.182.0` | `index.html`, `gm-specs.js`, `sw.js`, `banc-audit.js`, `banc-imports.js`, `AUDIT-DEFAUTS.md`, `CLAUDE.md`, `CONTEXT.md` |
+| 29/09/2026 | **Reports tranchés** : Tahoe, Suburban, Silverado (portaient le 6.2 V8 en 420 hp présentés comme des ch → 5.3 V8 de base, 355 hp / 383 lb-ft SAE net convertis en 360 ch / 519 Nm, §4.4 ter), Explorer (portait l'hybride rechargeable européen → 2.3 EcoBoost, 304 ch / 420 Nm). **Hybrides Honda e:HEV** : chiffres du moteur électrique de traction, qui entraîne seul les roues hors prise directe — puissance et couple du même moteur, donc norme cohérente, et convention écrite en note : Civic 315 Nm (portait 240), Jazz 253 Nm (portait 145, sans référent), CR-V 335 Nm en ≈ (sources partagées entre 315 et 335) | `gm-specs.js` v20.183.0, `sw.js` `garage-v20.183.0` | `gm-specs.js`, `sw.js`, `CLAUDE.md`, `CONTEXT.md` |
+| 29/09/2026 | **`INFO` ↔ `SPECS`** : `index.html` affiche en première page une puissance (`INFO`) indépendante de celle de la fiche technique greffée (`SPECS`). Comparaison automatique : 35 écarts sur 382 voitures sans sélecteur. **Six tranchés** — `INFO` avait raison, la fiche décrivait une autre version : 635 CSi (M635CSi → 218 ch / 310 Nm), XK8 (XKR → 4.0 294 ch / 393 Nm), Lotus Elan (Sprint → S3 105 ch / 146 Nm), LS 400 (→ 245 ch DIN / 350 Nm européens), Opel GT (SAE → 90 ch DIN / 149 Nm) ; Charger : `INFO` élargi à la V6 de base. **29 restent listés** dans `AUDIT-DEFAUTS.md` §2 bis, avec une proposition : dériver la puissance d'`INFO` depuis `SPECS` (source unique) | `gm-specs.js` v20.184.0, `sw.js` `garage-v20.184.0` | `gm-specs.js`, `index.html`, `sw.js`, `AUDIT-DEFAUTS.md`, `CLAUDE.md`, `CONTEXT.md` |
+| 29/09/2026 | **Chantier A, validé par l'utilisateur : emplacement publicitaire.** Bandeau au format bannière mobile standard (320×50), au-dessus de la barre d'onglets ; « Espace partenaire » neutre et masquable tant qu'aucun sponsor n'est configuré (`EMPLACEMENT_RESERVE`, `SPONSORS` dans `gm-specs.js`) ; contenu, toasts et avis de mise à jour remontés de sa hauteur. Défaut corrigé au passage : `z-index` 120 → 29, le bandeau serait passé par-dessus les fiches ouvertes. **Taille des imports** (solution laissée au choix) : contrôle avant lecture — sauvegarde ≤ 500 Mo et ≤ espace libre, profil ≤ 1 Mo, 50 photos par voiture ; `banc-imports.js` 20 tests | `gm-specs.js` v20.185.0, `sw.js` `garage-v20.185.0` | `gm-specs.js`, `index.html`, `sw.js`, `banc-imports.js`, `AUDIT-DEFAUTS.md`, `CLAUDE.md`, `CONTEXT.md` |
+| 29/09/2026 | **Les 29 écarts `INFO` ↔ `SPECS` tranchés sur source (demande de l'utilisateur) → 0 sur 382.** Fiches ramenées à la version de leur entrée : EB110 GT, Miura P400, Agera RS et Czinger de série, Jensen 6.3, Thunderbird 292, Crown Victoria civile, Avanti R1, Phaeton V6 TDI, XK120 standard, D8 GTO 2013, AMX 390, SP2 en DIN ; entrées « Course » passées en version course (RS200, 6R4, R390). `INFO` corrigé quand il était faux (Gemera HV8, MP4/4 685 ch à 2,5 bar, 935) ou élargi à la lignée. Valeurs impossibles retirées (couple de la Radical SR3). **Contrôle E quater permanent** dans `banc-audit.js` | `gm-specs.js` v20.186.0, `sw.js` `garage-v20.186.0` | `gm-specs.js`, `index.html`, `sw.js`, `banc-audit.js`, `AUDIT-DEFAUTS.md`, `CLAUDE.md`, `CONTEXT.md` |
+| 29/09/2026 | **Leaflet hébergé dans le dépôt** (validé par l'utilisateur) : `vendor/leaflet/` (v1.9.4, registre npm, licence BSD-2), chargeur local, mis en cache par `sw.js`. Plus aucun code tiers chargé depuis un CDN ; la carte fonctionne désormais même si cdnjs est inaccessible (elle ne s'affichait pas du tout dans ce cas). Seules les tuiles OpenStreetMap (images) restent externes. Nouveau banc `banc-carte.js` (7 tests, mutation vérifiée) | `gm-specs.js` v20.187.0, `sw.js` `garage-v20.187.0` | `index.html`, `sw.js`, `vendor/leaflet/`, `banc-carte.js`, `CLAUDE.md`, `CONTEXT.md`, `AUDIT-DEFAUTS.md` |
+| 29/09/2026 | **Comptes par e-mail + sauvegarde cloud — préparés, non activés** (validé par l'utilisateur). Serveur `cloud/compte-worker.js` (Cloudflare Workers + D1 + R2, e-mails via Resend) : lien magique 15 min à usage unique, session 90 j, jetons stockés hachés, anti-sondage, limites de débit à clés hachées, concurrence optimiste (If-Match/409), photos adressées par SHA-256 et vérifiées, export et suppression RGPD, purge nocturne. Client `gm-compte.js` **en sommeil** tant que `COMPTE_URL` est vide ; passe par le nouveau contrat `window.GMGarage` (export/import refactorés dans `index.html` : `donneesExport`, `importerDonnees(data, {fusion})`), donc une restauration cloud subit les mêmes filtres qu'un fichier. Deux défauts trouvés en relecture et corrigés avant livraison : **login CSRF** (lien piégé d'un tiers → confirmation, refus = session révoquée) et lien ouvert dans un onglet déjà ouvert (`hashchange`). Choix par défaut, à confirmer : sauvegarde **manuelle** (bouton), **toutes** les photos (dédupliquées). Bancs `banc-compte.js` (37) et `banc-compte-navigateur.js` (26), mutations vérifiées. Troisième défaut corrigé : un téléphone neuf ne récupérait pas les missions. Reste à l'utilisateur : comptes Cloudflare/Resend, domaine, `CONFIDENTIALITE.md` ([À COMPLÉTER]/[À DÉCIDER]) | `gm-specs.js` v20.188.0, `sw.js` `garage-v20.188.0` | `gm-compte.js`, `cloud/`, `index.html`, `sw.js`, `banc-compte*.js`, `.gitignore`, `CLAUDE.md`, `CONTEXT.md` |
+| 29/09/2026 | **Connexion par code à 6 chiffres** (demande de l'utilisateur) à la place du lien magique. Raison technique décisive : sur iPhone, l'app installée n'a pas le même stockage que Safari, où s'ouvre un lien depuis Mail — la session atterrissait hors de l'app. Le code supprime aussi le login CSRF et la consommation des liens par les antivirus de messagerie. Sécurité d'un code court = nombre d'essais : 5 par code (compteur atomique, tenu en rafale de 30 requêtes), un seul code actif par adresse, 10 codes/jour → ≤ 1/20 000 par jour ; code scellé par HMAC (`CODE_SECRET`, refus si absent), tirage uniforme par rejet, consommation atomique. Pas de mot de passe → aucun e-mail « mot de passe oublié » : un seul compte Resend suffit (les comptes multiples pour contourner les quotas sont interdits par sa politique d'usage). Nouveau `RESTE-A-FAIRE.md` : actions côté humain, dont l'**attribution OSM absente** de la carte (obligatoire). Carte sans service externe évaluée (Natural Earth : 0,76–3,7 Mo, sans rues). `banc-compte.js` 47, `banc-compte-navigateur.js` 26, mutations vérifiées | `gm-specs.js` v20.189.0, `sw.js` `garage-v20.189.0` | `cloud/`, `gm-compte.js`, `banc-compte*.js`, `RESTE-A-FAIRE.md`, `CLAUDE.md`, `CONTEXT.md`, `I18N.md` |
+| 29/09/2026 | **Carte à nous, préparée en sommeil** (demande de l'utilisateur : ne dépendre d'aucun service externe). La carte n'est pas dans l'app : un fichier PMTiles (extrait OpenStreetMap de Protomaps) sur **notre** bucket R2, derrière un domaine à nous, lu par requêtes Range ; rendu par `protomaps-leaflet` 5.1.0 hébergé dans `vendor/` (128 Ko, aucun appel tiers vérifié dans le code, licences des 10 composants embarqués jointes). `CARTE_URL` renseignée → zéro requête tierce, même en cas d'échec. Faits sourcés : planète ≈ 110–120 Go, monde z0–6 ≈ 60 Mo, R2 10 Go gratuits puis 0,015 $/Go, sortie gratuite, `wrangler` limité à 315 Mo par fichier, `r2.dev` réservé au développement. `banc-carte-perso.js` (11 tests) **fabrique une vraie archive PMTiles v3** (MVT encodé à la main, pyramide z0–15 en une entrée run-length) servie sur une autre origine ; mutation (tuile vide) détectée. Correction d'un constat antérieur : l'attribution OSM existe sous la carte quand une prise est géolocalisée, elle ne manque que carte vide. Guide `cloud/CARTE.md` | `gm-specs.js` v20.190.0, `sw.js` `garage-v20.190.0` | `index.html`, `sw.js`, `vendor/protomaps-leaflet/`, `banc-carte-perso.js`, `cloud/CARTE.md`, `RESTE-A-FAIRE.md`, `CLAUDE.md`, `CONTEXT.md`, `README.md` |
+| 29/09/2026 | **Commandes « / » : l'agent propose, le propriétaire autorise** (règle CLAUDE.md §8 sexies). Premières utilisations validées : `/security-review` sur la PR #1 (aucune vulnérabilité ≥ 8/10) ; `/code-review` (10 points, vérifiés un par un sur le code et la documentation Cloudflare, présentés au propriétaire avant toute correction) ; `/session-start-hook` : `.claude/hooks/session-start.sh` installe `playwright-core` 1.63.0 hors de la racine (`.claude/outils-bancs/`, ignoré) et exporte `NODE_PATH`/`CHROMIUM` — `banc-dom.js` 14/14 avec ce seul environnement, 2,7 s à la première installation, 0,07 s ensuite | aucune (hors app) | `.claude/`, `.gitignore`, `CLAUDE.md`, `CONTEXT.md` |
+| 29/09/2026 | **Défauts de /code-review corrigés, tests d'abord** (validé par le propriétaire, arbitrages croisés avec une autre IA). n°1 carte sans repli OSM si le moteur plante ; n°2/10 `/photos/manquantes` par listage (1 appel / 1 000 photos) et 413 au-delà de 5 000 ; n°3 restauration interrompue plutôt que photo effacée du cloud ; n°5 plafond 1,9 Mo en octets (limite D1) ; n°6/7 limiteur et essai de code en une instruction — la fausse base du banc simule désormais la latence, sans quoi la course restait invisible ; n°8 garage null refusé ; **n°4 synchronisation** : `maj` par prise, pierres tombales datées (`META.supprimes`), fusion « la modification la plus récente gagne », photos additionnées, recapture après retrait qui revient — scénario à deux appareils avec le vrai bouton « Retirer » ; **n°9 quota** mesuré (photo de l'app ≈ 330 Ko, JPEG 1 280 px) : 5 000 photos / 1,5 Go par compte, 50 Go au total, réservation atomique, réglable par variables du Worker. Borne photos par voiture 50 → 500 (50 amputait des collections réelles). Chaque correctif prouvé par mutation. Revue du relais IA faite, **non corrigée** (en attente de décision). Commits locaux, **non poussés** avant rapport | `gm-specs.js` v20.191.0, `sw.js` `garage-v20.191.0` | `index.html`, `gm-compte.js`, `cloud/`, `banc-compte*.js`, `banc-carte-perso.js`, `banc-imports.js`, `CLAUDE.md`, `CONTEXT.md`, `RESTE-A-FAIRE.md` |
+| 29/09/2026 | **Relais IA sécurisé + limites de photos** (validés par le propriétaire). Relais : quotas D1 atomiques (30/jour/appareil sans compte, 200/jour/compte, 3 000/jour au total), image ≤ 2 Mo JPEG/PNG/WebP, route unique, CORS limité (filtre, pas protection), erreurs sans détail, 503 sans D1, **`/notify` supprimé** ; app : jeton envoyé au seul relais officiel, message du relais sur 429, repli anonyme si l'ancien relais refuse l'en-tête. `banc-relais.js` : 15 failles reproduites sur l'ancien code, 18/18 après. Photos : plafond par rareté (3 → 30), jamais de retrait de l'existant, 1,5 Mo/photo côté app (recompression), 2 Mo côté serveur, anciennes photos recompressées avant sauvegarde (`normaliserPhotos`). **Question du propriétaire : le relais est passé de Gemini à Haiku sans son accord explicite** — Gemini a un quota gratuit, pas Anthropic : décision de fournisseur ouverte | `gm-specs.js` v20.192.0, `sw.js` `garage-v20.192.0` | `ai-relay-worker.js`, `index.html`, `gm-compte.js`, `cloud/compte-worker.js`, `banc-relais.js`, `banc-photos.js`, `banc-compte-navigateur.js`, `README.md`, `CLAUDE.md`, `CONTEXT.md`, `RESTE-A-FAIRE.md` |
+| 30/09/2026 | **Relais multi-fournisseur + suppression d'une photo** (validés par le propriétaire). Relais : `IA_FOURNISSEUR` = `anthropic` (défaut) ou `gemini` (`gemini-3.1-flash-lite`), secours facultatif `IA_SECOURS`, jamais implicite ; même prompt, mêmes quotas, même contrat ; clé Gemini en en-tête, pas dans l'URL ; erreur de configuration refusée avant de consommer un quota. `banc-relais.js` 18 → 29. Photos : la corbeille **existante** de `gm-specs.js` (`.gsup-btn`) — que j'avais d'abord crue absente, faute d'avoir cherché hors d'`index.html` (§2.3), et doublée par erreur : doublon retiré, repéré sur capture d'écran — passe désormais par `GMGarage.supprimerPhoto` au lieu d'écrire seule dans IndexedDB (ni `maj`, ni état en mémoire, rechargement de page). Le banc a révélé un défaut **d'origine** : une image présente dans deux prises était supprimée de la **première** trouvée, pas de la fiche ouverte → corrigé ; dernière photo toujours refusée ; **pierres tombales de photos** (`META.photosSupprimees`, empreinte SHA-256 des octets comme `gm-compte.js`) — sans elles, l'union des photos à la fusion cloud faisait revenir la photo de l'autre appareil. Mutation instructive : un premier filtre dans la boucle d'import s'est révélé **redondant** (la boucle suivante repasse sur toutes les prises) → retiré. `banc-photos.js` 7 → 17. Règle de travail : une question en attente se pose une fois (CLAUDE.md §8 sexies), plus de vérification horaire de la PR | `gm-specs.js` v20.193.0, `sw.js` `garage-v20.193.0` | `ai-relay-worker.js`, `index.html`, `banc-relais.js`, `banc-photos.js`, `README.md`, `cloud/CONFIDENTIALITE.md`, `CLAUDE.md`, `CONTEXT.md`, `RESTE-A-FAIRE.md` |
+| 30/09/2026 | **Confirmation avant de supprimer une photo** (demandée par le propriétaire). La boîte est celle de l'app (`askConfirm`, même geste que « Retirer du garage »), déclenchée par le contrat `GMGarage.supprimerPhoto(src, { confirmer:true })` : `gm-specs.js` ne reconstruit aucune boîte de dialogue. Refus « dernière photo » vérifié AVANT la question. `/security-review` sur toute la branche : aucune faille ≥ 8/10. `banc-photos.js` 17 → 19, confirmation vérifiée par mutation | `gm-specs.js` v20.194.0, `sw.js` `garage-v20.194.0` | `index.html`, `gm-specs.js`, `banc-photos.js`, `CLAUDE.md`, `CONTEXT.md` |
+| 30/09/2026 | **Parcours P0 « capture → révélation »** (spec ChatGPT confrontée au code, arbitrages du propriétaire : lot compact, l'app dit « je », révélation toujours sombre). Nouvel état « Analyse en cours » ; écran de résultat selon le statut du matcher — sûr, **ambigu (toutes les pistes montrées)**, pistes faibles, **rien trouvé (dit, plus muet)**, erreurs nommées (hors ligne, délai, quota avec le message du relais, panne) via `lastAiErrorKind` ; résultat tardif ignoré (jeton) ; révélation **sans confettis**, halo en 3 paliers ; « Ce que ça débloque » aux vrais compteurs (`computeStats`, déclinaisons, collections de `GMSpecs.COLLECS`) ; « Fiche mise à jour » en panneau ; lot : révélations compactes + un bilan. `banc-p0.js` 26 tests, défauts d'origine réintroduits par mutation → détectés ; `banc-photos` et `banc-compte-navigateur` adaptés (messages passés en panneaux) | `gm-specs.js` v20.195.0, `sw.js` `garage-v20.195.0` | `index.html`, `banc-p0.js`, `banc-photos.js`, `banc-compte-navigateur.js`, `design/`, `DESIGN.md`, `CLAUDE.md`, `CONTEXT.md` |
+| 01/10/2026 | **Mode gratuit** (décision du propriétaire : rien de payant pour l'instant). Relais : quand **tous** les fournisseurs essayés répondent 429 (quota gratuit de Gemini épuisé), réponse **429 « en pause pour aujourd'hui »** au lieu de 502 « indisponible » — l'app l'affiche comme une pause, pas une panne. `banc-relais.js` 29/29, vérifié par mutation. `RESTE-A-FAIRE.md` §0 : Gemini gratuit sans secours, aucune carte bancaire enregistrée ; comptes et carte à nous en pause (domaine, R2) | aucune (relais déployé à part) | `ai-relay-worker.js`, `banc-relais.js`, `README.md`, `RESTE-A-FAIRE.md`, `CONTEXT.md` |
+| 01/10/2026 | **Comptes en mode essai gratuit** (« go comptes essai »). Serveur : R2 devient **facultatif** — sans liaison `PHOTOS`, les routes `/photos…` répondent **501** `{photos:false}` (après le 401), export et suppression fonctionnent, la collection se sauve. App (`gm-compte.js` 2.1.0) : 501 = état stable → sauvegarde et restauration continuent **sans photos** et le disent (« Collection seule ») ; une panne passagère interrompt toujours la restauration. Empreintes gardées : R2 branché plus tard, la sauvegarde suivante envoie les photos sans migration. Resend sans domaine : `onboarding@resend.dev`, n'écrit qu'au titulaire. `banc-compte.js` 69/69 (+8), `banc-compte-navigateur.js` 58/58 (+11), 3 mutations détectées | `20.196.0` | `cloud/compte-worker.js`, `gm-compte.js`, `banc-compte*.js`, `cloud/DEPLOIEMENT.md`, `cloud/wrangler.toml.exemple`, `cloud/CONFIDENTIALITE.md`, `CLAUDE.md`, `RESTE-A-FAIRE.md`, `sw.js`, `gm-specs.js` |
+| 01/10/2026 | **`TUTO-GRATUIT.md`** (demande du propriétaire : « tuto étape par étape super bien détaillé »). Tout dans le **navigateur** : le relais `silent-firefly-2620` porte un nom généré par le tableau de bord, donc pas de ligne de commande. Ordre imposé par les dépendances : base D1 (partagée par les deux Workers) → relais (Gemini, `DB`, `APP_ORIGIN`, test réel + journaux) → serveur de comptes sans R2 → adresse → test. Constat : l'app en ligne (`main`) a 105 commits de retard ; le nouveau relais lui reste compatible (même contrat `POST {image}`), mais le test des comptes sur téléphone attend la fusion de la PR #1. Dépannage écrit à partir des vraies réponses du code (codes HTTP affichés par l'app de `main`, lignes `[relais]` des journaux) | aucune (documentation) | `TUTO-GRATUIT.md`, `RESTE-A-FAIRE.md`, `cloud/DEPLOIEMENT.md`, `CLAUDE.md`, `CONTEXT.md` |
+| 02/10/2026 | **État réel du relais établi sur capture du tableau de bord** : aucune clé Anthropic → Haiku n'a jamais tourné ; `GEMINI_API_KEY` (clé `AQ.`) et `RESEND_API_KEY` en **Variable texte clair**, aucune liaison. Le code Gemini de juillet tourne toujours. Clés `AQ.` : Google n'accepte que l'en-tête `x-goog-api-key` (pas `?key=`), ce que fait le nouveau relais. `TUTO-GRATUIT.md` adapté : réutiliser la clé Gemini en la passant en **Secret** (copier, supprimer, recréer), supprimer `RESEND_API_KEY` du relais et la clé correspondante chez Resend, journaux sous *Observability*. Mes affirmations précédentes (« Haiku tourne », « clé Anthropic, à tes frais ») étaient des déductions tirées du dépôt, fausses : corrigées | aucune (documentation) | `TUTO-GRATUIT.md`, `CONTEXT.md`, `RESTE-A-FAIRE.md` |
+| 04/10/2026 | **Partie A faite, B commencée, avec les connecteurs Cloudflare et Resend.** Constat du compte comparé à `PASSATION.md` : concorde (un seul Worker, code Gemini du 31/08 lu chez Cloudflare, aucune D1/KV/R2 donc aucune liaison possible, Resend sans domaine, une clé « Garage manifest »). Défaut supplémentaire de l'ancien relais : il renvoie au client le texte d'erreur brut de Google. `workers_get_worker` volontairement **non appelé** (renverrait les Variables en clair). Base D1 créée **à la main** par le propriétaire en **juridiction UE** (le connecteur ne propose qu'un indice de région ; la juridiction ne s'ajoute jamais après coup) ; schéma exécuté et comparé **colonne par colonne** au dépôt par le connecteur. Clé Gemini **neuve** (même projet que l'ancienne, identifié par ses 4 derniers caractères) collée en Secret ; ordre B1→B3→B4→B2 pour ne jamais couper la reconnaissance | aucune (comptes du propriétaire) | `PASSATION.md` |
+| 07/10/2026 | **Purge nocturne propre au relais.** Le relais écrivait des empreintes d'IP dans `limites` que **seul** le serveur de comptes purgeait (partie C, cron alors « recommandé ») : sans lui, rien n'était jamais effacé, contrairement à `CONFIDENTIALITE.md`. Ajout d'un handler `scheduled` (cron `17 3 * * *`, heure de planification et non d'horloge). Table **partagée** → même horizon que le serveur de comptes (24 h), sinon ses compteurs « 10 codes par jour » repartiraient à zéro. `banc-relais.js` 29 → 36 : il lit la plus longue fenêtre **dans le code** du serveur de comptes ; 5 mutations détectées (sans purge, trop tôt, trop tard, fenêtre allongée côté comptes, horloge au lieu de la planification). C6 passe « indispensable ». Tuto : juridiction UE, clé neuve, case *Secret* du nouveau formulaire, sondage sans image. Propositions écrites une fois dans `RESTE-A-FAIRE.md` §5 : connexion Google, déploiement depuis GitHub après fusion, HMAC des empreintes d'IP | aucune (relais déployé à part, hors cache) | `ai-relay-worker.js`, `banc-relais.js`, `cloud/CONFIDENTIALITE.md`, `TUTO-GRATUIT.md`, `RESTE-A-FAIRE.md`, `PASSATION.md`, `CONTEXT.md` |
+
+---
+
+## 13. Notes pour Claude Code spécifiquement
+
+Tu n'as pas accès aux conversations Claude.ai listées ci-dessus — ce document
+en est la compilation. Points d'attention immédiats en reprenant ce dépôt :
+
+1. **Vérifie l'écart entre ce document et l'état réel du code** avant toute
+   modification — ce fichier a été recompilé le 22/09/2026 depuis l'historique
+   de conversation, pas depuis une lecture ligne à ligne du dépôt au moment où
+   tu le lis. Traite les chiffres (nombre de fiches, versions) comme des
+   indications à recroiser, pas comme des vérités figées.
+2. **`index.html` a déjà été poussé en retard une fois** (session du 21-22/09) —
+   après toute livraison, vérifie explicitement que le commit est bien passé
+   sur la branche que GitHub Pages déploie (`main`), pas seulement sur une
+   branche de travail.
+3. **Le banc Playwright (§9) est la méthode de validation attendue** pour
+   toute modification de rendu — pas seulement `node --check`.
+4. **Incrémente `VERSION_MODULE` (dans `gm-specs.js`) et `VERSION` (dans
+   `sw.js`) à chaque livraison**, sinon le cache du service worker ressert
+   l'ancienne version sur l'appareil de Cyril et il croira tester du code
+   corrigé qui ne l'est pas — c'est arrivé plusieurs fois par le passé et a
+   fait perdre du temps aux deux côtés.
+5. Les conventions de données (≈ via `flou`, `nc` pour non communiqué, couple
+   cumulé pour les hybrides, règle GTA) sont détaillées en §4bis — à respecter
+   pour toute nouvelle entrée `MOTOR_SPECS`.

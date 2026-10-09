@@ -1,8 +1,9 @@
 // ============================================================================
 // ai-relay-worker.js — Relais de reconnaissance auto pour Garage Manifest
 // ============================================================================
-// Rôle : recevoir une photo, demander à un modèle de vision (Claude) d'identifier
-// la marque et le modèle du véhicule, renvoyer des propositions en texte libre.
+// Rôle : recevoir une photo, demander à un modèle de vision (Claude ou Gemini,
+// au choix) d'identifier la marque et le modèle du véhicule, renvoyer des
+// propositions en texte libre.
 // Le rapprochement avec le catalogue (742+ voitures, IDs internes) se fait côté
 // app, PAS ici — ce relais reste générique et n'a jamais besoin de connaître le
 // catalogue. C'est un choix d'architecture délibéré : le catalogue peut grossir
@@ -18,23 +19,45 @@
 //   du prompt les avait rendus exclusifs en sortant la déclinaison de `model`, ce qui
 //   a fait chuter le score de rapprochement et cassé la reconnaissance côté app.
 //
-// Contrat signalement (nouveau) :
-//   Requête  : POST /notify  { nom, date, photo }
-//   Réponse  : { ok: true }
-//   Envoie un mail à l'administrateur (NOTIFY_TO) quand une capture reste hors
-//   catalogue. Consentement recueilli côté app AVANT l'appel — ce relais ne fait
-//   qu'exécuter l'envoi, il ne demande jamais d'autorisation lui-même.
-//   Le destinataire est FIXÉ CÔTÉ SERVEUR (variable d'environnement) : jamais
-//   fourni par le client. Impossible d'utiliser ce relais comme serveur de mail
-//   ouvert vers une adresse arbitraire, quelle que soit la requête envoyée.
+// PROTECTIONS (29/09, revue de sécurité avant lancement public) :
+//   L'adresse du relais est publique (elle est dans l'app) : CORS ne protège
+//   de rien face à un script. Chaque identification coûtant de l'argent, le
+//   relais plafonne lui-même, dans une base D1 (la même que les comptes) :
+//     · par appareil sans compte  (QUOTA_IA_ANONYME, défaut 30 / jour / IP) ;
+//     · par compte connecté       (QUOTA_IA_COMPTE,  défaut 200 / jour) ;
+//     · pour tout le service      (QUOTA_IA_JOUR,    défaut 3 000 / jour).
+//   Aucun compte n'est exigé : la première capture marche toujours.
+//   Compteurs pris d'un bloc (upsert + RETURNING) : une rafale ne passe pas.
+//   Image : 2 Mo au plus, JPEG / PNG / WebP. Route unique (POST /).
+//   Sans base D1, le relais REFUSE de travailler (503) : jamais ouvert.
+//   L'ancienne route /notify (signalement par e-mail) est supprimée : plus
+//   appelée par l'app, elle était ouverte à tous sans limite.
+//   Purge nocturne (07/10) : les compteurs échus sont effacés par le relais
+//   LUI-MÊME (handler `scheduled`, déclencheur cron « 17 3 * * * ») — avant,
+//   seul le serveur de comptes purgeait, et sans lui les empreintes d'IP
+//   s'accumulaient sans fin, contrairement à cloud/CONFIDENTIALITE.md.
 //
-// Déploiement (gratuit, ~5 minutes) : voir README.md, section "Reconnaissance IA".
-// Pour activer /notify : wrangler secret put RESEND_API_KEY   (SEULE étape secrète)
-//                         (l'adresse de réception est déjà dans ce fichier, en clair)
+// FOURNISSEUR (30/09) : une variable, aucun changement de code ni d'app.
+//   IA_FOURNISSEUR = "anthropic" (défaut, Claude Haiku, payant dès le 1er appel)
+//                  | "gemini"    (Gemini Flash-Lite, quota gratuit quotidien)
+//   IA_SECOURS     = l'autre nom, FACULTATIF : tenté seulement si le premier
+//                    échoue (quota du fournisseur épuisé, panne, clé absente).
+//                    Absent = pas de secours, donc aucune dépense surprise.
+//   Mêmes quotas, même prompt, même contrat de réponse quel que soit le
+//   fournisseur : l'app ne voit aucune différence. Une identification n'est
+//   comptée qu'une fois, même si le secours prend le relais.
+//
+// Déploiement : voir README.md, section « Reconnaissance IA ».
+//   Secrets : wrangler secret put ANTHROPIC_API_KEY  et/ou  GEMINI_API_KEY
+//   Liaison D1 « DB » : la base des comptes (cloud/schema.sql) ; variable APP_ORIGIN.
 // ============================================================================
 
-const MODEL = "claude-haiku-4-5-20251001"; // rapide et économique ; "claude-sonnet-5" pour plus de précision
 const ANTHROPIC_VERSION = "2023-06-01";
+// Modèles par défaut, remplaçables sans toucher au code (ANTHROPIC_MODELE, GEMINI_MODELE).
+const MODELES_DEFAUT = {
+  anthropic: "claude-haiku-4-5-20251001",   // rapide et économique
+  gemini: "gemini-3.1-flash-lite",          // stable depuis le 07/05/2026
+};
 
 const PROMPT = `Tu identifies la marque et le modèle du véhicule visible sur cette photo.
 Réponds UNIQUEMENT avec un tableau JSON strict, sans texte autour, sans balises markdown.
@@ -54,90 +77,220 @@ Format exact :
 - Ne lis JAMAIS la plaque d'immatriculation et ne l'inclus dans aucun champ.
 - N'ajoute aucun commentaire, aucune explication : uniquement le tableau JSON.`;
 
-// Taille maximale acceptée pour une photo de signalement (base64, avant décodage).
-// La photo est déjà compressée côté app (~1000 px, JPEG 0.72) avant l'envoi ; cette
-// limite est un garde-fou côté serveur, pas le réglage principal de compression.
-const NOTIFY_MAX_PHOTO_B64 = 2_000_000; // ~1,5 Mo réels une fois décodée
+const MAX_IMAGE_OCTETS = 2 * 1024 * 1024;       // l'app envoie ≈ 0,3 à 1 Mo (JPEG 1 280 px)
+const MAX_CORPS = Math.ceil(MAX_IMAGE_OCTETS * 4 / 3) + 4096;   // base64 + enveloppe JSON
+const TYPES_IMAGE = ["image/jpeg", "image/png", "image/webp"];
+const QUOTAS_IA_DEFAUT = { anonyme: 30, compte: 200, jour: 3000 };
+const JOUR_MS = 24 * 3600 * 1000;
+const quota = (env, cle, defaut) => { const n = Number(env[cle]); return Number.isFinite(n) && n > 0 ? n : defaut; };
 
-// Adresse de réception des signalements. Ce n'est PAS un secret — une adresse
-// mail ne permet à personne de rien faire en ton nom, contrairement à une clé
-// API. Elle peut donc rester en dur dans le code sans risque, ce qui t'évite
-// une étape de configuration.
-const NOTIFY_TO = "dijon.autodetail@gmail.com";
+async function sha256hex(texte) {
+  const h = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(texte));
+  return [...new Uint8Array(h)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+/* Compteur du jour, pris et vérifié d'une seule instruction (même mécanique
+   que cloud/compte-worker.js) : des appels simultanés ne peuvent pas passer
+   ensemble sous le plafond. Clé stockée HACHÉE : ni IP ni identifiant lisibles. */
+async function compter(env, cleClaire, max) {
+  const jour = Math.floor(Date.now() / JOUR_MS) * JOUR_MS;
+  const cle = await sha256hex("limite:" + cleClaire + ":" + jour);
+  const l = await env.DB.prepare(
+    `INSERT INTO limites (cle, compte, fenetre) VALUES (?1, 1, ?2)
+     ON CONFLICT (cle) DO UPDATE SET compte = compte + 1
+     RETURNING compte`).bind(cle, jour).first();
+  return !!l && l.compte <= max;
+}
+/* Purge nocturne (RGPD art. 5.1.e, minimisation) : un compteur ne sert que
+   le jour de sa clé ; ensuite, ce n'est plus qu'une empreinte d'IP gardée
+   pour rien. La table `limites` est PARTAGÉE avec cloud/compte-worker.js :
+   purger plus tôt que sa plus longue fenêtre (24 h, « 10 codes par jour et
+   par adresse ») remettrait ses compteurs à zéro et rouvrirait l'envoi de
+   codes. D'où la même règle que lui, au caractère près — banc-relais.js
+   vérifie les deux bornes (pas avant 24 h, et tout est parti la nuit
+   suivante, donc sous 48 h comme l'annonce CONFIDENTIALITE.md). */
+const PURGE_LIMITES_APRES_MS = JOUR_MS;
+async function purger(env, maintenant) {
+  const r = await env.DB.prepare("DELETE FROM limites WHERE fenetre < ?").bind(maintenant - PURGE_LIMITES_APRES_MS).run();
+  return { limites: (r && r.meta && r.meta.changes) || 0 };
+}
+/* Session d'un compte (facultative) : un jeton valide donne le quota du compte ;
+   absent ou invalide, on reste en anonyme — la capture ne doit jamais dépendre
+   d'un compte. */
+async function utilisateurDeSession(request, env) {
+  const m = /^Bearer ([A-Za-z0-9_-]{20,100})$/.exec(request.headers.get("Authorization") || "");
+  if (!m) return null;
+  const s = await env.DB.prepare("SELECT utilisateur, expire FROM sessions WHERE hash = ?").bind(await sha256hex(m[1])).first();
+  return s && s.expire > Date.now() ? s.utilisateur : null;
+}
 
-function corsHeaders(origin) {
+/* CORS limité à l'app : ce n'est PAS une protection contre un script (qui
+   n'envoie pas d'Origin), seulement contre les autres sites web. La vraie
+   protection, ce sont les quotas ci-dessous. */
+function corsHeaders(env) {
   return {
-    "Access-Control-Allow-Origin": origin || "*",
+    "Access-Control-Allow-Origin": env.APP_ORIGIN || "null",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Access-Control-Max-Age": "86400",
+    "Vary": "Origin",
   };
 }
 
-function json(obj, status, origin) {
+function json(obj, status, env) {
   return new Response(JSON.stringify(obj), {
     status,
-    headers: { "Content-Type": "application/json", ...corsHeaders(origin) },
+    headers: { "Content-Type": "application/json", "Cache-Control": "no-store", ...corsHeaders(env) },
   });
 }
 
 // ============================================================================
-// Route existante : identification par photo — AUCUNE ligne modifiée par
-// rapport au fichier d'origine, seulement déplacée dans sa propre fonction
-// pour pouvoir cohabiter proprement avec la nouvelle route /notify.
+// Fournisseurs. Chacun reçoit la même image et le même prompt, et rend le
+// TEXTE brut du modèle ({ texte }) ou un échec ({ echec }). Le détail d'un
+// échec ne part que dans le journal Cloudflare, jamais vers le navigateur.
+// La clé est envoyée en EN-TÊTE, jamais dans l'URL (qui peut être journalisée).
 // ============================================================================
-async function identifier(request, env, origin) {
-  if (!env.ANTHROPIC_API_KEY) {
-    return json({ error: "ANTHROPIC_API_KEY manquante côté serveur (wrangler secret put)" }, 500, origin);
+const FOURNISSEURS = {
+  anthropic: {
+    cle: "ANTHROPIC_API_KEY",
+    async appeler(env, mediaType, base64Data) {
+      const r = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": env.ANTHROPIC_API_KEY,
+          "anthropic-version": ANTHROPIC_VERSION,
+        },
+        body: JSON.stringify({
+          model: env.ANTHROPIC_MODELE || MODELES_DEFAUT.anthropic,
+          max_tokens: 300,
+          messages: [
+            {
+              role: "user",
+              content: [
+                { type: "image", source: { type: "base64", media_type: mediaType, data: base64Data } },
+                { type: "text", text: PROMPT },
+              ],
+            },
+          ],
+        }),
+      });
+      if (!r.ok) return { echec: `HTTP ${r.status} ${(await r.text().catch(() => "")).slice(0, 500)}`, statut: r.status };
+      const data = await r.json();
+      return { texte: (data?.content || []).map((b) => b?.text || "").join("") };
+    },
+  },
+  gemini: {
+    cle: "GEMINI_API_KEY",
+    async appeler(env, mediaType, base64Data) {
+      const modele = encodeURIComponent(env.GEMINI_MODELE || MODELES_DEFAUT.gemini);
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modele}:generateContent`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-goog-api-key": env.GEMINI_API_KEY },
+        body: JSON.stringify({
+          contents: [{ parts: [{ inline_data: { mime_type: mediaType, data: base64Data } }, { text: PROMPT }] }],
+          // Marge plus large que pour Claude : sur certains modèles Gemini, la
+          // réflexion interne consomme une partie du budget de sortie.
+          generationConfig: { maxOutputTokens: 1024, responseMimeType: "application/json" },
+        }),
+      });
+      if (!r.ok) return { echec: `HTTP ${r.status} ${(await r.text().catch(() => "")).slice(0, 500)}`, statut: r.status };
+      const data = await r.json();
+      const parts = data?.candidates?.[0]?.content?.parts || [];
+      return { texte: parts.map((p) => p?.text || "").join("") };
+    },
+  },
+};
+
+/* Premier fournisseur, puis le secours s'il est configuré. Un nom inconnu est
+   une erreur de configuration : on le signale et on refuse, plutôt que de
+   deviner (et de facturer) un autre fournisseur. */
+function fournisseursConfigures(env) {
+  const premier = String(env.IA_FOURNISSEUR || "anthropic").trim().toLowerCase();
+  const secours = String(env.IA_SECOURS || "").trim().toLowerCase();
+  const noms = [premier, ...(secours && secours !== premier ? [secours] : [])];
+  const inconnu = noms.find((n) => !FOURNISSEURS[n]);
+  if (inconnu) { console.error(`[relais] fournisseur inconnu « ${inconnu} » (IA_FOURNISSEUR / IA_SECOURS : anthropic ou gemini)`); return null; }
+  return noms;
+}
+
+/* Renvoie { texte } ou { epuise } ou {} (échec). `epuise` : TOUS les fournisseurs
+   essayés ont répondu 429 — en offre gratuite (Gemini sans facturation), c'est le
+   quota du jour du fournisseur qui est atteint, pas une panne : le joueur doit
+   lire « en pause pour aujourd'hui », pas « indisponible ». */
+async function demanderAuModele(env, mediaType, base64Data) {
+  const noms = fournisseursConfigures(env);
+  if (!noms) return {};
+  let essais = 0, quotas = 0;
+  for (const nom of noms) {
+    const f = FOURNISSEURS[nom];
+    if (!env[f.cle]) { console.error(`[relais] ${f.cle} absente (wrangler secret put ${f.cle}) : ${nom} ignoré`); continue; }
+    essais++;
+    try {
+      const res = await f.appeler(env, mediaType, base64Data);
+      if (res.texte !== undefined) return { texte: res.texte };
+      if (res.statut === 429) quotas++;
+      console.error(`[relais] erreur ${nom}`, res.echec);
+    } catch (err) {
+      console.error(`[relais] appel ${nom} impossible`, err);
+    }
+  }
+  return essais && quotas === essais ? { epuise: true } : {};
+}
+
+// ============================================================================
+// Identification par photo. Le prompt et le contrat de réponse sont INCHANGÉS ;
+// seuls les garde-fous d'entrée (taille, format, quotas) et les messages
+// d'erreur (plus aucun détail interne) ont été ajoutés le 29/09.
+// ============================================================================
+async function identifier(request, env) {
+  // Configuration vérifiée AVANT de compter : une erreur de réglage ne doit
+  // pas consommer le quota des joueurs.
+  const noms = fournisseursConfigures(env);
+  if (!noms || !noms.some((n) => env[FOURNISSEURS[n].cle])) {
+    if (noms) console.error(`[relais] aucune clé pour ${noms.join(" / ")} (wrangler secret put)`);
+    return json({ error: "Identification indisponible" }, 500, env);
   }
 
+  // Taille lue AVANT d'analyser le corps : un corps démesuré n'est jamais parsé.
+  const texte = await request.text();
+  if (texte.length > MAX_CORPS) return json({ error: "Image trop lourde (2 Mo au plus)" }, 413, env);
   let body;
   try {
-    body = await request.json();
+    body = JSON.parse(texte);
   } catch {
-    return json({ error: "Corps de requête JSON invalide" }, 400, origin);
+    return json({ error: "Corps de requête JSON invalide" }, 400, env);
   }
 
   const dataUrl = body?.image;
-  const m = typeof dataUrl === "string" && dataUrl.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
+  const m = typeof dataUrl === "string" && dataUrl.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,([A-Za-z0-9+/]+={0,2})$/);
   if (!m) {
-    return json({ error: "Champ 'image' attendu au format data URL base64 (data:image/...;base64,....)" }, 400, origin);
+    return json({ error: "Champ 'image' attendu au format data URL base64 (data:image/...;base64,....)" }, 400, env);
   }
   const [, mediaType, base64Data] = m;
+  if (!TYPES_IMAGE.includes(mediaType)) return json({ error: "Format d'image non accepté (JPEG, PNG ou WebP)" }, 415, env);
+  if (base64Data.length * 3 / 4 > MAX_IMAGE_OCTETS) return json({ error: "Image trop lourde (2 Mo au plus)" }, 413, env);
 
-  let anthropicRes;
-  try {
-    anthropicRes = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": env.ANTHROPIC_API_KEY,
-        "anthropic-version": ANTHROPIC_VERSION,
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        max_tokens: 300,
-        messages: [
-          {
-            role: "user",
-            content: [
-              { type: "image", source: { type: "base64", media_type: mediaType, data: base64Data } },
-              { type: "text", text: PROMPT },
-            ],
-          },
-        ],
-      }),
-    });
-  } catch (err) {
-    return json({ error: "Appel à l'API Anthropic impossible", detail: String(err) }, 502, origin);
+  /* Quotas, vérifiés AVANT l'appel payant. D'abord l'appareil ou le compte,
+     puis le plafond global du service. */
+  const utilisateur = await utilisateurDeSession(request, env);
+  const ip = request.headers.get("CF-Connecting-IP") || "inconnue";
+  const perso = utilisateur
+    ? await compter(env, `ia-compte:${utilisateur}`, quota(env, "QUOTA_IA_COMPTE", QUOTAS_IA_DEFAUT.compte))
+    : await compter(env, `ia-ip:${ip}`, quota(env, "QUOTA_IA_ANONYME", QUOTAS_IA_DEFAUT.anonyme));
+  if (!perso) {
+    return json({ error: "Limite d'identifications du jour atteinte sur cet appareil : choisis la voiture à la main, ou reviens demain" }, 429, env);
+  }
+  if (!(await compter(env, "ia-global", quota(env, "QUOTA_IA_JOUR", QUOTAS_IA_DEFAUT.jour)))) {
+    return json({ error: "Reconnaissance automatique en pause pour aujourd'hui : choisis la voiture à la main" }, 429, env);
   }
 
-  if (!anthropicRes.ok) {
-    const errText = await anthropicRes.text().catch(() => "");
-    return json({ error: "Erreur API Anthropic", status: anthropicRes.status, detail: errText.slice(0, 500) }, 502, origin);
-  }
+  // Le détail d'un échec reste dans le journal Cloudflare, jamais dans la réponse.
+  const reponse = await demanderAuModele(env, mediaType, base64Data);
+  if (reponse.epuise) return json({ error: "Reconnaissance automatique en pause pour aujourd'hui : choisis la voiture à la main" }, 429, env);
+  if (reponse.texte === undefined) return json({ error: "Identification indisponible" }, 502, env);
+  const texteModele = reponse.texte;
 
-  const data = await anthropicRes.json();
-  const raw = (data?.content || []).map((b) => b?.text || "").join("").trim();
+  const raw = texteModele.trim();
   const cleaned = raw.replace(/^```json\s*/i, "").replace(/^```\s*/, "").replace(/```\s*$/, "").trim();
 
   let guesses = [];
@@ -159,100 +312,47 @@ async function identifier(request, env, origin) {
     guesses = []; // réponse non-JSON du modèle → dégradation propre vers la saisie manuelle côté app
   }
 
-  return json(guesses, 200, origin);
-}
-
-// ============================================================================
-// Nouvelle route : signalement d'une voiture non classée, par mail.
-// ============================================================================
-function echapperHtml(s) {
-  return String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-}
-
-async function notifier(request, env, origin) {
-  if (!env.RESEND_API_KEY) {
-    return json({ error: "RESEND_API_KEY manquante côté serveur (wrangler secret put)" }, 500, origin);
-  }
-  let body;
-  try {
-    body = await request.json();
-  } catch {
-    return json({ error: "Corps de requête JSON invalide" }, 400, origin);
-  }
-
-  const nom = String(body?.nom || "").trim().slice(0, 120);
-  const date = String(body?.date || "").trim().slice(0, 40);
-  const photo = typeof body?.photo === "string" ? body.photo : "";
-
-  if (!nom) {
-    return json({ error: "Champ 'nom' requis" }, 400, origin);
-  }
-  // Aucune autre donnée n'est acceptée : ni position, ni note. Le contrat côté
-  // app ne les envoie jamais, et ce relais ne les lirait de toute façon pas —
-  // la minimisation est appliquée aux deux bouts, pas seulement côté client.
-  if (photo && photo.length > NOTIFY_MAX_PHOTO_B64) {
-    return json({ error: "Photo trop volumineuse" }, 413, origin);
-  }
-  const photoValide = /^data:image\/[a-zA-Z0-9.+-]+;base64,/.test(photo);
-
-  const dateAffichee = date ? new Date(date).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }) : "date inconnue";
-
-  const html = `
-    <div style="font-family:-apple-system,sans-serif;max-width:480px;margin:0 auto">
-      <h2 style="margin:0 0 4px">🚗 Voiture non classée</h2>
-      <p style="color:#666;margin:0 0 18px">Repérée le ${echapperHtml(dateAffichee)} — consentement donné par l'utilisateur.</p>
-      <p style="font-size:18px;font-weight:600;margin:0 0 14px">${echapperHtml(nom)}</p>
-      ${photoValide ? `<img src="${photo}" alt="" style="width:100%;border-radius:10px;display:block" />` : `<p style="color:#999">Aucune photo jointe.</p>`}
-      <p style="color:#999;font-size:12px;margin-top:18px">Envoyé automatiquement par Garage Manifest. Aucune position, aucune note personnelle n'est jamais transmise.</p>
-    </div>`;
-
-  let resendRes;
-  try {
-    resendRes = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${env.RESEND_API_KEY}`,
-      },
-      body: JSON.stringify({
-        from: "Garage Manifest <onboarding@resend.dev>",
-        to: [NOTIFY_TO],               // FIXÉ CÔTÉ SERVEUR — jamais fourni par le client
-        subject: `Non classé : ${nom}`,
-        html,
-      }),
-    });
-  } catch (err) {
-    return json({ error: "Appel à l'API Resend impossible", detail: String(err) }, 502, origin);
-  }
-
-  if (!resendRes.ok) {
-    const errText = await resendRes.text().catch(() => "");
-    return json({ error: "Erreur API Resend", status: resendRes.status, detail: errText.slice(0, 500) }, 502, origin);
-  }
-
-  return json({ ok: true }, 200, origin);
+  return json(guesses, 200, env);
 }
 
 // ============================================================================
 export default {
+  /* Déclencheur cron du tableau de bord (Settings → Trigger events). L'heure
+     de référence est celle de la planification, pas l'horloge : une purge
+     relancée en retard efface ce qu'elle aurait effacé à l'heure. */
+  async scheduled(evenement, env, ctx) {
+    if (!env.DB) { console.error("[relais] purge impossible : liaison D1 « DB » absente"); return; }
+    const maintenant = Number(evenement && evenement.scheduledTime) || Date.now();
+    const travail = purger(env, maintenant)
+      .then((n) => { console.log("[relais] purge", JSON.stringify(n)); return n; })
+      .catch((err) => { console.error("[relais] purge en échec", err); });
+    if (ctx && ctx.waitUntil) ctx.waitUntil(travail);
+    return travail;
+  },
+
   async fetch(request, env) {
-    const origin = request.headers.get("Origin") || "*";
-
     if (request.method === "OPTIONS") {
-      return new Response(null, { status: 204, headers: corsHeaders(origin) });
+      return new Response(null, { status: 204, headers: corsHeaders(env) });
     }
-    if (request.method !== "POST") {
-      return json({ error: "Méthode non autorisée — POST uniquement" }, 405, origin);
-    }
-
-    // Aiguillage par chemin. Toute requête qui n'est pas /notify tombe dans le
-    // comportement d'origine, à l'identique — c'est ce qui garantit qu'aucun
-    // appel existant de l'app (identification de voiture) n'est affecté par
-    // cet ajout.
+    const origine = request.headers.get("Origin");
+    if (origine && origine !== env.APP_ORIGIN) return json({ error: "Origine non autorisée" }, 403, env);
+    // Route UNIQUE : tout le reste est 404 (avant, n'importe quel chemin
+    // déclenchait une identification payante).
     const { pathname } = new URL(request.url);
-    if (pathname === "/notify") {
-      return notifier(request, env, origin);
+    if (pathname !== "/") return json({ error: "Route inconnue" }, 404, env);
+    if (request.method !== "POST") {
+      return json({ error: "Méthode non autorisée — POST uniquement" }, 405, env);
     }
-    return identifier(request, env, origin);
+    // Sans base de limites, on refuse : un relais sans plafond est un compte ouvert.
+    if (!env.DB) {
+      console.error("[relais] liaison D1 « DB » absente : relais fermé (voir README)");
+      return json({ error: "Identification indisponible" }, 503, env);
+    }
+    try {
+      return await identifier(request, env);
+    } catch (err) {
+      console.error("[relais] erreur interne", err);
+      return json({ error: "Identification indisponible" }, 500, env);
+    }
   },
 };
