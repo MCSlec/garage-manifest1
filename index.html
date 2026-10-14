@@ -16,6 +16,29 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="Garage" />
 
+<script>
+/* Thème — appliqué AVANT le premier rendu, volontairement inline dans le
+   <head>. Le lire depuis IndexedDB (où vit META) serait asynchrone : la page
+   se peindrait en sombre puis basculerait en clair, un flash visible à chaque
+   ouverture. localStorage est synchrone, et c'est le seul usage qu'on lui
+   donne ici — la collection et les photos restent en IndexedDB (CLAUDE.md
+   §1.4). Une préférence d'affichage est propre à l'appareil : elle n'a rien à
+   faire dans l'export de collection.
+
+   Enveloppé dans un try/catch : en navigation privée ou avec les données de
+   site bloquées, l'accès lève. L'app doit alors démarrer en sombre, pas
+   planter avant d'avoir affiché quoi que ce soit. */
+(function () {
+  try {
+    var t = localStorage.getItem("gm-theme");
+    document.documentElement.setAttribute("data-theme",
+      (t === "light" || t === "dark" || t === "system") ? t : "dark");
+  } catch (e) {
+    document.documentElement.setAttribute("data-theme", "dark");
+  }
+})();
+</script>
+
 <style>
   :root{
     --bg:#0b0b0d; --panel:#161618; --panel2:#111113; --line:#27272a; --line2:#3f3f46;
@@ -88,39 +111,68 @@
 
   /* ---------- Filtres ---------- */
   .filters{ display:flex; flex-wrap:wrap; gap:8px; margin-top:16px; }
+  /* Les trois selects se dimensionnaient sur leur CONTENU : « Toutes marques »
+     et « Tous types » tenaient sur une ligne, « Tri : rareté » retombait seul
+     en dessous, avec des largeurs inegales. Ils se partagent desormais une
+     seule rangee a parts egales — une rangee entiere regagnee avant la
+     premiere voiture, et un alignement net. */
+  .filters select.sel{ flex:1 1 0; min-width:0; }
+  .filters .seg{ flex:1 1 100%; }
+  .filters .seg button{ flex:1; text-align:center; }
   .search{ position:relative; flex:1 1 100%; }
   .search .icon{ position:absolute; left:11px; top:50%; transform:translateY(-50%); color:var(--muted2); width:18px; height:18px; }
   .search input{ width:100%; padding:10px 12px 10px 36px; border:1px solid var(--line); background:var(--panel2);
     border-radius:9px; font-size:14px; }
   .search input::placeholder{ color:var(--dim); }
-  select.sel{ padding:10px 12px; border:1px solid var(--line); background:var(--panel2); border-radius:9px; font-size:13px; color:var(--muted); }
+  select.sel{ padding:10px 8px; border:1px solid var(--line); background:var(--panel2); border-radius:9px; font-size:12.5px; color:var(--muted); }
   .seg{ display:flex; border:1px solid var(--line); border-radius:9px; overflow:hidden; }
   .seg button{ padding:10px 12px; font-size:13px; color:var(--muted2); background:var(--panel2); }
-  .seg button.on{ background:var(--red2); color:#fff; }
+  /* L'onglet actif etait un aplat ROUGE pleine largeur. Or le rouge est
+     l'accent de l'ACTION principale — le bouton + de capture. Deux rouges de
+     cette taille sur le meme ecran se disputent l'attention et aucun ne
+     signale plus rien. L'etat actif passe donc en gris eleve, avec un simple
+     filet rouge : la selection reste evidente, le rouge reste rare. */
+  .seg button.on{ background:var(--line); color:var(--txt); font-weight:600; box-shadow:inset 0 -2px 0 var(--red2); }
   input:focus, select:focus, textarea:focus{ outline:none; border-color:var(--red); }
 
   /* ---------- Grille voitures ---------- */
-  .grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-top:16px; }
+  .grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-top:18px; }
   @media(min-width:520px){ .grid{ grid-template-columns:repeat(3,1fr); } }
   @media(min-width:760px){ .grid{ grid-template-columns:repeat(4,1fr); } }
   .card{ position:relative; border:1px solid var(--line); background:var(--panel); border-radius:11px; overflow:hidden; text-align:left; transition:transform .12s ease, border-color .12s ease; }
   .card:active{ transform:scale(.98); }
-  .card.have{ border-color:#3f3f46; }
+  /* La rareté se lit au HALO, jamais à la bordure néon : un liseré teinté et
+     une ombre portée très basse, sur la carte COLLECTÉE uniquement. Une
+     grille de 1 074 voitures dont on ne possède presque rien doit rester
+     calme — la couleur est la récompense de la prise, pas le décor. */
+  .card.have{
+    border-color:color-mix(in srgb, var(--rr) 26%, var(--line2));
+    box-shadow:0 0 0 1px color-mix(in srgb, var(--rr) 8%, transparent),
+               0 6px 18px color-mix(in srgb, var(--rr) 9%, transparent);
+  }
   .card.flash{ animation:flash 1.4s ease; }
   @keyframes flash{ 0%,100%{ box-shadow:0 0 0 0 transparent; } 20%{ box-shadow:0 0 0 3px var(--rr, var(--red)); } }
-  .thumb{ position:relative; aspect-ratio:4/3; background:#0e0e10; display:grid; place-items:center; overflow:hidden; }
+  /* Vignette verrouillee : fond plus profond et silhouette plus discrete.
+     Elle occupe 4/3 de la carte et se repete 1 000 fois — plus elle est
+     sourde, plus une vraie photo ressort a cote. */
+  .thumb{ position:relative; aspect-ratio:4/3; background:#0a0a0c; display:grid; place-items:center; overflow:hidden; }
   .thumb img{ width:100%; height:100%; object-fit:cover; }
-  .thumb .glyph{ opacity:.16; color:#fff; }
+  .thumb .glyph{ opacity:.11; color:#fff; }
   .thumb .lock{ position:absolute; color:#52525b; }
   .cdot{ position:absolute; left:8px; top:8px; width:10px; height:10px; border-radius:50%; box-shadow:0 0 0 2px var(--bg); }
   .cflag{ position:absolute; right:8px; top:6px; font-size:15px; filter:drop-shadow(0 1px 1px rgba(0,0,0,.6)); }
   .cchk{ position:absolute; right:8px; bottom:8px; width:20px; height:20px; border-radius:50%; background:var(--red2); display:grid; place-items:center; box-shadow:0 0 0 2px var(--bg); }
   .cchk .icon{ width:13px; height:13px; color:#fff; stroke-width:3; }
-  .cmeta{ padding:9px 10px; }
-  .cmeta .rr{ font:600 9px/1 var(--mono); letter-spacing:.06em; text-transform:uppercase; }
-  .cmeta .nm{ margin:4px 0 2px; font:600 13px/1.15 var(--sans); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .cmeta .nm.miss{ color:var(--muted2); }
-  .cmeta .br{ font:400 11px/1.2 var(--sans); color:var(--muted2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .cmeta{ padding:11px 12px 12px; }
+  /* Hierarchie remise a l'endroit : le NOM de la voiture domine. Le palier
+     de rarete redevient un micro-label gris — il criait plus fort que le
+     modele, alors que le point colore en haut de vignette suffit a le
+     reperer pendant la chasse. */
+  .cmeta .rr{ font:600 9px/1 var(--mono); letter-spacing:.08em; text-transform:uppercase; color:var(--dim); }
+  .card.have .cmeta .rr{ color:color-mix(in srgb, var(--rr) 60%, var(--muted)); }
+  .cmeta .nm{ margin:6px 0 3px; font:650 14px/1.15 var(--sans); letter-spacing:-.012em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .cmeta .nm.miss{ color:var(--muted); }
+  .cmeta .br{ font:400 11px/1.25 var(--sans); color:var(--dim); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .count-line{ margin:14px 2px 0; font:400 12px/1 var(--mono); color:var(--muted2); }
 
   /* progress rails (marques/pays) */
@@ -185,6 +237,14 @@
   .btn.red{ background:var(--red2); border-color:var(--red2); color:#fff; }
   .btn.red:active{ background:var(--red-dk); }
   .btn.ghost{ background:transparent; }
+  /* Action DESTRUCTIVE : neutre au repos, rouge au contact seulement.
+     Elle etait aussi accentuee que « Ajouter une photo », l'action
+     principale — deux rouges cote a cote, et le plus visible etait celui
+     qui efface une prise. L'icone suffit a annoncer ce qu'elle fait ;
+     le rouge n'apparait qu'au moment de l'appui, comme confirmation
+     visuelle du geste. */
+  .btn-danger{ color:var(--muted2); border-color:var(--line2); }
+  .btn-danger:active{ color:var(--red); border-color:var(--red-dk); background:rgba(239,68,68,.08); }
   .btn:disabled{ opacity:.4; }
   .meter{ height:8px; border-radius:6px; background:#232327; overflow:hidden; margin-top:8px; }
   .meter>i{ display:block; height:100%; background:var(--red); }
@@ -288,20 +348,95 @@
   .fact p{ margin:0; font:400 13px/1.55 var(--sans); color:var(--fg); }
   .cat-desc{ margin:10px 2px 0; font:400 12px/1.5 var(--sans); color:var(--dim); }
 
-  /* ---- Révélation de capture ---- */
-  #revealWrap{ position:fixed; inset:0; z-index:200; display:flex; align-items:center; justify-content:center; background:rgba(5,5,7,.9); backdrop-filter:blur(6px); animation:rvFade .25s ease; }
+  /* ---- Révélation de capture (P0, DESIGN.md §10) ----
+     TOUJOURS sombre, même en thème clair (décision du 30/09) : c'est un moment
+     « cinéma ». Couleurs donc écrites en dur, pas en variables de thème.
+     Trois paliers de halo (data-palier) au lieu des confettis d'avant :
+     1 courant/commun · 2 peu commun/rare · 3 épique/légendaire. */
+  #revealWrap{ position:fixed; inset:0; z-index:200; display:flex; align-items:center; justify-content:center; background:rgba(5,5,7,.92); backdrop-filter:blur(6px); animation:rvFade .22s ease-out; }
   @keyframes rvFade{ from{opacity:0} }
-  .rv-card{ width:min(78vw,320px); border-radius:18px; padding:26px 20px 22px; text-align:center; background:linear-gradient(165deg,var(--panel),#101014); border:1px solid var(--line); position:relative; animation:rvPop .55s cubic-bezier(.2,1.6,.35,1); box-shadow:0 0 60px -10px var(--rv,#666); }
-  @keyframes rvPop{ 0%{transform:scale(.4) rotateY(90deg);opacity:0} 60%{transform:scale(1.06) rotateY(0)} 100%{transform:scale(1)} }
-  .rv-card .ph{ width:100%; aspect-ratio:4/3; border-radius:12px; overflow:hidden; background:#0a0a0c; display:flex; align-items:center; justify-content:center; border:1px solid var(--line); }
+  .rv-card{ width:min(80vw,320px); border-radius:18px; padding:24px 20px 20px; text-align:center; background:#161618; border:1px solid #27272a; color:#f4f4f5; position:relative; animation:rvPop .3s cubic-bezier(.2,.8,.2,1); box-shadow:0 0 0 0 transparent; }
+  .rv-card[data-palier="1"]{ animation:rvPop .3s cubic-bezier(.2,.8,.2,1), rvHalo1 .4s ease-out forwards; }
+  .rv-card[data-palier="2"]{ animation:rvPop .3s cubic-bezier(.2,.8,.2,1), rvHalo2 .4s ease-out forwards; }
+  .rv-card[data-palier="3"]{ animation:rvPop .3s cubic-bezier(.2,.8,.2,1), rvHalo3 .4s ease-out forwards; }
+  @keyframes rvPop{ from{ transform:translateY(14px); opacity:0 } }
+  @keyframes rvHalo1{ to{ box-shadow:0 0 28px -14px var(--rv) } }
+  @keyframes rvHalo2{ to{ box-shadow:0 0 46px -12px var(--rv) } }
+  @keyframes rvHalo3{ to{ box-shadow:0 0 72px -8px var(--rv) } }
+  .rv-card .ph{ width:100%; aspect-ratio:4/3; border-radius:12px; overflow:hidden; background:#0a0a0c; display:flex; align-items:center; justify-content:center; border:1px solid #27272a; }
   .rv-card .ph img{ width:100%; height:100%; object-fit:cover; }
-  .rv-new{ font:700 10px/1 var(--mono); letter-spacing:.2em; text-transform:uppercase; color:var(--rv,#fff); margin-bottom:12px; }
-  .rv-name{ font:700 20px/1.2 var(--sans); margin-top:14px; }
-  .rv-sub{ font:400 13px/1.3 var(--sans); color:var(--muted); margin-top:4px; }
-  .rv-pts{ display:inline-flex; margin-top:12px; padding:7px 14px; border-radius:999px; font:700 13px/1 var(--mono); background:color-mix(in srgb,var(--rv) 18%,transparent); color:var(--rv,#fff); }
-  .rv-tap{ margin-top:16px; font:500 11px/1 var(--mono); color:var(--dim); }
-  .cf{ position:absolute; top:-6px; width:8px; height:14px; border-radius:2px; opacity:.9; animation:cfFall 1.4s ease-in forwards; }
-  @keyframes cfFall{ to{ transform:translateY(110vh) rotate(720deg); opacity:0; } }
+  .rv-new{ font:700 10px/1 var(--mono); letter-spacing:.2em; text-transform:uppercase; color:#a1a1aa; margin-bottom:12px; }
+  .rv-rar{ display:inline-flex; align-items:center; gap:7px; margin-top:14px; font:700 10px/1 var(--mono); letter-spacing:.16em; text-transform:uppercase; color:var(--rv); }
+  .rv-rar i{ width:8px; height:8px; border-radius:50%; background:var(--rv); }
+  .rv-name{ font:700 21px/1.2 var(--sans); margin-top:8px; color:#f4f4f5; }
+  .rv-sub{ font:400 13px/1.3 var(--sans); color:#a1a1aa; margin-top:4px; }
+  .rv-pts{ display:inline-flex; margin-top:12px; padding:7px 14px; border-radius:999px; font:700 13px/1 var(--mono); background:color-mix(in srgb,var(--rv) 16%,transparent); color:var(--rv); }
+  .rv-tap{ display:block; margin:16px auto 0; padding:8px 12px; font:500 11px/1 var(--mono); color:#71717a; }
+
+  /* ---- Capture : analyse et résultats (P0 E3–E4) ---- */
+  .p0-lot{ font:600 11px/1 var(--mono); letter-spacing:.12em; text-transform:uppercase; color:var(--muted2); margin:0 0 10px; }
+  .p0-ph{ border-radius:12px; overflow:hidden; border:1px solid var(--line2); background:#0a0a0c; }
+  .p0-ph img{ width:100%; display:block; object-fit:cover; max-height:38vh; }
+  .p0-ph.grande img{ max-height:52vh; }
+  .p0-etat{ margin-top:16px; text-align:center; }
+  .p0-k{ font:600 10px/1 var(--mono); letter-spacing:.16em; text-transform:uppercase; color:var(--muted2); }
+  .p0-t{ font:700 19px/1.25 var(--sans); margin-top:8px; }
+  .p0-s{ font:400 13px/1.45 var(--sans); color:var(--muted); margin-top:6px; }
+  .p0-d{ font:500 11px/1 var(--mono); color:var(--muted2); margin-top:8px; }
+  .p0-barre{ height:2px; border-radius:2px; background:var(--line); overflow:hidden; margin:16px auto 0; width:140px; }
+  .p0-barre i{ display:block; height:100%; width:40%; background:var(--muted); border-radius:2px; animation:p0Barre .9s ease-in-out infinite alternate; }
+  @keyframes p0Barre{ from{ transform:translateX(-10%) } to{ transform:translateX(160%) } }
+  .p0-actions{ display:flex; flex-direction:column; gap:8px; margin-top:18px; }
+  .p0-actions .btn{ width:100%; display:flex; align-items:center; justify-content:center; gap:6px; text-align:center; min-height:46px; }
+  .p0-actions .btn .icon{ width:18px; height:18px; flex:none; }
+  .p0-lien{ display:block; width:100%; margin-top:10px; padding:10px; text-align:center; font:500 13px/1.3 var(--sans); color:var(--muted); min-height:44px; }
+  .p0-cands{ display:flex; flex-direction:column; gap:8px; margin-top:14px; }
+  .p0-cand{ display:flex; align-items:center; justify-content:space-between; gap:12px; width:100%; min-height:52px; padding:12px 14px; border:1px solid var(--line); border-radius:10px; background:var(--panel2); text-align:left; animation:p0Entre .12s ease-out both; }
+  .p0-cand:active{ border-color:var(--line2); }
+  .p0-cand b{ font:600 14px/1.25 var(--sans); }
+  .p0-cand small{ display:block; font:400 11px/1.3 var(--mono); color:var(--muted2); margin-top:3px; }
+  .p0-cand .pc{ font:700 13px/1 var(--mono); color:var(--muted); flex:none; }
+  .p0-cand:nth-child(2){ animation-delay:.12s } .p0-cand:nth-child(3){ animation-delay:.24s }
+  @keyframes p0Entre{ from{ opacity:0; transform:translateY(6px) } }
+  .p0-etat, .p0-cands, .p0-actions{ animation:p0Entre .2s ease-out both; }
+  .src-list{ display:flex; flex-direction:column; gap:10px; }
+  .src-row{ display:flex; align-items:center; gap:14px; width:100%; min-height:64px; padding:12px 14px; border:1px solid var(--line); border-radius:12px; background:var(--panel2); text-align:left; animation:p0Entre .2s ease-out both; }
+  .src-row:nth-child(2){ animation-delay:.03s } .src-row:nth-child(3){ animation-delay:.06s }
+  .src-row:active{ border-color:var(--red); }
+  .src-row .icon{ width:24px; height:24px; color:var(--muted); flex:none; }
+  .src-row b{ display:block; font:600 14px/1.2 var(--sans); }
+  .src-row small{ display:block; font:400 12px/1.3 var(--sans); color:var(--muted2); margin-top:3px; }
+
+  /* ---- Après l'ajout : ce que ça débloque, fiche mise à jour, lot (P0 E7–E9) ---- */
+  .p0-tete{ display:flex; align-items:center; gap:12px; }
+  .p0-tete .mini{ width:64px; height:48px; border-radius:8px; overflow:hidden; flex:none; background:#0a0a0c; border:1px solid var(--line); }
+  .p0-tete .mini img{ width:100%; height:100%; object-fit:cover; }
+  .p0-tete b{ display:block; font:700 15px/1.25 var(--sans); }
+  .p0-tete small{ display:block; font:400 12px/1.3 var(--sans); color:var(--muted); margin-top:2px; }
+  .p0-gains{ display:flex; flex-direction:column; gap:14px; margin-top:18px; }
+  .p0-gain .rail-head{ display:flex; justify-content:space-between; gap:10px; font-size:13px; }
+  .p0-gain .rail-head .v{ font-family:var(--mono); color:var(--muted); }
+  .p0-badge{ display:inline-flex; align-items:center; gap:6px; margin-top:6px; padding:4px 9px; border-radius:999px; border:1px solid var(--line2); font:600 11px/1 var(--mono); color:var(--txt); }
+  .p0-vchips{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .p0-lotliste{ display:flex; flex-direction:column; gap:6px; margin-top:14px; max-height:40vh; overflow-y:auto; }
+  .p0-lotliste button{ display:flex; align-items:center; gap:10px; width:100%; min-height:44px; padding:8px 10px; border:1px solid var(--line); border-radius:10px; background:var(--panel2); text-align:left; font:500 13px/1.25 var(--sans); }
+  .p0-lotliste .dot{ width:8px; height:8px; border-radius:50%; flex:none; }
+  #p0Flash{ position:fixed; left:50%; top:calc(12px + var(--st)); z-index:230; transform:translateX(-50%); display:flex; align-items:center; gap:10px; width:min(92vw,360px); padding:8px 12px 8px 8px; border-radius:12px; background:#161618; border:1px solid #27272a; color:#f4f4f5; box-shadow:0 0 30px -12px var(--rv); pointer-events:none; animation:p0Flash 1.6s ease-out forwards; }
+  #p0Flash img{ width:52px; height:40px; border-radius:7px; object-fit:cover; flex:none; }
+  #p0Flash b{ display:block; font:600 13px/1.2 var(--sans); }
+  #p0Flash small{ display:block; font:700 10px/1 var(--mono); letter-spacing:.12em; text-transform:uppercase; color:var(--rv); margin-top:4px; }
+  @keyframes p0Flash{ 0%{ opacity:0; transform:translate(-50%,-8px) } 12%,80%{ opacity:1; transform:translate(-50%,0) } 100%{ opacity:0 } }
+
+  /* Réglage « réduire les animations » du téléphone : plus aucun mouvement dans
+     le parcours de capture (DESIGN.md §18) ; l'information reste identique. */
+  @media (prefers-reduced-motion: reduce){
+    #revealWrap, .rv-card, .p0-etat, .p0-cands, .p0-actions, .p0-cand, .src-row{ animation:none !important; }
+    .rv-card[data-palier="1"]{ box-shadow:0 0 28px -14px var(--rv); }
+    .rv-card[data-palier="2"]{ box-shadow:0 0 46px -12px var(--rv); }
+    .rv-card[data-palier="3"]{ box-shadow:0 0 72px -8px var(--rv); }
+    .p0-barre i{ animation:none; width:100%; opacity:.5; }
+    #p0Flash{ animation:none; opacity:1; }
+  }
 
   /* ---- Rang & missions ---- */
   .rankbar{ display:flex; align-items:center; gap:12px; padding:12px 14px; }
@@ -369,13 +504,6 @@
   .cfav .icon{ width:13px; height:13px; fill:currentColor; }
 
   /* ---- Popup de reconnaissance ---- */
-  #recogWrap{ position:fixed; inset:0; z-index:210; display:flex; align-items:center; justify-content:center; background:rgba(5,5,7,.88); backdrop-filter:blur(6px); animation:rvFade .2s ease; padding:24px; }
-  .rc-card{ width:min(88vw,340px); border-radius:16px; padding:20px; background:var(--panel); border:1px solid var(--line); animation:rvPop .4s cubic-bezier(.2,1.6,.35,1); }
-  .rc-k{ font:600 10px/1 var(--mono); letter-spacing:.15em; text-transform:uppercase; color:var(--dim); margin-bottom:10px; }
-  .rc-name{ font:700 19px/1.25 var(--sans); }
-  .rc-conf{ margin-top:6px; font:500 12px/1 var(--mono); color:var(--rare); }
-  .rc-actions{ display:flex; flex-direction:column; gap:8px; margin-top:18px; }
-  .rc-actions .btn{ width:100%; text-align:center; }
 
   /* ---- Confirmation & saisie in-app (remplacent confirm()/prompt()) ---- */
   #confirmWrap{ position:fixed; inset:0; z-index:260; display:flex; align-items:center; justify-content:center; background:rgba(5,5,7,.88); backdrop-filter:blur(6px); animation:rvFade .2s ease; padding:24px; }
@@ -417,6 +545,132 @@
   .empty .s{ font:400 13px/1.4 var(--sans); color:var(--muted2); }
 
   @media (prefers-reduced-motion: reduce){ *{ transition:none !important; animation:none !important; } }
+
+/* ============================================================
+   FICHE UI V1 — accent constructeur + halo de rareté
+   ------------------------------------------------------------
+   `.detail-shell` s'ajoute AUTOUR de `.info-head`, jamais à sa
+   place : `.info-head h2` est le point d'accroche de gm-specs.js.
+   L'accent constructeur et le halo de rareté sont deux variables
+   DISTINCTES — la rareté ne doit jamais teinter l'identité de la
+   marque, ni l'inverse.
+   ============================================================ */
+.detail-shell{ --brand-accent:var(--red); --rarity-accent:var(--commun); width:100%; }
+
+.detail-shell[data-brand="Alfa Romeo"]   { --brand-accent:#b51f2d; }
+.detail-shell[data-brand="Porsche"]      { --brand-accent:#d8ad32; }
+.detail-shell[data-brand="BMW"]          { --brand-accent:#3f78c5; }
+.detail-shell[data-brand="Ferrari"]      { --brand-accent:#c9142b; }
+.detail-shell[data-brand="Lamborghini"]  { --brand-accent:#d6a928; }
+.detail-shell[data-brand="Mercedes-Benz"]{ --brand-accent:#aeb5bd; }
+.detail-shell[data-brand="Audi"]         { --brand-accent:#c8c8c8; }
+.detail-shell[data-brand="Renault"]      { --brand-accent:#f2c300; }
+.detail-shell[data-brand="Peugeot"]      { --brand-accent:#3f73b8; }
+
+.detail-shell[data-rarity="courant"]   { --rarity-accent:var(--courant); }
+.detail-shell[data-rarity="commun"]    { --rarity-accent:var(--commun); }
+.detail-shell[data-rarity="peucommun"] { --rarity-accent:var(--peucommun); }
+.detail-shell[data-rarity="rare"]      { --rarity-accent:var(--rare); }
+.detail-shell[data-rarity="epique"]    { --rarity-accent:var(--epique); }
+.detail-shell[data-rarity="legendaire"]{ --rarity-accent:var(--legendaire); }
+
+.detail-shell .info-head h2{ font:750 27px/1.05 var(--sans); letter-spacing:-.025em; }
+
+/* Filet d'accent constructeur sous le titre */
+.detail-shell .info-head::after{
+  content:""; display:block; width:26px; height:2px; border-radius:2px;
+  margin-top:10px; background:var(--brand-accent);
+}
+
+/* Sélecteur de motorisation : l'accent suit la marque, pas la rareté */
+.detail-shell .moto-select .h3{
+  color:var(--dim); font:700 10px/1 var(--mono);
+  letter-spacing:.14em; text-transform:uppercase;
+}
+
+/* Halo de rareté sur la photo de couverture. `color-mix` est natif
+   (Safari 16.2+, Chrome 111+) et dégrade proprement : sans lui la
+   photo s'affiche simplement sans halo. */
+.detail-shell .gm-photo-hero{
+  position:relative; aspect-ratio:4/3; overflow:hidden;
+  background:#09090b; border-radius:14px; border:1px solid var(--line);
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--rarity-accent) 8%,transparent),
+             0 12px 40px color-mix(in srgb,var(--rarity-accent) 10%,transparent);
+}
+.detail-shell .gm-photo-hero::after{
+  content:""; position:absolute; inset:0; pointer-events:none;
+  box-shadow:inset 0 0 35px color-mix(in srgb,var(--rarity-accent) 18%,transparent);
+}
+.detail-shell .gm-photo-hero img{ display:block; width:100%; height:100%; object-fit:cover; }
+
+.detail-shell[data-rarity="epique"] .gm-photo-hero,
+.detail-shell[data-rarity="legendaire"] .gm-photo-hero{ animation:gmRarityPulse 3.5s ease-in-out infinite; }
+
+/* Respect d'une préférence système : une animation permanente sur une
+   fiche qu'on lit est exactement ce que `reduced-motion` vise. */
+@media (prefers-reduced-motion:reduce){
+  .detail-shell .gm-photo-hero{ animation:none !important; }
+}
+
+@keyframes gmRarityPulse{
+  0%,100%{ box-shadow:0 0 0 1px color-mix(in srgb,var(--rarity-accent) 10%,transparent),
+                      0 12px 40px color-mix(in srgb,var(--rarity-accent) 10%,transparent); }
+  50%    { box-shadow:0 0 0 1px color-mix(in srgb,var(--rarity-accent) 22%,transparent),
+                      0 12px 48px color-mix(in srgb,var(--rarity-accent) 18%,transparent); }
+}
+
+.detail-shell .gm-captures{ margin-top:18px; }
+.detail-shell .gm-capture-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:7px; }
+.detail-shell .gm-capture-grid img{
+  width:100%; aspect-ratio:1; object-fit:cover;
+  border-radius:9px; border:1px solid var(--line);
+}
+
+
+/* ============================================================
+   THÈME CLAIR — un seul design, des variables redéfinies
+   ------------------------------------------------------------
+   Pas une seconde interface : exactement les mêmes règles, avec
+   d'autres valeurs pour les jetons de couleur. Les accents
+   (--red, raretés) ne changent PAS : ils portent du sens (rareté,
+   action), et les basculer casserait la lecture du jeu.
+
+   `[data-theme="system"]` suit la préférence de l'OS ; le mode
+   sombre reste le défaut quand rien n'est stocké.
+   ============================================================ */
+:root[data-theme="light"]{
+  --bg:#f4f4f5; --panel:#ffffff; --panel2:#fafafa;
+  --line:#dedee2; --line2:#c7c7ce;
+  --txt:#18181b; --fg:#18181b;
+  --muted:#52525b; --muted2:#71717a; --dim:#a1a1aa;
+}
+@media (prefers-color-scheme:light){
+  :root[data-theme="system"]{
+    --bg:#f4f4f5; --panel:#ffffff; --panel2:#fafafa;
+    --line:#dedee2; --line2:#c7c7ce;
+    --txt:#18181b; --fg:#18181b;
+    --muted:#52525b; --muted2:#71717a; --dim:#a1a1aa;
+  }
+}
+
+/* En clair, le blanc pur d'une carte active ne ressort plus : on
+   inverse le contraste de la variante sélectionnée plutôt que de
+   lui garder un texte blanc devenu illisible. */
+:root[data-theme="light"] .gsp-moto-actif,
+:root[data-theme="light"] [data-moto-variant] div[style*="color:#fff"],
+:root[data-theme="light"] .info-head h2{ color:var(--txt); }
+
+/* Choix du thème dans les réglages */
+.theme-pick{ display:flex; gap:6px; }
+.theme-pick button{
+  padding:8px 12px; border-radius:999px; border:1px solid var(--line);
+  background:var(--panel2); color:var(--muted);
+  font:600 11px/1 var(--sans); white-space:nowrap;
+}
+.theme-pick button.on{
+  color:#fff; background:var(--red2); border-color:var(--red2);
+}
+
 </style>
 </head>
 <body>
@@ -524,7 +778,7 @@ const CARS = [
   { id: "vw-tiguan", brand: "Volkswagen", model: "Tiguan", yr: "2007–", c: "🇩🇪", cat: "SUV", r: "commun" },
   { id: "vw-touareg", brand: "Volkswagen", model: "Touareg", yr: "2002–", c: "🇩🇪", cat: "SUV", r: "peucommun" },
   { id: "vw-id3", brand: "Volkswagen", model: "ID.3", yr: "2019–", c: "🇩🇪", cat: "Citadine", r: "commun" },
-  { id: "audi-quattro", brand: "Audi", model: "Sport Quattro", yr: "1980–1991", c: "🇩🇪", cat: "Classique", r: "legendaire" },
+  { id: "audi-quattro", brand: "Audi", model: "quattro", yr: "1980–1991", c: "🇩🇪", cat: "Classique", r: "legendaire" },
   { id: "audi-80", brand: "Audi", model: "80", yr: "1972–1996", c: "🇩🇪", cat: "Youngtimer", r: "commun" },
   { id: "audi-a1", brand: "Audi", model: "A1", yr: "2010–", c: "🇩🇪", cat: "Citadine", r: "commun" },
   { id: "audi-a3", brand: "Audi", model: "A3", yr: "1996–", c: "🇩🇪", cat: "Berline", r: "commun" },
@@ -932,11 +1186,11 @@ const CARS = [
   { id: "porsche-917", brand: "Porsche", model: "917", yr: "1969–1973", c: "🇩🇪", cat: "Course", r: "legendaire" },
   { id: "porsche-956-962", brand: "Porsche", model: "956 / 962", yr: "1982–1991", c: "🇩🇪", cat: "Course", r: "legendaire" },
   { id: "porsche-919", brand: "Porsche", model: "919 Hybrid", yr: "2014–2017", c: "🇩🇪", cat: "Course", r: "legendaire" },
-  { id: "porsche-963", brand: "Porsche", model: "963", yr: "2023–", c: "🇩🇪", cat: "Course", r: "epique" },
+  { id: "porsche-963", brand: "Porsche", model: "963", yr: "2023–", c: "🇩🇪", cat: "Course", r: "legendaire" },
   { id: "audi-r18", brand: "Audi", model: "R18 e-tron quattro", yr: "2012–2016", c: "🇩🇪", cat: "Course", r: "legendaire" },
   // Japon — Course
   { id: "toyota-ts050", brand: "Toyota", model: "TS050 Hybrid", yr: "2016–2020", c: "🇯🇵", cat: "Course", r: "legendaire" },
-  { id: "toyota-gr010", brand: "Toyota", model: "GR010 Hybrid", yr: "2021–", c: "🇯🇵", cat: "Course", r: "epique" },
+  { id: "toyota-gr010", brand: "Toyota", model: "GR010 Hybrid", yr: "2021–", c: "🇯🇵", cat: "Course", r: "legendaire" },
   // Italie — Course
   { id: "ferrari-330p4", brand: "Ferrari", model: "330 P4", yr: "1967", c: "🇮🇹", cat: "Course", r: "legendaire" },
   { id: "ferrari-499p", brand: "Ferrari", model: "499P", yr: "2023–", c: "🇮🇹", cat: "Course", r: "legendaire" },
@@ -945,30 +1199,30 @@ const CARS = [
   // France — Course
   { id: "peugeot-905", brand: "Peugeot", model: "905", yr: "1990–1993", c: "🇫🇷", cat: "Course", r: "legendaire" },
   { id: "peugeot-908", brand: "Peugeot", model: "908 HDi FAP", yr: "2007–2011", c: "🇫🇷", cat: "Course", r: "legendaire" },
-  { id: "peugeot-9x8", brand: "Peugeot", model: "9X8", yr: "2022–", c: "🇫🇷", cat: "Course", r: "epique" },
+  { id: "peugeot-9x8", brand: "Peugeot", model: "9X8", yr: "2022–", c: "🇫🇷", cat: "Course", r: "legendaire" },
   // Royaume-Uni — Course
   { id: "jaguar-xjr9", brand: "Jaguar", model: "XJR-9", yr: "1988", c: "🇬🇧", cat: "Course", r: "legendaire" },
   // France — Course
-  { id: "alpine-a424", brand: "Alpine", model: "A424", yr: "2024–", c: "🇫🇷", cat: "Course", r: "epique" },
+  { id: "alpine-a424", brand: "Alpine", model: "A424", yr: "2024–", c: "🇫🇷", cat: "Course", r: "legendaire" },
   // États-Unis — Course
-  { id: "cadillac-vseries-r", brand: "Cadillac", model: "V-Series.R", yr: "2023–", c: "🇺🇸", cat: "Course", r: "epique" },
+  { id: "cadillac-vseries-r", brand: "Cadillac", model: "V-Series.R", yr: "2023–", c: "🇺🇸", cat: "Course", r: "legendaire" },
   // Italie — Course
   { id: "ferrari-488-challenge", brand: "Ferrari", model: "488 Challenge", yr: "2017–2022", c: "🇮🇹", cat: "Course", r: "legendaire" },
-  { id: "ferrari-296-gt3", brand: "Ferrari", model: "296 GT3", yr: "2023–", c: "🇮🇹", cat: "Course", r: "epique" },
+  { id: "ferrari-296-gt3", brand: "Ferrari", model: "296 GT3", yr: "2023–", c: "🇮🇹", cat: "Course", r: "legendaire" },
   // Allemagne — Course
   { id: "porsche-911-cup", brand: "Porsche", model: "911 GT3 Cup", yr: "1998–", c: "🇩🇪", cat: "Course", r: "epique" },
-  { id: "porsche-911-rsr", brand: "Porsche", model: "911 RSR", yr: "2017–2022", c: "🇩🇪", cat: "Course", r: "epique" },
+  { id: "porsche-911-rsr", brand: "Porsche", model: "911 RSR", yr: "2017–2022", c: "🇩🇪", cat: "Course", r: "legendaire" },
   // Italie — Course
-  { id: "lambo-huracan-gt3", brand: "Lamborghini", model: "Huracán GT3", yr: "2015–", c: "🇮🇹", cat: "Course", r: "epique" },
+  { id: "lambo-huracan-gt3", brand: "Lamborghini", model: "Huracán GT3", yr: "2015–", c: "🇮🇹", cat: "Course", r: "legendaire" },
   // Allemagne — Course
-  { id: "mercedes-amg-gt3", brand: "Mercedes-AMG", model: "GT3", yr: "2015–", c: "🇩🇪", cat: "Course", r: "epique" },
-  { id: "bmw-m4-gt3", brand: "BMW", model: "M4 GT3", yr: "2022–", c: "🇩🇪", cat: "Course", r: "epique" },
+  { id: "mercedes-amg-gt3", brand: "Mercedes-AMG", model: "GT3", yr: "2015–", c: "🇩🇪", cat: "Course", r: "legendaire" },
+  { id: "bmw-m4-gt3", brand: "BMW", model: "M4 GT3", yr: "2022–", c: "🇩🇪", cat: "Course", r: "legendaire" },
   // Royaume-Uni — Course
-  { id: "aston-vantage-gt3", brand: "Aston Martin", model: "Vantage GT3", yr: "2018–", c: "🇬🇧", cat: "Course", r: "epique" },
+  { id: "aston-vantage-gt3", brand: "Aston Martin", model: "Vantage GT3", yr: "2018–", c: "🇬🇧", cat: "Course", r: "legendaire" },
   // États-Unis — Course
-  { id: "corvette-c8r", brand: "Chevrolet", model: "Corvette C8.R", yr: "2020–", c: "🇺🇸", cat: "Course", r: "epique" },
+  { id: "corvette-c8r", brand: "Chevrolet", model: "Corvette C8.R", yr: "2020–", c: "🇺🇸", cat: "Course", r: "legendaire" },
   // France — Course
-  { id: "alpine-a110-cup", brand: "Alpine", model: "A110 Cup", yr: "2018–", c: "🇫🇷", cat: "Course", r: "rare" },
+  { id: "alpine-a110-cup", brand: "Alpine", model: "A110 Cup", yr: "2018–", c: "🇫🇷", cat: "Course", r: "legendaire" },
   // Allemagne — Course
   { id: "audi-s1-e2", brand: "Audi", model: "Sport quattro S1 E2", yr: "1985–1986", c: "🇩🇪", cat: "Course", r: "legendaire" },
   // France — Course
@@ -984,7 +1238,7 @@ const CARS = [
   { id: "peugeot-206-wrc", brand: "Peugeot", model: "206 WRC", yr: "1999–2003", c: "🇫🇷", cat: "Course", r: "legendaire" },
   // Japon — Course
   { id: "subaru-impreza-wrc", brand: "Subaru", model: "Impreza WRC", yr: "1997–2008", c: "🇯🇵", cat: "Course", r: "legendaire" },
-  { id: "toyota-gr-yaris-rally1", brand: "Toyota", model: "GR Yaris Rally1", yr: "2022–", c: "🇯🇵", cat: "Course", r: "epique" },
+  { id: "toyota-gr-yaris-rally1", brand: "Toyota", model: "GR Yaris Rally1", yr: "2022–", c: "🇯🇵", cat: "Course", r: "legendaire" },
   // Italie — Course
   { id: "dallara-ir18", brand: "Dallara", model: "IR-18 (IndyCar)", yr: "2018–", c: "🇮🇹", cat: "Course", r: "epique" },
   // États-Unis — Course
@@ -992,7 +1246,7 @@ const CARS = [
   { id: "woo-sprintcar", brand: "World of Outlaws", model: "Sprint Car 410", yr: "1978–", c: "🇺🇸", cat: "Course", r: "rare" },
   { id: "nhra-topfuel", brand: "NHRA", model: "Top Fuel Dragster", yr: "1960s–", c: "🇺🇸", cat: "Course", r: "legendaire" },
   // Royaume-Uni — Course
-  { id: "radical-sr3", brand: "Radical", model: "SR3", yr: "2001–", c: "🇬🇧", cat: "Course", r: "rare" },
+  { id: "radical-sr3", brand: "Radical", model: "SR3", yr: "2001–", c: "🇬🇧", cat: "Course", r: "epique" },
   // France
   { id: "peugeot-104", brand: "Peugeot", model: "104", yr: "1972–1988", c: "🇫🇷", cat: "Youngtimer", r: "peucommun" },
   { id: "peugeot-404", brand: "Peugeot", model: "404", yr: "1960–1975", c: "🇫🇷", cat: "Classique", r: "rare" },
@@ -1002,10 +1256,10 @@ const CARS = [
   { id: "citroen-mehari", brand: "Citroën", model: "Méhari", yr: "1968–1988", c: "🇫🇷", cat: "Classique", r: "rare" },
   { id: "citroen-gs", brand: "Citroën", model: "GS / GSA", yr: "1970–1986", c: "🇫🇷", cat: "Youngtimer", r: "peucommun" },
   { id: "citroen-c6", brand: "Citroën", model: "C6", yr: "2005–2012", c: "🇫🇷", cat: "Berline", r: "rare" },
-  { id: "citroen-berlingo", brand: "Citroën", model: "Berlingo", yr: "1996–", c: "🇫🇷", cat: "SUV", r: "commun" },
+  { id: "citroen-berlingo", brand: "Citroën", model: "Berlingo", yr: "1996–", c: "🇫🇷", cat: "Utilitaire", r: "commun" },
   { id: "renault-fuego", brand: "Renault", model: "Fuego", yr: "1980–1986", c: "🇫🇷", cat: "Youngtimer", r: "rare" },
   { id: "renault-twizy", brand: "Renault", model: "Twizy", yr: "2012–2023", c: "🇫🇷", cat: "Citadine", r: "peucommun" },
-  { id: "renault-kangoo", brand: "Renault", model: "Kangoo", yr: "1997–", c: "🇫🇷", cat: "SUV", r: "commun" },
+  { id: "renault-kangoo", brand: "Renault", model: "Kangoo", yr: "1997–", c: "🇫🇷", cat: "Utilitaire", r: "commun" },
   { id: "simca-1000", brand: "Simca", model: "1000 Rallye 2", yr: "1970–1978", c: "🇫🇷", cat: "Classique", r: "rare" },
   { id: "facel-vega-hk500", brand: "Facel Vega", model: "HK500", yr: "1958–1961", c: "🇫🇷", cat: "Classique", r: "legendaire" },
   { id: "delahaye-135", brand: "Delahaye", model: "135", yr: "1935–1954", c: "🇫🇷", cat: "Classique", r: "legendaire" },
@@ -1060,12 +1314,12 @@ const CARS = [
   { id: "nissan-juke", brand: "Nissan", model: "Juke", yr: "2010–", c: "🇯🇵", cat: "SUV", r: "commun" },
   // États-Unis
   { id: "ford-model-t", brand: "Ford", model: "Model T", yr: "1908–1927", c: "🇺🇸", cat: "Classique", r: "legendaire" },
-  { id: "ford-escort-cosworth", brand: "Ford", model: "Escort RS Cosworth", yr: "1992–1996", c: "🇺🇸", cat: "Youngtimer", r: "legendaire" },
+  { id: "ford-escort-cosworth", brand: "Ford", model: "Escort RS Cosworth", yr: "1992–1996", c: "🇬🇧", cat: "Youngtimer", r: "legendaire" },
   { id: "ford-sierra-cosworth", brand: "Ford", model: "Sierra RS Cosworth", yr: "1986–1992", c: "🇺🇸", cat: "Youngtimer", r: "legendaire" },
   { id: "ford-fiesta", brand: "Ford", model: "Fiesta", yr: "1976–2023", c: "🇺🇸", cat: "Citadine", r: "commun" },
   { id: "ford-focus", brand: "Ford", model: "Focus", yr: "1998–", c: "🇺🇸", cat: "Berline", r: "commun" },
   { id: "ford-puma", brand: "Ford", model: "Puma", yr: "2019–", c: "🇺🇸", cat: "SUV", r: "commun" },
-  { id: "ford-transit", brand: "Ford", model: "Transit", yr: "1965–", c: "🇺🇸", cat: "SUV", r: "commun" },
+  { id: "ford-transit", brand: "Ford", model: "Transit", yr: "1965–", c: "🇺🇸", cat: "Utilitaire", r: "commun" },
   { id: "chevrolet-corvette-c1", brand: "Chevrolet", model: "Corvette (C1)", yr: "1953–1962", c: "🇺🇸", cat: "Classique", r: "legendaire" },
   { id: "chevrolet-impala-64", brand: "Chevrolet", model: "Impala (1964)", yr: "1961–1964", c: "🇺🇸", cat: "Classique", r: "rare" },
   { id: "buick-gnx", brand: "Buick", model: "GNX", yr: "1987", c: "🇺🇸", cat: "Youngtimer", r: "legendaire" },
@@ -1144,7 +1398,7 @@ const CARS = [
   { id: "toyota-celica-gt4", brand: "Toyota", model: "Celica GT-Four", yr: "1986–1999", c: "🇯🇵", cat: "Youngtimer", r: "rare" },
   { id: "honda-s660", brand: "Honda", model: "S660 (kei)", yr: "2015–2022", c: "🇯🇵", cat: "Roadster", r: "rare" },
   { id: "aspark-owl", brand: "Aspark", model: "Owl", yr: "2020–", c: "🇯🇵", cat: "Hypercar", r: "legendaire" },
-  { id: "nio-ep9", brand: "Nio", model: "EP9", yr: "2016–2018", c: "🇨🇳", cat: "Hypercar", r: "legendaire" },
+  { id: "nio-ep9", brand: "NIO", model: "EP9", yr: "2016–2018", c: "🇨🇳", cat: "Hypercar", r: "legendaire" },
   { id: "wmotors-lykan", brand: "W Motors", model: "Lykan HyperSport", yr: "2013–2017", c: "🇦🇪", cat: "Hypercar", r: "legendaire" },
   { id: "chevrolet-c4-zr1", brand: "Chevrolet", model: "Corvette ZR-1 (C4)", yr: "1990–1995", c: "🇺🇸", cat: "Youngtimer", r: "legendaire" },
   { id: "dodge-demon", brand: "Dodge", model: "Challenger Demon 170", yr: "2018–2023", c: "🇺🇸", cat: "Sportive", r: "legendaire" },
@@ -1274,7 +1528,7 @@ const CARS = [
   { id: "peugeot-106-rallye", brand: "Peugeot", model: "106 Rallye", yr: "1993–1998", c: "🇫🇷", cat: "Youngtimer", r: "rare" },
   { id: "peugeot-207", brand: "Peugeot", model: "207", yr: "2006–2012", c: "🇫🇷", cat: "Citadine", r: "commun" },
   { id: "peugeot-j7", brand: "Peugeot", model: "J7", yr: "1965–1980", c: "🇫🇷", cat: "Classique", r: "rare" },
-  { id: "peugeot-partner", brand: "Peugeot", model: "Partner", yr: "1996–", c: "🇫🇷", cat: "SUV", r: "commun" },
+  { id: "peugeot-partner", brand: "Peugeot", model: "Partner", yr: "1996–", c: "🇫🇷", cat: "Utilitaire", r: "commun" },
   { id: "citroen-ami6", brand: "Citroën", model: "Ami 6", yr: "1961–1971", c: "🇫🇷", cat: "Classique", r: "rare" },
   { id: "citroen-dyane", brand: "Citroën", model: "Dyane", yr: "1967–1983", c: "🇫🇷", cat: "Classique", r: "peucommun" },
   { id: "citroen-visa", brand: "Citroën", model: "Visa", yr: "1978–1988", c: "🇫🇷", cat: "Youngtimer", r: "peucommun" },
@@ -1296,7 +1550,7 @@ const CARS = [
   { id: "renault-25", brand: "Renault", model: "25", yr: "1984–1992", c: "🇫🇷", cat: "Youngtimer", r: "rare" },
   { id: "renault-safrane", brand: "Renault", model: "Safrane", yr: "1992–2000", c: "🇫🇷", cat: "Berline", r: "rare" },
   { id: "renault-estafette", brand: "Renault", model: "Estafette", yr: "1959–1980", c: "🇫🇷", cat: "Classique", r: "rare" },
-  { id: "renault-trafic", brand: "Renault", model: "Trafic", yr: "1980–", c: "🇫🇷", cat: "SUV", r: "commun" },
+  { id: "renault-trafic", brand: "Renault", model: "Trafic", yr: "1980–", c: "🇫🇷", cat: "Utilitaire", r: "commun" },
   { id: "matra-530", brand: "Matra", model: "530", yr: "1967–1973", c: "🇫🇷", cat: "Classique", r: "rare" },
   { id: "matra-bagheera", brand: "Matra", model: "Bagheera", yr: "1973–1980", c: "🇫🇷", cat: "Youngtimer", r: "rare" },
   { id: "matra-rancho", brand: "Matra", model: "Rancho", yr: "1977–1984", c: "🇫🇷", cat: "Youngtimer", r: "rare" },
@@ -1320,8 +1574,8 @@ const CARS = [
   { id: "bmw-x1", brand: "BMW", model: "X1", yr: "2009–", c: "🇩🇪", cat: "SUV", r: "commun" },
   { id: "bmw-z1", brand: "BMW", model: "Z1", yr: "1989–1991", c: "🇩🇪", cat: "Youngtimer", r: "legendaire" },
   { id: "mercedes-190", brand: "Mercedes-Benz", model: "190 (W201)", yr: "1982–1993", c: "🇩🇪", cat: "Youngtimer", r: "peucommun" },
-  { id: "mercedes-vito", brand: "Mercedes-Benz", model: "Vito", yr: "1996–", c: "🇩🇪", cat: "SUV", r: "commun" },
-  { id: "mercedes-sprinter", brand: "Mercedes-Benz", model: "Sprinter", yr: "1995–", c: "🇩🇪", cat: "SUV", r: "commun" },
+  { id: "mercedes-vito", brand: "Mercedes-Benz", model: "Vito", yr: "1996–", c: "🇩🇪", cat: "Utilitaire", r: "commun" },
+  { id: "mercedes-sprinter", brand: "Mercedes-Benz", model: "Sprinter", yr: "1995–", c: "🇩🇪", cat: "Utilitaire", r: "commun" },
   { id: "opel-ascona", brand: "Opel", model: "Ascona", yr: "1970–1988", c: "🇩🇪", cat: "Youngtimer", r: "peucommun" },
   { id: "opel-tigra", brand: "Opel", model: "Tigra", yr: "1994–2009", c: "🇩🇪", cat: "Coupé", r: "peucommun" },
   { id: "opel-zafira", brand: "Opel", model: "Zafira", yr: "1999–2019", c: "🇩🇪", cat: "SUV", r: "commun" },
@@ -1537,7 +1791,7 @@ const INFO = {
   "koenigsegg-jesko": { eng:"V8 5.0 biturbo", hp:"≈ 1280–1600 ch (E85)", fact:"Boîte « LST » à 9 rapports et objectif de vitesse extrême." },
   "koenigsegg-agera-rs": { eng:"V8 5.0 biturbo", hp:"≈ 1160 ch", vmax:"≈ 447 km/h (moy. 2017)", fact:"A détenu le record de vitesse sur route pour une voiture de série." },
   "koenigsegg-regera": { eng:"V8 biturbo hybride", hp:"≈ 1500 ch", fact:"Transmission directe « Direct Drive » sans boîte de vitesses classique." },
-  "koenigsegg-gemera": { eng:"Hybride (4 places)", hp:"≈ 1700 ch", fact:"Une « méga-car » 4 places pensée pour la famille." },
+  "koenigsegg-gemera": { eng:"V8 5.0 biturbo hybride (HV8)", hp:"≈ 2332 ch", fact:"Une « méga-car » 4 places pensée pour la famille." },
   "rimac-nevera": { eng:"4 moteurs électriques", hp:"≈ 1914 ch", acc:"≈ 1,8 s", vmax:"≈ 412 km/h", fact:"Records d'accélération électrique, dont le 0-100 sous 2 secondes." },
   "pininfarina-battista": { eng:"4 moteurs électriques (base Rimac)", hp:"≈ 1900 ch", acc:"≈ 1,9 s", vmax:"≈ 350 km/h", fact:"La première hypercar de la carrossier Pininfarina, 100 % électrique." },
   "zenvo-tsrs": { eng:"V8 biturbo", hp:"≈ 1177 ch", fact:"Aileron « centripète » pivotant, unique au monde." },
@@ -1556,7 +1810,7 @@ const INFO = {
   "honda-s2000": { eng:"4 cyl. 2.0 atmo", hp:"≈ 240 ch", fact:"Un 4 cylindres atmosphérique montant jusqu'à 9000 tr/min." },
   "honda-integra-type-r": { eng:"4 cyl. 1.8 VTEC", hp:"≈ 190 ch", fact:"Souvent citée comme la meilleure traction à conduire jamais produite." },
   "honda-civic-type-r": { eng:"4 cyl. 2.0 turbo", hp:"≈ 300–330 ch", acc:"≈ 5,4 s", vmax:"≈ 270 km/h", fact:"Recordwoman du tour au Nürburgring pour une traction." },
-  "mazda-rx7": { eng:"Birotor 1.3 biturbo (13B)", hp:"≈ 280 ch", fact:"Moteur rotatif Wankel : compact, léger et montant haut dans les tours." },
+  "mazda-rx7": { eng:"Birotor 1.3 biturbo (13B)", hp:"≈ 239–280 ch", fact:"Moteur rotatif Wankel : compact, léger et montant haut dans les tours." },
   "mazda-mx5": { eng:"4 cyl. atmo, propulsion", hp:"≈ 130–184 ch", fact:"Le roadster le plus vendu de l'histoire selon le Guinness." },
   "subaru-22b": { eng:"4 cyl. 2.2 turbo à plat", hp:"≈ 280 ch", fact:"Célébration des titres en rallye : ~400 exemplaires, très recherchée." },
   "subaru-wrx-sti": { eng:"4 cyl. 2.5 turbo à plat", hp:"≈ 300 ch", fact:"Le flat-four turbo et la transmission intégrale, héritage du rallye." },
@@ -1579,7 +1833,7 @@ const INFO = {
   "hennessey-venom-f5": { eng:"V8 6.6 biturbo « Fury »", hp:"≈ 1817 ch", fact:"Vise plus de 500 km/h avec l'un des V8 les plus puissants au monde." },
   "ssc-tuatara": { eng:"V8 5.9 biturbo", hp:"≈ 1750 ch (E85)", fact:"Revendique des vitesses de pointe parmi les plus élevées jamais mesurées." },
   "czinger-21c": { eng:"V8 hybride", hp:"≈ 1250 ch", fact:"Structure en grande partie fabriquée par impression 3D métallique." },
-  "mclaren-mp44": { eng:"V6 1.5 turbo Honda", hp:"≈ 900+ ch (qualif)", fact:"15 victoires en 16 GP en 1988 avec Senna et Prost : la F1 la plus dominatrice." },
+  "mclaren-mp44": { eng:"V6 1.5 turbo Honda (2,5 bar)", hp:"≈ 685 ch", fact:"15 victoires en 16 GP en 1988 avec Senna et Prost : la F1 la plus dominatrice." },
   "ferrari-f2004": { eng:"V10 3.0 atmo", hp:"≈ 865 ch", fact:"La F1 des records : plusieurs de ses chronos ont tenu plus de 15 ans." },
   "ferrari-312t": { eng:"Flat-12", hp:"≈ 500 ch", fact:"La monoplace des titres de Niki Lauda (1975, 1977)." },
   "williams-fw14b": { eng:"V10 Renault + suspension active", hp:"≈ 760 ch", fact:"Suspension active, antipatinage : la F1 la plus high-tech de son époque (Mansell 1992)." },
@@ -1615,7 +1869,7 @@ const INFO = {
   "aston-vantage-gt3": { eng:"V8 4.0 biturbo AMG", hp:"≈ 550 ch (BoP)", fact:"L'arme d'Aston Martin en GT3 et en endurance." },
   "corvette-c8r": { eng:"V8 5.5 atmo à plat", hp:"≈ 500 ch (BoP)", fact:"La Corvette d'usine à moteur central, victorieuse en IMSA." },
   "alpine-a110-cup": { eng:"4 cyl. 1.8 turbo", hp:"≈ 270 ch", fact:"La coupe monotype tricolore sur les grands circuits d'Europe." },
-  "audi-s1-e2": { eng:"5 cyl. turbo", hp:"≈ 550+ ch", fact:"Le monstre du Groupe B : ~550 ch et un son de guerre. Vainqueur à Pikes Peak." },
+  "audi-s1-e2": { eng:"5 cyl. turbo", hp:"≈ 500–550 ch", fact:"Le monstre du Groupe B : ~550 ch et un son de guerre. Vainqueur à Pikes Peak." },
   "peugeot-205-t16": { eng:"4 cyl. 1.8 turbo central", hp:"≈ 450–550 ch", fact:"Double champion du monde Groupe B (1985, 1986)." },
   "lancia-delta-s4": { eng:"4 cyl. turbo + compresseur", hp:"≈ 480+ ch", fact:"Double suralimentation (turbo + compresseur) : la plus extrême du Groupe B." },
   "ford-rs200": { eng:"4 cyl. turbo central", hp:"≈ 450 ch (course)", fact:"Groupe B à châssis composite ; ses versions Evo dépassaient 600 ch." },
@@ -1628,7 +1882,7 @@ const INFO = {
   "usac-midget": { eng:"4 cyl. course", hp:"≈ 350–400 ch", fact:"~400 ch pour ~450 kg sur ovale de terre : l'école des champions américains." },
   "woo-sprintcar": { eng:"V8 410ci méthanol", hp:"≈ 900+ ch", fact:"Ailerons géants, 900 ch, ni démarreur ni embrayage : pur spectacle." },
   "nhra-topfuel": { eng:"V8 8.2 compressé au nitrométhane", hp:"≈ 11000 ch", acc:"0-160 km/h < 1 s", vmax:"≈ 530 km/h (300 m)", fact:"~11 000 ch : l'accélération la plus violente du sport automobile." },
-  "radical-sr3": { eng:"4 cyl. d'origine moto", hp:"≈ 226–232 ch", fact:"Barquette de piste au moteur hurlant à plus de 10 000 tr/min." },
+  "radical-sr3": { eng:"4 cyl. d'origine moto", hp:"≈ 210–255 ch", fact:"Barquette de piste au moteur hurlant à plus de 10 000 tr/min." },
   "facel-vega-hk500": { eng:"V8 Chrysler 5.9/6.3", hp:"≈ 335–360 ch", fact:"Le luxe à la française des années 50, V8 américain sous le capot." },
   "delahaye-135": { eng:"6 cyl.", fact:"Star des concours d'élégance, carrosseries parmi les plus belles de l'avant-guerre." },
   "ligier-js50": { eng:"Bicylindre diesel/électrique", hp:"≈ 8 ch (VSP)", vmax:"≈ 45 km/h", fact:"La « voiturette » sans permis — signée Ligier, ex-écurie de F1 !" },
@@ -1652,7 +1906,7 @@ const INFO = {
   "nissan-skyline-r33": { eng:"6 cyl. 2.6 biturbo (RB26)", hp:"≈ 280 ch (officiel)", fact:"Première voiture de série sous les 8 minutes au Nürburgring (1996)." },
   "nissan-figaro": { eng:"4 cyl. 1.0 turbo", hp:"≈ 76 ch", fact:"Néo-rétro kawaii produit un an seulement — collector immédiat." },
   "toyota-chaser": { eng:"6 cyl. 2.5 turbo (1JZ)", hp:"≈ 280 ch", fact:"Berline propulsion discrète, chouchoute des drifteurs japonais." },
-  "toyota-century": { eng:"V12 5.0 (puis V8 hybride)", hp:"≈ 280 ch", fact:"La limousine de l'empereur du Japon, seul V12 japonais de série." },
+  "toyota-century": { eng:"V12 5.0 (puis V8 hybride)", hp:"≈ 280–431 ch", fact:"La limousine de l'empereur du Japon, seul V12 japonais de série." },
   "toyota-hilux": { eng:"4 cyl. diesel/essence", fact:"Réputé indestructible — écrasé, noyé, incendié… il redémarre (Top Gear)." },
   "autozam-az1": { eng:"3 cyl. 657 cm³ turbo central", hp:"≈ 64 ch", fact:"Kei car à portes papillon et moteur central : minuscule et culte." },
   "honda-beat": { eng:"3 cyl. 656 cm³ atmo", hp:"≈ 64 ch", fact:"Roadster kei à moteur central, dernier projet approuvé par Soichiro Honda." },
@@ -1688,7 +1942,7 @@ const INFO = {
   "bmw-1m": { eng:"6 cyl. 3.0 biturbo", hp:"≈ 340 ch", fact:"Série courte, boîte manuelle uniquement : culte instantané." },
   "bmw-m3-csl": { eng:"6 cyl. 3.2 atmo", hp:"≈ 360 ch", fact:"Toit carbone, admission carbone au son mythique : la M3 des puristes." },
   "bmw-m5-cs": { eng:"V8 4.4 biturbo", hp:"≈ 635 ch", acc:"3,0 s", fact:"La BMW M la plus puissante de son époque, allégée et radicale." },
-  "bmw-m6": { eng:"V10 5.0 atmo (E63)", hp:"≈ 507 ch", fact:"Un V10 atmo inspiré de la F1 dans une GT de série." },
+  "bmw-m6": { eng:"V10 5.0 atmo (E63), puis V8 4.4 biturbo (F13)", hp:"≈ 507–600 ch", fact:"Un V10 atmo inspiré de la F1 dans une GT de série." },
   "bmw-x5m": { eng:"V8 4.4 biturbo", hp:"≈ 555–625 ch", fact:"Le premier M à transmission intégrale (2009)." },
   "bmw-xm": { eng:"V8 4.4 biturbo hybride", hp:"≈ 653–748 ch", fact:"Premier modèle 100 % M depuis la M1 — et le plus controversé." },
   "bmw-z3m-coupe": { eng:"6 cyl. 3.2 (S50/S54)", hp:"≈ 321–325 ch", fact:"La « clown shoe » : break de chasse compact devenu collector." },
@@ -1720,7 +1974,7 @@ const INFO = {
   "mazzanti-evantra": { eng:"V8 biturbo", hp:"≈ 751 ch (Millecavalli : ≈ 1000)", fact:"L'artisan toscan qui construit ses hypercars à la main." },
   "mini-jcw-gp": { eng:"4 cyl. 2.0 turbo (GP3)", hp:"≈ 306 ch", fact:"La MINI la plus radicale : 2 places, aéro carbone, 3000 exemplaires." },
   "lotus-evora": { eng:"V6 3.5 compressé (Toyota)", hp:"≈ 280–430 ch", fact:"La Lotus « à vivre » : 2+2, châssis alu collé-riveté." },
-  "ultima-gtr": { eng:"V8 Chevrolet central", hp:"≈ 534–720 ch", fact:"Longtemps recordwoman du 0-160-0 km/h ; livrable en kit." },
+  "ultima-gtr": { eng:"V8 Chevrolet central", hp:"≈ 534–1034 ch", fact:"Longtemps recordwoman du 0-160-0 km/h ; livrable en kit." },
   "jaguar-xe-sv8": { eng:"V8 5.0 compressé", hp:"≈ 600 ch", fact:"Record des berlines de série au Nürburgring (2017)." },
   "mclaren-12c": { eng:"V8 3.8 biturbo", hp:"≈ 625 ch", acc:"3,1 s", vmax:"≈ 330 km/h", fact:"Le retour de McLaren sur route : châssis carbone et suspension hydraulique." },
   "praga-bohema": { eng:"V6 3.8 biturbo (base GT-R)", hp:"≈ 700 ch", fact:"982 kg pour 700 ch : la tchèque taillée pour la piste, homologuée route." },
@@ -1755,7 +2009,7 @@ const INFO = {
   "chevrolet-silverado": { eng:"V8 5.3–6.2", fact:"Le rival éternel du F-150 dans la guerre des pick-ups." },
   "chevrolet-corvette-c5": { eng:"V8 5.7 (LS1)", hp:"≈ 345–405 ch (Z06)", fact:"Châssis à tunnel central et boîte-pont arrière : le grand bond de la Corvette." },
   "chevrolet-corvette-c6": { eng:"V8 6.0–7.0 (LS7 Z06)", hp:"≈ 400–638 ch (ZR1)", vmax:"≈ 330 km/h (ZR1)", fact:"Le LS7 7.0 atmo de la Z06 : 505 ch et carter sec, légende instantanée." },
-  "dodge-charger-moderne": { eng:"V8 HEMI 5.7–6.2", hp:"≈ 370–807 ch", fact:"La dernière grande berline muscle, jusqu'à 807 ch en Hellcat Redeye." },
+  "dodge-charger-moderne": { eng:"V6 3.6 Pentastar ou V8 HEMI 5.7–6.2", hp:"≈ 296–807 ch", fact:"La dernière grande berline muscle, jusqu'à 807 ch en Hellcat Redeye." },
   "dodge-charger-daytona-69": { eng:"V8 426 HEMI", hp:"≈ 425 ch", fact:"Nez fusée et aileron : première NASCAR à franchir 200 mph (1970)." },
   "dodge-neon-srt4": { eng:"4 cyl. 2.4 turbo", hp:"≈ 230 ch", fact:"La compacte turbo qui humiliait plus cher qu'elle au feu rouge." },
   "dodge-durango-srt": { eng:"V8 6.2 suralimenté", hp:"≈ 710 ch", fact:"Un SUV familial 7 places au moteur de Hellcat." },
@@ -1777,7 +2031,7 @@ const INFO = {
   "amc-javelin": { eng:"V8 (AMX 390)", hp:"≈ 315 ch", fact:"L'outsider AMC dans la guerre des pony cars, victorieuse en Trans-Am." },
   "amc-pacer": { eng:"6 cyl.", fact:"La « bulle roulante » de Wayne's World : l'un des designs les plus audacieux des 70s." },
   "duesenberg-model-j": { eng:"8 cyl. en ligne 6.9", hp:"≈ 265 ch (420 en SJ)", vmax:"≈ 180 km/h", fact:"La voiture des stars de 1930 — « It's a Duesy » vient d'elle." },
-  "cord-810": { eng:"V8 4.7 (compressé en 812)", hp:"≈ 170 ch", fact:"Phares escamotables et traction avant dès 1936 : des décennies d'avance." },
+  "cord-810": { eng:"V8 4.7 (compressé en 812)", hp:"≈ 127–170 ch", fact:"Phares escamotables et traction avant dès 1936 : des décennies d'avance." },
   "tucker-48": { eng:"Flat-6 arrière", hp:"≈ 166 ch", fact:"51 exemplaires : phare central directionnel et obsession sécurité, tuée en plein élan." },
   "studebaker-avanti": { eng:"V8 4.7 (compressé)", hp:"≈ 240 ch", fact:"Dessinée en 40 jours par Raymond Loewy, carrosserie fibre de verre." },
   "gmc-syclone": { eng:"V6 4.3 turbo", hp:"≈ 280 ch", acc:"≈ 4,3 s", fact:"Le pick-up qui battait une Ferrari 348 au sprint en 1991." },
@@ -1829,12 +2083,12 @@ const INFO = {
   "koenigsegg-one1": { eng:"V8 5.0 biturbo (E85)", hp:"≈ 1360 ch", fact:"1360 ch pour 1360 kg : la première « megacar » à 1 ch/kg." },
   "pegaso-z102": { eng:"V8 2.5–3.2 à ACT", hp:"≈ 175–360 ch", fact:"La supercar espagnole des années 50, construite par un fabricant… de camions." },
   "lada-niva": { eng:"4 cyl. 1.6/1.7", hp:"≈ 83 ch", fact:"Pionnière du 4x4 monocoque (1977), quasi inchangée depuis — increvable." },
-  "tatra-t87": { eng:"V8 3.0 refroidi par air, arrière", hp:"≈ 85 ch", vmax:"≈ 160 km/h", fact:"Aérodynamique radicale dès 1936 ; les officiers allemands se tuaient tant à son volant qu'elle fut surnommée « l'arme secrète tchèque »." },
+  "tatra-t87": { eng:"V8 3.0 refroidi par air, arrière", hp:"≈ 75–85 ch", vmax:"≈ 160 km/h", fact:"Aérodynamique radicale dès 1936 ; les officiers allemands se tuaient tant à son volant qu'elle fut surnommée « l'arme secrète tchèque »." },
   "daf-33": { eng:"Bicylindre + Variomatic", hp:"≈ 32 ch", fact:"Sa transmission Variomatic (CVT) lui permettait d'aller aussi vite en marche arrière qu'en avant." },
-  "porsche-935": { eng:"Flat-6 turbo", hp:"≈ 750+ ch", fact:"La « Moby Dick » : victoire au général au Mans 1979… pour une voiture de catégorie GT." },
+  "porsche-935": { eng:"Flat-6 3.2 biturbo", hp:"≈ 845 ch", fact:"La « Moby Dick » : victoire au général au Mans 1979… pour une voiture de catégorie GT." },
   "porsche-911-gt1": { eng:"Flat-6 3.2 biturbo", hp:"≈ 550 ch", fact:"Doublé au Mans 1998 ; sa version Straßenversion est l'une des Porsche les plus rares." },
   "mclaren-f1-gtr": { eng:"V12 6.1 BMW", hp:"≈ 600 ch", fact:"Victoire au Mans 1995 dès sa première participation — sous la pluie, contre les prototypes." },
-  "matra-ms670": { eng:"V12 3.0", hp:"≈ 450 ch", fact:"Trois victoires consécutives au Mans (1972-74) et le hurlement de V12 le plus célèbre de France." },
+  "matra-ms670": { eng:"V12 3.0", hp:"≈ 450–490 ch", fact:"Trois victoires consécutives au Mans (1972-74) et le hurlement de V12 le plus célèbre de France." },
   "alpine-a442": { eng:"V6 2.0 turbo", hp:"≈ 500 ch", fact:"La victoire française au Mans 1978, objectif national de Renault." },
   "peugeot-405-t16-pp": { eng:"4 cyl. turbo, 4 roues motrices/directrices", hp:"≈ 600 ch", fact:"La star du film « Climb Dance » : records à Pikes Peak avec Vatanen (1988-89)." },
   "peugeot-203": { fact:"La Peugeot de la reconstruction — un seul modèle au catalogue pendant 6 ans." },
@@ -1891,7 +2145,7 @@ const INFO = {
   "tvr-griffith": { eng:"V8 Rover 4.0–5.0", hp:"≈ 340 ch", fact:"Ni ABS ni airbags : la philosophie TVR à l'état pur." },
   "morgan-plus-8": { eng:"V8", fact:"Châssis à structure bois de frêne, fabriqué à la main depuis 1968." },
   "morgan-3wheeler": { eng:"Bicylindre en V apparent", hp:"≈ 82 ch", fact:"Trois roues, moteur de moto exposé au vent : l'aviation sans les ailes." },
-  "donkervoort-d8": { eng:"5 cyl. Audi 2.5 turbo", hp:"≈ 385 ch", fact:"~700 kg pour 385 ch : la Seven néerlandaise extrême." },
+  "donkervoort-d8": { eng:"5 cyl. Audi 2.5 turbo", hp:"≈ 340–415 ch", fact:"~700 kg pour 340 à 415 ch selon la version : la Seven néerlandaise extrême." },
   "honda-e": { eng:"Électrique, propulsion", hp:"≈ 154 ch", fact:"Rétroviseurs-caméras et design néo-rétro : adorée, trop chère, arrêtée." },
   "nissan-pulsar-gtir": { eng:"4 cyl. 2.0 turbo, 4 roues motrices", hp:"≈ 230 ch", fact:"La « Godzilla de poche » homologuée pour le Groupe A." },
   "subaru-svx": { eng:"Flat-6 3.3", hp:"≈ 230 ch", fact:"Ses vitres dans les vitres, dessinées par Giugiaro." },
@@ -1954,7 +2208,7 @@ const INFO = {
   "peugeot-206": { fact:"La Peugeot la plus vendue de l'histoire : près de 10 millions d'exemplaires." },
   "peugeot-307": { fact:"Voiture de l'Année 2002." },
   "audi-a8": { fact:"Première grande série à carrosserie tout aluminium (1994)." },
-  "brabus-rocket": { eng:"V12 biturbo", hp:"≈ 730–900 ch", fact:"362 km/h en 2006 : la berline la plus rapide du monde, radars en deuil." },
+  "brabus-rocket": { eng:"V12 biturbo", hp:"≈ 730–1000 ch", fact:"362 km/h en 2006 : la berline la plus rapide du monde, radars en deuil." },
   "brabus-900-g": { eng:"V8 4.5 biturbo", hp:"≈ 900 ch", fact:"Le Classe G poussé à 900 ch — l'excès comme signature." },
   "mansory-venatus": { eng:"V8 4.0 biturbo", hp:"≈ 900 ch", fact:"L'Urus rhabillé tout carbone : le style Mansory, on adore ou on déteste." },
   "abt-rs6-r": { eng:"V8 4.0 biturbo", hp:"≈ 740 ch", fact:"Le préparateur officiel d'Audi depuis 1896 — d'abord… maréchal-ferrant." },
@@ -2150,7 +2404,9 @@ const VARIANTS = {
      VARIANTS (il les complète), mais AVANT la fonction principale ci-dessous, qui fige
      CARS_BY_ID et TOTAL au démarrage. Placé plus bas, ses ajouts au catalogue arriveraient
      trop tard : les modèles existeraient dans CARS mais resteraient invisibles pour l'app. -->
+<script src="./gm-matcher.js"></script>
 <script src="./gm-specs.js"></script>
+<script src="./gm-compte.js"></script>
 
 <script>
 (() => {
@@ -2424,7 +2680,35 @@ const VARIANTS = {
 
   /* ====================================================== HELPERS RENDU */
   const $ = (s, r=document) => r.querySelector(s);
-  const escapeHtml = (s) => String(s||"").replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
+  /* --- Thème : lecture, barre système, état des boutons ----------------
+     Le thème est DÉJÀ appliqué par le script inline du <head> (avant le
+     premier rendu). Ces fonctions ne font que le refléter dans l'UI. */
+  const themeChoisi = () => { try { return localStorage.getItem("gm-theme") || "dark"; } catch { return "dark"; } };
+  const themeEffectif = () => {
+    const c = themeChoisi();
+    return c === "system"
+      ? (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark")
+      : c;
+  };
+  function majCouleurBarre() {
+    const m = document.querySelector('meta[name="theme-color"]');
+    if (m) m.setAttribute("content", themeEffectif() === "light" ? "#f4f4f5" : "#0b0b0d");
+  }
+  function majBoutonsTheme() {
+    const c = themeChoisi();
+    document.querySelectorAll("[data-theme-set]").forEach(b =>
+      b.classList.toggle("on", b.getAttribute("data-theme-set") === c));
+  }
+  /* En mode « système », l'OS peut basculer pendant que l'app est ouverte
+     (coucher du soleil, bascule manuelle). Sans cet écouteur, la barre
+     système resterait à l'ancienne teinte jusqu'au prochain lancement. */
+  try {
+    window.matchMedia("(prefers-color-scheme: light)")
+      .addEventListener("change", () => { if (themeChoisi() === "system") majCouleurBarre(); });
+  } catch {}
+
+  // `s ?? ""` et non `s || ""` : un 0 (compteur, année) doit s'afficher « 0 », pas disparaître.
+  const escapeHtml = (s) => String(s ?? "").replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
   const fmtDate = (iso) => { try { return new Date(iso).toLocaleDateString("fr-FR",{ day:"2-digit", month:"short", year:"numeric" }); } catch { return ""; } };
   const rColor = (r) => (RARITY[r] || RARITY.courant).color;
 
@@ -2495,7 +2779,7 @@ const VARIANTS = {
     else if (state.tab==="stats") v.innerHTML = subBackHTML("Statistiques & équipage") + viewStats(st) + crewHTML(st);
     else if (state.tab==="trophies") v.innerHTML = subBackHTML("Trophées") + viewTrophies(st);
     else if (state.tab==="settings") v.innerHTML = subBackHTML("Réglages") + viewSettings(st) + extraSettingsHTML();
-    if (state.tab==="settings") { refreshStorageInfo(); markSWCurrent(); }
+    if (state.tab==="settings") { refreshStorageInfo(); markSWCurrent(); majBoutonsTheme(); majCouleurBarre(); }
     window.scrollTo({ top:0 });
   }
 
@@ -2619,7 +2903,7 @@ const VARIANTS = {
         ${rec?.favorite ? `<span class="cfav">${icon("star")}</span>` : ""}
       </div>
       <div class="cmeta">
-        <div class="rr" style="color:${col}">${RARITY[c.r].label}</div>
+        <div class="rr">${RARITY[c.r].label}</div>
         <div class="nm${h?"":" miss"}">${escapeHtml(c.model)}</div>
         <div class="br">${escapeHtml(c.brand)} · ${escapeHtml(c.cat)}</div>
       </div>
@@ -2686,8 +2970,8 @@ const VARIANTS = {
       <div class="section panel">
         <div class="h2" style="margin-bottom:6px">Sauvegarde</div>
         <div class="rows">
-          <div class="srow"><div class="l"><b>Exporter ma collection</b><span>Fichier .json (photos incluses) — ta sauvegarde</span></div><button class="btn" data-act="export">${icon("download","icon")}</button></div>
-          <div class="srow"><div class="l"><b>Importer une sauvegarde</b><span>Restaure depuis un fichier .json</span></div><button class="btn" data-act="import">${icon("upload","icon")}</button></div>
+          <div class="srow"><div class="l"><b>Exporter ma collection</b><span>Fichier .json (photos incluses) — ta sauvegarde</span></div><button class="btn" data-act="export" aria-label="Exporter la sauvegarde">${icon("download","icon")}</button></div>
+          <div class="srow"><div class="l"><b>Importer une sauvegarde</b><span>Restaure depuis un fichier .json</span></div><button class="btn" data-act="import" aria-label="Importer une sauvegarde">${icon("upload","icon")}</button></div>
         </div>
       </div>
 
@@ -2695,7 +2979,12 @@ const VARIANTS = {
         <div class="h2" style="margin-bottom:6px">Application</div>
         <div class="rows">
           ${installRow}
-          <div class="srow"><div class="l"><b>Envoyer un retour</b><span>Bug, idée, ressenti — inclut la version pour que je m'y retrouve</span></div><button class="btn" data-act="feedback">${icon("upload","icon")}</button></div>
+          <div class="srow"><div class="l"><b>Envoyer un retour</b><span>Bug, idée, ressenti — inclut la version pour que je m'y retrouve</span></div><button class="btn" data-act="feedback" aria-label="Envoyer un retour">${icon("upload","icon")}</button></div>
+          <div class="srow"><div class="l"><b>Thème</b><span>Sombre, clair, ou selon ton téléphone</span></div><div class="theme-pick" id="themePick">
+            <button data-theme-set="dark">Sombre</button>
+            <button data-theme-set="light">Clair</button>
+            <button data-theme-set="system">Système</button>
+          </div></div>
           <div class="srow"><div class="l"><b>Stockage utilisé</b><span id="storeInfo">Calcul…</span></div></div>
           <div class="srow"><div class="l"><b>Mode hors-ligne</b><span id="swInfo">Vérification…</span></div></div>
         </div>
@@ -2705,7 +2994,7 @@ const VARIANTS = {
       <div class="section panel">
         <div class="h2" style="margin-bottom:6px">Zone sensible</div>
         <div class="rows">
-          <div class="srow"><div class="l"><b>Réinitialiser le garage</b><span>Efface toutes tes prises et photos. Irréversible.</span></div><button class="btn red ghost" data-act="reset" style="color:var(--red);border-color:var(--red-dk)">${icon("trash","icon")}</button></div>
+          <div class="srow"><div class="l"><b>Réinitialiser le garage</b><span>Efface toutes tes prises et photos. Irréversible.</span></div><button class="btn red ghost" data-act="reset" aria-label="Tout effacer" style="color:var(--red);border-color:var(--red-dk)">${icon("trash","icon")}</button></div>
         </div>
       </div>
 
@@ -2757,29 +3046,81 @@ const VARIANTS = {
   // et « voiture non reconnue » produisaient tous le même silence, rendant tout diagnostic
   // terrain impossible (DT-07).
   let lastAiError = null;
+  /* Nature de l'échec, pour que l'écran de capture dise la BONNE chose (P0 E4d) :
+     'relais' (aucun relais) · 'quota' (429, limite du jour) · 'panne' (relais en
+     erreur ou réponse inattendue) · 'delai' (15 s) · 'horsligne' (injoignable). */
+  let lastAiErrorKind = null;
+  /* Dernier résultat complet du matcher (statut, marge, scores détaillés).
+     identifyCar() ne renvoie que {id, confidence} pour ne rien casser chez
+     ses appelants ; l'interface qui veut distinguer CONFIRME / AMBIGU /
+     AUCUNE_CORRESPONDANCE_SURE lit lastMatch. */
+  let lastMatch = null;
+  /* Accès au module par le global uniquement — jamais par un nom privé.
+     Le piège est documenté dans CLAUDE.md §2.1 : tester `typeof GMMatcher`
+     serait toujours faux depuis ce scope et échouerait EN SILENCE. */
+  function global_GMMatcher() {
+    return (typeof window !== "undefined" && window.GMMatcher && typeof window.GMMatcher.rapprocher === "function")
+      ? window.GMMatcher : null;
+  }
   async function identifyCar(thumbDataUrl) {
-    lastAiError = null;
+    lastAiError = null; lastAiErrorKind = null;
     const url = resolveAiEndpoint();
-    if (!/^https:\/\//.test(url)) { lastAiError = "Aucun relais IA valide — saisie manuelle"; return []; }
+    if (!/^https:\/\//.test(url)) { lastAiError = "Aucun relais IA valide — saisie manuelle"; lastAiErrorKind = "relais"; return []; }
     try {
       const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 15000);
+      /* Compte connecté → quota du compte au relais (plus large que l'anonyme).
+         Le jeton ne part QUE vers le relais officiel : un relais personnalisé
+         (Réglages) est un serveur tiers, il ne doit jamais le recevoir. */
+      const auth = (url === AI_ENDPOINT_DEFAULT && window.GMCompte && typeof window.GMCompte.enteteAuth === "function") ? window.GMCompte.enteteAuth() : {};
+      const envoyer = (h) => fetch(url, { method:"POST", headers:{ "Content-Type":"application/json", ...h }, body:JSON.stringify({ image: thumbDataUrl }), signal:ctl.signal });
       let res;
-      try { res = await fetch(url, { method:"POST", headers:{ "Content-Type":"application/json" }, body:JSON.stringify({ image: thumbDataUrl }), signal:ctl.signal }); }
+      try {
+        try { res = await envoyer(auth); }
+        catch (err) {
+          // Un relais pas encore mis à jour refuse l'en-tête Authorization au pré-vol :
+          // on réessaie en anonyme plutôt que de priver la capture de reconnaissance.
+          if (!auth.Authorization || (err && err.name === "AbortError")) throw err;
+          res = await envoyer({});
+        }
+      }
       finally { clearTimeout(t); }
-      if (!res.ok) { lastAiError = `Relais IA indisponible (HTTP ${res.status})`; return []; }
+      if (!res.ok) {
+        let msg = ""; try { msg = String((await res.json()).error || "").slice(0, 200); } catch {}
+        lastAiError = (res.status === 429 && msg) ? msg : `Relais IA indisponible (HTTP ${res.status})`;
+        lastAiErrorKind = res.status === 429 ? "quota" : "panne";
+        return [];
+      }
       const guesses = await res.json();
-      if (!Array.isArray(guesses)) { lastAiError = "Réponse du relais IA inattendue"; return []; }
+      if (!Array.isArray(guesses)) { lastAiError = "Réponse du relais IA inattendue"; lastAiErrorKind = "panne"; return []; }
+      /* Rapprochement délégué à gm-matcher.js quand il est là : il sépare
+         aiConfidence / catalogScore / finalConfidence et expose la marge
+         entre les deux premiers candidats, ce que matchCatalog() ne sait
+         pas faire.
+
+         Le repli sur matchCatalog() n'est pas de la prudence décorative :
+         les modules gm-*.js sont servis RÉSEAU-D'ABORD (voir FRAIS dans
+         sw.js), donc au tout premier lancement hors ligne, ou si le réseau
+         lâche, gm-matcher.js peut ne pas être chargé au moment de la
+         capture. Sans repli, photographier une voiture ne renverrait rien
+         du tout — et l'app resterait muette sur la raison. */
+      if (global_GMMatcher()) {
+        const res = global_GMMatcher().rapprocher(guesses, { catalogue: [...CARS, ...customCars()] });
+        lastMatch = res;
+        return res.candidats.map(c => ({ id: c.id, confidence: c.finalConfidence }));
+      }
       const matched = new Map();
       for (const g of guesses) {
         if (!g || (!g.brand && !g.model)) continue;
         const m = matchCatalog(g.brand, g.model, typeof g.confidence==="number" ? g.confidence : 0.6);
         if (m && (!matched.has(m.id) || matched.get(m.id) < m.confidence)) matched.set(m.id, m.confidence);
       }
+      lastMatch = null;
       return [...matched.entries()].map(([id,confidence]) => ({ id, confidence })).sort((a,b) => b.confidence-a.confidence).slice(0,3);
     } catch (e) {
       lastAiError = (e && e.name === "AbortError")
         ? "Relais IA : délai dépassé (15 s)"
         : "Relais IA injoignable — hors ligne ?";
+      lastAiErrorKind = (e && e.name === "AbortError") ? "delai" : "horsligne";
       return [];
     }
   }
@@ -2796,6 +3137,69 @@ const VARIANTS = {
   /* ---------- Capture (caméra + galerie) ---------- */
   let stream = null, draft = null;
   function stopCamera() { if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; } }
+
+  /* ---- Parcours P0 « capture → révélation » (design/SPEC-P0-*.md) ----
+     Textes réunis ici pour le futur chantier i18n (I18N.md). L'app parle à la
+     première personne quand elle hésite (décision du propriétaire, 30/09). */
+  const TXT_P0 = {
+    analyseK: "Analyse en cours", analyseT: "J'essaie d'identifier cette voiture…", analyseD: "Jusqu'à 15 s",
+    manuel: "Choisir manuellement", nonClasse: "Voiture introuvable → Non classé",
+    trouveK: "Modèle trouvé", confiance: "Confiance de reconnaissance", oui: "Oui, c'est elle", non: "Ce n'est pas mon véhicule",
+    ambiguT: "J'hésite entre plusieurs modèles", ambiguS: "Vérifie celui qui correspond à ta voiture.", aucunDeCes: "Aucun de ces modèles",
+    faibleT: "Je ne suis pas sûr", faibleS: "Voici les pistes que j'ai trouvées.",
+    aucuneT: "Je n'ai pas trouvé de correspondance sûre", aucuneS: "Tu peux choisir la voiture manuellement.",
+    erreurs: {
+      horsligne: ["Tu es hors ligne", "Choisis la voiture manuellement."],
+      delai: ["L'analyse a pris trop de temps", "Choisis la voiture manuellement."],
+      quota: ["La reconnaissance n'est plus disponible aujourd'hui", "Choisis la voiture à la main, ou reviens demain."],
+      relais: ["Reconnaissance indisponible", "Choisis la voiture manuellement."],
+      panne: ["Reconnaissance indisponible", "Choisis la voiture manuellement."],
+    },
+    nouvelle: "Nouvelle capture", toucher: "Toucher pour continuer",
+    debloqueT: "Ce que ça débloque", plusUn: "+1 voiture au garage", voirFiche: "Voir la fiche",
+    majT: "Fiche mise à jour", majPriseT: "Prise mise à jour", majS: "Ta prise a été ajoutée à sa fiche.", photoAjoutee: "Photo ajoutée",
+    lotT: "Lot terminé", terminer: "Terminer",
+  };
+  /* Jeton global de l'analyse en cours : un résultat qui arrive APRÈS que le
+     joueur a choisi à la main, repris une photo, fermé la feuille ou ouvert une
+     autre capture est ignoré — il n'écrase jamais un choix (SPEC-P0-ARBITRAGES P1). */
+  let p0Jeton = 0;
+  const palierRarete = (r) => { const k = (RARITY[r] || RARITY.courant).rank; return k >= RARITY.epique.rank ? 3 : k >= RARITY.peucommun.rank ? 2 : 1; };
+  const nomVoiture = (c) => `${c.c} ${escapeHtml(c.brand)} ${escapeHtml(c.model)}`;
+  const lotHTML = () => draft && draft.lot ? `<p class="p0-lot">Photo ${draft.lot.index} / ${draft.lot.total}</p>` : "";
+
+  function p0ResultatHTML() {
+    const r = draft.resultat, T = TXT_P0;
+    const cand = (x) => `<button class="p0-cand" data-cap="choix" data-id="${escapeHtml(x.id)}"><span><b>${nomVoiture(CARS_BY_ID[x.id])}</b></span><span class="pc">${Math.round(x.confidence * 100)} %</span></button>`;
+    const manuel = (principal) => `<button class="btn${principal ? " red" : ""}" data-cap="manuel"${principal ? "" : ""}>${T.manuel}</button>`;
+    const nonClasse = `<button class="p0-lien" data-cap="nonclasse">${T.nonClasse}</button>`;
+    if (r.type === "confirme") {
+      const x = r.cands[0];
+      return `<div class="p0-etat"><div class="p0-k">${T.trouveK}</div><div class="p0-t">${nomVoiture(CARS_BY_ID[x.id])}</div><div class="p0-s">${T.confiance} : ${Math.round(x.confidence * 100)} %</div></div>
+        <div class="p0-actions"><button class="btn red" data-cap="choix" data-id="${escapeHtml(x.id)}">${icon("check","icon")}&nbsp; ${T.oui}</button><button class="btn" data-cap="manuel">${T.non}</button></div>`;
+    }
+    if (r.type === "ambigu") {
+      const ecart = typeof r.marge === "number" ? Math.round(r.marge * 100) : null;
+      return `<div class="p0-etat"><div class="p0-t">${T.ambiguT}</div><div class="p0-s">${T.ambiguS}</div></div>
+        <div class="p0-cands">${r.cands.map(cand).join("")}</div>
+        ${ecart !== null ? `<p class="p0-d" style="text-align:center">Écart : ${ecart} point${ecart > 1 ? "s" : ""}</p>` : ""}
+        <button class="p0-lien" data-cap="manuel">${T.aucunDeCes}</button>`;
+    }
+    if (r.type === "faible") {
+      return `<div class="p0-etat"><div class="p0-t">${T.faibleT}</div><div class="p0-s">${T.faibleS}</div></div>
+        <div class="p0-cands">${r.cands.map(cand).join("")}</div>
+        <div class="p0-actions">${manuel(false)}</div>${nonClasse}`;
+    }
+    if (r.type === "aucune") {
+      return `<div class="p0-etat"><div class="p0-t">${T.aucuneT}</div><div class="p0-s">${T.aucuneS}</div></div>
+        <div class="p0-actions">${manuel(true)}</div>${nonClasse}`;
+    }
+    // Erreur : le quota affiche le message PRÉCIS du relais (appareil ou service entier).
+    const [titre, texte] = T.erreurs[r.erreur] || T.erreurs.panne;
+    const detail = r.erreur === "quota" && r.message ? r.message : texte;
+    return `<div class="p0-etat"><div class="p0-k">Reconnaissance</div><div class="p0-t">${titre}</div><div class="p0-s">${escapeHtml(detail)}</div></div>
+      <div class="p0-actions">${manuel(true)}</div>`;
+  }
 
   function openCapture(lockCarId) {
     const rec = lockCarId ? state.spots.get(lockCarId) : null;
@@ -2817,7 +3221,7 @@ const VARIANTS = {
   function renderCapture() {
     const title = draft.lockCar ? "Ajouter une photo" : "Enregistrer une prise";
     openSheet(`
-      <div class="sh-head"><h3>${title}</h3><button class="iconbtn" data-close="1">${icon("x")}</button></div>
+      <div class="sh-head"><h3>${title}</h3><button class="iconbtn" data-close="1" aria-label="Fermer">${icon("x")}</button></div>
       <div class="sh-body" id="capBody"></div>
     `);
     renderCaptureBody();
@@ -2827,14 +3231,28 @@ const VARIANTS = {
     const body = $("#capBody");
     if (draft.step === "source") {
       body.innerHTML = `
-        <div class="src-grid">
-          <button class="src" data-cap="camera">${icon("camera")}<small>Appareil photo</small></button>
-          <button class="src" data-cap="gallery">${icon("image")}<small>Importer une photo</small></button>
+        <div class="src-list">
+          <button class="src-row" data-cap="camera">${icon("camera")}<span><b>Appareil photo</b><small>Prendre une photo</small></span></button>
+          <button class="src-row" data-cap="gallery">${icon("image")}<span><b>Importer une photo</b><small>Choisir une photo</small></span></button>
+          ${draft.lockCar ? "" : `<button class="src-row" data-cap="batch">${icon("image")}<span><b>Importer un lot</b><small>Choisir plusieurs photos</small></span></button>`}
         </div>
-        <button class="btn" data-cap="batch" style="width:100%;margin-top:10px">${icon("image","icon")}&nbsp; Importer un lot (plusieurs photos)</button>
-        <p class="dim" style="font-size:12px;margin-top:14px;text-align:center;font-family:var(--mono)">L'appareil photo capture en direct · l'import sert aux voitures déjà photographiées · le lot enchaîne toute ta galerie (Monaco, Prenois…)</p>
         <input type="file" id="fileInput" accept="image/*" style="display:none" />
       `;
+    } else if (draft.step === "analyse") {
+      // E3 : la photo, et l'annonce claire que l'analyse tourne (plus de formulaire prématuré).
+      body.innerHTML = `
+        ${lotHTML()}
+        <div class="p0-ph grande"><img src="${draft.photo}" alt="Ta photo" /></div>
+        <div class="p0-etat" role="status" aria-live="polite">
+          <div class="p0-k">${TXT_P0.analyseK}</div>
+          <div class="p0-s" style="font-size:15px;color:var(--txt)">${TXT_P0.analyseT}</div>
+          <div class="p0-barre" aria-hidden="true"><i></i></div>
+          <div class="p0-d">${TXT_P0.analyseD}</div>
+        </div>
+        <button class="p0-lien" data-cap="manuel">${TXT_P0.manuel}</button>
+      `;
+    } else if (draft.step === "resultat") {
+      body.innerHTML = `${lotHTML()}<div class="p0-ph"><img src="${draft.photo}" alt="Ta photo" /></div><div role="status" aria-live="polite">${p0ResultatHTML()}</div>`;
     } else if (draft.step === "camera") {
       body.innerHTML = `
         <div class="cam" id="camWrap">
@@ -2851,11 +3269,12 @@ const VARIANTS = {
         ? `<div class="spec" style="margin-top:4px"><dt>Modèle</dt><dd>${CARS_BY_ID[draft.lockCar].c} ${escapeHtml(CARS_BY_ID[draft.lockCar].brand)} ${escapeHtml(CARS_BY_ID[draft.lockCar].model)}</dd></div>`
         : modelPickerHTML();
       body.innerHTML = `
+        ${lotHTML()}
         <div class="preview">
           <img src="${draft.photo}" alt="prise" />
           <div class="re">
-            <button data-cap="camera">${icon("camera","icon")}</button>
-            <button data-cap="gallery">${icon("image","icon")}</button>
+            <button data-cap="camera" aria-label="Prendre une photo">${icon("camera","icon")}</button>
+            <button data-cap="gallery" aria-label="Choisir dans la galerie">${icon("image","icon")}</button>
           </div>
         </div>
         <input type="file" id="fileInput" accept="image/*" style="display:none" />
@@ -2928,7 +3347,7 @@ const VARIANTS = {
   }
   function modelPickerHTML() {
     return `
-      <div class="search">${icon("search")}<input id="pickQ" placeholder="Quel modèle ?" value="${escapeHtml(draft.q)}" /></div>
+      <div class="search">${icon("search")}<input id="pickQ" placeholder="Rechercher une voiture" value="${escapeHtml(draft.q)}" /></div>
       <div class="picklist" id="pickList">${pickItemsHTML()}</div>
       <div id="customZone">${customZoneHTML()}</div>`;
   }
@@ -2940,8 +3359,9 @@ const VARIANTS = {
       video.srcObject = stream;
       await video.play().catch(()=>{});
     } catch (e) {
-      if (wrap) wrap.innerHTML = `<div class="err">${icon("camera","icon")}<div>Accès à l'appareil photo indisponible.<br>Autorise la caméra, ou utilise l'import galerie.</div>
-        <button class="btn" data-cap="gallery">${icon("image","icon")}&nbsp; Importer une photo</button></div>`;
+      if (wrap) wrap.innerHTML = `<div class="err">${icon("camera","icon")}<div><b style="color:var(--txt)">Accès à l'appareil photo refusé</b><br>Autorise l'accès à l'appareil photo dans les réglages de ton téléphone.</div>
+        <button class="btn red" data-cap="gallery">${icon("image","icon")}&nbsp; Importer une photo</button>
+        <button class="btn" data-cap="source">Retour</button></div>`;
     }
   }
 
@@ -2955,46 +3375,29 @@ const VARIANTS = {
     await afterPhoto();
   }
 
+  /* E3 → E4 : on n'affiche plus le formulaire pendant que la reconnaissance
+     tourne. Le résultat du matcher choisit l'écran — sûr, ambigu, pistes
+     faibles, rien, ou une erreur NOMMÉE — au lieu d'une popup unique qui
+     présentait une hésitation comme une certitude et restait muette sur
+     « rien trouvé » (design/CARTE-ECRANS.md §8). */
   async function afterPhoto() {
-    draft.candidates = [];
-    draft.step = "form";
-    renderCaptureBody();
-    if (draft.lockCar) return; // voiture déjà verrouillée (ajout de photo depuis une fiche) : pas de reconnaissance
-    try {
-      const cands = await identifyCar(draft.photo);
-      const valid = cands.filter(c => CARS_BY_ID[c.id] && !CARS_BY_ID[c.id].custom);
-      if (valid.length) showRecogPopup(valid[0]);
-      else if (lastAiError) toast(lastAiError); // silence volontaire si le relais a répondu sans trouver
-    } catch {}
-  }
-
-  /* ---------- Popup de reconnaissance photo ---------- */
-  function showRecogPopup(cand) {
-    const c = CARS_BY_ID[cand.id]; if (!c) return;
-    const pct = typeof cand.confidence === "number" ? Math.round(cand.confidence * (cand.confidence <= 1 ? 100 : 1)) : null;
-    const w = document.createElement("div");
-    w.id = "recogWrap";
-    w.innerHTML = `
-      <div class="rc-card">
-        <div class="rc-k">${icon("search","icon")} Modèle trouvé</div>
-        <div class="rc-name">${c.c} ${escapeHtml(c.brand)} ${escapeHtml(c.model)}</div>
-        ${pct!==null ? `<div class="rc-conf">Confiance de reconnaissance : ${pct}%</div>` : ""}
-        <div class="rc-actions">
-          <button class="btn red" data-recog="yes">${icon("check","icon")}&nbsp; Oui, c'est elle</button>
-          <button class="btn" data-recog="no">Ce n'est pas mon véhicule</button>
-        </div>
-      </div>`;
-    document.body.appendChild(w);
-    w.addEventListener("click", (e) => {
-      if (e.target !== w && !e.target.closest("[data-recog]")) return;
-      const act = e.target.closest("[data-recog]")?.dataset.recog;
-      if (act === "yes") { draft.carId = cand.id; draft.candidates = [cand.id]; }
-      // "no" ou clic hors carte : on laisse le champ de recherche du formulaire ouvert pour une saisie manuelle
-      w.remove();
-      renderCaptureBody();
-      if (act === "yes") { const el = document.querySelector(`[data-pick="${cand.id}"]`); if (el) el.scrollIntoView({block:"nearest"}); }
-      else { const q = $("#pickQ"); if (q) q.focus(); }
-    });
+    draft.candidates = []; draft.resultat = null;
+    // Photo ajoutée depuis une fiche, ou modèle déjà choisi (photo reprise) : rien à identifier.
+    if (draft.lockCar || draft.carId) { draft.step = "form"; renderCaptureBody(); return; }
+    const jeton = draft.jeton = ++p0Jeton;
+    draft.step = "analyse"; renderCaptureBody();
+    let cands = [];
+    try { cands = await identifyCar(draft.photo); } catch {}
+    if (!draft || draft.jeton !== jeton || draft.step !== "analyse" || !$("#capBody")) return;   // résultat tardif : ignoré
+    const valid = cands.filter(c => CARS_BY_ID[c.id] && !CARS_BY_ID[c.id].custom).slice(0, 3);
+    draft.candidates = valid.map(c => c.id);
+    let type;
+    if (lastAiErrorKind) type = "erreur";
+    else if (lastMatch) type = lastMatch.statut === "CONFIRME" ? "confirme" : lastMatch.statut === "AMBIGU" ? "ambigu" : "faible";
+    else type = "confirme";   // repli matchCatalog (gm-matcher.js absent) : pas de statut, on propose le meilleur
+    if (type !== "erreur" && !valid.length) type = "aucune";
+    draft.resultat = { type, cands: valid, marge: lastMatch ? lastMatch.marge : null, erreur: lastAiErrorKind, message: lastAiError };
+    draft.step = "resultat"; renderCaptureBody();
   }
 
   async function handleFile(file) {
@@ -3003,11 +3406,51 @@ const VARIANTS = {
     catch { toast("Image illisible"); }
   }
 
+  /* ---- Limites de photos (demande du propriétaire, 29/09) ----
+     Plus une voiture est rare, plus on garde d'images : une Ferrari F40 croisée
+     une fois dans sa vie mérite une série, une citadine trois clichés.
+     Taille : une photo de l'app pèse ≈ 330 Ko (1 280 px, mesuré) ; au-delà du
+     plafond, on la recompresse plutôt que de la refuser. */
+  const PHOTOS_PAR_RARETE = { courant:3, commun:5, peucommun:8, rare:12, epique:20, legendaire:30 };
+  const MAX_OCTETS_PHOTO = 1.5 * 1024 * 1024;
+  const plafondPhotos = (carId) => PHOTOS_PAR_RARETE[CARS_BY_ID[carId]?.r] || PHOTOS_PAR_RARETE.commun;
+  const octetsDataUrl = (d) => Math.floor((String(d).length - String(d).indexOf(",") - 1) * 3 / 4);
+  async function reduirePhoto(dataUrl) {
+    try {
+      const blob = await (await fetch(dataUrl)).blob();
+      for (const q of [0.82, 0.7, 0.55]) { const d = await toThumb(blob, 1280, q); if (octetsDataUrl(d) <= MAX_OCTETS_PHOTO) return d; }
+    } catch {}
+    return null;
+  }
+  /* Photos d'avant la compression (versions de juillet) : ramenées au format
+     actuel UNE fois, sur l'appareil, avant la sauvegarde cloud — le serveur
+     n'accepte plus que 2 Mo par photo. La nouvelle version remplace l'ancienne
+     localement, pour que tous les appareils partagent la même photo. */
+  async function normaliserPhotos() {
+    let n = 0;
+    for (const rec of state.spots.values()) {
+      if (!(rec.photos || []).some(p => octetsDataUrl(p) > MAX_OCTETS_PHOTO)) continue;
+      const photos = [];
+      for (const p of rec.photos) { const r = octetsDataUrl(p) > MAX_OCTETS_PHOTO ? await reduirePhoto(p) : null; if (r) n++; photos.push(r || p); }
+      rec.photos = photos; await Store.put(rec);
+    }
+    return n;
+  }
+
   async function saveDraft() {
     if (!draft.carId) return;
     const id = draft.carId;
     const prev = state.spots.get(id);
     const photos = prev ? [...(prev.photos||[])] : [];
+    let refus = "";
+    if (draft.photo && octetsDataUrl(draft.photo) > MAX_OCTETS_PHOTO) {
+      draft.photo = await reduirePhoto(draft.photo);
+      if (!draft.photo) refus = "Photo trop lourde, même recompressée : prise enregistrée sans elle";
+    }
+    if (draft.photo && photos.length >= plafondPhotos(id)) {
+      refus = `Limite de ${plafondPhotos(id)} photos pour une voiture ${(RARITY[CARS_BY_ID[id]?.r]?.label || "").toLowerCase()} : prise enregistrée sans la nouvelle photo`;
+      draft.photo = null;   // les photos existantes au-delà du plafond (anciennes versions) sont conservées
+    }
     if (draft.photo) { if (draft.lockCar) photos.push(draft.photo); else photos.unshift(draft.photo); }
     const rec = {
       carId: id,
@@ -3019,25 +3462,35 @@ const VARIANTS = {
       cover: prev ? (prev.cover||0) : 0,
       variants: (draft.variantsFor === id && draft.variants) ? [...draft.variants] : (prev?.variants || []),
       favorite: prev?.favorite || false,
+      maj: new Date().toISOString(),   // horodatage de modification : arbitre des fusions entre appareils
     };
     await Store.put(rec);
     state.spots.set(id, rec);
+    if (META.supprimes && META.supprimes[id]) { delete META.supprimes[id]; await saveMeta(); } // recapturée après un retrait
     state.flash = id;
     const isNew = !prev;
 
-    // Import par lot : on enchaîne sans fermer
+    if (draft.lot) { if (isNew) draft.lot.nouvelles.push(id); else draft.lot.majs++; }
+
+    // Import par lot : on enchaîne sans fermer. Révélation COMPACTE, non bloquante
+    // (décision du 30/09) : un lot de 30 photos ne doit pas coûter 30 écrans à toucher.
     if (draft.queue && draft.queue.length) {
       const f = draft.queue.shift();
-      draft.carId = null; draft.photo = null; draft.note = ""; draft.candidates = []; draft.q = "";
-      toast(`${CARS_BY_ID[id].model} ajoutée ✓ · reste ${draft.queue.length + 1}`);
+      draft.carId = null; draft.photo = null; draft.note = ""; draft.candidates = []; draft.q = ""; draft.resultat = null; draft.showCustom = false;
+      if (draft.lot) draft.lot.index++;
+      if (isNew) flashCapture(id); else toast(refus || `${CARS_BY_ID[id].model} : ${TXT_P0.majT.toLowerCase()}`);
       await handleFile(f);
       checkMissions();
       return;
     }
 
+    const lot = draft.lot, verrou = draft.lockCar;
     closeOverlay();
     render();
-    if (isNew) showReveal(id); else toast("Fiche mise à jour");
+    if (lot) showBilanLot(lot);                                              // fin de lot : un seul bilan
+    else if (verrou && !refus) { openDetail(id); toast(TXT_P0.photoAjoutee); } // photo ajoutée depuis la fiche : on y revient
+    else if (isNew) showReveal(id);                                          // E6 puis E7
+    else showMaj(id, refus);                                                 // E8
     checkMissions();
     setTimeout(() => { if (state.flash === id) { state.flash = null; render(); } }, 1500); // sinon la classe .flash restait collée (DT-18)
   }
@@ -3047,7 +3500,7 @@ const VARIANTS = {
     const col = rColor(c.r), ph = cover(rec);
     const strip = rec.photos.length
       ? `<div class="thumbstrip">${rec.photos.map((p,i) => `<button class="ts${(rec.cover||0)===i?" cover":""}" data-setcover="${i}"><img src="${p}" /></button>`).join("")}
-          <button class="add" data-addphoto="1">${icon("plus","icon")}</button></div>`
+          <button class="add" data-addphoto="1" aria-label="Ajouter une photo">${icon("plus","icon")}</button></div>`
       : "";
     const mapLink = rec.coords ? `<a class="spec" href="https://maps.google.com/?q=${rec.coords.lat},${rec.coords.lng}" target="_blank" rel="noopener" style="text-decoration:none"><dt>Position</dt><dd>${icon("map","icon")} Ouvrir dans Maps</dd></a>` : "";
     const meta = (rec.at || rec.loc || rec.coords)
@@ -3059,12 +3512,11 @@ const VARIANTS = {
     return `
       <div class="detail-hero" style="border-radius:12px;overflow:hidden">
         ${ph ? `<img src="${ph}" />` : `<svg viewBox="0 0 24 24" class="icon" style="width:64px;height:64px;color:${col}">${P.car}</svg>`}
-        <span class="chip" style="position:absolute;left:12px;top:12px;background:${col}22;color:${col}"><span style="width:8px;height:8px;border-radius:50%;background:${col}"></span>${RARITY[c.r].label}</span>
-      </div>
+        <span class="chip" style="position:absolute;left:12px;top:12px;background:rgba(9,9,11,.62);border:1px solid ${col}44;color:var(--muted);backdrop-filter:blur(6px)"><span style="width:8px;height:8px;border-radius:50%;background:${col};box-shadow:0 0 8px ${col}88"></span>${RARITY[c.r].label}</span>      </div>
       ${strip}
       <div class="detail-title"><div><h2>${escapeHtml(c.model)}</h2><p class="muted">${c.c} ${escapeHtml(c.brand)}</p></div>
         <div style="display:flex;align-items:center;gap:8px">
-          <button class="fav-toggle${rec.favorite?" on":""}" data-favtoggle="${c.id}" title="${rec.favorite?"Retirer des favoris":"Marquer comme trouvaille favorite"}">${icon("star","icon")}</button>
+          <button class="fav-toggle${rec.favorite?" on":""}" data-favtoggle="${c.id}" title="${rec.favorite?"Retirer des favoris":"Marquer comme trouvaille favorite"}" aria-label="${rec.favorite?"Retirer des favoris":"Marquer comme trouvaille favorite"}" aria-pressed="${rec.favorite?"true":"false"}">${icon("star","icon")}</button>
           <span class="pts">+${RARITY[c.r].pts} pts</span>
         </div>
       </div>
@@ -3077,19 +3529,30 @@ const VARIANTS = {
       </div>` : ""}
       <div style="display:flex;gap:10px;margin-top:14px">
         <button class="btn" data-addphoto="1" style="flex:1">${icon("camera","icon")}&nbsp; Ajouter une photo</button>
-        <button class="btn ghost" data-act="sharecard" title="Partager la carte">${icon("star","icon")}</button>
-        <button class="btn ghost" data-release="${c.id}" style="color:var(--red);border-color:var(--red-dk)">${icon("trash","icon")}</button>
+        <button class="btn ghost" data-act="sharecard" title="Partager la carte" aria-label="Partager la carte">${icon("star","icon")}</button>
+        <button class="btn ghost btn-danger" data-release="${c.id}" aria-label="Retirer du garage">${icon("trash","icon")}</button>
       </div>`;
   }
 
   function infoPageHTML(c, rec, h) {
     const col = rColor(c.r);
-    const motoData = (typeof MOTOR_SPECS !== "undefined") ? MOTOR_SPECS[c.id] : null;
     let info = INFO[c.id] || {};
     let motoHTML = "";
 
+    /* Données techniques : UNIQUEMENT via le contrat public
+       window.GMSpecs.fichePourInterface(). L'ancien code lisait
+       `MOTOR_SPECS` directement — or ce nom est privé à la clôture de
+       l'IIFE de gm-specs.js : la garde `typeof MOTOR_SPECS !== "undefined"`
+       était donc TOUJOURS fausse et le sélecteur ne s'affichait jamais,
+       sans la moindre erreur JS (CLAUDE.md §2.1). */
+    const sel = (state.motoSel && state.motoSel[c.id]) || {};
+    const GS = (typeof window !== "undefined" && window.GMSpecs
+                && typeof window.GMSpecs.fichePourInterface === "function") ? window.GMSpecs : null;
+    const fiche = GS ? GS.fichePourInterface(c.id, { typeId: sel.type, variantId: sel.variantId }) : null;
+    const motoData = (fiche && fiche.motorisations && fiche.motorisations.length)
+      ? { types: fiche.motorisations } : null;
+
     if (motoData) {
-      const sel = state.motoSel[c.id] || {};
       const type = motoData.types.find(t => t.id === sel.type) || motoData.types[0];
       const variant = type.variants.find(v => v.id === sel.variantId) || type.variants[0];
 
@@ -3097,8 +3560,14 @@ const VARIANTS = {
       // (rows plus bas) n'a rien à savoir de MOTOR_SPECS.
       info = { ...info, eng: `${variant.label} · ${variant.arch}`, hp: `${variant.ch} ch` };
 
+      /* [data-moto-actif] est le CONTRAT avec gm-specs.js (CLAUDE.md §3) :
+         sans ce marqueur, varianteActive() renvoie null et la fiche greffée
+         affiche les chiffres du modèle de base quelle que soit la
+         motorisation choisie — le bug « Giulia Diesel au couple de la 2.0
+         essence ». Il était posé dans index-1.html et n'avait jamais été
+         reporté ici. */
       motoHTML = `
-        <div class="moto-select" style="margin-top:16px">
+        <div class="moto-select" style="margin-top:16px" data-moto-actif="${escapeHtml(type.id)}|${escapeHtml(variant.id)}">
           <div class="h3" style="margin-bottom:8px">Motorisation</div>
           <div style="display:flex;gap:6px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:3px">
             ${motoData.types.map(t => `<button data-moto-type="${c.id}|${t.id}" style="flex:1;padding:9px 0;border-radius:7px;font:600 12px/1 var(--sans);border:none;background:${t.id===type.id?"var(--red2)":"transparent"};color:${t.id===type.id?"#fff":"var(--muted2)"}">${escapeHtml(t.label)}</button>`).join("")}
@@ -3134,50 +3603,34 @@ const VARIANTS = {
       : (desc ? `<div class="fact"><p>${escapeHtml(desc)}</p></div>` : "");
     const catLine = (info.fact && desc) ? `<p class="cat-desc">${escapeHtml(desc)}</p>` : "";
 
-    // Générations & motorisations — lecture seule de GENS (texte libre, non lié à MOTOR_SPECS).
-    // N'existait dans aucun rendu avant ce patch : gm-specs.js était chargé mais jamais consommé.
-    let gensHTML = "";
-    if (typeof GENS !== "undefined") {
-      const cle = (typeof MAP !== "undefined" && MAP[c.id]) || c.id;
-      const gens = GENS[cle];
-      if (gens && gens.length) {
-        const genCard = (titre, sousTitre, corps) => `
-          <div style="border:1px solid var(--line);background:var(--panel2);border-radius:10px;padding:12px 14px;margin-bottom:8px">
-            <div style="font:600 13px/1.2 var(--sans);color:#fff">${escapeHtml(titre)} <span style="color:var(--muted2);font-weight:400">· ${escapeHtml(sousTitre)}</span></div>
-            ${corps}
-          </div>`;
-        const cartesGen = gens.map(g => {
-          if (Array.isArray(g)) {
-            const [code, annees, meca, puiss, note] = g;
-            return genCard(code, annees, `
-              <div style="font:400 12px/1.3 var(--sans);color:var(--muted2);margin-top:3px">${escapeHtml(meca)} · ${escapeHtml(puiss)}</div>
-              ${note ? `<div style="font:400 11.5px/1.4 var(--sans);color:var(--muted2);margin-top:5px">${escapeHtml(note)}</div>` : ""}
-            `);
-          }
-          if (g && Array.isArray(g.m)) {
-            const lignes = g.m.map(mo => `
-              <div style="padding:8px 10px;background:var(--panel);border-radius:8px;margin-top:6px">
-                <div style="font:600 12px/1.2 var(--sans);color:#fff">${escapeHtml(mo[0])}</div>
-                <div style="font:400 11px/1.3 var(--sans);color:var(--muted2);margin-top:2px">${escapeHtml(mo[1])} · ${escapeHtml(mo[2])} · ${escapeHtml(mo[3])}</div>
-              </div>`).join("");
-            return genCard(g.c, g.a, lignes);
-          }
-          return "";
-        }).join("");
-        gensHTML = `<div style="margin-top:16px"><div class="h3" style="margin-bottom:8px">Générations &amp; motorisations</div>${cartesGen}</div>`;
-      }
-    }
+    /* Le bloc « Générations » vivait ici, derrière une garde
+       `typeof GENS !== "undefined"` — toujours fausse depuis index.html,
+       puisque GENS est privé à la clôture de l'IIFE de gm-specs.js
+       (CLAUDE.md §2.1). Il n'a donc JAMAIS rien affiché.
+       Il n'est pas réécrit ici : gm-specs.js greffe déjà ce bloc via
+       blocHTML(), et CLAUDE.md §3 interdit de le dupliquer. */
+
+    /* `.info-head` et son `h2` sont un CONTRAT, pas une mise en forme :
+       gm-specs.js identifie la voiture par `.info-head h2` en QUATRE
+       endroits. Les remplacer par une autre structure fait échouer toute la
+       greffe — en silence, sans erreur JS. Le conteneur `.detail-shell`
+       s'ajoute donc AUTOUR, il ne se substitue à rien.
+
+       `data-verrou` était posé dans index-1.html et n'avait jamais été
+       reporté ici : sans lui, greffer() ne sort pas et masse, couple et
+       ratios fuient sur les voitures non collectées (CLAUDE.md §3). */
     return `
+      <div class="detail-shell" data-car-id="${escapeHtml(c.id)}" data-brand="${escapeHtml(c.brand)}" data-rarity="${escapeHtml(c.r)}"${!h ? ' data-verrou="1"' : ''}>
       <div class="info-head">
-        <span class="chip" style="background:${col}22;color:${col}"><span style="width:8px;height:8px;border-radius:50%;background:${col}"></span>${RARITY[c.r].label}</span>
+        <span class="chip" style="background:${col}12;border:1px solid ${col}33;color:var(--muted)"><span style="width:8px;height:8px;border-radius:50%;background:${col};box-shadow:0 0 8px ${col}88"></span>${RARITY[c.r].label}</span>
         <h2>${escapeHtml(c.brand)} ${escapeHtml(c.model)}</h2>
         <p class="muted">${c.c} ${COUNTRY[c.c]||""} · ${escapeHtml(c.cat)}</p>
       </div>
       ${motoHTML}
       <div class="specs specs-info">${specHTML}</div>
       ${factCard}${catLine}
-      ${gensHTML}
       ${!h ? `<div class="panel" style="margin-top:14px;text-align:center"><p class="dim" style="font:400 13px/1.4 var(--sans);margin:0">Pas encore au garage. Croise-la, prends-la en photo, et enregistre la prise.</p></div>` : ""}
+      </div>
     `;
   }
 
@@ -3191,7 +3644,7 @@ const VARIANTS = {
     const multi = pages.length > 1;
 
     openSheet(`
-      <div class="sh-head"><h3>${escapeHtml(c.model)}</h3><button class="iconbtn" data-close="1">${icon("x")}</button></div>
+      <div class="sh-head"><h3>${escapeHtml(c.model)}</h3><button class="iconbtn" data-close="1" aria-label="Fermer">${icon("x")}</button></div>
       <div class="sh-body" style="padding:0">
         <div class="pager" id="pager">${pages.map(p => `<div class="page">${p}</div>`).join("")}</div>
         ${multi ? `<div class="dots" id="dots">${pages.map((_,i) => `<button class="dot${i===0?" on":""}" data-dot="${i}"></button>`).join("")}</div>
@@ -3207,19 +3660,53 @@ const VARIANTS = {
         const hint = document.querySelector(".swipe-hint"); if (hint) hint.style.opacity = i===0 ? "1" : "0";
       }, { passive:true });
     }
-    if (h) { const t = $("#detNote"); if (t) t.addEventListener("blur", async () => { rec.note = t.value.trim(); await Store.put(rec); }); }
+    if (h) { const t = $("#detNote"); if (t) t.addEventListener("blur", async () => { const n = t.value.trim(); if (n === (rec.note || "")) return; rec.note = n; rec.maj = new Date().toISOString(); await Store.put(rec); }); }
   }
 
-  async function setCover(carId, i) { const rec = state.spots.get(carId); if (!rec) return; rec.cover = i; await Store.put(rec); openDetail(carId); render(); }
+  async function setCover(carId, i) { const rec = state.spots.get(carId); if (!rec) return; rec.cover = i; rec.maj = new Date().toISOString(); await Store.put(rec); openDetail(carId); render(); }
+  /* Supprime UNE photo — appelée par la corbeille posée sur la photo par
+     gm-specs.js (grefferSuppressionPhoto), via window.GMGarage.supprimerPhoto.
+     Avant, gm-specs écrivait lui-même dans IndexedDB : ni `maj`, ni état en
+     mémoire, ni pierre tombale — la photo revenait à la synchronisation.
+     Règle conservée : jamais la DERNIÈRE photo (retirer la voiture est le bon
+     geste). Pierre tombale datée : la fusion cloud ne la fait pas revenir. */
+  async function supprimerPhoto(src, { confirmer = false } = {}) {
+    /* La fiche OUVERTE d'abord : une même image peut figurer dans deux prises
+       (import sur deux voitures) — chercher « la première qui la contient »
+       supprimait la photo d'une autre voiture (défaut de l'ancienne version). */
+    const ouverte = activeDetail && state.spots.get(activeDetail);
+    const rec = ouverte && ouverte.photos.includes(src) ? ouverte
+      : [...state.spots.values()].find(r => Array.isArray(r.photos) && r.photos.includes(src));
+    if (!rec) return { ok: false, raison: "introuvable" };
+    if (rec.photos.length <= 1) return { ok: false, raison: "derniere" };
+    /* Confirmation APRÈS le refus « dernière photo » : on ne demande pas une
+       confirmation pour ensuite refuser. Même boîte que « Retirer du garage ». */
+    if (confirmer && !await askConfirm("Supprimer cette photo ? La voiture reste dans ton garage.", "Supprimer", true)) return { ok: false, raison: "annule" };
+    if (!rec.photos.includes(src)) return { ok: false, raison: "introuvable" };   // modifiée pendant que la boîte était ouverte
+    const i = rec.photos.indexOf(src), couv = rec.cover || 0;
+    const h = await empreintePhoto(src), maintenant = new Date().toISOString();
+    rec.photos.splice(i, 1);
+    rec.cover = Math.max(0, Math.min(rec.photos.length - 1, i <= couv ? couv - 1 : couv));   // même règle que l'ancienne version
+    rec.maj = maintenant;
+    await Store.put(rec);
+    if (h) { META.photosSupprimees = { ...(META.photosSupprimees || {}), [h]: maintenant }; await saveMeta(); }
+    toast("Photo supprimée"); if (activeDetail === rec.carId) openDetail(rec.carId); render();
+    return { ok: true };
+  }
   async function toggleFavorite(carId) {
     const rec = state.spots.get(carId); if (!rec) return;
     rec.favorite = !rec.favorite;
+    rec.maj = new Date().toISOString();
     await Store.put(rec);
     toast(rec.favorite ? "Ajoutée aux trouvailles favorites ★" : "Retirée des favoris");
     openDetail(carId); render();
   }
   async function release(carId) {
     await Store.del(carId); state.spots.delete(carId);
+    /* Pierre tombale datée : exportée avec la sauvegarde cloud, elle retire la
+       voiture des AUTRES appareils à la prochaine synchronisation. Sans elle, la
+       fusion la faisait réapparaître (défaut n°4 de /code-review). */
+    META.supprimes = { ...(META.supprimes || {}), [carId]: new Date().toISOString() }; await saveMeta();
     if (CARS_BY_ID[carId]?.custom) { await deleteCustomCar(carId); delete CARS_BY_ID[carId]; } // une « Non classé » sans prise n'a plus de raison d'exister
     closeOverlay(); toast("Retirée du garage"); render();
   }
@@ -3239,21 +3726,98 @@ const VARIANTS = {
   // Un dataURL importé est injecté tel quel dans 7 attributs src : sans ce filtre, une
   // sauvegarde forgée obtient une exécution de script, persistée en base (DT-02).
   const PHOTO_RE = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2}$/;
+  /* Borne contre un fichier piégé. Elle était de 50, mais la capture n'a aucun
+     plafond : une voiture à 60 photos exportée puis réimportée (ou restaurée du
+     cloud) en perdait 10 en silence. La taille totale reste bornée à l'import. */
+  const MAX_PHOTOS_VOITURE = 500;
   const sanitizePhotos = (arr) => (Array.isArray(arr) ? arr : [])
-    .filter(p => typeof p === "string" && p.length <= 12e6 && PHOTO_RE.test(p));
+    .filter(p => typeof p === "string" && p.length <= 12e6 && PHOTO_RE.test(p))
+    .slice(0, MAX_PHOTOS_VOITURE);
+
+  /* Taille des fichiers importés, vérifiée AVANT lecture : file.text() charge
+     tout en mémoire, et un fichier démesuré figeait puis tuait l'onglet sans
+     message. Plafond de sauvegarde = limite pratique d'une chaîne JavaScript
+     (~512 Mo dans Chrome) : au-delà, la lecture échoue de toute façon. On
+     refuse aussi un fichier plus gros que l'espace libre, qui ne pourrait pas
+     être enregistré. Un profil d'équipage pèse quelques Ko : 1 Mo suffit. */
+  const TAILLE_MAX_SAUVEGARDE = 500 * 1024 * 1024;
+  const TAILLE_MAX_PROFIL = 1024 * 1024;
+  const enMo = (o) => Math.round(o / 1048576).toLocaleString("fr-FR");
+  async function tailleImportRefusee(file, max) {
+    if (file.size > max) return `Fichier trop lourd (${enMo(file.size)} Mo, maximum ${enMo(max)} Mo)`;
+    try {
+      const { usage = 0, quota = 0 } = (await navigator.storage?.estimate?.()) || {};
+      if (quota && file.size > quota - usage) return `Espace insuffisant sur l'appareil pour ce fichier (${enMo(file.size)} Mo)`;
+    } catch {}
+    return null;
+  }
 
   // Une entrée custom dont `r` ou `cat` sort du référentiel fait planter le tri du sélecteur,
   // et l'erreur survit au redémarrage puisqu'elle est persistée avant tout rendu (DT-03).
+  // L'id est injecté tel quel dans data-car="…" (tuiles, sélecteur, carte). Ne
+  // contrôler que le préfixe laissait passer `custom:x" onfocus="…` depuis une
+  // sauvegarde forgée (DT-09). createCustomCar ne produit que [a-z0-9-].
+  const CUSTOM_ID_RE = /^custom:[a-z0-9-]{1,110}$/;
   function sanitizeCustomCar(raw) {
     if (!raw || typeof raw !== "object") return null;
     const id = String(raw.id || "");
-    if (!id.startsWith("custom:") || id.length > 120) return null;
+    if (!CUSTOM_ID_RE.test(id)) return null;
     const brand = String(raw.brand || "").trim().slice(0,40);
     const model = String(raw.model || "").trim().slice(0,50);
     if (!brand || !model) return null;
     return { id, brand, model, yr:String(raw.yr || "").trim().slice(0,20),
              c:"🏳️", cat:"Non classé",
              r: RARITY_ORDER.includes(raw.r) ? raw.r : "commun", custom:true };
+  }
+  /* Équipage, fil et défis (DT-10). Le classement interpole score et nombre de
+     voitures sans échappement, puisque ce sont des nombres ; or la sauvegarde
+     recopiait `friends` tel quel : un fichier forgé y plaçait du HTML, exécuté à
+     l'ouverture de l'onglet et persisté en base. Une valeur de défi non-tableau
+     faisait, elle, planter missionsFor() à chaque rendu. Ces filtres servent à
+     l'import ET au démarrage, pour assainir aussi ce qui a été persisté avant. */
+  const entierBorne = (v) => { const n = Math.floor(Number(v)); return Number.isFinite(n) ? Math.max(0, Math.min(n, 1e7)) : 0; };
+  const isoValide = (v) => (typeof v === "string" && v.length <= 40 && !isNaN(new Date(v).getTime())) ? v : null;
+  function sanitizeFriend(raw) {
+    if (!raw || typeof raw !== "object") return null;
+    const name = String(raw.name ?? "").trim().slice(0,24);
+    if (!name) return null;
+    const legends = (Array.isArray(raw.legends) ? raw.legends : [])
+      .filter(l => l && typeof l.id === "string" && CARS_BY_ID[l.id])
+      .slice(-60).map(l => ({ id:l.id, at:isoValide(l.at) }));
+    return { name, ts:isoValide(raw.ts) || new Date().toISOString(), score:entierBorne(raw.score),
+             count:entierBorne(raw.count), rank:String(raw.rank ?? "").slice(0,24), legends };
+  }
+  const sanitizeFriends = (arr) => (Array.isArray(arr) ? arr : []).map(sanitizeFriend).filter(Boolean).slice(0,50);
+  const sanitizeFeed = (arr) => (Array.isArray(arr) ? arr : [])
+    .filter(ev => ev && typeof ev.id === "string" && CARS_BY_ID[ev.id] && isoValide(ev.at))
+    .map(ev => ({ who:String(ev.who ?? "").slice(0,24), id:ev.id, at:ev.at })).slice(0,50);
+  function sanitizeMissions(raw) {
+    const out = {};
+    if (raw && typeof raw === "object" && !Array.isArray(raw))
+      for (const [k, v] of Object.entries(raw).slice(0,20))
+        if (Array.isArray(v)) out[String(k).slice(0,20)] = v.filter(x => typeof x === "string").slice(0,20);
+    return out;
+  }
+
+  /* Fusion de doublons — contrat avec gm-specs.js (GMSpecs.fusionDe).
+     Un id retiré du catalogue laisse ses prises dans IndexedDB, mais `init`
+     ne charge que les ids connus : sans rattachement, la voiture disparaît
+     de la collection sans message. La prise conservée fait autorité (date,
+     lieu, couverture) ; l'autre lui apporte ses photos, sa note et ses
+     déclinaisons. Idempotent : une photo déjà présente n'est pas redoublée,
+     si bien qu'un `del` raté puis rejoué au démarrage suivant ne duplique rien. */
+  function fusionVers(carId) {
+    const f = window.GMSpecs?.fusionDe?.(carId);
+    return (f && CARS_BY_ID[f.vers]) ? f : null;
+  }
+  function fusionnerPrise(rec, f) {
+    const cible = state.spots.get(f.vers);
+    const variants = [...new Set([...(cible?.variants || []), ...(rec.variants || []), ...(f.declinaison ? [f.declinaison] : [])])];
+    if (!cible) return { ...rec, carId: f.vers, variants };
+    const photos = [...(cible.photos || [])];
+    for (const p of (rec.photos || [])) if (!photos.includes(p)) photos.push(p);
+    const note = (rec.note && !(cible.note || "").includes(rec.note)) ? [cible.note, rec.note].filter(Boolean).join("\n") : cible.note;
+    return { ...cible, photos, note, variants, favorite: !!(cible.favorite || rec.favorite) };
   }
   function sanitizeSpot(rec) {
     if (!rec || typeof rec !== "object" || !CARS_BY_ID[rec.carId]) return null;
@@ -3269,13 +3833,82 @@ const VARIANTS = {
       cover: Math.max(0, Math.min(Number(rec.cover) || 0, Math.max(0, photos.length - 1))),
       variants: (Array.isArray(rec.variants) ? rec.variants : []).filter(v => typeof v === "string").slice(0,20),
       favorite: !!rec.favorite,
+      ...(isoValide(rec.maj) ? { maj: rec.maj } : {}),
     };
   }
 
+  /* ---- Synchronisation entre appareils (défaut n°4 de /code-review) ----
+     Pierres tombales : { carId → date du retrait }. Une prise dont la dernière
+     modification (`maj`) est ANTÉRIEURE au retrait est supprimée partout ;
+     une prise recapturée après (maj plus récent) survit. Dates comparées en
+     nombres, pas en texte. Prise sans `maj` (sauvegarde ancienne) = 0 : le
+     moindre retrait l'emporte. */
+  const tDate = (v) => Date.parse(v) || 0;
+  function sanitizeSupprimes(raw) {
+    const out = {};
+    if (raw && typeof raw === "object" && !Array.isArray(raw))
+      for (const [id, d] of Object.entries(raw).slice(0, 5000))
+        if ((/^[a-z0-9][a-z0-9-]{0,80}$/.test(id) || CUSTOM_ID_RE.test(id)) && isoValide(d)) out[id] = d;
+    return out;
+  }
+  function unirSupprimes(a, b) {
+    const out = { ...a };
+    for (const [id, d] of Object.entries(b)) if (!out[id] || tDate(d) > tDate(out[id])) out[id] = d;
+    return out;
+  }
+  const retireeApres = (prise, supprimes) => !!supprimes[prise.carId] && tDate(prise.maj) <= tDate(supprimes[prise.carId]);
+  /* Pierres tombales de PHOTOS : { empreinte → date de suppression }. Les photos
+     s'additionnent à la fusion : sans elles, une photo supprimée revenait de
+     l'autre appareil. Empreinte = SHA-256 des OCTETS décodés, comme gm-compte.js
+     (le texte base64 d'une même image peut différer). null si le navigateur
+     n'offre pas crypto.subtle (page non sécurisée) : suppression locale seule. */
+  async function empreintePhoto(p) {
+    try {
+      const m = /^data:[^;,]+;base64,(.+)$/.exec(p || ""); if (!m || !crypto.subtle) return null;
+      const bin = atob(m[1]), o = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) o[i] = bin.charCodeAt(i);
+      return [...new Uint8Array(await crypto.subtle.digest("SHA-256", o))].map(b => b.toString(16).padStart(2, "0")).join("");
+    } catch { return null; }
+  }
+  function sanitizePhotosSupprimees(raw) {
+    const out = {};
+    if (raw && typeof raw === "object" && !Array.isArray(raw))
+      for (const [h, d] of Object.entries(raw).filter(([h, d]) => /^[0-9a-f]{64}$/.test(h) && isoValide(d))
+                                               .sort((a, b) => tDate(b[1]) - tDate(a[1])).slice(0, 5000)) out[h] = d;
+    return out;
+  }
+  /* Retire d'une prise les photos portant une pierre tombale ; recale la couverture. */
+  async function sansPhotosSupprimees(rec, tombes) {
+    if (!Object.keys(tombes).length || !rec.photos.length) return 0;
+    const garde = [];
+    for (const p of rec.photos) if (!tombes[await empreintePhoto(p)]) garde.push(p);
+    const n = rec.photos.length - garde.length;
+    if (n) { const couv = rec.photos[rec.cover || 0]; rec.photos = garde; rec.cover = Math.max(0, garde.indexOf(couv)); }
+    return n;
+  }
+  /* Deux versions d'une même prise : la plus récemment modifiée donne note,
+     favori, déclinaisons, lieu, date et couverture ; les photos s'additionnent,
+     SAUF celles supprimées sur l'un des appareils (sansPhotosSupprimees, appliquée
+     par importerDonnees après cette fusion). À égalité, l'appareil fait autorité.
+     Plus de concaténation des notes : une note réécrite remplace l'ancienne. */
+  function fusionnerDistante(locale, distante) {
+    const recente = tDate(distante.maj) > tDate(locale.maj) ? distante : locale;
+    const photos = [...(recente.photos || [])];
+    for (const p of [...(locale.photos || []), ...(distante.photos || [])]) if (!photos.includes(p)) photos.push(p);
+    const garde = photos.slice(0, MAX_PHOTOS_VOITURE);
+    return { ...recente, photos: garde, cover: Math.min(recente.cover || 0, Math.max(0, garde.length - 1)) };
+  }
+
+  /* Données de sauvegarde, sans dialogue : partagées par l'export fichier et la
+     sauvegarde cloud (gm-compte.js, via window.GMGarage), pour qu'elles
+     transportent exactement la même chose.
+     `ai` est exclu : c'est l'URL du relais, donc en pratique son seul contrôle d'accès.
+     Une sauvegarde s'échange par WhatsApp — elle ne doit pas la transporter (DT-14). */
+  function donneesExport() {
+    return { app:"garage-manifest", version:1, exportedAt:new Date().toISOString(), spots:[...state.spots.values()], meta:{ ...META, ai:"" }, custom:{ ...CUSTOM_REG } };
+  }
   async function exportJSON() {
-    // `ai` est exclu : c'est l'URL du relais, donc en pratique son seul contrôle d'accès.
-    // Une sauvegarde s'échange par WhatsApp — elle ne doit pas la transporter (DT-14).
-    const data = { app:"garage-manifest", version:1, exportedAt:new Date().toISOString(), spots:[...state.spots.values()], meta:{ ...META, ai:"" }, custom:{ ...CUSTOM_REG } };
+    const data = donneesExport();
     const blob = new Blob([JSON.stringify(data)], { type:"application/json" });
     const url = URL.createObjectURL(blob), a = document.createElement("a");
     a.href = url; a.download = `garage-manifest-${new Date().toISOString().slice(0,10)}.json`;
@@ -3286,8 +3919,25 @@ const VARIANTS = {
     const inp = document.createElement("input"); inp.type = "file"; inp.accept = "application/json,.json";
     inp.onchange = async () => {
       const file = inp.files?.[0]; if (!file) return;
+      const refus = await tailleImportRefusee(file, TAILLE_MAX_SAUVEGARDE);
+      if (refus) { toast(refus); return; }
       try {
         const data = JSON.parse(await file.text());
+        const { n, rejected } = await importerDonnees(data);
+        toast(`${n} voiture${n>1?"s":""} importée${n>1?"s":""}${rejected?` · ${rejected} entrée${rejected>1?"s":""} rejetée${rejected>1?"s":""}`:""}`);
+        render();
+      } catch { toast("Fichier invalide"); }
+    };
+    inp.click();
+  }
+  /* Import sans dialogue, commun au fichier et au cloud : les mêmes filtres
+     (DT-02, DT-03, DT-09, DT-10) s'appliquent quelle que soit l'origine.
+     `fusion:true` (restauration cloud) : une prise déjà présente sur l'appareil
+     fait AUTORITÉ et reçoit les photos, la note et les déclinaisons de la
+     sauvegarde — la règle de fusionnerPrise(), déjà prouvée par banc-fusions.
+     Sans fusion (fichier), comportement historique : la prise importée remplace. */
+  async function importerDonnees(data, { fusion = false } = {}) {
+    if (!data || typeof data !== "object") throw new Error("donnees-invalides");
         if (data.custom && Array.isArray(data.custom.list)) { // les « Non classé » d'abord, sinon leurs prises seraient rejetées
           for (const raw of data.custom.list) {
             const c = sanitizeCustomCar(raw); if (!c) continue;
@@ -3297,31 +3947,61 @@ const VARIANTS = {
           await Store.put(CUSTOM_REG);
         }
         const spots = Array.isArray(data.spots) ? data.spots : [];
-        let n = 0, rejected = 0;
+        let n = 0, rejected = 0, retirees = 0;
+        // Fusion cloud : les retraits des DEUX appareils s'appliquent aux deux.
+        const supprimes = fusion ? unirSupprimes(sanitizeSupprimes(META.supprimes), sanitizeSupprimes(data.meta && data.meta.supprimes)) : null;
+        const photosSupprimees = fusion ? sanitizePhotosSupprimees(unirSupprimes(sanitizePhotosSupprimees(META.photosSupprimees), sanitizePhotosSupprimees(data.meta && data.meta.photosSupprimees))) : null;
         for (const rec of spots) {
-          const clean = sanitizeSpot(rec);
+          let clean = sanitizeSpot(rec);
+          const f = !clean && rec && typeof rec === "object" ? fusionVers(rec.carId) : null;
+          if (f) { const c2 = sanitizeSpot({ ...rec, carId: f.vers }); if (c2) clean = fusionnerPrise(c2, f); }
           if (!clean) { rejected++; continue; }
+          if (fusion && retireeApres(clean, supprimes)) continue;          // retirée ailleurs, après sa dernière modification
+          if (fusion && state.spots.has(clean.carId)) clean = fusionnerDistante(state.spots.get(clean.carId), clean);
           await Store.put(clean); state.spots.set(clean.carId, clean); n++;
         }
-        toast(`${n} voiture${n>1?"s":""} importée${n>1?"s":""}${rejected?` · ${rejected} entrée${rejected>1?"s":""} rejetée${rejected>1?"s":""}`:""}`);
+        if (fusion) {
+          // Retraits (voitures ET photos) faits sur l'AUTRE appareil : on les applique
+          // ici aussi, sur toutes les prises — celles qu'on vient d'importer comprises.
+          for (const [id, rec] of [...state.spots]) {
+            if (!retireeApres(rec, supprimes)) { if (await sansPhotosSupprimees(rec, photosSupprimees)) await Store.put(rec); continue; }
+            await Store.del(id); state.spots.delete(id); retirees++;
+          }
+          // « Non classé » dont plus aucune prise ne dépend : elles ne réapparaissent pas dans le sélecteur.
+          for (const c of [...CUSTOM_REG.list]) if (supprimes[c.id] && !state.spots.has(c.id)) { await deleteCustomCar(c.id); delete CARS_BY_ID[c.id]; }
+          META = { ...META, supprimes, photosSupprimees };
+          await saveMeta();
+        }
         if (data.meta && typeof data.meta === "object") {
           // `ai` volontairement ignoré : un fichier importé ne doit pas pouvoir rerouter
           // silencieusement les photos vers un serveur tiers.
           const m = data.meta;
-          META = { ...META,
-            bonus:    Number(m.bonus) || META.bonus || 0,
-            missions: (m.missions && typeof m.missions === "object") ? m.missions : META.missions,
-            friends:  Array.isArray(m.friends) ? m.friends : META.friends,
-            feed:     Array.isArray(m.feed) ? m.feed.slice(0,50) : META.feed,
+          if (fusion) {
+            // Deux appareils : on garde le meilleur bonus et on n'écrase ni le nom ni l'équipage locaux.
+            META = { ...META, bonus: Math.max(entierBorne(m.bonus), entierBorne(META.bonus)),
+              missions: Object.keys(META.missions || {}).length ? META.missions : sanitizeMissions(m.missions),
+              friends: META.friends.length ? META.friends : sanitizeFriends(m.friends),
+              feed:    META.feed.length ? META.feed : sanitizeFeed(m.feed),
+              name:    META.name || String(m.name || "").slice(0,24), carId:"__meta__" };
+          } else META = { ...META,
+            bonus:    entierBorne(m.bonus) || META.bonus || 0,
+            missions: (m.missions && typeof m.missions === "object") ? sanitizeMissions(m.missions) : META.missions,
+            friends:  Array.isArray(m.friends) ? sanitizeFriends(m.friends) : META.friends,
+            feed:     Array.isArray(m.feed) ? sanitizeFeed(m.feed) : META.feed,
             name:     String(m.name || META.name || "").slice(0,24),
             carId:"__meta__" };
           await saveMeta();
         }
-        render();
-      } catch { toast("Fichier invalide"); }
-    };
-    inp.click();
+        return { n, rejected, retirees };
   }
+  /* Contrat public pour gm-compte.js (sauvegarde cloud). Seul point d'entrée :
+     le module ne touche jamais à IndexedDB ni à `state` directement. */
+  window.GMGarage = Object.freeze({
+    exporter: () => donneesExport(),
+    importer: async (data, options) => { const r = await importerDonnees(data, options); render(); return r; },
+    normaliserPhotos: () => normaliserPhotos(),
+    supprimerPhoto: (src, options) => supprimerPhoto(src, options),
+  });
   async function resetAll() {
     if (!await askConfirm("Effacer TOUTES tes prises et photos ? Cette action est irréversible.", "Tout effacer", true)) return;
     await Store.clear();
@@ -3511,43 +4191,143 @@ const VARIANTS = {
   }
 
   /* ====================================================== RÉVÉLATION DE CAPTURE */
+  /* E6 — Révélation. Plus de confettis (DESIGN.md §10) : la rareté s'exprime
+     par un halo en trois paliers et par la vibration. `.rv-card img` est un
+     contrat (recadrage de gm-specs.js) : ne pas renommer. */
   function showReveal(carId) {
     const c = CARS_BY_ID[carId]; if (!c) return;
-    const rec = state.spots.get(carId), col = rColor(c.r), ph = cover(rec);
-    const big = RARITY[c.r].rank >= RARITY.epique.rank;
-    const conf = big ? Array.from({length:34}, (_,i) => {
-      const cols = [col, "#ffffff", "#e0322c", "#f5c542"];
-      return `<span class="cf" style="left:${(Math.random()*100).toFixed(1)}%;background:${cols[i%4]};animation-delay:${(Math.random()*.5).toFixed(2)}s;animation-duration:${(1.1+Math.random()).toFixed(2)}s"></span>`;
-    }).join("") : "";
+    const rec = state.spots.get(carId), col = rColor(c.r), ph = cover(rec), palier = palierRarete(c.r);
     const w = document.createElement("div");
     w.id = "revealWrap"; w.style.setProperty("--rv", col);
-    w.innerHTML = `${conf}
-      <div class="rv-card" style="--rv:${col}">
-        <div class="rv-new">Nouvelle capture — ${RARITY[c.r].label}</div>
-        <div class="ph">${ph ? `<img src="${ph}" />` : `<svg viewBox="0 0 24 24" class="icon" style="width:56px;height:56px;color:${col}">${P.car}</svg>`}</div>
-        <div class="rv-name">${c.c} ${escapeHtml(c.model)}</div>
-        <div class="rv-sub">${escapeHtml(c.brand)} · ${escapeHtml(c.cat)}</div>
+    w.setAttribute("role", "dialog"); w.setAttribute("aria-label", `${TXT_P0.nouvelle} : ${c.brand} ${c.model}`);
+    w.innerHTML = `
+      <div class="rv-card" data-palier="${palier}" style="--rv:${col}">
+        <div class="rv-new">${TXT_P0.nouvelle}</div>
+        <div class="ph">${ph ? `<img src="${ph}" alt="" />` : `<svg viewBox="0 0 24 24" class="icon" style="width:56px;height:56px;color:${col}">${P.car}</svg>`}</div>
+        <div class="rv-rar"><i></i>${escapeHtml(RARITY[c.r].label)}</div>
+        <div class="rv-name">${nomVoiture(c)}</div>
+        <div class="rv-sub">${escapeHtml(c.cat)}${c.yr ? ` · ${escapeHtml(c.yr)}` : ""}</div>
         <div class="rv-pts">+${RARITY[c.r].pts} pts</div>
-        <div class="rv-tap">toucher pour continuer</div>
+        <button class="rv-tap">${TXT_P0.toucher}</button>
       </div>`;
-    w.addEventListener("click", () => { w.remove(); openDetail(carId); }, { once:true });
+    w.addEventListener("click", () => { w.remove(); showDebloque(carId); }, { once:true });
     document.body.appendChild(w);
-    if (navigator.vibrate) { try { navigator.vibrate(big ? [40,60,80] : 25); } catch {} }
+    if (navigator.vibrate) { try { navigator.vibrate(palier === 3 ? [40,60,80] : 25); } catch {} }
+  }
+
+  /* Une ligne de progression, dans le langage des rails de complétude du Garage. */
+  const pctCatalogue = (st) => `${st.count && !st.pct ? "moins de 1" : st.pct} % du catalogue`;
+  const railP0 = (label, have, total, extra = "") => `
+    <div class="p0-gain"><div class="rail-head"><span class="l">${label}</span><span class="v">${have} / ${total}</span></div>
+      <div class="rail"><i style="width:${total ? Math.round(have / total * 100) : 0}%"></i></div>${extra}</div>`;
+  /* Collections thématiques de gm-specs.js (onglet Défis) auxquelles appartient la
+     voiture — lues par le contrat window.GMSpecs, jamais par un nom privé. */
+  function collectionsDe(carId) {
+    const GS = window.GMSpecs, out = [];
+    if (!GS || !Array.isArray(GS.COLLECS)) return out;
+    for (const col of GS.COLLECS) {
+      try { if (!col.t(carId)) continue; } catch { continue; }
+      const membres = CARS.filter(x => { try { return col.t(x.id); } catch { return false; } });
+      if (membres.length >= 2) out.push({ n: col.n, have: membres.filter(x => has(x.id)).length, total: membres.length });
+    }
+    return out.slice(0, 2);
+  }
+
+  /* E7 — Ce que ça débloque : uniquement des compteurs réels (computeStats). */
+  function showDebloque(carId) {
+    const c = CARS_BY_ID[carId]; if (!c) return;
+    const st = computeStats(), rec = state.spots.get(carId), ph = cover(rec), col = rColor(c.r);
+    const rr = st.byRarity[c.r], mq = st.brandList.find(x => x.brand === c.brand);
+    const vars = (typeof VARIANTS !== "undefined" && VARIANTS[carId]) || null;
+    const vHave = vars ? vars.filter(v => (rec && rec.variants || []).includes(v)) : [];
+    const lignes = [
+      railP0("Garage", st.count, TOTAL, `<p class="p0-d" style="margin-top:6px">${pctCatalogue(st)}</p>`),
+      rr ? railP0(`<span style="color:${col}">●</span> ${escapeHtml(RARITY[c.r].label)}`, rr.have, rr.total) : "",
+      mq ? railP0(escapeHtml(c.brand), mq.have, mq.total, mq.have === 1 ? `<span class="p0-badge">★ Première ${escapeHtml(c.brand)}</span>` : "") : "",
+      vars ? railP0("Déclinaisons", vHave.length, vars.length, `<div class="p0-vchips">${vars.map(v => `<span class="vchip ${vHave.includes(v) ? "have" : "miss"}">${escapeHtml(v)}</span>`).join("")}</div>`) : "",
+      ...collectionsDe(carId).map(k => railP0(escapeHtml(k.n), k.have, k.total)),
+    ].join("");
+    openSheet(`
+      <div class="sh-head"><h3>${TXT_P0.debloqueT}</h3><button class="iconbtn" data-close="1" aria-label="Fermer">${icon("x")}</button></div>
+      <div class="sh-body">
+        <div class="p0-tete"><div class="mini">${ph ? `<img src="${ph}" alt="" />` : ""}</div>
+          <div><b>${nomVoiture(c)}</b><small>+${RARITY[c.r].pts} pts · ${TXT_P0.plusUn}</small></div></div>
+        <div class="p0-gains">${lignes}</div>
+      </div>
+      <div class="sh-foot"><button class="btn red" data-car="${escapeHtml(carId)}" style="flex:1">${TXT_P0.voirFiche}</button></div>`);
+  }
+
+  /* E8 — Voiture déjà au garage (ou photo refusée au plafond) : pas de fausse
+     révélation, un panneau qui dit ce qui a été gardé. */
+  function showMaj(carId, refus) {
+    const c = CARS_BY_ID[carId]; if (!c) return;
+    const ph = cover(state.spots.get(carId));
+    openSheet(`
+      <div class="sh-head"><h3>${refus ? TXT_P0.majPriseT : TXT_P0.majT}</h3><button class="iconbtn" data-close="1" aria-label="Fermer">${icon("x")}</button></div>
+      <div class="sh-body" id="p0Maj">
+        ${ph ? `<div class="p0-ph"><img src="${ph}" alt="" /></div>` : ""}
+        <div class="p0-etat" role="status"><div class="p0-t">${nomVoiture(c)}</div><div class="p0-s">${escapeHtml(refus || TXT_P0.majS)}</div></div>
+      </div>
+      <div class="sh-foot"><button class="btn" data-close="1" style="flex:1">Fermer</button><button class="btn red" data-car="${escapeHtml(carId)}" style="flex:2">${TXT_P0.voirFiche}</button></div>`);
+  }
+
+  /* E9 — Révélation compacte pendant un lot : non bloquante, disparaît seule. */
+  function flashCapture(carId) {
+    const c = CARS_BY_ID[carId]; if (!c) return;
+    document.getElementById("p0Flash")?.remove();
+    const f = document.createElement("div");
+    f.id = "p0Flash"; f.setAttribute("role", "status"); f.style.setProperty("--rv", rColor(c.r));
+    const ph = cover(state.spots.get(carId));
+    f.innerHTML = `${ph ? `<img src="${ph}" alt="" />` : ""}<div><b>${nomVoiture(c)}</b><small>${escapeHtml(RARITY[c.r].label)} · +${RARITY[c.r].pts} pts</small></div>`;
+    document.body.appendChild(f);
+    setTimeout(() => f.remove(), 1700);
+    if (navigator.vibrate) { try { navigator.vibrate(palierRarete(c.r) === 3 ? [40,60,80] : 20); } catch {} }
+  }
+
+  /* Fin de lot : un seul bilan au lieu d'une révélation par photo. */
+  function showBilanLot(lot) {
+    const st = computeStats(), n = lot.nouvelles.length, m = lot.majs;
+    const titre = n ? `${n} nouvelle${n > 1 ? "s" : ""} voiture${n > 1 ? "s" : ""}` : "Aucune nouvelle voiture";
+    const liste = lot.nouvelles.map(id => { const c = CARS_BY_ID[id]; return c ? `<button data-car="${escapeHtml(id)}"><span class="dot" style="background:${rColor(c.r)}"></span><span style="flex:1">${nomVoiture(c)}</span><small class="p0-d" style="margin:0">+${RARITY[c.r].pts} pts</small></button>` : ""; }).join("");
+    openSheet(`
+      <div class="sh-head"><h3>${TXT_P0.lotT}</h3><button class="iconbtn" data-close="1" aria-label="Fermer">${icon("x")}</button></div>
+      <div class="sh-body" id="p0Bilan">
+        <div class="p0-etat" style="margin-top:0" role="status"><div class="p0-t">${titre}</div>
+          <div class="p0-s">${m} fiche${m > 1 ? "s" : ""} mise${m > 1 ? "s" : ""} à jour · ${lot.total} photos</div></div>
+        ${liste ? `<div class="p0-lotliste">${liste}</div>` : ""}
+        <div class="p0-gains">${railP0("Garage", st.count, TOTAL, `<p class="p0-d" style="margin-top:6px">${pctCatalogue(st)}</p>`)}</div>
+      </div>
+      <div class="sh-foot"><button class="btn red" data-close="1" style="flex:1">${TXT_P0.terminer}</button></div>`);
   }
 
   /* ====================================================== CARTE DE CHASSE */
   let leafletReady = null, huntMap = null;
+  /* Carte À NOUS (cloud/CARTE.md) : un fichier PMTiles sur NOTRE stockage, lu par
+     morceaux (requêtes Range) et dessiné par protomaps-leaflet (vendor/). Une fois
+     renseignée, plus AUCUNE requête ne part vers OpenStreetMap, même en cas
+     d'échec. Vide → tuiles OpenStreetMap, comme avant.
+     `window.GM_CARTE_URL`, posé avant le chargement, prend le pas (bancs). */
+  const CARTE_URL = String(window.GM_CARTE_URL || "");
+  const chargerScript = (src) => new Promise((res, rej) => {
+    const s = document.createElement("script");
+    s.src = src; s.onload = res; s.onerror = () => rej(new Error("offline"));
+    document.head.appendChild(s);
+  });
   function ensureLeaflet() {
-    if (window.L) return Promise.resolve();
+    if (window.L && (!CARTE_URL || window.protomapsL)) return Promise.resolve();
     if (leafletReady) return leafletReady;
     leafletReady = new Promise((res, rej) => {
       const css = document.createElement("link");
-      css.rel = "stylesheet"; css.href = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css";
-      document.head.appendChild(css);
-      const s = document.createElement("script");
-      s.src = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js";
-      s.onload = res; s.onerror = () => { leafletReady = null; rej(new Error("offline")); };
-      document.head.appendChild(s);
+      /* Leaflet est HÉBERGÉ DANS LE DÉPÔT (vendor/leaflet, v1.9.4 du registre npm) :
+         plus aucun code tiers chargé depuis un CDN, et le moteur de carte est mis
+         en cache par le service worker. Sans CARTE_URL, seules les tuiles (images)
+         viennent encore d'OpenStreetMap. */
+      css.rel = "stylesheet"; css.href = "vendor/leaflet/leaflet.css";
+      if (!window.L) document.head.appendChild(css);
+      // protomaps-leaflet s'appuie sur le L global : il se charge APRÈS Leaflet.
+      (window.L ? Promise.resolve() : chargerScript("vendor/leaflet/leaflet.js"))
+        .then(() => CARTE_URL && !window.protomapsL ? chargerScript("vendor/protomaps-leaflet/protomaps-leaflet.js") : null)
+        .then(res, (e) => { leafletReady = null; rej(e); });
     });
     return leafletReady;
   }
@@ -3565,8 +4345,17 @@ const VARIANTS = {
     if (state.tab !== "map" || !$("#huntMap")) return;
     if (huntMap) { try { huntMap.remove(); } catch {} huntMap = null; }
     document.body.classList.add("map-dark");
-    huntMap = L.map($("#huntMap"), { zoomControl:true, attributionControl:false });
-    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(huntMap);
+    /* Carte à nous configurée mais moteur absent (script chargé qui plante,
+       copie en cache abîmée…) : on s'arrête là. Basculer sur OpenStreetMap
+       ferait l'appel externe que CARTE_URL existe pour éviter (CLAUDE.md §1.2). */
+    if (CARTE_URL && !window.protomapsL) { $("#huntMap").innerHTML = `<div class="empty" style="height:100%">${icon("map")}<p class="t">Carte indisponible</p><p class="s">Le fond de carte n'a pas pu se charger. Tes données, elles, restent locales.</p></div>`; return; }
+    const carteANous = !!CARTE_URL;
+    huntMap = L.map($("#huntMap"), { zoomControl:true, attributionControl:carteANous });
+    if (carteANous) {
+      // Données OpenStreetMap (licence ODbL) : l'attribution reste due, même hébergées chez nous.
+      huntMap.attributionControl.setPrefix(false);
+      protomapsL.leafletLayer({ url: CARTE_URL, flavor: "light", lang: "fr" }).addTo(huntMap);
+    } else L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(huntMap);
     const pts = [];
     for (const rec of state.spots.values()) {
       if (rec.carId==="__meta__" || !rec.coords) continue;
@@ -3613,13 +4402,16 @@ const VARIANTS = {
     const inp = document.createElement("input"); inp.type = "file"; inp.accept = "application/json,.json";
     inp.onchange = async () => {
       const f = inp.files?.[0]; if (!f) return;
+      if (f.size > TAILLE_MAX_PROFIL) { toast("Ce fichier est trop lourd pour être un profil Garage"); return; }
       try {
-        const p = JSON.parse(await f.text());
-        if (p.type !== "profile" || p.app !== "garage-manifest") { toast("Ce n'est pas un profil Garage"); return; }
+        const brut = JSON.parse(await f.text());
+        if (brut?.type !== "profile" || brut?.app !== "garage-manifest") { toast("Ce n'est pas un profil Garage"); return; }
+        const p = sanitizeFriend(brut);
+        if (!p) { toast("Profil invalide"); return; }
         const prev = META.friends.find(x => x.name === p.name);
         const prevIds = new Set((prev?.legends||[]).map(l => l.id));
-        const fresh = (p.legends||[]).filter(l => !prevIds.has(l.id) && CARS_BY_ID[l.id]);
-        META.friends = [...META.friends.filter(x => x.name !== p.name), { name:p.name, ts:p.ts, score:p.score|0, count:p.count|0, rank:p.rank||"", legends:p.legends||[] }];
+        const fresh = p.legends.filter(l => !prevIds.has(l.id));
+        META.friends = [...META.friends.filter(x => x.name !== p.name), p].slice(-50);
         for (const l of fresh.slice(-10)) META.feed.unshift({ who:p.name, id:l.id, at:new Date().toISOString() });
         META.feed = META.feed.slice(0, 50);
         await saveMeta();
@@ -3845,8 +4637,20 @@ const VARIANTS = {
 
   /* ====================================================== ÉVÉNEMENTS (délégation) */
   document.addEventListener("click", (e) => {
-    const t = e.target.closest("[data-tab],[data-fab],[data-rarity],[data-toggle],[data-status],[data-filter],[data-car],[data-close],[data-scrim],[data-cap],[data-pick],[data-var],[data-act],[data-setcover],[data-addphoto],[data-release],[data-dot],[data-favtoggle],[data-moto-type],[data-moto-variant]");
+    const t = e.target.closest("[data-tab],[data-fab],[data-rarity],[data-toggle],[data-status],[data-filter],[data-car],[data-close],[data-scrim],[data-cap],[data-pick],[data-var],[data-act],[data-setcover],[data-addphoto],[data-release],[data-dot],[data-favtoggle],[data-moto-type],[data-moto-variant],[data-theme-set]");
     if (!t) return;
+
+    /* Thème : on écrit l'attribut ET le stockage, puis on recale la couleur
+       de la barre système. Sans ce dernier point, iOS garde la teinte sombre
+       autour de l'app en mode clair — un détail visible sur écran encoché. */
+    if (t.hasAttribute("data-theme-set")) {
+      const choix = t.getAttribute("data-theme-set");
+      document.documentElement.setAttribute("data-theme", choix);
+      try { localStorage.setItem("gm-theme", choix); } catch {}
+      majCouleurBarre();
+      majBoutonsTheme();
+      return;
+    }
 
     if (t.dataset.scrim && e.target === t) return closeOverlay();
     if (t.dataset.close) return closeOverlay();
@@ -3863,10 +4667,18 @@ const VARIANTS = {
     if (t.dataset.car) { openDetail(t.dataset.car); return; }
 
     if (t.dataset.cap) {
+      const cap = t.dataset.cap;
+      if (cap==="manuel") { draft.step="form"; renderCaptureBody(); const q = $("#pickQ"); if (q) q.focus(); return; }
+      if (cap==="choix") { if (CARS_BY_ID[t.dataset.id]) draft.carId = t.dataset.id; draft.step="form"; renderCaptureBody(); const el = draft.carId && document.querySelector(`[data-pick="${draft.carId}"]`); if (el) el.scrollIntoView({block:"nearest"}); return; }
+      if (cap==="nonclasse") { draft.step="form"; draft.showCustom=true; renderCaptureBody(); const b = $("#cBrand"); if (b) b.focus(); return; }
+      if (cap==="source") { stopCamera(); draft.step="source"; renderCaptureBody(); return; }
       if (t.dataset.cap==="camera") { draft.step="camera"; renderCaptureBody(); }
       else if (t.dataset.cap==="batch") {
         const inp = document.createElement("input"); inp.type = "file"; inp.accept = "image/*"; inp.multiple = true;
-        inp.onchange = () => { const fs = [...(inp.files||[])]; if (!fs.length) return; draft.queue = fs.slice(1); handleFile(fs[0]); };
+        inp.onchange = () => { const fs = [...(inp.files||[])]; if (!fs.length) return; draft.queue = fs.slice(1);
+          // Suivi du lot (révélations compactes puis bilan final, décision du 30/09).
+          draft.lot = fs.length > 1 ? { total: fs.length, index: 1, nouvelles: [], majs: 0 } : null;
+          handleFile(fs[0]); };
         inp.click();
       }
       else { const fi = $("#fileInput"); if (fi) fi.click(); }
@@ -3874,8 +4686,7 @@ const VARIANTS = {
     }
     if (t.dataset.pick) { draft.carId = t.dataset.pick; renderCaptureBody(); return; }
     if (t.dataset.var !== undefined && draft) { const v = t.dataset.var; if (draft.variants.has(v)) draft.variants.delete(v); else draft.variants.add(v); const z=$("#varZone"); if (z) z.innerHTML = variantChipsHTML(); return; }
-    if (t.hasAttribute("data-setcover")) { if (activeDetail) setCover(activeDetail, +t.dataset.setcover); return; }
-    if (t.dataset.addphoto) { if (activeDetail) { closeOverlay(); openCapture(activeDetail); } return; }
+    if (t.hasAttribute("data-setcover")) { if (activeDetail) setCover(activeDetail, +t.dataset.setcover); return; }    if (t.dataset.addphoto) { if (activeDetail) { closeOverlay(); openCapture(activeDetail); } return; }
     if (t.hasAttribute("data-dot")) { const pager=$("#pager"); if(pager) pager.scrollTo({ left:+t.dataset.dot*pager.clientWidth, behavior:"smooth" }); return; }
     if (t.dataset.release) { const rid = t.dataset.release; (async () => { if (await askConfirm("Retirer cette voiture du garage ?", "Retirer", true)) release(rid); })(); return; }
     if (t.dataset.favtoggle) { toggleFavorite(t.dataset.favtoggle); return; }
@@ -3954,11 +4765,23 @@ const VARIANTS = {
       const all = await Store.all();
       for (const rec of all) {
         if (rec.carId === "__meta__") { META = { ...META, ...rec, carId:"__meta__" }; }
-        else if (rec.carId === "__customcars__") { CUSTOM_REG = { carId:"__customcars__", list: Array.isArray(rec.list) ? rec.list : [] }; for (const c of CUSTOM_REG.list) CARS_BY_ID[c.id] = c; }
+        else if (rec.carId === "__customcars__") { CUSTOM_REG = { carId:"__customcars__", list: (Array.isArray(rec.list) ? rec.list : []).map(sanitizeCustomCar).filter(Boolean) }; for (const c of CUSTOM_REG.list) CARS_BY_ID[c.id] = c; }
       }
+      // Ce qui a été persisté avant DT-09 / DT-10 repasse par les mêmes filtres qu'à l'import.
+      META = { ...META, bonus:entierBorne(META.bonus), missions:sanitizeMissions(META.missions),
+               friends:sanitizeFriends(META.friends), feed:sanitizeFeed(META.feed), name:String(META.name ?? "").slice(0,24),
+               supprimes:sanitizeSupprimes(META.supprimes), photosSupprimees:sanitizePhotosSupprimees(META.photosSupprimees) };
       for (const rec of all) {
         if (rec.carId === "__meta__" || rec.carId === "__customcars__") continue;
         if (CARS_BY_ID[rec.carId]) state.spots.set(rec.carId, rec);
+      }
+      // Prises rangées sous un id fusionné par gm-specs.js : rattachées à l'id conservé.
+      // Second passage, pour que la prise déjà présente sous l'id conservé soit chargée avant.
+      for (const rec of all) {
+        if (!rec || CARS_BY_ID[rec.carId] || rec.carId === "__meta__" || rec.carId === "__customcars__") continue;
+        const f = fusionVers(rec.carId); if (!f) continue;
+        const m = fusionnerPrise(rec, f);
+        try { await Store.put(m); await Store.del(rec.carId); state.spots.set(m.carId, m); } catch {}
       }
       // Purge des « Non classé » orphelines (créées mais jamais enregistrées, ou prise supprimée)
       const before = CUSTOM_REG.list.length;

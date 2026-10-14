@@ -18,10 +18,15 @@ icon-512.png               ← icône 512×512
 icon-maskable-512.png      ← icône adaptative Android (zone de sécurité)
 apple-touch-icon-180.png   ← icône iOS
 favicon-32.png             ← favicon
+gm-specs.js, gm-matcher.js ← modules : fiches techniques, rapprochement IA → catalogue
+gm-compte.js               ← compte e-mail + sauvegarde cloud (en sommeil tant que non configuré)
+vendor/leaflet/            ← carte (Leaflet, hébergé ici : aucun CDN)
+vendor/protomaps-leaflet/  ← rendu de notre propre carte (en sommeil tant que CARTE_URL est vide, voir cloud/CARTE.md)
 ai-relay-worker.js         ← relais de reconnaissance IA (optionnel — voir section 3bis, se déploie À PART sur Cloudflare, pas dans ce dossier)
+cloud/                     ← serveur de comptes (optionnel — se déploie À PART, voir cloud/DEPLOIEMENT.md)
 ```
 
-**Tout doit rester dans le même dossier** : les chemins sont relatifs, donc l'ensemble marche à la racine d'un site comme dans un sous-dossier. Seul `ai-relay-worker.js` fait exception : il ne va PAS avec les 8 autres fichiers sur Netlify/GitHub Pages — il se déploie séparément sur Cloudflare Workers (section 3bis).
+**Tout doit rester dans le même dossier** : les chemins sont relatifs, donc l'ensemble marche à la racine d'un site comme dans un sous-dossier. Seuls `ai-relay-worker.js` et le dossier `cloud/` font exception : ce sont des serveurs, ils ne vont PAS sur Netlify/GitHub Pages — ils se déploient séparément sur Cloudflare Workers (section 3bis et `cloud/DEPLOIEMENT.md`).
 
 ---
 
@@ -99,13 +104,22 @@ Par défaut, le champ « Endpoint IA » de Réglages est vide → la reconnaissa
 ### Déploiement (Cloudflare Workers, gratuit)
 1. Crée un compte sur **cloudflare.com** (gratuit) → section **Workers & Pages** → **Create Worker**.
 2. Colle le contenu de `ai-relay-worker.js` dans l'éditeur en ligne → **Deploy**.
-3. Récupère une clé API Anthropic sur **console.anthropic.com** → **API Keys** → **Create Key**.
-4. Dans les réglages du Worker → **Settings → Variables** → ajoute une variable **secrète** nommée `ANTHROPIC_API_KEY` avec ta clé (ou en ligne de commande : `wrangler secret put ANTHROPIC_API_KEY` si tu utilises Wrangler).
-5. Redéploie si besoin. Ton Worker a une URL du type `https://ai-relay-worker.tonpseudo.workers.dev`.
-6. Dans l'app → **Plus → Réglages → Endpoint de reconnaissance IA** → colle cette URL.
+3. **Choisis le fournisseur d'IA** (variable `IA_FOURNISSEUR`, modifiable à tout moment sans toucher au code) :
+   - `anthropic` (défaut) — Claude Haiku. Clé sur **console.anthropic.com** → **API Keys** → **Create Key**. Payant dès le premier appel.
+   - `gemini` — Gemini Flash-Lite (`gemini-3.1-flash-lite`). Clé sur **aistudio.google.com** → **Get API key**. Quota gratuit quotidien.
+   - Facultatif : `IA_SECOURS` = l'autre nom. Il n'est appelé **que** si le premier échoue (quota gratuit épuisé, panne). Sans cette variable, aucun secours, donc aucune dépense surprise.
+   - Facultatif : `ANTHROPIC_MODELE` / `GEMINI_MODELE` pour changer de modèle le jour où l'un est retiré.
+   - **Formule 100 % gratuite** : `IA_FOURNISSEUR = gemini`, **pas** de `IA_SECOURS`, et **aucune carte bancaire** enregistrée chez Google ni chez Cloudflare. Quand le quota gratuit du jour de Gemini est épuisé, le relais répond « en pause pour aujourd'hui » (429) et l'app propose le choix manuel.
+4. Dans les réglages du Worker → **Settings → Variables** → ajoute la ou les clés en variables **secrètes** : `ANTHROPIC_API_KEY` et/ou `GEMINI_API_KEY` (ou en ligne de commande : `wrangler secret put GEMINI_API_KEY`).
+5. **Base de limites (obligatoire depuis le 29/09)** : dans les réglages du Worker → **Bindings** → ajoute une liaison **D1** nommée `DB` vers la base des comptes (`garage-comptes`, schéma `cloud/schema.sql`, voir `cloud/DEPLOIEMENT.md`). Sans elle, le relais **refuse de travailler** (503) : un relais sans plafond est un compte Anthropic ouvert à tous.
+6. **Variables** : `APP_ORIGIN` = l'origine exacte de l'app (`https://mcslec.github.io`). Facultatif, pour ajuster les plafonds : `QUOTA_IA_ANONYME` (défaut 30 / jour / appareil sans compte), `QUOTA_IA_COMPTE` (200 / jour / compte), `QUOTA_IA_JOUR` (3 000 / jour pour tout le service).
+7. Redéploie si besoin. Ton Worker a une URL du type `https://ai-relay-worker.tonpseudo.workers.dev`.
+8. Dans l'app → **Plus → Réglages → Endpoint de reconnaissance IA** → colle cette URL.
+
+Au-delà des plafonds, l'app affiche le message du relais (« choisis la voiture à la main ») : la capture continue, sans reconnaissance automatique. Banc : `node banc-relais.js` (29 tests, les deux fournisseurs simulés : sans réseau ni crédit dépensé). ⚠️ Le banc prouve la logique, pas l'accord avec l'API réelle : après avoir basculé sur un fournisseur, fais **une** capture et regarde le journal (`npx wrangler tail`).
 
 ### Coût
-L'API Anthropic est payante à l'usage (quelques centimes par identification avec le modèle par défaut, plus rapide et économique). Cloudflare Workers est gratuit jusqu'à 100 000 requêtes/jour — largement suffisant pour un usage perso ou entre potes.
+L'API Anthropic est payante à l'usage (≈ 0,35 centime par identification avec Claude Haiku). L'API Gemini offre un quota gratuit quotidien sur Flash-Lite ; au-delà, payant à l'usage. Vérifie les grilles au moment du choix : elles évoluent. Cloudflare Workers est gratuit jusqu'à 100 000 requêtes/jour — largement suffisant pour un usage perso ou entre potes.
 
 ### Si ça ne matche pas
 Le popup « Modèle trouvé » propose toujours de confirmer ou corriger — aucune identification n'est jamais imposée. Si le rapprochement échoue systématiquement sur un type de voiture, le seuil de confiance (`0.32` dans `matchCatalog`) et les poids marque/modèle peuvent se recalibrer dans `index.html`.
