@@ -39,6 +39,7 @@
 // CONTRAT HTTP (JSON, CORS limité à APP_ORIGIN)
 //   POST   /auth/code            { email }        → 200 { ok:true }   (toujours)
 //   POST   /auth/session         { email, code }  → 200 { session, email } | 400
+//   POST   /auth/google          { credential }   → 200 { session, email } | 400 | 409 { lier:true } | 501 { google:false }
 //   POST   /auth/deconnexion     Bearer           → 200
 //   GET    /garage               Bearer           → 200 { version, maj, donnees } | 404
 //   PUT    /garage               Bearer, If-Match → 200 { version } | 409 { version }
@@ -50,7 +51,20 @@
 //
 // LIAISONS ET VARIABLES (wrangler.toml)
 //   DB (D1), PHOTOS (R2, facultatif), APP_ORIGIN, MAIL_FROM
+//   GOOGLE_CLIENT_ID (facultatif, PUBLIC : ce n'est pas un secret)
 //   Secrets : RESEND_API_KEY, CODE_SECRET  (wrangler secret put …)
+//
+// CONNEXION GOOGLE (14/10, « Continuer avec Google », voulue par le propriétaire)
+//   Le compte reste le NÔTRE (identifiant aléatoire) : Google n'est qu'une clé
+//   de plus pour l'ouvrir (table `identites`). Le navigateur remet au serveur le
+//   jeton d'identité SIGNÉ par Google ; le serveur vérifie lui-même signature
+//   (clés publiques de Google), émetteur, destinataire (GOOGLE_CLIENT_ID) et
+//   expiration — il ne croit jamais ce que dit le navigateur. Jeton à usage
+//   unique (rejeu refusé). Fusion avec un compte e-mail existant SEULEMENT si
+//   Google fait autorité sur l'adresse (Gmail, ou domaine géré : `hd`) ; sinon
+//   409 « lier » : une adresse dont Google n'est pas maître ne doit pas ouvrir
+//   le compte de quelqu'un d'autre. Sans GOOGLE_CLIENT_ID : 501, en sommeil.
+//   Le même point d'entrée servira l'app native (le SDK Google y rend le même jeton).
 //
 // MODE ESSAI SANS PHOTOS (01/10, offre gratuite)
 //   R2 exige une carte bancaire, même pour son offre gratuite. Sans liaison
@@ -97,6 +111,7 @@ const LIMITES = {
   codeParEmailJour: { max: 10, fenetreMs: 24 * 3600 * 1000 },
   codeParIp:        { max: 10, fenetreMs: 15 * 60 * 1000 },
   sessionParIp: { max: 20, fenetreMs: 15 * 60 * 1000 },
+  googleParIp:  { max: 20, fenetreMs: 15 * 60 * 1000 },
 };
 
 // ---------------------------------------------------------------- outils ----
@@ -130,6 +145,76 @@ function jetonAleatoire() {
 const RE_EMAIL = /^[^\s@<>()[\]\\,;:"]{1,64}@[a-z0-9.-]{1,185}\.[a-z]{2,24}$/;
 const normaliserEmail = (e) => String(e || '').trim().toLowerCase().slice(0, 254);
 const RE_SHA = /^[0-9a-f]{64}$/;
+
+// ------------------------------------------------- jeton d'identité Google --
+const GOOGLE_EMETTEURS = ['accounts.google.com', 'https://accounts.google.com'];
+const GOOGLE_CLES_URL  = 'https://www.googleapis.com/oauth2/v3/certs';
+const DECALAGE_HORLOGE_S = 60;          // tolérance d'horloge entre Google et nous
+const RELECTURE_CLES_MS  = 60 * 1000;   // une clé inconnue ne fait pas recharger plus d'une fois par minute
+
+function octetsB64url(s) {
+  const b = atob(String(s).replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - (s.length % 4)) % 4));
+  const o = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) o[i] = b.charCodeAt(i);
+  return o;
+}
+const jsonB64url = (s) => JSON.parse(new TextDecoder().decode(octetsB64url(s)));
+
+/* Clés publiques de Google, gardées en mémoire du Worker le temps que Google
+   indique (Cache-Control). Google les fait tourner : une clé inconnue déclenche
+   UNE relecture, au plus une fois par minute — sans ce frein, un jeton forgé
+   avec un `kid` au hasard ferait interroger Google à chaque requête. */
+let clesGoogle = { cles: new Map(), expire: 0, lu: 0 };
+async function cleGoogle(kid) {
+  const maintenant = Date.now();
+  const perimee = maintenant > clesGoogle.expire;
+  if (!clesGoogle.cles.has(kid) || perimee) {
+    if (!perimee && maintenant - clesGoogle.lu < RELECTURE_CLES_MS) return null;
+    const r = await fetch(GOOGLE_CLES_URL);
+    if (!r.ok) throw new Error(`cles-google-${r.status}`);
+    const { keys } = await r.json();
+    const cles = new Map();
+    for (const k of keys || []) {
+      if (k.kty !== 'RSA' || !k.kid || !k.n || !k.e) continue;
+      cles.set(k.kid, await crypto.subtle.importKey('jwk', { kty: 'RSA', n: k.n, e: k.e, alg: 'RS256', ext: true },
+        { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['verify']));
+    }
+    const age = Number((/max-age=(\d+)/.exec(r.headers.get('Cache-Control') || '') || [])[1]) || 3600;
+    clesGoogle = { cles, expire: maintenant + age * 1000, lu: maintenant };
+  }
+  return clesGoogle.cles.get(kid) || null;
+}
+
+/* Rend la charge du jeton si TOUT est vérifié, sinon { refus } (raison pour le
+   journal, jamais renvoyée au client). L'algorithme est IMPOSÉ (RS256) : on ne
+   lit jamais celui qu'annonce le jeton, sinon « none » ou HS256 ouvriraient la
+   porte à un jeton fabriqué. */
+async function verifierJetonGoogle(env, jeton) {
+  const parties = typeof jeton === 'string' && jeton.length <= 4096 ? jeton.split('.') : [];
+  if (parties.length !== 3) return { refus: 'format' };
+  let entete, charge;
+  try { entete = jsonB64url(parties[0]); charge = jsonB64url(parties[1]); } catch { return { refus: 'format' }; }
+  if (entete.alg !== 'RS256' || typeof entete.kid !== 'string') return { refus: 'algorithme' };
+  const cle = await cleGoogle(entete.kid);
+  if (!cle) return { refus: 'cle-inconnue' };
+  let signee = false;
+  try { signee = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', cle, octetsB64url(parties[2]), enc.encode(`${parties[0]}.${parties[1]}`)); } catch {}
+  if (!signee) return { refus: 'signature' };
+  const s = Date.now() / 1000;
+  if (!GOOGLE_EMETTEURS.includes(charge.iss)) return { refus: 'emetteur' };
+  if (typeof charge.aud !== 'string' || charge.aud !== env.GOOGLE_CLIENT_ID) return { refus: 'destinataire' };
+  if (!(Number(charge.exp) > s - DECALAGE_HORLOGE_S) || !(Number(charge.iat) < s + DECALAGE_HORLOGE_S)) return { refus: 'expire' };
+  if (typeof charge.sub !== 'string' || !/^[0-9A-Za-z_-]{1,255}$/.test(charge.sub)) return { refus: 'sujet' };
+  return { charge, signature: parties[2] };
+}
+
+/* Google n'est MAÎTRE d'une adresse que pour Gmail et pour les domaines qu'il
+   gère (Workspace : champ `hd`). Un compte Google peut aussi porter une adresse
+   d'ailleurs, vérifiée un jour mais plus forcément détenue : celle-là ne doit
+   pas ouvrir, à elle seule, un compte déjà créé par code e-mail. */
+function googleFaitAutorite(email, charge) {
+  if (/@(gmail|googlemail)\.com$/.test(email)) return true;
+  return typeof charge.hd === 'string' && charge.hd.length > 0 && email.endsWith('@' + charge.hd.toLowerCase());
+}
 
 function cors(env) {
   return {
@@ -244,10 +329,63 @@ async function routeSession(req, env) {
     u = { id: crypto.randomUUID() };
     await env.DB.prepare('INSERT INTO utilisateurs (id, email, cree) VALUES (?, ?, ?)').bind(u.id, email, maintenant).run();
   }
+  return ouvrirSession(env, u.id, email, maintenant);
+}
+
+/* Une seule façon d'ouvrir une session, quel que soit le moyen de connexion :
+   ce qui suit (sauvegarde, restauration) ne sait pas — et n'a pas à savoir —
+   si l'on est entré par un code ou par Google. */
+async function ouvrirSession(env, idUtilisateur, email, maintenant = Date.now()) {
   const session = jetonAleatoire();
   await env.DB.prepare('INSERT INTO sessions (hash, utilisateur, expire, cree) VALUES (?, ?, ?, ?)')
-    .bind(await sha256hex(session), u.id, maintenant + DUREE_SESSION_MS, maintenant).run();
+    .bind(await sha256hex(session), idUtilisateur, maintenant + DUREE_SESSION_MS, maintenant).run();
   return json(env, { session, email });
+}
+
+async function routeGoogle(req, env) {
+  // Non configuré : état stable (501), comme le stockage photo absent.
+  if (!env.GOOGLE_CLIENT_ID) return json(env, { erreur: 'Connexion Google non configurée sur ce serveur', google: false }, 501);
+  const ip = req.headers.get('CF-Connecting-IP') || 'inconnue';
+  if (await depasseLimite(env, `google-ip:${ip}`, LIMITES.googleParIp)) return erreur(env, 429, 'Trop de tentatives');
+  let corps; try { corps = await lireJson(req, 8 * 1024); } catch { return erreur(env, 400, 'Requête invalide'); }
+  let verif;
+  try { verif = await verifierJetonGoogle(env, corps && corps.credential); }
+  catch (e) { console.error('[compte-worker] clés Google injoignables', e && e.message); return erreur(env, 503, 'Connexion Google momentanément indisponible : utilise le code par e-mail'); }
+  if (verif.refus) { console.error('[compte-worker] jeton Google refusé :', verif.refus); return erreur(env, 400, 'Connexion Google refusée'); }
+  const { charge } = verif;
+  const email = normaliserEmail(charge.email);
+  // L'adresse devient celle du compte (et le canal de secours par code) : Google doit l'avoir vérifiée.
+  if (charge.email_verified !== true || !RE_EMAIL.test(email)) return erreur(env, 400, 'Adresse Google non vérifiée : connecte-toi avec un code reçu par e-mail');
+  const maintenant = Date.now();
+  /* Usage unique, d'une seule instruction : l'empreinte de la signature (propre
+     à chaque jeton) n'entre qu'une fois. Un jeton intercepté puis rejoué — ou
+     envoyé deux fois en même temps — n'ouvre qu'une session. */
+  const neuf = await env.DB.prepare(
+    'INSERT INTO jetons_consommes (empreinte, expire) VALUES (?, ?) ON CONFLICT (empreinte) DO NOTHING RETURNING empreinte'
+  ).bind(await sha256hex('google:' + verif.signature), Number(charge.exp) * 1000).first();
+  if (!neuf) return erreur(env, 400, 'Connexion Google déjà utilisée : recommence');
+
+  const sujet = await sha256hex('google:' + charge.sub);      // l'identifiant Google n'est jamais stocké en clair
+  const lien = () => env.DB.prepare('SELECT i.utilisateur AS id, u.email AS email FROM identites i JOIN utilisateurs u ON u.id = i.utilisateur WHERE i.fournisseur = ? AND i.sujet = ?').bind('google', sujet).first();
+  let compte = await lien();
+  if (!compte) {
+    let u = await env.DB.prepare('SELECT id FROM utilisateurs WHERE email = ?').bind(email).first();
+    let cree = false;
+    if (!u) {
+      const id = crypto.randomUUID();
+      const r = await env.DB.prepare('INSERT INTO utilisateurs (id, email, cree) VALUES (?, ?, ?) ON CONFLICT (email) DO NOTHING').bind(id, email, maintenant).run();
+      cree = !!(r.meta && r.meta.changes === 1);
+      // Perdu une course (compte créé à l'instant par un autre appel) : on relit, et la règle d'autorité s'applique.
+      u = cree ? { id } : await env.DB.prepare('SELECT id FROM utilisateurs WHERE email = ?').bind(email).first();
+    }
+    if (!cree && !googleFaitAutorite(email, charge)) {
+      return json(env, { erreur: 'Cette adresse a déjà un compte : connecte-toi avec un code reçu par e-mail', lier: true }, 409);
+    }
+    await env.DB.prepare('INSERT INTO identites (fournisseur, sujet, utilisateur, cree) VALUES (?, ?, ?, ?) ON CONFLICT (fournisseur, sujet) DO NOTHING')
+      .bind('google', sujet, u.id, maintenant).run();
+    compte = await lien();                                      // la relecture départage deux connexions simultanées
+  }
+  return ouvrirSession(env, compte.id, compte.email, maintenant);
 }
 
 async function routeGarageLire(env, u) {
@@ -359,7 +497,9 @@ async function routeExport(env, u) {
   const info = await env.DB.prepare('SELECT email, cree FROM utilisateurs WHERE id = ?').bind(u.id).first();
   const g = await env.DB.prepare('SELECT version, maj, donnees FROM garages WHERE utilisateur = ?').bind(u.id).first();
   const photos = env.PHOTOS ? (await toutesLesPhotos(env, u)).map(k => k.split('/').pop()) : [];
-  return json(env, { email: info.email, cree: info.cree, garage: g ? { version: g.version, maj: g.maj, donnees: JSON.parse(g.donnees) } : null, photos });
+  // Moyens de connexion reliés (droit d'accès) : le fournisseur et la date, l'identifiant n'étant gardé qu'en empreinte.
+  const connexions = ((await env.DB.prepare('SELECT fournisseur, cree FROM identites WHERE utilisateur = ? ORDER BY cree').bind(u.id).all()).results || []);
+  return json(env, { email: info.email, cree: info.cree, connexions, garage: g ? { version: g.version, maj: g.maj, donnees: JSON.parse(g.donnees) } : null, photos });
 }
 
 async function routeSupprimer(env, u) {
@@ -371,6 +511,8 @@ async function routeSupprimer(env, u) {
     env.DB.prepare('DELETE FROM usages WHERE utilisateur = ?').bind(u.id),
     env.DB.prepare('DELETE FROM sessions WHERE utilisateur = ?').bind(u.id),
     env.DB.prepare('DELETE FROM codes WHERE email = ?').bind(email || ''),
+    // AVANT `utilisateurs` : D1 applique les clés étrangères (PRAGMA foreign_keys = 1, constaté le 14/10).
+    env.DB.prepare('DELETE FROM identites WHERE utilisateur = ?').bind(u.id),
     env.DB.prepare('DELETE FROM utilisateurs WHERE id = ?').bind(u.id),
   ]);
   return json(env, { ok: true, photosEffacees: cles.length });
@@ -387,9 +529,10 @@ async function purger(env, maintenant = Date.now()) {
     env.DB.prepare('DELETE FROM codes WHERE expire < ?').bind(maintenant),
     env.DB.prepare('DELETE FROM sessions WHERE expire < ?').bind(maintenant),
     env.DB.prepare('DELETE FROM limites WHERE fenetre < ?').bind(maintenant - fenetreMax),
+    env.DB.prepare('DELETE FROM jetons_consommes WHERE expire < ?').bind(maintenant),
   ]);
   const n = r.map(x => (x && x.meta && x.meta.changes) || 0);
-  return { codes: n[0], sessions: n[1], limites: n[2] };
+  return { codes: n[0], sessions: n[1], limites: n[2], jetons: n[3] };
 }
 
 export default {
@@ -408,6 +551,7 @@ export default {
     try {
       if (req.method === 'POST' && p === '/auth/code')    return await routeCode(req, env);
       if (req.method === 'POST' && p === '/auth/session') return await routeSession(req, env);
+      if (req.method === 'POST' && p === '/auth/google')  return await routeGoogle(req, env);
 
       const u = await utilisateurDeSession(req, env);
       if (!u) return erreur(env, 401, 'Session absente ou expirée');

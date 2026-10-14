@@ -52,11 +52,34 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   const worker = (await import('file://' + tmp)).default;
   const sqlite = new DatabaseSync(':memory:');
   sqlite.exec(fs.readFileSync(path.join(RACINE, 'cloud', 'schema.sql'), 'utf8'));
-  const env = { DB: d1(sqlite), PHOTOS: r2(), APP_ORIGIN: ORIGINE, MAIL_FROM: 'GM <x@test>', RESEND_API_KEY: 'test', CODE_SECRET: 'secret-de-banc-32-octets-minimum!' };
+  /* Google du banc : une vraie paire RSA ; le Worker vérifie de vrais jetons signés. */
+  const CLIENT_GOOGLE = 'client-banc.apps.googleusercontent.com';
+  const { generateKeyPairSync, sign: signer } = require('crypto');
+  const cleGoogle = generateKeyPairSync('rsa', { modulusLength: 2048 });
+  const b64u = (x) => Buffer.from(x).toString('base64url');
+  let nJeton = 0;
+  const jetonGoogle = (champs) => {
+    const s = Math.floor(Date.now() / 1000);
+    const h = b64u(JSON.stringify({ alg: 'RS256', kid: 'banc-1', typ: 'JWT' }));
+    const p = b64u(JSON.stringify({ iss: 'https://accounts.google.com', aud: CLIENT_GOOGLE, email_verified: true, iat: s, exp: s + 3600, jti: String(++nJeton), ...champs }));
+    return `${h}.${p}.${b64u(signer('sha256', Buffer.from(`${h}.${p}`), cleGoogle.privateKey))}`;
+  };
+  /* Faux script de Google, servi à l'adresse du vrai : même interface (initialize,
+     renderButton, disableAutoSelect). Le « bouton » rend le jeton que le banc a posé. */
+  const FAUX_GSI = `window.google = { accounts: { id: {
+    initialize: function (o) { window.__gsiInit = (window.__gsiInit || 0) + 1; window.__gsi = o; },
+    renderButton: function (el, opt) { var b = document.createElement('button'); b.id = 'faux-google'; b.type = 'button'; b.textContent = 'Continuer avec Google';
+      b.onclick = function () { window.__gsi.callback({ credential: window.__jetonGoogle, select_by: 'btn' }); }; el.appendChild(b); window.__gsiOpt = opt; },
+    disableAutoSelect: function () { window.__gsiDeco = (window.__gsiDeco || 0) + 1; } } } };`;
+
+  const env = { DB: d1(sqlite), PHOTOS: r2(), APP_ORIGIN: ORIGINE, MAIL_FROM: 'GM <x@test>', RESEND_API_KEY: 'test', CODE_SECRET: 'secret-de-banc-32-octets-minimum!', GOOGLE_CLIENT_ID: CLIENT_GOOGLE };
   const mails = []; let appelsApi = 0, requetesBrutes = 0; const requetesLots = [];
   const fetchReel = globalThis.fetch;
   globalThis.fetch = async (u, o) => {
     if (String(u).startsWith('https://api.resend.com/')) { mails.push(JSON.parse(o.body)); return new Response('{}', { status: 200 }); }
+    if (String(u) === 'https://www.googleapis.com/oauth2/v3/certs') {
+      return new Response(JSON.stringify({ keys: [{ ...cleGoogle.publicKey.export({ format: 'jwk' }), kid: 'banc-1', alg: 'RS256', use: 'sig' }] }), { status: 200, headers: { 'Cache-Control': 'max-age=3600' } });
+    }
     return fetchReel(u, o);
   };
 
@@ -84,12 +107,18 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
 
   const nav = await chromium.launch({ executablePath: process.env.CHROMIUM || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--no-sandbox'] });
   const erreurs = [];
-  async function telephone(configure = true) {
+  async function telephone(configure = true, { google = false, bloquerGoogle = false } = {}) {
     const ctx = await nav.newContext({ viewport: { width: 390, height: 844 } });
     if (configure) await ctx.addInitScript(u => { window.GM_COMPTE_URL = u; }, URL_API);
+    if (google) await ctx.addInitScript(id => { window.GM_GOOGLE_CLIENT_ID = id; }, CLIENT_GOOGLE);
     const page = await ctx.newPage();
     page.on('pageerror', e => erreurs.push(String(e)));
-    const tel = { ctx, page, dialogues: [], refuser: false };
+    const tel = { ctx, page, dialogues: [], refuser: false, requetesGoogle: [] };
+    // TOUTE requête vers Google est comptée, sur chaque téléphone : c'est la preuve du « en sommeil ».
+    await ctx.route(u => /(^|\.)google(apis)?\.com$/.test(u.hostname), (route) => {
+      tel.requetesGoogle.push(route.request().url());
+      return bloquerGoogle ? route.abort('failed') : route.fulfill({ status: 200, contentType: 'application/javascript', body: FAUX_GSI });
+    });
     page.on('dialog', d => { tel.dialogues.push(d.message()); tel.refuser ? d.dismiss() : d.accept(); });
     await page.goto(URL_APP, { waitUntil: 'networkidle' });
     await page.waitForFunction(() => window.GMSpecs && window.GMGarage, { timeout: 15000 });
@@ -379,6 +408,55 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   await ouvrirReglages(E2.page); await cliquer(E2.page, 'restaurer', 'Récupéré');
   v('R2 branché ensuite : le téléphone neuf récupère enfin les photos', (await garage(E2.page))['ferrari-f40'].photos.length === 2);
 
+  /* 4 septies. « Continuer avec Google » (14/10) : sommeil, bouton, sauvegarde, second téléphone */
+  sqlite.prepare('DELETE FROM limites').run();
+  v('Google · compte configuré SANS identifiant Google : aucun bouton, aucune requête vers Google',
+    !(await A.page.$('#gcp-google')) && A.requetesGoogle.length === 0, JSON.stringify(A.requetesGoogle));
+  const G1 = await telephone(true, { google: true });
+  await idb(G1.page, 'put', [prise('ferrari-f40', [PH('G')]), prise('alpine-a110', [])]);
+  await recharger(G1.page);
+  v('Google · tant que le panneau Compte n\'est pas ouvert : aucune requête vers Google', G1.requetesGoogle.length === 0, JSON.stringify(G1.requetesGoogle));
+  await ouvrirReglages(G1.page);
+  await G1.page.waitForSelector('#faux-google', { timeout: 8000 });
+  const initG = await G1.page.evaluate(() => ({ n: window.__gsiInit, id: window.__gsi.client_id, auto: window.__gsi.auto_select, texte: window.__gsiOpt.text, langue: window.__gsiOpt.locale }));
+  v('Google · panneau ouvert : script chargé UNE fois, bouton « Continuer avec Google » (fr), à côté du code e-mail',
+    G1.requetesGoogle.length === 1 && initG.n === 1 && initG.id === CLIENT_GOOGLE && initG.auto === false && initG.texte === 'continue_with' && initG.langue === 'fr' && !!(await G1.page.$('#gcp-email')), JSON.stringify(initG));
+  const connecterGoogleNav = async (tel, champs) => {
+    await tel.page.evaluate(j => { window.__jetonGoogle = j; }, jetonGoogle(champs));
+    await tel.page.click('#faux-google');
+    await tel.page.waitForFunction(() => /Connecté|compte|refus|indisponible/i.test(document.getElementById('gcp-msg')?.textContent || ''), null, { timeout: 10000 });
+  };
+  const JOUEUR = { sub: '7000000000000000000007', email: 'joueur@gmail.com' };
+  await connecterGoogleNav(G1, JOUEUR);
+  v('Google · un toucher : connecté, avec l\'adresse du compte Google',
+    (await G1.page.evaluate(() => window.GMCompte.etat().connecte)) && /joueur@gmail\.com/.test(await G1.page.textContent('#gcp-compte')), await G1.page.textContent('#gcp-msg'));
+  await cliquer(G1.page, 'sauvegarder', 'Sauvegardé');
+  const cg = cloudDe('joueur@gmail.com');
+  v('Google · « Sauvegarder » : le garage (2 voitures, photo comprise) est au cloud, sur le compte relié à Google',
+    cg && cg.donnees.spots.length === 2 && env.PHOTOS._m.size > 0, cg && JSON.stringify(cg.donnees.spots.map(s => s.carId)));
+  const G2 = await telephone(true, { google: true });
+  await ouvrirReglages(G2.page); await G2.page.waitForSelector('#faux-google', { timeout: 8000 });
+  await connecterGoogleNav(G2, JOUEUR);
+  await cliquer(G2.page, 'restaurer', 'Récupéré');
+  const gG2 = await garage(G2.page);
+  v('Google · téléphone NEUF, même compte Google, « Récupérer » : le même garage revient, photo comprise',
+    !!gG2['ferrari-f40'] && !!gG2['alpine-a110'] && gG2['ferrari-f40'].photos.length === 1, JSON.stringify(Object.keys(gG2)));
+  await cliquer(G2.page, 'deconnecter', 'Déconnecté');
+  v('Google · déconnexion : session oubliée, reconnexion automatique coupée (recommandation de Google)',
+    !(await G2.page.evaluate(() => window.GMCompte.etat().connecte)) && (await G2.page.evaluate(() => window.__gsiDeco)) >= 1);
+  await G2.page.waitForSelector('#faux-google', { timeout: 8000 });
+  v('Google · après déconnexion, le bouton revient sans recharger le script ni réinitialiser',
+    G2.requetesGoogle.length === 1 && (await G2.page.evaluate(() => window.__gsiInit)) === 1, `${G2.requetesGoogle.length} requête(s), init ${await G2.page.evaluate(() => window.__gsiInit)}`);
+  sqlite.prepare("INSERT INTO utilisateurs (id, email, cree) VALUES ('banc-pro', 'pro@entreprise.fr', 0)").run();
+  await connecterGoogleNav(G2, { sub: '8000000000000000000008', email: 'pro@entreprise.fr' });
+  v('Google · adresse non Gmail déjà inscrite par code : message clair, aucune connexion',
+    /déjà un compte/.test(await G2.page.textContent('#gcp-msg')) && !(await G2.page.evaluate(() => window.GMCompte.etat().connecte)), await G2.page.textContent('#gcp-msg'));
+  const G3 = await telephone(true, { google: true, bloquerGoogle: true });
+  await ouvrirReglages(G3.page);
+  await G3.page.waitForFunction(() => /indisponible/.test(document.getElementById('gcp-msg')?.textContent || ''), null, { timeout: 8000 }).catch(() => {});
+  v('Google · script de Google bloqué (hors ligne, bloqueur) : message clair, le code par e-mail reste proposé',
+    /indisponible/.test(await G3.page.textContent('#gcp-msg')) && !!(await G3.page.$('#gcp-email')) && !(await G3.page.$('#gcp-google')), await G3.page.textContent('#gcp-msg'));
+
   /* 5. Suppression du compte */
   const idPilote = sqlite.prepare("SELECT id FROM utilisateurs WHERE email = 'pilote@exemple.fr'").get().id;
   await ouvrirReglages(A.page); await cliquer(A.page, 'supprimer', 'Compte supprimé');
@@ -394,6 +472,7 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   await ouvrirReglages(D.page);
   v('non configuré : aucun panneau « Compte »', !(await D.page.$('#gcp-compte')));
   v('non configuré : aucune requête vers le serveur de comptes, pas même un pré-vol', requetesBrutes === appels0);
+  v('non configuré : aucune requête vers Google', D.requetesGoogle.length === 0, JSON.stringify(D.requetesGoogle));
 
   v('aucune erreur JS', erreurs.length === 0, erreurs.join(' | '));
 

@@ -89,6 +89,18 @@ d'échec** — jamais de repli silencieux vers OpenStreetMap. L'attribution
 « © OpenStreetMap » reste affichée : c'est la licence ODbL des **données**,
 indépendante de l'hébergeur. Banc : `banc-carte-perso.js`.
 
+**Exception autorisée : le script de connexion Google** (`https://accounts.google.com/gsi/client`),
+**décision explicite du propriétaire du 14/10** (« j'autorise le code de Google »), pour
+le bouton « Continuer avec Google ». Il ne peut pas être hébergé chez nous (Google le
+sert et le fait évoluer seul). Ce qui en limite la portée, et qui ne se relâche pas :
+**chargé seulement si `GOOGLE_CLIENT_ID` est renseigné** (vide = aucune requête vers
+Google, vérifié au banc), **seulement à l'affichage du panneau Compte et hors
+connexion** (jamais au démarrage de l'app), **jamais mis en cache** (`sw.js` laisse
+passer les autres domaines), et **jamais le seul chemin** : le code par e-mail reste
+proposé, y compris quand le script ne charge pas. Le jeton qu'il rend n'est **cru
+que par le serveur**, qui en vérifie la signature (§8 quinquies). Toute autre
+bibliothèque tierce reste soumise à la règle « jamais de CDN ».
+
 ### 1.3 — Jamais réécrire `index.html` en entier
 `index.html` fait ~3 900 lignes et concentre l'app complète. **Interdiction de le
 régénérer, de le reformater globalement, ou de le remplacer d'un bloc.**
@@ -458,8 +470,8 @@ incrémenter conjointement :**
 1. `VERSION_MODULE` dans `gm-specs.js` (ligne ~22).
 2. `VERSION` (`"garage-v…"`) dans `sw.js` (ligne ~12).
 
-Ces deux numéros sont **tenus synchronisés** (au 01/10/2026 : `gm-specs.js` →
-`20.196.0`, `sw.js` → `garage-v20.196.0`). `VERSION_MODULE` s'affiche en outre
+Ces deux numéros sont **tenus synchronisés** (au 14/10/2026 : `gm-specs.js` →
+`20.197.0`, `sw.js` → `garage-v20.197.0`). `VERSION_MODULE` s'affiche en outre
 dans l'UI via `grefferVersion()`, ce qui permet de vérifier de visu quelle version
 tourne réellement sur l'appareil.
 
@@ -780,8 +792,20 @@ GMGarage.supprimerPhoto(src, { confirmer }) → { ok } | { ok:false, raison:'der
 | Garage ≤ 1,9 Mo **en octets** ; `donnees` doit être un objet | D1 refuse toute ligne > 2 Mo |
 | **Quota** par compte et plafond global (`QUOTA_*`, réglables dans `wrangler.toml`) ; photo déjà stockée = idempotente, non comptée | Un compte gratuit ne peut pas remplir le stockage ni la facture |
 | **R2 facultatif** (01/10, mode essai gratuit) : sans liaison `PHOTOS`, toutes les routes `/photos…` répondent **501** `{photos:false}` (après le 401), la collection se sauve normalement | R2 exige une carte bancaire. 501 = état de configuration **stable** : le client continue sans photos (et le dit), alors qu'une panne passagère (5xx, réseau) **interrompt** la restauration. Ne jamais confondre les deux : traiter un 503 comme un 501 ferait réécrire le cloud sans des photos qui existent |
+| **Connexion Google** (14/10) : `POST /auth/google` vérifie **lui-même** le jeton (signature RS256 par les clés publiques de Google, algorithme **imposé**, `iss`, `aud` = `GOOGLE_CLIENT_ID`, `exp`/`iat`, `email_verified`) | Le navigateur ne prouve rien : seul ce que Google a signé compte. 10 jetons piégés refusés au banc, 11 mutations détectées |
+| Jeton Google à **usage unique** (empreinte de sa signature, `INSERT … ON CONFLICT DO NOTHING RETURNING`) ; clé inconnue relue **au plus une fois par minute** | Un jeton intercepté ne se rejoue pas ; un `kid` au hasard ne fait pas interroger Google à chaque requête |
+| Le compte reste le nôtre : **`identites`** (fournisseur + **empreinte** de l'identifiant Google → notre id). Retrouvé par l'identifiant, **jamais par l'e-mail** | L'adresse Google peut changer ; l'identifiant, non |
+| Fusion avec un compte créé par code **seulement si Google fait autorité** sur l'adresse (Gmail, ou domaine géré `hd`) ; sinon **409 `{lier:true}`** | Une adresse d'ailleurs, vérifiée un jour chez Google mais plus détenue, ne doit pas ouvrir le compte de quelqu'un d'autre |
+| D1 applique les **clés étrangères** (`PRAGMA foreign_keys = 1`, constaté le 14/10) : toute suppression efface les tables filles **avant** `utilisateurs` ; le banc active le même réglage | Sinon la suppression de compte (RGPD) échoue en production alors qu'elle passe au banc |
+| Sans `GOOGLE_CLIENT_ID` : **501** `{google:false}`, comme R2 absent | État de configuration stable, pas une panne |
 
 **Côté client :**
+- **« Continuer avec Google »** : en sommeil tant que `GOOGLE_CLIENT_ID` (dans
+  `gm-compte.js`) est vide ; `window.GM_GOOGLE_CLIENT_ID` l'active aux bancs (faux
+  script de Google servi à l'adresse du vrai, chaque requête vers Google comptée).
+  `GMCompte.connecterGoogle(jeton)` est le point d'entrée unique : l'app native y
+  passera le jeton rendu par le SDK Google. Après connexion, tout est identique à
+  une connexion par code (même session, même sauvegarde).
 - **En sommeil par défaut** : `COMPTE_URL = ''` → aucun panneau, aucune requête
   (pas même un pré-vol CORS — vérifié au banc). Les bancs l'activent par
   `window.GM_COMPTE_URL`.

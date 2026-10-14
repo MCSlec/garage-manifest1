@@ -62,13 +62,32 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   const worker = (await import('file://' + tmp)).default;
 
   const sqlite = new DatabaseSync(':memory:');
+  /* Comme D1 (PRAGMA foreign_keys = 1, constaté sur la vraie base le 14/10) :
+     sans cela, une suppression faite dans le mauvais ordre passerait au banc
+     et échouerait en production. */
+  sqlite.exec('PRAGMA foreign_keys = ON');
   sqlite.exec(fs.readFileSync(path.join(__dirname, 'cloud', 'schema.sql'), 'utf8'));
   const env = { DB: d1(sqlite), PHOTOS: r2(), APP_ORIGIN: 'https://app.test', MAIL_FROM: 'GM <x@app.test>', RESEND_API_KEY: 'test', CODE_SECRET: 'secret-de-banc-32-octets-minimum!' };
+
+  /* « Google » du banc : une VRAIE paire de clés RSA, dont la partie publique est
+     servie à l'adresse des clés de Google. Les jetons sont signés pour de vrai :
+     le Worker vérifie une vraie signature RS256, pas un simulacre. */
+  const { generateKeyPairSync, sign: signer } = require('crypto');
+  const paire = () => generateKeyPairSync('rsa', { modulusLength: 2048 });
+  const cleGoogle1 = paire(), cleGoogle2 = paire(), clePirate = paire();
+  const jwk = (p, kid) => ({ ...p.publicKey.export({ format: 'jwk' }), kid, alg: 'RS256', use: 'sig' });
+  const clesServies = [jwk(cleGoogle1, 'banc-1')];
+  let lecturesCles = 0, clesInjoignables = false;
 
   const mails = [];
   const fetchReel = globalThis.fetch;
   globalThis.fetch = async (url, opt) => {
     if (String(url).startsWith('https://api.resend.com/')) { mails.push(JSON.parse(opt.body)); return new Response('{"id":"x"}', { status: 200 }); }
+    if (String(url) === 'https://www.googleapis.com/oauth2/v3/certs') {
+      lecturesCles++;
+      if (clesInjoignables) throw new TypeError('fetch failed');
+      return new Response(JSON.stringify({ keys: clesServies }), { status: 200, headers: { 'Cache-Control': 'public, max-age=3600' } });
+    }
     throw new Error('réseau interdit au banc : ' + url);
   };
 
@@ -314,6 +333,138 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   r = await appel('DELETE', '/compte', { session: sE });
   v('sans R2 : la suppression du compte fonctionne et efface tout', r.status === 200 && !sqlite.prepare("SELECT 1 FROM utilisateurs WHERE email='essai@exemple.fr'").get(), r.status);
   env.PHOTOS = r2Reel;
+
+  /* Connexion Google (14/10) : jetons VRAIMENT signés, valides ou piégés */
+  const CLIENT = 'client-banc.apps.googleusercontent.com';
+  const b64u = (x) => Buffer.from(x).toString('base64url');
+  let nJeton = 0, ipG = 0;
+  const jetonGoogle = (champs = {}, { cle = cleGoogle1, entete = {}, signature } = {}) => {
+    const s = Math.floor(Date.now() / 1000);
+    const h = b64u(JSON.stringify({ alg: 'RS256', kid: 'banc-1', typ: 'JWT', ...entete }));
+    const p = b64u(JSON.stringify({ iss: 'https://accounts.google.com', aud: CLIENT, sub: '1000000000000000000001', email: 'pilote@gmail.com',
+      email_verified: true, iat: s, exp: s + 3600, jti: String(++nJeton), ...champs }));
+    return `${h}.${p}.${signature !== undefined ? signature : b64u(signer('sha256', Buffer.from(`${h}.${p}`), cle.privateKey))}`;
+  };
+  const viaGoogle = (credential, { ipFixe, w = worker } = {}) => w.fetch(new Request('https://api.test/auth/google', { method: 'POST',
+    headers: { Origin: 'https://app.test', 'Content-Type': 'application/json', 'CF-Connecting-IP': ipFixe || `10.4.${++ipG % 250}.${ipG >> 8}` },
+    body: JSON.stringify({ credential }) }), env);
+  const nbComptes = (email) => sqlite.prepare('SELECT COUNT(*) AS n FROM utilisateurs WHERE email = ?').get(email).n;
+  const idDe = (email) => (sqlite.prepare('SELECT id FROM utilisateurs WHERE email = ?').get(email) || {}).id;
+
+  r = await viaGoogle(jetonGoogle());
+  v('Google · non configuré (pas de GOOGLE_CLIENT_ID) : 501 « google:false », état stable comme le stockage photo absent',
+    r.status === 501 && (await r.json()).google === false && lecturesCles === 0, r.status);
+  env.GOOGLE_CLIENT_ID = CLIENT;
+
+  r = await viaGoogle(jetonGoogle());
+  const g1 = r.status === 200 ? await r.json() : {};
+  v('Google · jeton valide : session ouverte, compte créé à l\'adresse Google', r.status === 200 && g1.email === 'pilote@gmail.com' && nbComptes('pilote@gmail.com') === 1, r.status);
+  v('Google · la session donne accès au garage comme une connexion par code', (await appel('GET', '/garage', { session: g1.session })).status === 404);
+  const ident = sqlite.prepare('SELECT * FROM identites').all();
+  v('Google · identité reliée, identifiant Google jamais stocké en clair (empreinte seulement)',
+    ident.length === 1 && /^[0-9a-f]{64}$/.test(ident[0].sujet) && !JSON.stringify(sqlite.prepare('SELECT * FROM identites').all()).includes('1000000000000000000001'));
+  r = await viaGoogle(jetonGoogle());
+  v('Google · reconnexion (nouveau jeton) : même compte, aucun doublon', r.status === 200 && nbComptes('pilote@gmail.com') === 1 && sqlite.prepare('SELECT COUNT(*) AS n FROM identites').get().n === 1);
+  r = await viaGoogle(jetonGoogle({ email: 'nouvelle-adresse@gmail.com' }));
+  v('Google · l\'adresse Google change : on retrouve le compte par l\'identifiant Google, pas par l\'e-mail',
+    r.status === 200 && (await r.json()).email === 'pilote@gmail.com' && nbComptes('nouvelle-adresse@gmail.com') === 0);
+
+  // Rejeu et rafale
+  const unique = jetonGoogle();
+  const premier = await viaGoogle(unique), rejoue = await viaGoogle(unique);
+  v('Google · jeton à usage unique : rejoué, il est refusé', premier.status === 200 && rejoue.status === 400, `${premier.status} / ${rejoue.status}`);
+  const rafaleG = jetonGoogle();
+  const rg = await Promise.all(Array.from({ length: 8 }, () => viaGoogle(rafaleG)));
+  v('Google · même jeton envoyé 8 fois simultanément : une seule session', rg.filter(x => x.status === 200).length === 1, rg.map(x => x.status).join(','));
+
+  // Jetons piégés : chacun doit être refusé
+  const sessionsAvant = sqlite.prepare('SELECT COUNT(*) AS n FROM sessions').get().n;
+  const [hV, pV, sV0] = jetonGoogle().split('.');
+  const pModifiee = b64u(JSON.stringify({ ...JSON.parse(Buffer.from(pV, 'base64url')), sub: 'autre-personne', email: 'victime@gmail.com' }));
+  const pieges = {
+    'charge modifiée après signature (autre personne)': `${hV}.${pModifiee}.${sV0}`,
+    'signé par une autre clé que Google': jetonGoogle({}, { cle: clePirate }),
+    'algorithme « none », sans signature': jetonGoogle({}, { entete: { alg: 'none' }, signature: '' }),
+    'algorithme HS256 (clé publique utilisée comme secret)': jetonGoogle({}, { entete: { alg: 'HS256' } }),
+    'destiné à une autre application (aud)': jetonGoogle({ aud: 'autre-app.apps.googleusercontent.com' }),
+    'émis par un autre que Google (iss)': jetonGoogle({ iss: 'https://pirate.test' }),
+    'expiré': jetonGoogle({ exp: Math.floor(Date.now() / 1000) - 3600, iat: Math.floor(Date.now() / 1000) - 7200 }),
+    'émis dans le futur': jetonGoogle({ iat: Math.floor(Date.now() / 1000) + 3600, exp: Math.floor(Date.now() / 1000) + 7200 }),
+    'adresse non vérifiée par Google': jetonGoogle({ sub: '2000000000000000000002', email: 'nonverifiee@gmail.com', email_verified: false }),
+    'pas un jeton': 'abc.def',
+  };
+  const statutsPieges = {};
+  for (const [nom, j] of Object.entries(pieges)) statutsPieges[nom] = (await viaGoogle(j)).status;
+  v('Google · 10 jetons piégés (signature, clé, algorithme, destinataire, émetteur, dates, adresse) : tous refusés (400)',
+    Object.values(statutsPieges).every(s => s === 400), JSON.stringify(statutsPieges));
+  v('… sans ouvrir la moindre session ni créer de compte',
+    sqlite.prepare('SELECT COUNT(*) AS n FROM sessions').get().n === sessionsAvant && nbComptes('victime@gmail.com') === 0 && nbComptes('nonverifiee@gmail.com') === 0);
+  const corpsRefus = await (await viaGoogle(jetonGoogle({ aud: 'x' }))).text();
+  v('… et sans dire au client pourquoi (raison dans le journal seulement)', /Connexion Google refusée/.test(corpsRefus) && !/destinataire|aud/i.test(corpsRefus), corpsRefus);
+
+  // Clés : rotation suivie, clé inconnue sans emballement
+  const lecturesAvant = lecturesCles;
+  for (let i = 0; i < 3; i++) await viaGoogle(jetonGoogle({}, { entete: { kid: 'kid-au-hasard-' + i } }));
+  v('Google · clé inconnue (kid au hasard) : refusée, sans réinterroger Google à chaque requête', lecturesCles === lecturesAvant, lecturesCles - lecturesAvant);
+  clesServies.push(jwk(cleGoogle2, 'banc-2'));
+  const nowReel = Date.now; Date.now = () => nowReel() + 61_000;
+  r = await viaGoogle(jetonGoogle({}, { cle: cleGoogle2, entete: { kid: 'banc-2' } }));
+  Date.now = nowReel;
+  v('Google · rotation des clés : une nouvelle clé publiée est relue et acceptée', r.status === 200 && lecturesCles === lecturesAvant + 1, `${r.status}, ${lecturesCles - lecturesAvant} relecture`);
+  const worker2 = (await import('file://' + tmp + '?cles-injoignables')).default;    // module neuf : cache de clés vide
+  clesInjoignables = true;
+  r = await viaGoogle(jetonGoogle(), { w: worker2 });
+  clesInjoignables = false;
+  v('Google · clés de Google injoignables : 503 explicite (pas « Erreur interne »), le code par e-mail reste proposé',
+    r.status === 503 && /code par e-mail/.test((await r.json()).erreur), r.status);
+
+  // Liaison avec un compte créé par code e-mail
+  const sGmail = await connecter('liaison@gmail.com');
+  await appel('PUT', '/garage', { session: sGmail, corps: { donnees: { spots: [{ carId: 'alpine-a110' }] } }, entetes: { 'If-Match': '0' } });
+  r = await viaGoogle(jetonGoogle({ sub: '3000000000000000000003', email: 'Liaison@Gmail.com' }));
+  const gLiaison = r.status === 200 ? await r.json() : {};
+  const garageLie = gLiaison.session ? await (await appel('GET', '/garage', { session: gLiaison.session })).json() : {};
+  v('Google · compte déjà créé par code, adresse Gmail : même compte, même garage (Google fait autorité sur Gmail)',
+    r.status === 200 && nbComptes('liaison@gmail.com') === 1 && garageLie.donnees && garageLie.donnees.spots[0].carId === 'alpine-a110', r.status);
+  await connecter('pro@entreprise.fr');
+  r = await viaGoogle(jetonGoogle({ sub: '4000000000000000000004', email: 'pro@entreprise.fr' }));
+  const corpsLier = r.status === 409 ? await r.json() : {};
+  v('Google · compte déjà créé par code, adresse NON Gmail sans domaine géré : 409 « lier », aucune prise du compte',
+    r.status === 409 && corpsLier.lier === true && !sqlite.prepare('SELECT 1 FROM identites WHERE utilisateur = ?').get(idDe('pro@entreprise.fr')), r.status);
+  r = await viaGoogle(jetonGoogle({ sub: '5000000000000000000005', email: 'pro@entreprise.fr', hd: 'entreprise.fr' }));
+  v('Google · même adresse, domaine géré par Google (hd) : relié au compte existant', r.status === 200 && nbComptes('pro@entreprise.fr') === 1
+    && !!sqlite.prepare('SELECT 1 FROM identites WHERE utilisateur = ?').get(idDe('pro@entreprise.fr')), r.status);
+  r = await viaGoogle(jetonGoogle({ sub: '6000000000000000000006', email: 'nouveau@entreprise.fr' }));
+  v('Google · adresse non Gmail SANS compte existant : compte créé (rien à prendre à personne)', r.status === 200 && nbComptes('nouveau@entreprise.fr') === 1, r.status);
+  ip = 400;
+  const sCodeSurGoogle = await connecter('pilote@gmail.com');
+  v('Google · compte créé par Google, puis connexion par code : même compte (l\'e-mail reste le canal de secours)',
+    !!sCodeSurGoogle && nbComptes('pilote@gmail.com') === 1);
+
+  // Limite de débit
+  const statutsDebit = [];
+  for (let i = 0; i < 21; i++) statutsDebit.push((await viaGoogle('abc.def.ghi', { ipFixe: '10.66.66.66' })).status);
+  v('Google · plus de 20 tentatives en 15 min depuis une IP : 429', statutsDebit[19] === 400 && statutsDebit[20] === 429, statutsDebit.slice(18).join(','));
+
+  // Export, suppression (clés étrangères actives, comme D1), purge
+  r = await appel('GET', '/compte/export', { session: g1.session });
+  const exG = r.status === 200 ? await r.json() : {};
+  v('Google · export RGPD : le moyen de connexion relié est listé (fournisseur et date)',
+    Array.isArray(exG.connexions) && exG.connexions.length === 1 && exG.connexions[0].fournisseur === 'google' && !('sujet' in exG.connexions[0]), JSON.stringify(exG.connexions));
+  const idPiloteG = idDe('pilote@gmail.com');
+  r = await appel('DELETE', '/compte', { session: g1.session });
+  v('Google · suppression d\'un compte relié à Google : réussie malgré les clés étrangères, identité effacée',
+    r.status === 200 && !idDe('pilote@gmail.com') && !sqlite.prepare('SELECT 1 FROM identites WHERE utilisateur = ?').get(idPiloteG), r.status);
+  r = await viaGoogle(jetonGoogle());
+  v('Google · après suppression, reconnexion Google : compte NEUF (rien de l\'ancien ne revient)', r.status === 200 && idDe('pilote@gmail.com') && idDe('pilote@gmail.com') !== idPiloteG);
+  sqlite.prepare("INSERT INTO jetons_consommes (empreinte, expire) VALUES ('perime', ?)").run(Date.now() - 1);
+  const jetonsVivants = sqlite.prepare('SELECT COUNT(*) AS n FROM jetons_consommes WHERE expire > ?').get(Date.now()).n;
+  await worker.scheduled({ cron: '17 3 * * *' }, env, { waitUntil() {} });
+  v('Google · purge nocturne : jetons expirés effacés, les autres gardés (rejeu toujours bloqué)',
+    !sqlite.prepare("SELECT 1 FROM jetons_consommes WHERE empreinte = 'perime'").get() && sqlite.prepare('SELECT COUNT(*) AS n FROM jetons_consommes').get().n === jetonsVivants);
+  r = await appel('DELETE', '/compte', { session: gLiaison.session });
+  v('Google · suppression d\'un compte avec garage ET identité Google : tout part', r.status === 200 && !idDe('liaison@gmail.com'), r.status);
+  delete env.GOOGLE_CLIENT_ID;
 
   /* RGPD : export, déconnexion, suppression */
   r = await appel('GET', '/compte/export', { session: sA });

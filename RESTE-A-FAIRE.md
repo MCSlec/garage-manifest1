@@ -65,6 +65,12 @@ politique de confidentialité avant d'ouvrir l'app au public.
 
 Guide détaillé : `cloud/DEPLOIEMENT.md`.
 
+- [ ] **Avant de déployer le serveur de comptes : rejouer le schéma** sur la base
+  `garage-comptes` (`TUTO-GRATUIT.md` C0). Le serveur du 14/10 utilise deux tables de
+  plus (connexion Google) ; sans elles, la suppression de compte et la purge de nuit
+  échouent. Sans risque (`CREATE TABLE IF NOT EXISTS`) ; « go schéma » et je le fais
+  par le connecteur.
+
 **➜ Voie gratuite, pour essayer sur toi seul (prête depuis la v20.196.0)** —
 **`TUTO-GRATUIT.md`, parties A, C, D, E** (tout dans le navigateur). Résumé, pour qui
 préfère la ligne de commande (`cloud/DEPLOIEMENT.md`, « Mode essai gratuit ») :
@@ -241,6 +247,10 @@ Capacitor autour du même code) :
   l'environnement Claude) : aujourd'hui seuls les résumés de recherche sont
   lisibles, ce qui ralentit le sourçage.
 - [ ] **Merger la PR #1** (jamais fait sans ta demande explicite).
+- [ ] **« Continuer avec Google » : code prêt, en sommeil** (v20.197.0, 14/10 — script
+  de Google autorisé par toi, `CLAUDE.md` §1.2). Reste à toi, **après la partie C** :
+  `TUTO-GRATUIT.md` **partie F** (identifiant Google, gratuit, ≈ 15 min), me donner
+  l'identifiant (public), puis l'essai sur **iPhone**. Apple : au passage en natif.
 - [ ] 🟡 **Connexion Google et Apple** (questions des 07 et 09/10). **Recommandation :
   le compte reste le nôtre** (base D1, identifiant aléatoire — déjà le cas, jamais
   l'e-mail) ; Google, Apple et le code e-mail ne sont que des **façons de s'y

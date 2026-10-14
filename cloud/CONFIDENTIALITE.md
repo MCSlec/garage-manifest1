@@ -59,6 +59,7 @@ la marque et le modèle proposés.
 | **Volume stocké** (nombre de photos, octets) | Appliquer le quota de stockage du compte | Tant que le compte existe |
 | **Voitures retirées** (identifiant de la voiture, date du retrait) | Faire disparaître la voiture de tes autres appareils | Tant que le compte existe |
 | **Photos supprimées** (empreinte SHA-256 de la photo, date de suppression — jamais la photo elle-même) | Faire disparaître la photo de tes autres appareils | Tant que le compte existe (5 000 plus récentes au plus) |
+| **Si tu te connectes avec Google** : l'adresse e-mail de ton compte Google (vérifiée par Google), une **empreinte** SHA-256 de ton identifiant Google (jamais l'identifiant lui-même), la date de la liaison. Rien d'autre : ni nom, ni photo de profil, ni contacts | Te reconnaître à la connexion suivante, même si ton adresse Google change | Tant que le compte existe |
 
 Précisions vérifiables dans le code :
 - Les photos prises dans l'app sont réencodées avant d'être enregistrées : leurs
@@ -79,6 +80,18 @@ Précisions vérifiables dans le code :
   ne conservent qu'une empreinte.
 - L'hébergeur (Cloudflare) peut journaliser les requêtes, dont l'adresse IP,
   selon sa propre politique.
+- **Connexion avec Google** : le jeton de connexion signé par Google n'est gardé
+  que sous forme d'**empreinte**, le temps de sa validité (environ une heure),
+  pour qu'il ne puisse pas servir deux fois ; la purge nocturne l'efface ensuite.
+  Les tentatives sont plafonnées par adresse IP (20 par quart d'heure), avec la
+  même empreinte que plus haut.
+- **Le bouton « Continuer avec Google »** est fourni par un script de Google. Ce
+  script n'est chargé **que lorsque tu ouvres le panneau « Compte »** sans être
+  connecté — jamais à l'ouverture de l'app : sans ce geste, Google n'est pas
+  contacté. Une fois chargé, Google reçoit ce que reçoit tout site qui affiche
+  son bouton (adresse IP, navigateur, et sa propre session si tu es connecté à
+  Google dans ce navigateur), selon **sa** politique de confidentialité. Tu peux
+  toujours te connecter par code e-mail à la place.
 
 ## Pourquoi c'est légal (bases légales, RGPD art. 6)
 
@@ -99,6 +112,7 @@ données ne servent qu'à te rendre ton garage.
 |---|---|---|
 | **Cloudflare, Inc.** | Hébergement du serveur (Workers), de la base (D1) et des photos (R2). La base est créée sous **juridiction UE** : elle est stockée et traitée dans l'Union européenne (réglage fixé à sa création, constaté le 04/10/2026 par l'API Cloudflare : `jurisdiction: "eu"`) | Tout ce qui est listé plus haut |
 | **Resend** | Envoi de l'e-mail de connexion | Ton adresse e-mail et le code |
+| **Google LLC** (seulement si tu choisis « Continuer avec Google ») | Te connecter avec ton compte Google : Google confirme ton identité et ton adresse | Google sait que tu te connectes à Garage Manifest ; il ne reçoit **rien** de ta collection |
 | **Fournisseur du modèle d'IA** : **Anthropic, PBC** (Claude) ou **Google LLC** (Gemini), selon le réglage `IA_FOURNISSEUR` du relais, plus l'autre si un secours `IA_SECOURS` est configuré. **[À COMPLÉTER — nommer ici le ou les fournisseurs réellement actifs au lancement.]** | Reconnaissance de la voiture sur la photo | La photo envoyée à l'identification, sans ton adresse ni ton identifiant (le relais ne transmet que l'image) |
 
 Ces sociétés sont établies aux **États-Unis**. **[À COMPLÉTER — vérifier au
@@ -133,7 +147,8 @@ leurs clauses contractuelles types, et l'indiquer ici.]**
   reste restaurable par l'hébergeur ; l'indiquer ici.]**
 - **Accès et portabilité** : Réglages → « Exporter ma collection » produit un
   fichier JSON complet (photos incluses). Une copie de tout ce que le serveur
-  détient (adresse, date de création, collection, liste des photos) est aussi
+  détient (adresse, date de création, moyens de connexion reliés, collection,
+  liste des photos) est aussi
   disponible sur demande à l'adresse de contact.
 - **Rectification** : modifie ta collection dans l'app puis sauvegarde ; pour
   changer d'adresse e-mail, contacte-nous.

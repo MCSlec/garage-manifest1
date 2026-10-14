@@ -5,8 +5,8 @@
 > Il dit **où on en est, ce qui est prouvé, ce qui reste, et les pièges déjà payés**.
 > Le détail vit ailleurs ; ici, on pointe vers lui.
 >
-> **Dernière mise à jour : 07/10/2026** (branche
-> `claude/create-claude-documentation-8eo2t7`, version `20.196.0`). **Partie B du
+> **Dernière mise à jour : 14/10/2026** (branche
+> `claude/create-claude-documentation-8eo2t7`, version `20.197.0`). **Partie B du
 > tuto en cours, à moitié faite** : lire le §2 avant toute instruction au propriétaire.
 > **À mettre à jour à chaque fin de session** : remplacer, ne pas empiler (l'historique
 > est dans `CONTEXT.md` et `git log`).
@@ -26,8 +26,8 @@
    export NODE_PATH=$PWD/.claude/outils-bancs/node_modules CHROMIUM=/opt/pw-browsers/chromium-1194/chrome-linux/chrome
    for f in banc-*.js; do node $f >/dev/null 2>&1 && echo "OK $f" || echo "ÉCHEC $f"; done
    ```
-   Dernier passage complet : **17/17 verts** (07/10, v20.196.0), après l'ajout de la
-   purge nocturne au relais (`ai-relay-worker.js`, hors cache : aucun bump).
+   Dernier passage complet : **17/17 verts** (14/10, v20.197.0), après l'ajout de
+   « Continuer avec Google » en sommeil (`banc-compte` 95, `banc-compte-navigateur` 69).
 4. **Connecteurs** : si « Cloudflare Developer Platform » est branché, **constater**
    l'état réel du compte (Workers, variables, liaisons, D1) et le comparer au §2
    ci-dessous avant d'affirmer quoi que ce soit.
@@ -54,6 +54,8 @@ faux. Seul le tableau de bord Cloudflare fait foi.
 | Compte Resend | Offre gratuite, **sans domaine**, **une** clé « Garage manifest » (27/08) — à révoquer. Historique d'envoi vide (rétention courte : ne prouve rien). Adresse du compte toujours **à vérifier** (C1) | Connecteur Resend, 02/10 |
 | R2 | Non activé (normal : mode essai, R2 exige une carte) | Connecteur, 02/10 |
 | Serveur de comptes | **N'existe pas** (partie C) | `workers_list`, 07/10 |
+| ⚠️ Schéma de la base | La base du 04/10 n'a **pas** les tables `identites` et `jetons_consommes` (14/10). **À rejouer avant la partie C** (`TUTO-GRATUIT.md` C0) | Dépôt vs base |
+| Connexion Google | Code prêt, **en sommeil** (`GOOGLE_CLIENT_ID` vide côté app et serveur). Script de Google autorisé par le propriétaire le 14/10 | Dépôt |
 | Comptes dans l'app | Code prêt et testé, **en sommeil** (`COMPTE_URL` vide) | Dépôt |
 
 **Ce que les connecteurs permettent** (vérifié le 07/10) : Cloudflare = lire les
@@ -83,9 +85,11 @@ qu'on lui fait tout refaire (vécu le 04/10).
 | 3 | **B2** — coller le nouveau `ai-relay-worker.js` (**celui du 07/10, avec purge**), puis la session relit le code déployé par le connecteur et le compare au dépôt | Propriétaire + session | À faire |
 | 4 | **B2 bis** — cron `17 3 * * *` sur le relais (**après** B2) | Propriétaire | À faire |
 | 5 | **B5** — sondage sans image (sur ordinateur, facultatif) puis vraie photo, onglet *Observability* ouvert ; ensuite supprimer la clé « CARDEX » | Propriétaire | À faire |
+| 5 bis | **C0** — rejouer `cloud/schema.sql` sur la base (2 tables du 14/10) ; « go schéma » = par le connecteur | Propriétaire ou session | À faire |
 | 6 | **C** — serveur de comptes, **sans R2**, `MAIL_FROM=Garage Manifest <onboarding@resend.dev>`, clé Resend neuve (l'ancienne révoquée), `CODE_SECRET`, cron **indispensable** | Propriétaire (secrets) + session | — |
 | 7 | **D** — adresse du Worker → `COMPTE_URL`, bump `VERSION_MODULE` + `sw.js`, bancs, livraison | Session | — |
 | 8 | **E** — test sur téléphone. **Exige la fusion de la PR #1** | Propriétaire | — |
+| 9 | **F** (facultatif) — identifiant Google (gratuit), variable `GOOGLE_CLIENT_ID` du serveur, puis la session le met dans `gm-compte.js` ; essai sur iPhone | Propriétaire + session | — |
 
 **Compatibilité vérifiée** : le nouveau relais et l'app de `main` utilisent le même
 contrat (`POST {image}` → `[{brand, model, variant, cues, confidence}]`), le même nom

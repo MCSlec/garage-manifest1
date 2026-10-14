@@ -36,7 +36,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_COMPTE = '2.1.0';
+  const VERSION_COMPTE = '2.2.0';
 
   /* Adresse du Worker de comptes, SANS « / » final.
      Ex. 'https://garage-comptes.<ton-compte>.workers.dev'. Vide = en sommeil.
@@ -44,6 +44,18 @@
      point d'entrée des bancs (banc-compte-navigateur.js). */
   const COMPTE_URL = '';
   let base = String(global.GM_COMPTE_URL || COMPTE_URL || '').replace(/\/+$/, '');
+
+  /* « Continuer avec Google » (14/10). Identifiant client OAuth de Google
+     Cloud : PUBLIC, ce n'est pas un secret. Vide = EN SOMMEIL : ni bouton, ni
+     script, ni requête vers Google. Renseigné, le script officiel de Google
+     (autorisé par le propriétaire, CLAUDE.md §1.2) n'est chargé qu'à
+     l'affichage du panneau Compte, et seulement hors connexion : Google n'est
+     pas contacté à chaque ouverture de l'app. Le compte reste le nôtre : le
+     serveur vérifie le jeton signé par Google et ouvre NOTRE session.
+     `window.GM_GOOGLE_CLIENT_ID` prend le pas (bancs). */
+  const GOOGLE_CLIENT_ID = '';
+  const idGoogle = String(global.GM_GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID || '').trim();
+  const SCRIPT_GOOGLE = 'https://accounts.google.com/gsi/client';
 
   const CLE = 'gm-compte';
   const CONCURRENCE_PHOTOS = 3;
@@ -62,7 +74,7 @@
   function etat() {
     const e = lireEtat();
     const enAttente = !e.session && e.emailEnAttente && Date.now() - (e.codeDemande || 0) < DUREE_CODE_MS ? e.emailEnAttente : null;
-    return { configure: !!base, connecte: !!(base && e.session), email: e.email || null, codeEnvoyeA: enAttente,
+    return { configure: !!base, connecte: !!(base && e.session), email: e.email || null, codeEnvoyeA: enAttente, google: !!(base && idGoogle),
              version: e.version || 0, derniereSauvegarde: e.derniere || null, sansPhotos: !!e.sansPhotos };
   }
 
@@ -132,9 +144,22 @@
   }
   const annulerCode = () => { const e = lireEtat(); delete e.emailEnAttente; delete e.codeDemande; ecrireEtat(e); };
 
+  /* Le jeton signé par Google part au serveur, qui le vérifie et ouvre NOTRE
+     session : la suite (sauvegarde, restauration) est identique à une connexion
+     par code. Point d'entrée unique : l'app native y passera le jeton que lui
+     rend le SDK Google, sans autre changement. */
+  async function connecterGoogle(credential) {
+    if (!credential) throw new ErreurCompte('Connexion Google interrompue', 0);
+    const r = await api('POST', '/auth/google', { corps: { credential } });
+    ecrireEtat({ ...lireEtat(), session: r.session, email: r.email, emailEnAttente: undefined, codeDemande: undefined, version: 0 });
+    return true;
+  }
+
   async function deconnecter() {
     try { await api('POST', '/auth/deconnexion'); } catch (_) {}
     ecrireEtat({});
+    // Recommandation de Google : sans cela, le bouton pourrait reconnecter d'office le même compte.
+    try { global.google && global.google.accounts && global.google.accounts.id.disableAutoSelect(); } catch (_) {}
   }
 
   // ------------------------------------------------ sauvegarde / restauration --
@@ -264,7 +289,8 @@
           <div class="srow"><div class="l"><b>Supprimer mon compte</b><span>Efface ton compte et tout ce qui est sauvé dans le cloud (ce téléphone garde son garage)</span></div><button class="btn red ghost" data-gcp="supprimer">Supprimer</button></div>` : e.codeEnvoyeA ? `
           <div class="srow"><div class="l"><b>Code envoyé</b><span>à ${esc(e.codeEnvoyeA)} — valable 10 minutes</span></div><button class="btn" data-gcp="changer">Changer d'adresse</button></div>
           <div class="srow"><input id="gcp-code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" maxlength="7" placeholder="123456" aria-label="Code reçu par e-mail" style="${CHAMP};letter-spacing:.3em"><button class="btn red" data-gcp="valider">Valider</button></div>` : `
-          <div class="srow"><div class="l"><b>Retrouver ton garage partout</b><span>Reçois un code par e-mail — pas de mot de passe</span></div></div>
+          <div class="srow"><div class="l"><b>Retrouver ton garage partout</b><span>${e.google ? 'Avec ton compte Google, ou un code reçu par e-mail' : 'Reçois un code par e-mail'} — pas de mot de passe</span></div></div>${e.google ? `
+          <div class="srow"><div id="gcp-google" style="flex:1;min-width:0;min-height:44px;display:flex;justify-content:center;align-items:center"></div></div>` : ''}
           <div class="srow"><input id="gcp-email" type="email" inputmode="email" autocomplete="email" placeholder="ton@email.fr" aria-label="Adresse e-mail" style="${CHAMP}"><button class="btn red" data-gcp="code">Recevoir un code</button></div>`;
     return `
       <div class="section panel" id="gcp-compte">
@@ -283,6 +309,52 @@
     if (!panneau) return;
     if (ancien) { if (ancien.previousElementSibling === panneau) return; ancien.remove(); }
     panneau.insertAdjacentHTML('afterend', panneauHTML());
+    if (document.getElementById('gcp-google')) monterBoutonGoogle();
+  }
+
+  /* Script de Google chargé UNE fois, à la première ouverture du panneau ; un
+     échec (hors ligne, bloqueur) permet un nouvel essai à l'ouverture suivante.
+     Le code par e-mail reste toujours proposé : Google n'est jamais le seul chemin. */
+  let chargementGoogle = null;
+  function chargerGoogle() {
+    if (!chargementGoogle) {
+      chargementGoogle = new Promise((ok, ko) => {
+        const s = document.createElement('script');
+        s.src = SCRIPT_GOOGLE; s.async = true;
+        s.onload = () => { const id = global.google && global.google.accounts && global.google.accounts.id; id ? ok(id) : ko(new Error('script-google')); };
+        s.onerror = () => ko(new Error('script-google'));
+        document.head.appendChild(s);
+      }).then((id) => {
+        id.initialize({ client_id: idGoogle, callback: surReponseGoogle, auto_select: false, cancel_on_tap_outside: true,
+          context: 'signin', ux_mode: 'popup', itp_support: true });
+        return id;
+      });
+      chargementGoogle.catch(() => { chargementGoogle = null; });
+    }
+    return chargementGoogle;
+  }
+  async function monterBoutonGoogle() {
+    const zone = document.getElementById('gcp-google');
+    if (!zone || zone.dataset.monte) return;
+    zone.dataset.monte = '1';
+    try {
+      const id = await chargerGoogle();
+      if (!zone.isConnected) return;                 // panneau redessiné entre-temps : le nouveau monte son bouton
+      id.renderButton(zone, { type: 'standard', theme: 'filled_black', size: 'large', text: 'continue_with', shape: 'pill',
+        logo_alignment: 'left', locale: 'fr', width: Math.max(200, Math.min(400, zone.clientWidth || 300)) });
+    } catch (_) {
+      if (zone.isConnected) zone.closest('.srow').remove();
+      dire('Connexion Google indisponible pour l\'instant : utilise le code par e-mail.');
+    }
+  }
+  async function surReponseGoogle(reponse) {
+    try {
+      dire('Connexion avec Google…');
+      await connecterGoogle(reponse && reponse.credential);
+      message = 'Connecté ✓'; rafraichir();
+    } catch (err) {
+      dire(err && err.message ? err.message : 'Connexion Google impossible');
+    }
   }
   function rafraichir() { const p = document.getElementById('gcp-compte'); if (p) { p.remove(); } greffer(); }
   function dire(t) { message = t; const m = document.getElementById('gcp-msg'); if (m) m.textContent = t; }
@@ -346,7 +418,7 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', installer); else installer();
 
   global.GMCompte = Object.freeze({
-    VERSION: VERSION_COMPTE, etat, demanderCode, verifierCode, annulerCode, deconnecter, enteteAuth,
+    VERSION: VERSION_COMPTE, etat, demanderCode, verifierCode, connecterGoogle, annulerCode, deconnecter, enteteAuth,
     sauvegarder, restaurer, supprimerCompte, exporterCompte,
   });
 })(window);

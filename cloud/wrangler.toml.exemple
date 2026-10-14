@@ -17,6 +17,10 @@ MAIL_FROM = "Garage Manifest <connexion@ton-domaine.fr>"
 # QUOTA_PHOTOS = "5000"
 # QUOTA_OCTETS = "1610612736"
 # QUOTA_GLOBAL_OCTETS = "53687091200"
+# « Continuer avec Google » (facultatif) : identifiant client OAuth de Google
+# Cloud — PUBLIC, ce n'est pas un secret. Absent = route /auth/google en 501.
+# Voir TUTO-GRATUIT.md, partie F.
+# GOOGLE_CLIENT_ID = "123456789-xxxx.apps.googleusercontent.com"
 
 # Purge nocturne de l'échu (codes, sessions, compteurs de débit) :
 # appelle le gestionnaire scheduled() du Worker. Heure UTC.

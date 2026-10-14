@@ -97,6 +97,7 @@ range comptes et collections. Elle doit exister avant tout le reste.
 | **C** | Créer le serveur de comptes | Rien de visible tant que je n'ai pas branché l'app |
 | **D** | Me donner une adresse | Je branche l'app dessus |
 | **E** | Tester sur ton téléphone | Les comptes, en mode essai |
+| **F** | *(Facultatif)* Créer l'identifiant Google | Le bouton « Continuer avec Google » |
 
 ---
 
@@ -296,6 +297,19 @@ moi.
 
 ## Partie C — Le serveur de comptes, en mode essai (≈ 20 min)
 
+### C0. Mettre la base à jour (si elle a été créée avant le 14/10)
+
+Le serveur de comptes du 14/10 utilise deux tables de plus (connexion Google :
+`identites`, `jetons_consommes`). Sans elles, **la suppression de compte et la purge
+de nuit échoueraient**. La base `garage-comptes` a été créée le 04/10 : il faut les
+ajouter.
+
+- [ ] Rejoue **A4** (copier `cloud/schema.sql`, le coller dans la Console D1,
+  **Execute**) — ou demande-le-moi : je le fais par le connecteur après ton « go ».
+  Rien n'est effacé : chaque ligne commence par `CREATE TABLE IF NOT EXISTS`.
+- [ ] Vérifie avec la requête de A5 : **8 tables** (les 6 d'origine + `identites` et
+  `jetons_consommes`), plus éventuellement `_cf_KV`.
+
 ### C1. La clé Resend
 
 - [ ] Va sur **resend.com**, connecte-toi → **API Keys** → **Create API Key**.
@@ -432,6 +446,58 @@ Une fois la fusion faite :
 
 🎉 C'est fini. Dis-moi simplement « comptes testés » : je coche dans
 `RESTE-A-FAIRE.md`.
+
+---
+
+## Partie F — « Continuer avec Google » (facultatif, ≈ 15 min, après C)
+
+Le code est prêt depuis le 14/10, **en sommeil** : sans l'identifiant ci-dessous, ni
+bouton, ni la moindre requête vers Google. Gratuit, **aucune carte bancaire**.
+
+> **Ce que tu vas créer :** un « identifiant client » Google. Il dit à Google :
+> « l'app installée sur `mcslec.github.io` a le droit d'afficher un bouton de
+> connexion ». Cet identifiant est **public** (il est lisible dans l'app) : tu peux
+> me l'envoyer. Si Google t'affiche aussi un **secret client** (*client secret*),
+> celui-là, on n'en a **pas besoin** : ne le copie pas, ne l'envoie à personne.
+
+- [ ] **F1. Ouvrir Google Cloud.** Va sur **console.cloud.google.com** avec ton compte
+  Google. En haut, sélecteur de projet → **Nouveau projet** → nom `Garage Manifest` →
+  **Créer**. *(Un projet à part, plutôt que celui de Gemini : l'identité et l'IA
+  restent séparées, et le nom affiché aux joueurs est le bon.)*
+- [ ] **F2. Présenter l'app à Google.** Menu → **Google Auth Platform** (selon
+  l'interface : *API et services* → *Écran de consentement OAuth*) → **Commencer** :
+  - nom de l'app : `Garage Manifest` ; e-mail d'assistance : ton adresse ;
+  - audience : **Externe** ; coordonnées : ton adresse → accepte → **Créer**.
+- [ ] **F3. Créer l'identifiant.** **Clients** (ou *Identifiants*) → **Créer un client**
+  → type **Application Web** → nom `Garage Manifest web` →
+  **Origines JavaScript autorisées** : `https://mcslec.github.io` (exactement, sans
+  `/` final, sans `garage-manifest1`) → **aucune** URI de redirection → **Créer**.
+- [ ] **F4. Copier l'identifiant client** : il finit par `.apps.googleusercontent.com`.
+- [ ] **F5. Qui peut se connecter.** Tant que l'app est en mode **Test**, seuls les
+  comptes ajoutés comme **utilisateurs test** peuvent se connecter : ajoute ta propre
+  adresse Google (*Audience* → *Utilisateurs test*). Pour ouvrir à tous :
+  **Publier l'application**. Avec les seules informations de base (adresse, nom),
+  Google ne demande en principe pas de vérification — **si un écran en réclame une,
+  ou un paiement, arrête-toi et préviens-moi.**
+- [ ] **F6. Le serveur.** Cloudflare → **garage-comptes** → **Settings** → *Variables
+  and secrets* → **Add** : **Text** (case *Secret* décochée), nom `GOOGLE_CLIENT_ID`,
+  valeur = l'identifiant de F4 → **Deploy**.
+- [ ] **F7. Me l'envoyer** dans la conversation. Je l'inscris dans l'app
+  (`gm-compte.js`), j'augmente la version, je relance les bancs, je livre. Comme pour E,
+  le bouton n'est visible sur ton téléphone qu'**après la fusion de la PR #1**.
+- [ ] **F8. Tester** : Réglages → Compte → **Continuer avec Google** → choisis ton
+  compte → « Connecté » → **Sauvegarder**. Puis, si tu peux, **sur un iPhone** : c'est
+  le seul point encore incertain (stockage séparé de l'app installée).
+
+| Symptôme | Cause | Remède |
+|---|---|---|
+| Fenêtre Google « Erreur 400 : origin_mismatch » | Origine mal saisie en F3 | Exactement `https://mcslec.github.io` |
+| « Accès bloqué : l'app n'a pas terminé la validation » | Mode Test, ton adresse n'est pas testeuse | F5 : ajoute-toi, ou publie |
+| Pas de bouton Google dans Compte | Identifiant pas encore livré, ou ancienne version en cache | F7 ; ferme et rouvre l'app |
+| « Connexion Google non configurée sur ce serveur » | Variable du serveur absente | F6 |
+| « Connexion Google refusée » | Identifiant différent entre l'app et le serveur | Même valeur en F6 et en F7 |
+| « Cette adresse a déjà un compte » | Adresse non Gmail déjà inscrite par code : Google n'en est pas maître | Connecte-toi par code (protection voulue) |
+| « Connexion Google indisponible pour l'instant » | Script de Google bloqué (hors ligne, bloqueur de pubs) | Code par e-mail, ou désactive le bloqueur pour l'app |
 
 ---
 

@@ -53,3 +53,22 @@ CREATE TABLE IF NOT EXISTS limites (
   compte   INTEGER NOT NULL,
   fenetre  INTEGER NOT NULL           -- début de la fenêtre (ms)
 );
+
+-- Connexions par un fournisseur d'identité (Google le 14/10 ; Apple plus tard).
+-- Le compte reste le nôtre : une identité n'est qu'une clé de plus pour l'ouvrir.
+-- Ajout sans migration : les comptes existants ne changent pas.
+CREATE TABLE IF NOT EXISTS identites (
+  fournisseur  TEXT NOT NULL,         -- 'google'
+  sujet        TEXT NOT NULL,         -- SHA-256 de « google:<identifiant Google> », jamais en clair
+  utilisateur  TEXT NOT NULL REFERENCES utilisateurs (id),
+  cree         INTEGER NOT NULL,
+  PRIMARY KEY (fournisseur, sujet)
+);
+CREATE INDEX IF NOT EXISTS identites_utilisateur ON identites (utilisateur);
+
+-- Jetons de connexion déjà présentés (usage unique) : empreinte de leur
+-- signature, gardée jusqu'à leur expiration (≈ 1 h), puis purgée la nuit.
+CREATE TABLE IF NOT EXISTS jetons_consommes (
+  empreinte  TEXT PRIMARY KEY,
+  expire     INTEGER NOT NULL         -- ms
+);
