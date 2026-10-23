@@ -373,6 +373,31 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   const unique = jetonGoogle();
   const premier = await viaGoogle(unique), rejoue = await viaGoogle(unique);
   v('Google · jeton à usage unique : rejoué, il est refusé', premier.status === 200 && rejoue.status === 400, `${premier.status} / ${rejoue.status}`);
+  /* Revue de sécurité du 14/10 : une même signature s'écrit de plusieurs façons en
+     base64 (« = » final, alphabet standard, espace, bits de remplissage du dernier
+     caractère). Aucune de ces réécritures ne doit passer pour un jeton neuf. */
+  const ALPHA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+  const remplissage = (s) => s.slice(0, -1) + ALPHA[ALPHA.indexOf(s[s.length - 1]) ^ 1];   // même octets décodés
+  const [hU, pU, sU] = unique.split('.');
+  const variantes = {
+    '« = » ajoutés': `${hU}.${pU}.${sU}==`,
+    'alphabet standard (+ /)': `${hU}.${pU}.${sU.replace(/-/g, '+').replace(/_/g, '/')}`,
+    'espace inséré': `${hU}.${pU}.${sU.slice(0, 10)} ${sU.slice(10)}`,
+    'bits de remplissage du dernier caractère': `${hU}.${pU}.${remplissage(sU)}`,
+  };
+  const statutsVariantes = {};
+  for (const [nom, j] of Object.entries(variantes)) statutsVariantes[nom] = (await viaGoogle(j)).status;
+  v('Google · jeton déjà utilisé, réécrit autrement (« = », alphabet, espace, bits de remplissage) : toujours refusé',
+    Object.values(statutsVariantes).every(s => s === 400), JSON.stringify(statutsVariantes));
+  const autreJeton = jetonGoogle(); const [hA, pA, sA2] = autreJeton.split('.');
+  const deuxEcritures = [await viaGoogle(`${hA}.${pA}.${remplissage(sA2)}`), await viaGoogle(autreJeton)];
+  v('… et dans l\'autre sens (réécriture d\'abord, original ensuite) : une seule session', deuxEcritures.filter(x => x.status === 200).length === 1,
+    deuxEcritures.map(x => x.status).join(','));
+  // Google n'émet que du base64url sans « = » : tout autre format est refusé d'emblée, même jamais utilisé.
+  const [hN, pN, sN] = jetonGoogle().split('.');
+  const formatsHors = [`${hN}.${pN}.${sN}==`, `${hN}.${pN}.${sN.replace(/-/g, '+').replace(/_/g, '/')}+`];
+  const statutsHors = []; for (const j of formatsHors) statutsHors.push((await viaGoogle(j)).status);
+  v('Google · format strict : un jeton neuf écrit hors base64url (« = », « + / ») est refusé', statutsHors.every(s => s === 400), statutsHors.join(','));
   const rafaleG = jetonGoogle();
   const rg = await Promise.all(Array.from({ length: 8 }, () => viaGoogle(rafaleG)));
   v('Google · même jeton envoyé 8 fois simultanément : une seule session', rg.filter(x => x.status === 200).length === 1, rg.map(x => x.status).join(','));
@@ -434,8 +459,24 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   r = await viaGoogle(jetonGoogle({ sub: '5000000000000000000005', email: 'pro@entreprise.fr', hd: 'entreprise.fr' }));
   v('Google · même adresse, domaine géré par Google (hd) : relié au compte existant', r.status === 200 && nbComptes('pro@entreprise.fr') === 1
     && !!sqlite.prepare('SELECT 1 FROM identites WHERE utilisateur = ?').get(idDe('pro@entreprise.fr')), r.status);
-  r = await viaGoogle(jetonGoogle({ sub: '6000000000000000000006', email: 'nouveau@entreprise.fr' }));
-  v('Google · adresse non Gmail SANS compte existant : compte créé (rien à prendre à personne)', r.status === 200 && nbComptes('nouveau@entreprise.fr') === 1, r.status);
+  /* Compte « piégé d'avance » (revue de sécurité du 14/10). Un tiers qui a gardé un
+     compte Google sur une adresse NON Gmail (adresse recyclée, ancien poste, boîte
+     piratée un temps) ne doit pas créer le compte AVANT la vraie personne, pour y
+     revenir quand elle y aura mis son garage. Le banc affirmait jusqu'ici « rien à
+     prendre à personne » : c'était faux. */
+  r = await viaGoogle(jetonGoogle({ sub: '6000000000000000000006', email: 'victime@orange.fr' }));
+  const corpsPiege = r.status === 409 ? await r.json() : {};
+  v('Google · adresse NON Gmail, sans compte : aucun compte créé (409 « lier ») — Google n\'en est pas maître',
+    r.status === 409 && corpsPiege.lier === true && nbComptes('victime@orange.fr') === 0, r.status);
+  ip = 420;
+  const sVictime = await connecter('victime@orange.fr');
+  await appel('PUT', '/garage', { session: sVictime, corps: { donnees: { spots: [{ carId: 'x', coords: { lat: 48.85, lng: 2.35 } }] } }, entetes: { 'If-Match': '0' } });
+  r = await viaGoogle(jetonGoogle({ sub: '6000000000000000000006', email: 'victime@orange.fr' }));
+  v('… la vraie personne s\'inscrit ensuite par code et sauvegarde : le tiers, revenu par Google, n\'ouvre pas son compte',
+    r.status === 409 && !sqlite.prepare('SELECT 1 FROM identites WHERE utilisateur = ?').get(idDe('victime@orange.fr')), r.status);
+  await appel('DELETE', '/compte', { session: sVictime });
+  r = await viaGoogle(jetonGoogle({ sub: '6100000000000000000061', email: 'nouveau@entreprise.fr', hd: 'entreprise.fr' }));
+  v('Google · domaine géré par Google (hd), sans compte : compte créé (Google en est maître)', r.status === 200 && nbComptes('nouveau@entreprise.fr') === 1, r.status);
   ip = 400;
   const sCodeSurGoogle = await connecter('pilote@gmail.com');
   v('Google · compte créé par Google, puis connexion par code : même compte (l\'e-mail reste le canal de secours)',

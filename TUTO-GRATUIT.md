@@ -496,7 +496,7 @@ bouton, ni la moindre requête vers Google. Gratuit, **aucune carte bancaire**.
 | Pas de bouton Google dans Compte | Identifiant pas encore livré, ou ancienne version en cache | F7 ; ferme et rouvre l'app |
 | « Connexion Google non configurée sur ce serveur » | Variable du serveur absente | F6 |
 | « Connexion Google refusée » | Identifiant différent entre l'app et le serveur | Même valeur en F6 et en F7 |
-| « Cette adresse a déjà un compte » | Adresse non Gmail déjà inscrite par code : Google n'en est pas maître | Connecte-toi par code (protection voulue) |
+| « Avec cette adresse, connecte-toi avec un code reçu par e-mail » | Adresse Google qui n'est pas en `@gmail.com` (ni d'un domaine géré par Google) : Google n'en est pas maître | Connecte-toi par code — protection voulue, elle empêche qu'un tiers crée ou ouvre ton compte avec une ancienne adresse |
 | « Connexion Google indisponible pour l'instant » | Script de Google bloqué (hors ligne, bloqueur de pubs) | Code par e-mail, ou désactive le bloqueur pour l'app |
 
 ---

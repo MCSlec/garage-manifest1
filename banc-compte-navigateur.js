@@ -424,7 +424,7 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   const connecterGoogleNav = async (tel, champs) => {
     await tel.page.evaluate(j => { window.__jetonGoogle = j; }, jetonGoogle(champs));
     await tel.page.click('#faux-google');
-    await tel.page.waitForFunction(() => /Connecté|compte|refus|indisponible/i.test(document.getElementById('gcp-msg')?.textContent || ''), null, { timeout: 10000 });
+    await tel.page.waitForFunction(() => /Connecté|compte|code reçu|refus|indisponible/i.test(document.getElementById('gcp-msg')?.textContent || ''), null, { timeout: 10000 });
   };
   const JOUEUR = { sub: '7000000000000000000007', email: 'joueur@gmail.com' };
   await connecterGoogleNav(G1, JOUEUR);
@@ -450,7 +450,7 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   sqlite.prepare("INSERT INTO utilisateurs (id, email, cree) VALUES ('banc-pro', 'pro@entreprise.fr', 0)").run();
   await connecterGoogleNav(G2, { sub: '8000000000000000000008', email: 'pro@entreprise.fr' });
   v('Google · adresse non Gmail déjà inscrite par code : message clair, aucune connexion',
-    /déjà un compte/.test(await G2.page.textContent('#gcp-msg')) && !(await G2.page.evaluate(() => window.GMCompte.etat().connecte)), await G2.page.textContent('#gcp-msg'));
+    /code reçu par e-mail/.test(await G2.page.textContent('#gcp-msg')) && !(await G2.page.evaluate(() => window.GMCompte.etat().connecte)), await G2.page.textContent('#gcp-msg'));
   const G3 = await telephone(true, { google: true, bloquerGoogle: true });
   await ouvrirReglages(G3.page);
   await G3.page.waitForFunction(() => /indisponible/.test(document.getElementById('gcp-msg')?.textContent || ''), null, { timeout: 8000 }).catch(() => {});

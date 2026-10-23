@@ -190,21 +190,30 @@ async function cleGoogle(kid) {
    porte à un jeton fabriqué. */
 async function verifierJetonGoogle(env, jeton) {
   const parties = typeof jeton === 'string' && jeton.length <= 4096 ? jeton.split('.') : [];
-  if (parties.length !== 3) return { refus: 'format' };
+  /* Alphabet base64url STRICT (revue de sécurité du 14/10) : `atob` est tolérant
+     (espaces, « + / », « = » final), si bien qu'une même signature s'écrivait de
+     plusieurs façons et contournait l'usage unique. On refuse tout autre caractère,
+     et l'empreinte d'usage unique porte sur les OCTETS décodés (voir plus bas). */
+  if (parties.length !== 3 || !parties.every(p => /^[A-Za-z0-9_-]+$/.test(p))) return { refus: 'format' };
   let entete, charge;
   try { entete = jsonB64url(parties[0]); charge = jsonB64url(parties[1]); } catch { return { refus: 'format' }; }
   if (entete.alg !== 'RS256' || typeof entete.kid !== 'string') return { refus: 'algorithme' };
   const cle = await cleGoogle(entete.kid);
   if (!cle) return { refus: 'cle-inconnue' };
-  let signee = false;
-  try { signee = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', cle, octetsB64url(parties[2]), enc.encode(`${parties[0]}.${parties[1]}`)); } catch {}
+  let signee = false, octetsSignature;
+  try {
+    octetsSignature = octetsB64url(parties[2]);
+    signee = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', cle, octetsSignature, enc.encode(`${parties[0]}.${parties[1]}`));
+  } catch {}
   if (!signee) return { refus: 'signature' };
   const s = Date.now() / 1000;
   if (!GOOGLE_EMETTEURS.includes(charge.iss)) return { refus: 'emetteur' };
   if (typeof charge.aud !== 'string' || charge.aud !== env.GOOGLE_CLIENT_ID) return { refus: 'destinataire' };
   if (!(Number(charge.exp) > s - DECALAGE_HORLOGE_S) || !(Number(charge.iat) < s + DECALAGE_HORLOGE_S)) return { refus: 'expire' };
   if (typeof charge.sub !== 'string' || !/^[0-9A-Za-z_-]{1,255}$/.test(charge.sub)) return { refus: 'sujet' };
-  return { charge, signature: parties[2] };
+  // Forme CANONIQUE de la signature (ses octets, en hexadécimal) : les bits de
+  // remplissage du dernier caractère base64 ne changent plus l'empreinte.
+  return { charge, signature: hex(octetsSignature) };
 }
 
 /* Google n'est MAÎTRE d'une adresse que pour Gmail et pour les domaines qu'il
@@ -369,17 +378,21 @@ async function routeGoogle(req, env) {
   const lien = () => env.DB.prepare('SELECT i.utilisateur AS id, u.email AS email FROM identites i JOIN utilisateurs u ON u.id = i.utilisateur WHERE i.fournisseur = ? AND i.sujet = ?').bind('google', sujet).first();
   let compte = await lien();
   if (!compte) {
+    /* Google ne CRÉE ni ne RELIE un compte que s'il est maître de l'adresse
+       (revue de sécurité du 14/10). Sinon, un tiers qui a gardé un compte Google
+       sur une adresse qu'il ne détient plus créerait le compte AVANT la vraie
+       personne, puis y reviendrait quand elle y aurait mis son garage. La règle
+       vaut donc dans les deux ordres, et avant toute écriture. */
+    if (!googleFaitAutorite(email, charge)) {
+      return json(env, { erreur: 'Avec cette adresse, connecte-toi avec un code reçu par e-mail', lier: true }, 409);
+    }
     let u = await env.DB.prepare('SELECT id FROM utilisateurs WHERE email = ?').bind(email).first();
-    let cree = false;
     if (!u) {
       const id = crypto.randomUUID();
       const r = await env.DB.prepare('INSERT INTO utilisateurs (id, email, cree) VALUES (?, ?, ?) ON CONFLICT (email) DO NOTHING').bind(id, email, maintenant).run();
-      cree = !!(r.meta && r.meta.changes === 1);
-      // Perdu une course (compte créé à l'instant par un autre appel) : on relit, et la règle d'autorité s'applique.
-      u = cree ? { id } : await env.DB.prepare('SELECT id FROM utilisateurs WHERE email = ?').bind(email).first();
-    }
-    if (!cree && !googleFaitAutorite(email, charge)) {
-      return json(env, { erreur: 'Cette adresse a déjà un compte : connecte-toi avec un code reçu par e-mail', lier: true }, 409);
+      // Perdu une course (compte créé à l'instant par un autre appel) : on relit. Google étant
+      // maître de l'adresse (contrôlé plus haut), rejoindre ce compte est légitime.
+      u = r.meta && r.meta.changes === 1 ? { id } : await env.DB.prepare('SELECT id FROM utilisateurs WHERE email = ?').bind(email).first();
     }
     await env.DB.prepare('INSERT INTO identites (fournisseur, sujet, utilisateur, cree) VALUES (?, ?, ?, ?) ON CONFLICT (fournisseur, sujet) DO NOTHING')
       .bind('google', sujet, u.id, maintenant).run();

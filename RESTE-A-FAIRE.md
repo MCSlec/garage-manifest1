@@ -251,6 +251,11 @@ Capacitor autour du même code) :
   de Google autorisé par toi, `CLAUDE.md` §1.2). Reste à toi, **après la partie C** :
   `TUTO-GRATUIT.md` **partie F** (identifiant Google, gratuit, ≈ 15 min), me donner
   l'identifiant (public), puis l'essai sur **iPhone**. Apple : au passage en natif.
+  Revue de sécurité du 14/10 faite, **deux défauts corrigés** (23/10). Conséquence
+  voulue : Google ne marche que pour les adresses **Gmail** ou d'un domaine géré par
+  Google ; les autres passent par le code e-mail. 🟡 Pour plus tard, si utile :
+  « relier Google » depuis un compte déjà ouvert par code (l'adresse étant alors
+  prouvée par le code) — rien à décider maintenant.
 - [ ] 🟡 **Connexion Google et Apple** (questions des 07 et 09/10). **Recommandation :
   le compte reste le nôtre** (base D1, identifiant aléatoire — déjà le cas, jamais
   l'e-mail) ; Google, Apple et le code e-mail ne sont que des **façons de s'y
