@@ -5,7 +5,7 @@
 > Il dit **où on en est, ce qui est prouvé, ce qui reste, et les pièges déjà payés**.
 > Le détail vit ailleurs ; ici, on pointe vers lui.
 >
-> **Dernière mise à jour : 23/10/2026** (branche
+> **Dernière mise à jour : 26/10/2026** (branche
 > `claude/create-claude-documentation-8eo2t7`, version `20.197.0`). **Partie B du
 > tuto en cours, à moitié faite** : lire le §2 avant toute instruction au propriétaire.
 > **À mettre à jour à chaque fin de session** : remplacer, ne pas empiler (l'historique
@@ -47,18 +47,18 @@ faux. Seul le tableau de bord Cloudflare fait foi.
 | **App en ligne** (GitHub Pages, construite depuis `main`) | Version du **21/09**. Aucun travail fait depuis le 22/09 n'est en ligne | `git log origin/main` |
 | **Base D1 `garage-comptes`** | **Existe**, juridiction **`eu`**, 6 tables + 2 index **identiques** à `cloud/schema.sql` (comparaison automatique). Id `e8f5ab27-78b9-40af-ae61-508a25afff13` | Connecteur, 04/10 (`d1_databases_list`, `sqlite_master`) |
 | **Relais IA** `silent-firefly-2620` — **code** | Toujours l'**ancien** (Gemini du 31/08, clé en `?key=`, `/notify` ouvert, CORS en miroir, aucun plafond, renvoie le détail des erreurs Google) | Connecteur, 02/10 (`workers_get_worker_code`) |
-| Relais — **réglages** | `GEMINI_API_KEY` = **Secret**, clé **neuve** « garage-manifest-relais » (projet « Projet Gemini 2 ») · `IA_FOURNISSEUR=gemini` · `APP_ORIGIN=https://mcslec.github.io` · **`RESEND_API_KEY` encore présente** (Variable en clair) · **aucune liaison** · aucun cron. Dernière modification 04/10 20:55 UTC, **inchangé au 22/10** | Capture du propriétaire 04/10 + `workers_list` 22/10 |
+| Relais — **réglages** | `GEMINI_API_KEY` = **Secret**, clé **neuve** « garage-manifest-relais » (projet « Projet Gemini 2 ») · `IA_FOURNISSEUR=gemini` · `APP_ORIGIN=https://mcslec.github.io` · **`RESEND_API_KEY` encore présente** (Variable en clair) · **aucune liaison** · aucun cron. Dernière modification 04/10 20:55 UTC, **inchangé au 26/10** | Capture du propriétaire 04/10 + `workers_list` 26/10 |
 | ⚠️ Reconnaissance photo **en ce moment** | **Non vérifiée** depuis le 04/10 : l'ancien code met la clé **neuve** dans `?key=`. Si Google la refuse sous cette forme, la reconnaissance est en panne jusqu'au collage du nouveau code (B2), qui passe par l'en-tête | Déduction, à vérifier |
 | Clés Gemini (AI Studio) | `…eeUw` « CARDEX » (l'**ancienne** du relais, à supprimer après B5) ; `…kvaw` « Default Gemini API Key » (inutilisée par le relais) ; la neuve. Les projets sont en **« Niveau sans frais »** | Captures du propriétaire, 04/10 |
 | Claude Haiku | **N'a jamais tourné**, aucune clé Anthropic : rien de facturable | Code déployé + réglages |
-| Compte Resend | Offre gratuite, **sans domaine**, **une** clé « Garage manifest » (27/08) — à révoquer. Historique d'envoi vide (rétention courte : ne prouve rien). Adresse du compte toujours **à vérifier** (C1) | Connecteur Resend, 02/10 |
+| Compte Resend | Offre gratuite, **sans domaine**, **une** clé « Garage manifest » (27/08) — à révoquer : **plus aucun appelant légitime** (l'app de `main` n'appelle pas `/notify`, vérifié le 26/10). Révocation par le connecteur **en attente de la confirmation explicite** du propriétaire (le connecteur l'exige, nom de la clé à l'appui). Adresse du compte toujours **à vérifier** (C1) | Connecteur Resend, 26/10 ; `git show origin/main:index.html` |
 | R2 | Non activé (normal : mode essai, R2 exige une carte) | Connecteur, 02/10 |
 | Serveur de comptes | **N'existe pas** (partie C) | `workers_list`, 07/10 |
 | Schéma de la base | **À jour** : 8 tables + 3 index, identiques au dépôt (C0 fait par le connecteur le 14/10, sur « go ») | Connecteur, `sqlite_master` comparé au dépôt |
 | Connexion Google | Code prêt, **en sommeil** (`GOOGLE_CLIENT_ID` vide côté app et serveur). Script de Google autorisé par le propriétaire le 14/10 | Dépôt |
 | Comptes dans l'app | Code prêt et testé, **en sommeil** (`COMPTE_URL` vide) | Dépôt |
 
-**Ce que les connecteurs permettent** (vérifié le 07/10 ; le 22/10, le connecteur Cloudflare s'annonce **déprécié** au profit de `https://mcp.cloudflare.com/mcp`, qui couvre toute l'API — à rebrancher un jour, il pourrait régler variables et liaisons) : Cloudflare = lire les
+**Ce que les connecteurs permettent** (vérifié le 07/10 ; le 22/10, le connecteur Cloudflare s'annonce **déprécié** au profit de `https://mcp.cloudflare.com/mcp`, qui couvre toute l'API. Il n'est **pas** branché : le propriétaire l'ajoute sur `claude.ai/customize/connectors`, puis ouvre une **nouvelle** session (les connecteurs se lisent au démarrage). Il permettrait à la session de faire la partie non secrète de B et C, toujours après « go ») : Cloudflare = lire les
 Workers et leur code, créer et interroger D1. **Pas** de juridiction à la création,
 **pas** d'écriture de variables, liaisons, cron ni code : tout cela se fait par le
 propriétaire, guidé. `workers_get_worker` **n'est pas appelé** : il pourrait renvoyer

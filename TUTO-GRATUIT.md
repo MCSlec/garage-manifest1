@@ -13,39 +13,36 @@
 
 ---
 
-## Ton point de départ (vérifié sur ton tableau de bord Cloudflare, 02/10)
+## Où tu en es (constaté le 26/10 par le connecteur Cloudflare et tes captures)
 
-Constaté sur la page **Settings** de `silent-firefly-2620` :
-
-| Élément | État **constaté** | Ce que ça veut dire |
+| Étape | État | Preuve |
 |---|---|---|
-| Clé Anthropic | **Aucune** | Claude Haiku n'a **jamais tourné** : le fichier Haiku déposé sur GitHub n'a jamais été collé dans Cloudflare. **Rien n'a été facturé, rien ne peut l'être.** |
-| `GEMINI_API_KEY` | Présente, en **Variable** (texte en clair), clé au format `AQ.` | C'est ta « clé API de reco ». Le relais tourne sur une version **Gemini** (`gemini-3.1-flash-lite`) écrite le **31/08**, qui n'a **jamais été déposée sur GitHub** |
-| `RESEND_API_KEY` | Présente, en **Variable** (texte en clair) | Reste de l'ancien signalement par e-mail ; le code actuel ne s'en sert pas |
-| Liaisons (*Bindings*) | **Aucune** | Pas de base D1 : la partie A est à faire |
-| App en ligne | Version du 21/09 (d'après GitHub) | Aucun des travaux récents n'est en ligne |
-| Compte Resend | Sans doute **dijon.autodetail@gmail.com** (d'après GitHub) | À vérifier en C1 |
+| **A** — base D1 `garage-comptes` | ✅ **Faite** (04/10), en **juridiction UE**, tables à jour (dont celles de la connexion Google, ajoutées le 14/10) | Lue par le connecteur, comparée au dépôt |
+| **B1** — clé Gemini neuve (« garage-manifest-relais », projet « Projet Gemini 2 ») | ✅ **Faite** (04/10) | Ta capture |
+| **B4** — `GEMINI_API_KEY` en **Secret**, `IA_FOURNISSEUR`, `APP_ORIGIN` | ✅ **Faites** (04/10) | Ta capture |
+| **B4 (fin)** — supprimer `RESEND_API_KEY` du relais | ❌ À faire | Toujours là le 04/10 ; relais inchangé depuis |
+| **B3** — liaison `DB` du relais | ❌ À faire | Aucune liaison |
+| **B2** — coller le nouveau code | ❌ À faire | Le relais tourne encore sur le code Gemini du 31/08 |
+| **B2 bis** — purge de nuit (cron) | ❌ À faire, **après** B2 | — |
+| **C** — serveur de comptes | ❌ À faire | Un seul Worker sur ton compte |
+| **F** — identifiant Google | Facultatif | — |
 
-**Quatre défauts à corriger**, tous réglés par la partie B (le nouveau code remplace
-entièrement l'actuel) :
-1. **Le relais n'a aucune limite.** Son adresse est publique. Avec Gemini gratuit, un
-   abus ne te coûte rien, mais il peut épuiser ton quota du jour, et la
-   reconnaissance s'arrête alors pour toi aussi.
-2. **Les deux clés sont en « Variable », pas en « Secret ».** Une Variable s'affiche
-   en clair à quiconque ouvre ce tableau de bord, et dans toute capture d'écran ; un
-   Secret est chiffré, et même toi tu ne peux plus le relire. Les étapes B4 et C1
-   les passent en Secret.
-3. **La clé Gemini part dans l'adresse de la requête** (`?key=…`). Une adresse se
-   retrouve dans les journaux et les outils intermédiaires ; Google demande l'en-tête.
-4. **La route `/notify` est ouverte à tous.** N'importe qui peut faire envoyer des
-   e-mails à dijon.autodetail@gmail.com, sur ton quota Resend, et y glisser du HTML
-   de son choix (le champ photo n'est vérifié que sur son début). L'app ne l'a jamais
-   appelée : le nouveau relais la supprime.
+**Ce que règle la fin de B** (le nouveau code remplace entièrement l'actuel) :
+1. **Le relais n'a aucune limite.** Son adresse est publique : un abus peut épuiser ton
+   quota Gemini du jour, et la reconnaissance s'arrête alors pour toi aussi.
+2. **`RESEND_API_KEY` est encore en Variable** (texte en clair) sur le relais, et plus
+   aucun code légitime ne s'en sert.
+3. **La clé Gemini part dans l'adresse de la requête** (`?key=…`). Google ne garantit
+   pas d'accepter ta clé **neuve** sous cette forme : si la reconnaissance ne marche
+   plus depuis le 04/10, c'est la cause probable. Le nouveau code passe par l'en-tête
+   `x-goog-api-key`.
+4. **La route `/notify` est ouverte à tous** (envoi d'e-mails sur ton quota Resend,
+   HTML au choix de l'expéditeur). L'app ne l'a jamais appelée : le nouveau relais la
+   supprime.
 
-> **Bonne nouvelle sur le format `AQ.`** Google ne délivre plus que ce nouveau
-> format de clé, et il n'accepte la clé que dans l'**en-tête** de la requête
-> (`x-goog-api-key`), pas dans l'adresse. C'est exactement ce que fait le nouveau
-> relais : ta clé actuelle y fonctionnera telle quelle.
+> **Après B5** (vraie photo réussie) : supprime l'ancienne clé Gemini « CARDEX »
+> (`…eeUw`) dans AI Studio. La clé « Default Gemini API Key » (`…kvaw`) ne sert pas au
+> relais : à supprimer aussi si rien d'autre ne l'utilise.
 
 ---
 
@@ -346,6 +343,10 @@ pas soi-même, on le fait tirer par la machine.
 - [ ] La console affiche une suite d'environ 44 caractères entre guillemets, du type
   `"q3V…k8="`. **Copie-la sans les guillemets.** Ne la garde nulle part ailleurs
   qu'à l'étape C5.
+- **Sur téléphone** (pas de console) : utilise le **générateur de mot de passe** d'un
+  gestionnaire (celui de Google, Bitwarden, 1Password…) réglé sur **40 caractères ou
+  plus**, lettres et chiffres. C'est aussi solide (≈ 238 bits de hasard, contre 256
+  pour la console) : ne l'invente surtout pas toi-même. Colle-le directement en C5.
 
 ### C3. Créer le serveur
 
