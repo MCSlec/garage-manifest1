@@ -197,6 +197,9 @@ async function verifierJetonGoogle(env, jeton) {
   if (parties.length !== 3 || !parties.every(p => /^[A-Za-z0-9_-]+$/.test(p))) return { refus: 'format' };
   let entete, charge;
   try { entete = jsonB64url(parties[0]); charge = jsonB64url(parties[1]); } catch { return { refus: 'format' }; }
+  // Du JSON valide n'est pas forcément un objet (« null », « 1 ») : sans ce contrôle, lire
+  // `entete.alg` levait une exception, prise pour une panne de Google (503) — relecture du 26/10.
+  if (!entete || typeof entete !== 'object' || !charge || typeof charge !== 'object') return { refus: 'format' };
   if (entete.alg !== 'RS256' || typeof entete.kid !== 'string') return { refus: 'algorithme' };
   const cle = await cleGoogle(entete.kid);
   if (!cle) return { refus: 'cle-inconnue' };
@@ -371,7 +374,9 @@ async function routeGoogle(req, env) {
      envoyé deux fois en même temps — n'ouvre qu'une session. */
   const neuf = await env.DB.prepare(
     'INSERT INTO jetons_consommes (empreinte, expire) VALUES (?, ?) ON CONFLICT (empreinte) DO NOTHING RETURNING empreinte'
-  ).bind(await sha256hex('google:' + verif.signature), Number(charge.exp) * 1000).first();
+  // Trace gardée jusqu'à la fin de la TOLÉRANCE d'horloge, pas seulement jusqu'à `exp` : un jeton
+  // reste accepté jusqu'à exp + DECALAGE_HORLOGE_S, la purge ne doit pas l'oublier avant (relecture du 26/10).
+  ).bind(await sha256hex('google:' + verif.signature), (Number(charge.exp) + DECALAGE_HORLOGE_S) * 1000).first();
   if (!neuf) return erreur(env, 400, 'Connexion Google déjà utilisée : recommence');
 
   const sujet = await sha256hex('google:' + charge.sub);      // l'identifiant Google n'est jamais stocké en clair

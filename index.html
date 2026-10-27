@@ -3062,8 +3062,14 @@ const VARIANTS = {
     return (typeof window !== "undefined" && window.GMMatcher && typeof window.GMMatcher.rapprocher === "function")
       ? window.GMMatcher : null;
   }
+  /* Seule l'analyse la PLUS RÉCENTE écrit lastAiError / lastAiErrorKind / lastMatch.
+     Une analyse précédente qui finissait en retard (coupure, délai dépassé)
+     écrasait le résultat de la suivante : « hors ligne » affiché alors que ses
+     candidats étaient arrivés (relecture de code du 26/10, reproduit au banc P0). */
+  let analyseIA = 0;
   async function identifyCar(thumbDataUrl) {
-    lastAiError = null; lastAiErrorKind = null;
+    const analyse = ++analyseIA, aJour = () => analyse === analyseIA;
+    lastAiError = null; lastAiErrorKind = null; lastMatch = null;
     const url = resolveAiEndpoint();
     if (!/^https:\/\//.test(url)) { lastAiError = "Aucun relais IA valide — saisie manuelle"; lastAiErrorKind = "relais"; return []; }
     try {
@@ -3086,12 +3092,14 @@ const VARIANTS = {
       finally { clearTimeout(t); }
       if (!res.ok) {
         let msg = ""; try { msg = String((await res.json()).error || "").slice(0, 200); } catch {}
-        lastAiError = (res.status === 429 && msg) ? msg : `Relais IA indisponible (HTTP ${res.status})`;
-        lastAiErrorKind = res.status === 429 ? "quota" : "panne";
+        if (aJour()) {
+          lastAiError = (res.status === 429 && msg) ? msg : `Relais IA indisponible (HTTP ${res.status})`;
+          lastAiErrorKind = res.status === 429 ? "quota" : "panne";
+        }
         return [];
       }
       const guesses = await res.json();
-      if (!Array.isArray(guesses)) { lastAiError = "Réponse du relais IA inattendue"; lastAiErrorKind = "panne"; return []; }
+      if (!Array.isArray(guesses)) { if (aJour()) { lastAiError = "Réponse du relais IA inattendue"; lastAiErrorKind = "panne"; } return []; }
       /* Rapprochement délégué à gm-matcher.js quand il est là : il sépare
          aiConfidence / catalogScore / finalConfidence et expose la marge
          entre les deux premiers candidats, ce que matchCatalog() ne sait
@@ -3105,7 +3113,7 @@ const VARIANTS = {
          du tout — et l'app resterait muette sur la raison. */
       if (global_GMMatcher()) {
         const res = global_GMMatcher().rapprocher(guesses, { catalogue: [...CARS, ...customCars()] });
-        lastMatch = res;
+        if (aJour()) lastMatch = res;
         return res.candidats.map(c => ({ id: c.id, confidence: c.finalConfidence }));
       }
       const matched = new Map();
@@ -3114,13 +3122,15 @@ const VARIANTS = {
         const m = matchCatalog(g.brand, g.model, typeof g.confidence==="number" ? g.confidence : 0.6);
         if (m && (!matched.has(m.id) || matched.get(m.id) < m.confidence)) matched.set(m.id, m.confidence);
       }
-      lastMatch = null;
+      if (aJour()) lastMatch = null;
       return [...matched.entries()].map(([id,confidence]) => ({ id, confidence })).sort((a,b) => b.confidence-a.confidence).slice(0,3);
     } catch (e) {
-      lastAiError = (e && e.name === "AbortError")
-        ? "Relais IA : délai dépassé (15 s)"
-        : "Relais IA injoignable — hors ligne ?";
-      lastAiErrorKind = (e && e.name === "AbortError") ? "delai" : "horsligne";
+      if (aJour()) {
+        lastAiError = (e && e.name === "AbortError")
+          ? "Relais IA : délai dépassé (15 s)"
+          : "Relais IA injoignable — hors ligne ?";
+        lastAiErrorKind = (e && e.name === "AbortError") ? "delai" : "horsligne";
+      }
       return [];
     }
   }
@@ -3470,7 +3480,7 @@ const VARIANTS = {
     state.flash = id;
     const isNew = !prev;
 
-    if (draft.lot) { if (isNew) draft.lot.nouvelles.push(id); else draft.lot.majs++; }
+    if (draft.lot) { if (isNew) draft.lot.nouvelles.push(id); else draft.lot.majs++; if (refus) draft.lot.sansPhoto = (draft.lot.sansPhoto || 0) + 1; }
 
     // Import par lot : on enchaîne sans fermer. Révélation COMPACTE, non bloquante
     // (décision du 30/09) : un lot de 30 photos ne doit pas coûter 30 écrans à toucher.
@@ -3512,7 +3522,8 @@ const VARIANTS = {
     return `
       <div class="detail-hero" style="border-radius:12px;overflow:hidden">
         ${ph ? `<img src="${ph}" />` : `<svg viewBox="0 0 24 24" class="icon" style="width:64px;height:64px;color:${col}">${P.car}</svg>`}
-        <span class="chip" style="position:absolute;left:12px;top:12px;background:rgba(9,9,11,.62);border:1px solid ${col}44;color:var(--muted);backdrop-filter:blur(6px)"><span style="width:8px;height:8px;border-radius:50%;background:${col};box-shadow:0 0 8px ${col}88"></span>${RARITY[c.r].label}</span>      </div>
+        <span class="chip" style="position:absolute;left:12px;top:12px;background:rgba(9,9,11,.62);border:1px solid ${col}44;color:var(--muted);backdrop-filter:blur(6px)"><span style="width:8px;height:8px;border-radius:50%;background:${col};box-shadow:0 0 8px ${col}88"></span>${RARITY[c.r].label}</span>
+      </div>
       ${strip}
       <div class="detail-title"><div><h2>${escapeHtml(c.model)}</h2><p class="muted">${c.c} ${escapeHtml(c.brand)}</p></div>
         <div style="display:flex;align-items:center;gap:8px">
@@ -3947,7 +3958,7 @@ const VARIANTS = {
           await Store.put(CUSTOM_REG);
         }
         const spots = Array.isArray(data.spots) ? data.spots : [];
-        let n = 0, rejected = 0, retirees = 0;
+        let n = 0, rejected = 0, retirees = 0, tombesLevees = false;
         // Fusion cloud : les retraits des DEUX appareils s'appliquent aux deux.
         const supprimes = fusion ? unirSupprimes(sanitizeSupprimes(META.supprimes), sanitizeSupprimes(data.meta && data.meta.supprimes)) : null;
         const photosSupprimees = fusion ? sanitizePhotosSupprimees(unirSupprimes(sanitizePhotosSupprimees(META.photosSupprimees), sanitizePhotosSupprimees(data.meta && data.meta.photosSupprimees))) : null;
@@ -3956,10 +3967,20 @@ const VARIANTS = {
           const f = !clean && rec && typeof rec === "object" ? fusionVers(rec.carId) : null;
           if (f) { const c2 = sanitizeSpot({ ...rec, carId: f.vers }); if (c2) clean = fusionnerPrise(c2, f); }
           if (!clean) { rejected++; continue; }
+          if (!fusion && META.supprimes && META.supprimes[clean.carId]) {
+            /* Retirée puis RÉIMPORTÉE depuis un fichier : c'est le choix du joueur. Sans rien
+               faire, la synchro suivante l'effaçait de nouveau (relecture de code du 26/10).
+               C'est la DATE qui protège : le cloud garde sa propre copie de la pierre tombale,
+               et « la modification la plus récente gagne ». Lever la pierre tombale locale
+               garde META propre, comme le fait une recapture (saveDraft). */
+            clean = { ...clean, maj: new Date().toISOString() };
+            delete META.supprimes[clean.carId]; tombesLevees = true;
+          }
           if (fusion && retireeApres(clean, supprimes)) continue;          // retirée ailleurs, après sa dernière modification
           if (fusion && state.spots.has(clean.carId)) clean = fusionnerDistante(state.spots.get(clean.carId), clean);
           await Store.put(clean); state.spots.set(clean.carId, clean); n++;
         }
+        if (tombesLevees) await saveMeta();
         if (fusion) {
           // Retraits (voitures ET photos) faits sur l'AUTRE appareil : on les applique
           // ici aussi, sur toutes les prises — celles qu'on vient d'importer comprises.
@@ -4293,7 +4314,7 @@ const VARIANTS = {
       <div class="sh-head"><h3>${TXT_P0.lotT}</h3><button class="iconbtn" data-close="1" aria-label="Fermer">${icon("x")}</button></div>
       <div class="sh-body" id="p0Bilan">
         <div class="p0-etat" style="margin-top:0" role="status"><div class="p0-t">${titre}</div>
-          <div class="p0-s">${m} fiche${m > 1 ? "s" : ""} mise${m > 1 ? "s" : ""} à jour · ${lot.total} photos</div></div>
+          <div class="p0-s">${m} fiche${m > 1 ? "s" : ""} mise${m > 1 ? "s" : ""} à jour · ${lot.total} photos${lot.sansPhoto ? ` · ${lot.sansPhoto} photo${lot.sansPhoto > 1 ? "s" : ""} non gardée${lot.sansPhoto > 1 ? "s" : ""} (limite de photos atteinte ou photo trop lourde)` : ""}</div></div>
         ${liste ? `<div class="p0-lotliste">${liste}</div>` : ""}
         <div class="p0-gains">${railP0("Garage", st.count, TOTAL, `<p class="p0-d" style="margin-top:6px">${pctCatalogue(st)}</p>`)}</div>
       </div>
@@ -4686,7 +4707,8 @@ const VARIANTS = {
     }
     if (t.dataset.pick) { draft.carId = t.dataset.pick; renderCaptureBody(); return; }
     if (t.dataset.var !== undefined && draft) { const v = t.dataset.var; if (draft.variants.has(v)) draft.variants.delete(v); else draft.variants.add(v); const z=$("#varZone"); if (z) z.innerHTML = variantChipsHTML(); return; }
-    if (t.hasAttribute("data-setcover")) { if (activeDetail) setCover(activeDetail, +t.dataset.setcover); return; }    if (t.dataset.addphoto) { if (activeDetail) { closeOverlay(); openCapture(activeDetail); } return; }
+    if (t.hasAttribute("data-setcover")) { if (activeDetail) setCover(activeDetail, +t.dataset.setcover); return; }
+    if (t.dataset.addphoto) { if (activeDetail) { closeOverlay(); openCapture(activeDetail); } return; }
     if (t.hasAttribute("data-dot")) { const pager=$("#pager"); if(pager) pager.scrollTo({ left:+t.dataset.dot*pager.clientWidth, behavior:"smooth" }); return; }
     if (t.dataset.release) { const rid = t.dataset.release; (async () => { if (await askConfirm("Retirer cette voiture du garage ?", "Retirer", true)) release(rid); })(); return; }
     if (t.dataset.favtoggle) { toggleFavorite(t.dataset.favtoggle); return; }

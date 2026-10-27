@@ -134,9 +134,11 @@ Rien ne casse, mais c'est déroutant : à garder court, ou à dire autour de toi
 - [ ] Après la réussite de B5 : **supprimer l'ancienne clé Gemini** « CARDEX »
   (`…eeUw`) dans AI Studio. La clé « Default Gemini API Key » (`…kvaw`) ne sert pas
   au relais : à supprimer si rien d'autre ne l'utilise (à toi de voir).
-- [ ] **Révoquer l'ancienne clé Resend** « Garage manifest » (27/08) : apparue en
-  partie sur des captures, plus utilisée par aucun code dès qu'elle quitte le
-  relais. Prévu en C1 ; je peux le faire plus tôt par le connecteur sur « go Resend ».
+- ✅ **Ancienne clé Resend « Garage manifest » (27/08) révoquée** le 26/10 par la
+  session, via le connecteur (ménage que tu m'as délégué) : aucun appelant légitime,
+  et la liste des clés Resend est vide (constaté le 26/10 et le 27/10). Rien à faire
+  de ton côté. La ligne `RESEND_API_KEY` du relais contient donc une clé morte :
+  supprime-la quand même (feuille de route de `TUTO-GRATUIT.md`, étape 2).
 
 ## 2 quater. 🌐 Ce que l'app contacte encore à l'extérieur (état au 30/09)
 

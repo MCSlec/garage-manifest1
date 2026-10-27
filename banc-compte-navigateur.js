@@ -320,6 +320,15 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   await ouvrirReglages(S2.page); await cliquer(S2.page, 'sauvegarder', 'Sauvegardé');
   await ouvrirReglages(S1.page); await cliquer(S1.page, 'restaurer', 'Récupéré');
   v('sync · une voiture recapturée après son retrait revient sur l\'autre appareil', !!(await garage(S1.page))['peugeot-205']);
+  // Relecture de code du 26/10 : retirée, puis RÉIMPORTÉE depuis un fichier (ancienne sauvegarde) → la synchro suivante ne doit pas l'effacer
+  await retirerViaApp(S1.page, 'bmw-m3');
+  await ouvrirReglages(S1.page); await cliquer(S1.page, 'sauvegarder', 'Sauvegardé');      // la pierre tombale part AU CLOUD
+  v('sync · (préalable) la pierre tombale de la M3 est au cloud', !!(cloudDe('sync@exemple.fr').donnees.meta.supprimes || {})['bmw-m3']);
+  await S1.page.evaluate(async (p) => { await window.GMGarage.importer({ app: 'garage-manifest', spots: [p] }); }, { ...prise('bmw-m3', [PH('V')]), maj: t0 });
+  await recharger(S1.page);
+  v('sync · voiture retirée puis réimportée depuis un fichier : présente après l\'import', !!(await garage(S1.page))['bmw-m3']);
+  await ouvrirReglages(S1.page); await cliquer(S1.page, 'restaurer', 'Récupéré');
+  v('sync · … et « Récupérer » ne l\'efface pas de nouveau (sa pierre tombale ne la vise plus)', !!(await garage(S1.page))['bmw-m3'], JSON.stringify(Object.keys(await garage(S1.page))));
 
   /* 4 quinquies. Relais IA : jeton de compte et limites, sur une vraie capture « Importer une photo » */
   const RELAIS = 'https://silent-firefly-2620.cyril-lapopin.workers.dev';

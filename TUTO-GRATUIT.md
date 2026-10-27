@@ -13,6 +13,172 @@
 
 ---
 
+## 🧭 Ta feuille de route — UNIQUEMENT ce qui reste (27/10)
+
+> Ce qui est déjà fait **n'y figure pas** : tu n'as rien à refaire. Suis les étapes
+> **dans l'ordre**, sur un **ordinateur**. Chaque étape dit où cliquer, ce que tu dois
+> voir, et renvoie à sa fiche détaillée plus bas (le *pourquoi*). Si le résultat
+> annoncé n'apparaît pas : arrête-toi, regarde « Si ça ne marche pas » en bas, ou
+> envoie-moi une capture **où aucune clé n'est visible**.
+
+### Séance 1 — Finir le relais IA (≈ 15 min)
+
+**Résultat :** la reconnaissance photo tourne gratuitement, avec des plafonds, **dans
+l'app actuelle** — sans attendre la mise en ligne de la PR.
+
+Tout se passe sur **dash.cloudflare.com → Workers & Pages → `silent-firefly-2620`**.
+
+- [ ] **1. Relier la base** *(fiche B3, 2 min)*
+  Onglet **Settings** → **Bindings** → **Add binding** → **D1 database** →
+  *Variable name* **`DB`** → *D1 database* **`garage-comptes`** → **Deploy**.
+  ✅ La liaison `DB` apparaît dans la liste.
+  *(Le code actuel l'ignore : rien ne change encore pour l'app. C'est voulu — on pose
+  la base **avant** le nouveau code pour que la reconnaissance ne coupe pas.)*
+
+- [ ] **2. Ménage des réglages** *(fin de B4, 1 min)*
+  **Settings** → **Variables and Secrets** → corbeille 🗑️ sur **`RESEND_API_KEY`**
+  (et sur `NOTIFY_TO` et `IA_SECOURS` s'ils existent) → **Deploy**.
+  ⚠️ **Ne touche pas** à `GEMINI_API_KEY`, `IA_FOURNISSEUR`, `APP_ORIGIN`.
+  ✅ `RESEND_API_KEY` n'apparaît plus ; `GEMINI_API_KEY` (masquée, type Secret),
+  `IA_FOURNISSEUR` et `APP_ORIGIN` sont toujours là.
+  *(La clé Resend qu'elle contenait est déjà révoquée chez Resend depuis le 26/10 :
+  la ligne ne sert plus à rien, on la retire par hygiène.)*
+
+- [ ] **3. Coller le nouveau code** *(fiche B2, 3 min)*
+  1. Ouvre cette adresse dans un nouvel onglet — c'est le code brut, en texte seul :
+     `https://raw.githubusercontent.com/MCSlec/garage-manifest1/claude/create-claude-documentation-8eo2t7/ai-relay-worker.js`
+  2. **Ctrl+A** puis **Ctrl+C** (Mac : Cmd+A, Cmd+C).
+  3. Retour sur `silent-firefly-2620` → bouton **Edit code** (en haut à droite).
+  4. Clique dans le code → **Ctrl+A** → **Ctrl+V** → **Deploy** → confirme.
+  ✅ « Deployed » / « Version deployed ».
+  👉 **Écris-moi « collé »** : je relis par le connecteur le code **réellement en
+  ligne** et je le compare au dépôt (une copie tronquée se voit tout de suite).
+
+- [ ] **4. La purge de nuit** *(fiche B2 bis, 1 min — après l'étape 3, jamais avant)*
+  **Settings** → **Trigger Events** → **Cron Triggers** → **Add** → expression
+  **`17 3 * * *`** → **Add/Deploy**.
+  ✅ Le déclencheur apparaît (« At 03:17 AM »).
+
+- [ ] **5. Test sans frais** *(fiche B5, 1 min)*
+  Ouvre l'app `https://mcslec.github.io/garage-manifest1/` → **F12** → **Console** →
+  colle (si Chrome refuse : tape `allow pasting`, Entrée, recommence) :
+  ```js
+  fetch("https://silent-firefly-2620.cyril-lapopin.workers.dev/",{method:"POST",body:"{}"}).then(r=>console.log(r.status),e=>console.log("bloqué",e))
+  ```
+  ✅ **`400`** = tout est en place (requête sans image, refusée **avant** tout quota
+  ou appel à Gemini : ne coûte rien). **503** → refais l'étape 1 · **500** → les
+  réglages de l'étape 2 · **« bloqué »** → `APP_ORIGIN`.
+
+- [ ] **6. La vraie photo** *(fiche B5, 3 min)*
+  `silent-firefly-2620` → onglet **Observability** → journaux en direct, laisse ouvert.
+  Sur le téléphone : photographie une voiture (ou importe une photo nette).
+  ✅ L'app propose une ou plusieurs voitures **et** la requête apparaît en **200**
+  dans les journaux, sans ligne `[relais]` rouge.
+
+- [ ] **7. Ménage chez Google** *(1 min, seulement si l'étape 6 a réussi)*
+  **aistudio.google.com/app/apikey** → l'ancienne clé **« CARDEX »** (`…eeUw`) →
+  ⋮ → **Supprimer**. La clé « Default Gemini API Key » (`…kvaw`) : à supprimer
+  aussi si rien d'autre ne s'en sert. **Ne touche pas** à `garage-manifest-relais`
+  (c'est celle du relais).
+
+### Séance 2 — Le serveur de comptes (≈ 20 min)
+
+**Résultat :** rien de visible tout de suite ; ça prépare les comptes et la
+sauvegarde. Peut se faire le même jour que la séance 1 ou un autre.
+
+> **Ordre volontaire :** on crée d'abord le serveur, et on ne fabrique chaque
+> secret **qu'au moment de le coller** (étapes 11 et 12). Un secret qui attend dans
+> le presse-papier pendant qu'on clique ailleurs finit collé au mauvais endroit.
+
+- [ ] **8. Créer le serveur** *(fiche C3, 4 min)*
+  **Workers & Pages** → **Create** → **Workers** → **Start with Hello World!** →
+  nom **`garage-comptes`** → **Deploy**. Puis **Edit code**, et même geste qu'à
+  l'étape 3 avec ce code-ci :
+  `https://raw.githubusercontent.com/MCSlec/garage-manifest1/claude/create-claude-documentation-8eo2t7/cloud/compte-worker.js`
+  → Ctrl+A, Ctrl+C → dans l'éditeur Ctrl+A, Ctrl+V → **Deploy**.
+
+- [ ] **9. Relier la base** *(fiche C4, 1 min)*
+  `garage-comptes` → **Settings** → **Bindings** → **Add binding** → **D1 database** →
+  **`DB`** → **`garage-comptes`** → **Deploy**. **Pas** de liaison R2 (elle exige une
+  carte bancaire ; sans elle, le serveur garde la collection et laisse les photos sur
+  le téléphone).
+
+- [ ] **10. Les deux réglages en texte** *(fiche C5)*
+  **Settings** → **Variables and Secrets** → **Add variable**, case **Secret
+  décochée** (c'est la case au bout de la ligne *Value* ; *+ Add* ajoute une ligne) :
+  - `APP_ORIGIN` = `https://mcslec.github.io`
+  - `MAIL_FROM` = `Garage Manifest <onboarding@resend.dev>`
+  → **Deploy**.
+
+- [ ] **11. Le secret des codes** *(fiche C2)*
+  Dans un **autre onglet**, F12 → Console → colle puis Entrée :
+  ```js
+  btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32))))
+  ```
+  Copie la suite affichée **sans les guillemets** → reviens sur `garage-comptes` →
+  **Add variable** → nom **`CODE_SECRET`**, colle la valeur, case **Secret cochée** →
+  **Deploy**.
+
+- [ ] **12. La clé Resend** *(fiche C1)*
+  Dans un autre onglet : **resend.com** → **API Keys** → **Create API Key** → nom
+  `garage-comptes`, permission **Sending access** → **copie la clé** (affichée une
+  seule fois) → reviens sur `garage-comptes` → **Add variable** → nom
+  **`RESEND_API_KEY`**, colle, case **Secret cochée** → **Deploy**.
+  Note au passage **l'adresse e-mail de ton compte Resend** (en haut à droite) : c'est
+  la seule qui pourra recevoir un code tant qu'on n'a pas de domaine.
+  *(Rien à supprimer chez Resend : l'ancienne clé a été révoquée le 26/10 et la liste
+  était vide. Si tu y vois une autre clé que celle que tu viens de créer, dis-le-moi.)*
+
+- [ ] **13. Contrôler les réglages** (Settings → Variables and Secrets).
+  ✅ Quatre lignes : `APP_ORIGIN` et `MAIL_FROM` lisibles, `CODE_SECRET` et
+  `RESEND_API_KEY` **masquées**. Une valeur secrète lisible en clair = case non
+  cochée : supprime la ligne et recrée-la. Puis copie n'importe quel mot pour vider
+  le presse-papier.
+
+- [ ] **14. La purge de nuit** *(fiche C6, 1 min — indispensable, c'est une promesse
+  RGPD)* `garage-comptes` → **Settings** → **Trigger Events** → **Cron Triggers** →
+  **Add** → **`17 3 * * *`** → **Add/Deploy**.
+
+- [ ] **15. Vérifier** *(fiche C7)* Ouvre
+  `https://garage-comptes.cyril-lapopin.workers.dev/garage` (adapte si Cloudflare a
+  donné une autre adresse au worker).
+  ✅ La page affiche `{"erreur":"Session absente ou expirée"}` : le serveur tourne,
+  lit la base, et refuse poliment un inconnu. C'est **la bonne réponse**.
+
+- [ ] **16. M'envoyer l'adresse** *(partie D)* — l'adresse du worker, **et rien
+  d'autre** (elle est publique). 👉 **De mon côté :** je l'inscris dans l'app
+  (`COMPTE_URL`), j'augmente la version, je repasse les bancs, je pousse sur la
+  branche.
+
+### Séance 3 — Mettre en ligne et tester (≈ 10 min)
+
+- [ ] **17. Écrire « merge »** quand tu le décides. Ton app en ligne est construite
+  depuis `main`, qui n'a **aucun** des travaux depuis fin août (parcours de capture,
+  corrections, comptes…). Je ne fusionne jamais sans ce mot.
+  *Mon conseil :* au plus tôt **après l'étape 6 réussie**. On ne change qu'une chose
+  à la fois : si la reconnaissance flanche, on saura que c'est le relais et pas la
+  nouvelle app.
+- [ ] **18. Tester sur le téléphone** *(partie E)* : ferme complètement l'app et
+  rouvre-la (deux fois si besoin) → **Plus → Réglages** : version **20.198.0 ou
+  plus** → **Compte** → adresse **du compte Resend** → **Recevoir un code** → code →
+  **Valider** → **Sauvegarder**. Écris-moi « comptes testés ».
+- [ ] **19. *(Facultatif)* « Continuer avec Google »** : partie F (identifiant Google,
+  gratuit), quand tu veux, après la séance 2.
+
+### Raccourci possible : me laisser faire les clics sans secret
+
+Le connecteur Cloudflare de cette session est **en lecture seule** pour les workers :
+il ne sait ni coller du code, ni poser une liaison, ni créer un déclencheur. Le
+**nouveau** connecteur Cloudflare (`https://mcp.cloudflare.com/mcp`) couvre toute
+l'API. Si tu l'ajoutes (**claude.ai/customize/connectors** → ajouter un connecteur
+personnalisé → cette adresse → autorise ton compte Cloudflare), puis ouvres une
+**nouvelle session** (les connecteurs se chargent au démarrage), je peux faire les
+étapes 1, 3, 4, 8, 9, 10 et 14 moi-même — chacune **annoncée, puis faite seulement
+après ton « go »**. Il te resterait les secrets (11, 12), la photo (6), le ménage
+Google (7) et le téléphone (18) : les secrets ne passent **jamais** par moi.
+
+---
+
 ## Où tu en es (constaté le 26/10 par le connecteur Cloudflare et tes captures)
 
 | Étape | État | Preuve |
@@ -20,18 +186,21 @@
 | **A** — base D1 `garage-comptes` | ✅ **Faite** (04/10), en **juridiction UE**, tables à jour (dont celles de la connexion Google, ajoutées le 14/10) | Lue par le connecteur, comparée au dépôt |
 | **B1** — clé Gemini neuve (« garage-manifest-relais », projet « Projet Gemini 2 ») | ✅ **Faite** (04/10) | Ta capture |
 | **B4** — `GEMINI_API_KEY` en **Secret**, `IA_FOURNISSEUR`, `APP_ORIGIN` | ✅ **Faites** (04/10) | Ta capture |
-| **B4 (fin)** — supprimer `RESEND_API_KEY` du relais | ❌ À faire | Toujours là le 04/10 ; relais inchangé depuis |
+| **B4 (fin)** — supprimer `RESEND_API_KEY` du relais | ❌ À faire (simple hygiène : la clé qu'elle contient est **révoquée** chez Resend depuis le 26/10) | Toujours là le 04/10 ; relais inchangé depuis |
 | **B3** — liaison `DB` du relais | ❌ À faire | Aucune liaison |
 | **B2** — coller le nouveau code | ❌ À faire | Le relais tourne encore sur le code Gemini du 31/08 |
 | **B2 bis** — purge de nuit (cron) | ❌ À faire, **après** B2 | — |
-| **C** — serveur de comptes | ❌ À faire | Un seul Worker sur ton compte |
+| **C0** — tables de la connexion Google dans la base | ✅ **Faite** (14/10, par le connecteur après ton « go ») | 8 tables et 3 index constatés |
+| **Ancienne clé Resend** « Garage manifest » | ✅ **Révoquée** (26/10, par le connecteur après ton accord) | Liste des clés Resend vide |
+| **C** — serveur de comptes (C1 à C7) | ❌ À faire | Un seul Worker sur ton compte |
 | **F** — identifiant Google | Facultatif | — |
 
 **Ce que règle la fin de B** (le nouveau code remplace entièrement l'actuel) :
 1. **Le relais n'a aucune limite.** Son adresse est publique : un abus peut épuiser ton
    quota Gemini du jour, et la reconnaissance s'arrête alors pour toi aussi.
-2. **`RESEND_API_KEY` est encore en Variable** (texte en clair) sur le relais, et plus
-   aucun code légitime ne s'en sert.
+2. **`RESEND_API_KEY` est encore en Variable** (texte en clair) sur le relais. La clé
+   est révoquée depuis le 26/10, donc inoffensive, mais une ligne que plus aucun code
+   ne lit n'a rien à faire là.
 3. **La clé Gemini part dans l'adresse de la requête** (`?key=…`). Google ne garantit
    pas d'accepter ta clé **neuve** sous cette forme : si la reconnaissance ne marche
    plus depuis le 04/10, c'est la cause probable. Le nouveau code passe par l'en-tête
@@ -134,9 +303,9 @@ range comptes et collections. Elle doit exister avant tout le reste.
   ```sql
   SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;
   ```
-  ✅ **Tu dois voir 6 tables** : `codes`, `garages`, `limites`, `sessions`, `usages`,
-  `utilisateurs`. Il peut y en avoir une 7ᵉ qui commence par `_cf_` : c'est celle de
-  Cloudflare, normal.
+  ✅ **Tu dois voir 8 tables** : `codes`, `garages`, `identites`, `jetons_consommes`,
+  `limites`, `sessions`, `usages`, `utilisateurs`. Il peut y en avoir une de plus qui
+  commence par `_cf_` : c'est celle de Cloudflare, normal.
 
 > **Pourquoi une console et pas un fichier ?** Le schéma, c'est le *plan* de la
 > base : quelles tables, quelles colonnes. Il ne contient aucune donnée. Le
@@ -315,12 +484,12 @@ ajouter.
   Si tu la perds, supprime-la et recrée-en une.
 - [ ] **Note l'adresse e-mail de ton compte Resend** (en haut à droite, ou
   *Settings*). C'est **la seule** adresse qui pourra recevoir un code tant qu'on n'a
-  pas de domaine. D'après GitHub, c'est probablement **dijon.autodetail@gmail.com**
-  (voir « Ton point de départ ») : vérifie-le ici.
-- [ ] Dans la liste **API Keys** de Resend, **supprime l'ancienne clé** (celle qui
-  était enregistrée en clair sur le relais). Elle a été visible en
-  texte clair, et plus aucun code ne s'en sert. Une clé neuve, rangée en Secret, ne
-  traîne nulle part.
+  pas de domaine. D'après GitHub, c'est probablement **dijon.autodetail@gmail.com** :
+  vérifie-le ici.
+- ✅ **Rien à supprimer** : l'ancienne clé « Garage manifest » (celle qui était en
+  clair sur le relais) a été **révoquée le 26/10** par le connecteur, avec ton accord,
+  et la liste des clés était ensuite vide. Si tu vois une autre clé que celle que tu
+  viens de créer, préviens-moi.
 
 ### C2. Fabriquer le secret des codes
 
@@ -370,7 +539,9 @@ pas soi-même, on le fait tirer par la machine.
 
 ### C5. Les réglages du serveur
 
-**Settings → Variables and Secrets → Add variable**, une ligne à la fois (champ **Type** : *Text* ou *Secret*) :
+**Settings → Variables and Secrets → Add variable**. Comme en B4 : pas de menu *Type*,
+c'est la case **Secret** au bout de la ligne *Value* (**cochée = Secret, décochée =
+Text**) ; *+ Add* ajoute une ligne :
 
 | Type | Nom (exactement) | Valeur |
 |---|---|---|
@@ -432,7 +603,7 @@ Une fois la fusion faite :
 
 - [ ] Sur le téléphone, ferme complètement l'app puis rouvre-la (deux fois si
   besoin) : c'est ainsi que le téléphone télécharge la nouvelle version. Dans
-  **Plus → Réglages**, la version affichée doit être **20.196.0** ou plus.
+  **Plus → Réglages**, la version affichée doit être **20.198.0** ou plus.
 - [ ] **Plus → Réglages → Compte** → tape **l'adresse de ton compte Resend** →
   **Recevoir un code**.
 - [ ] Le mail arrive en moins d'une minute (regarde les **indésirables**). Le code
@@ -511,7 +682,7 @@ exact et une capture d'écran **où aucune clé n'est visible**.
 | Symptôme | Cause | Remède |
 |---|---|---|
 | La Console D1 affiche une erreur à l'exécution du schéma | Copie incomplète | Recommence A4 avec le bouton **Copy raw file** (pas une sélection à la souris) |
-| A5 montre moins de 6 tables | Schéma exécuté en partie | Réexécute A4 : il ne recrée que ce qui manque |
+| A5 montre moins de 8 tables | Schéma exécuté en partie | Réexécute A4 : il ne recrée que ce qui manque |
 
 ### Partie B — le relais
 

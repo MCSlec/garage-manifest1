@@ -189,6 +189,38 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   v('E9 : fin du lot → UN bilan : 2 nouvelles voitures, 1 fiche mise à jour', /Lot terminé/.test(bilan) && /2 nouvelles voitures/.test(bilan) && /1 fiche mise à jour/.test(bilan), bilan.slice(0, 200));
   await capture('p0-9-bilan');
 
+  /* Relecture de code du 26/10 : une analyse précédente qui finit EN RETARD (coupure)
+     ne doit pas décider de l'écran de la suivante. identifyCar() écrivait son résultat
+     dans des variables partagées (lastAiErrorKind, lastMatch) que lit afterPhoto(). */
+  file.length = 0;
+  file.push({ corps: [], delai: 1500, coupure: true }, { corps: [{ brand: 'Ferrari', model: 'F40', confidence: 0.95 }], delai: 2500 });
+  await ouvrir(); await page.setInputFiles('#fileInput', fichier);      // analyse A : lente, puis coupée
+  await page.waitForTimeout(300);
+  await ouvrir(); await page.setInputFiles('#fileInput', fichier);      // analyse B, lancée pendant que A traîne
+  await resultat();
+  const ecranB = await texte('#capBody');
+  v('Analyse précédente terminée en retard (coupure) : l\'écran de la nouvelle photo montre SES candidats, pas l\'erreur de l\'ancienne',
+    /F40/.test(ecranB), ecranB.slice(0, 140));
+
+  /* Relecture de code du 26/10 : dans un lot, la DERNIÈRE photo refusée (voiture déjà au
+     plafond de photos) n'était annoncée nulle part — le bilan s'ouvrait directement. */
+  await page.evaluate(async () => { const ph = i => `data:image/jpeg;base64,${btoa('photo-' + i + '------')}`;
+    await window.GMGarage.importer({ app: 'garage-manifest', spots: [{ carId: 'alfa-giulia', at: '2026-09-01T12:00:00.000Z', coords: null, loc: 'Banc', note: '',
+      photos: Array.from({ length: 8 }, (_, i) => ph(i)), cover: 0, variants: [], favorite: false }] }); });
+  file.length = 0;
+  file.push({ corps: [{ brand: 'Ferrari', model: 'F40', confidence: 0.95 }] }, { corps: [{ brand: 'Alfa Romeo', model: 'Giulia', confidence: 0.93 }] });
+  await ouvrir();
+  await page.click('[data-cap="batch"]');
+  const lot2 = await page.evaluateHandle(() => window.__lot);
+  await lot2.asElement().setInputFiles([fichier, { ...fichier, name: 'e.jpg' }]);
+  for (let i = 0; i < 2; i++) {
+    await resultat(); await page.click('#capBody [data-cap="choix"].btn');
+    await page.waitForSelector('[data-act="save"]:not([disabled])'); await page.click('[data-act="save"]');
+  }
+  await page.waitForSelector('#p0Bilan', { timeout: 5000 });
+  const bilan2 = await texte('.sheet');
+  v('Lot : la dernière photo, refusée (Giulia déjà à 8 photos), est annoncée dans le bilan', /1 photo non gardée/.test(bilan2), bilan2.slice(0, 220));
+
   /* Mouvement réduit + thème clair, sur une vraie révélation */
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.evaluate(() => { document.querySelector('[data-close]')?.click(); document.documentElement.setAttribute('data-theme', 'light'); });

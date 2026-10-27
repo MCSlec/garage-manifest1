@@ -338,10 +338,10 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   const CLIENT = 'client-banc.apps.googleusercontent.com';
   const b64u = (x) => Buffer.from(x).toString('base64url');
   let nJeton = 0, ipG = 0;
-  const jetonGoogle = (champs = {}, { cle = cleGoogle1, entete = {}, signature } = {}) => {
+  const jetonGoogle = (champs = {}, { cle = cleGoogle1, entete = {}, signature, chargeBrute } = {}) => {
     const s = Math.floor(Date.now() / 1000);
     const h = b64u(JSON.stringify({ alg: 'RS256', kid: 'banc-1', typ: 'JWT', ...entete }));
-    const p = b64u(JSON.stringify({ iss: 'https://accounts.google.com', aud: CLIENT, sub: '1000000000000000000001', email: 'pilote@gmail.com',
+    const p = chargeBrute !== undefined ? b64u(chargeBrute) : b64u(JSON.stringify({ iss: 'https://accounts.google.com', aud: CLIENT, sub: '1000000000000000000001', email: 'pilote@gmail.com',
       email_verified: true, iat: s, exp: s + 3600, jti: String(++nJeton), ...champs }));
     return `${h}.${p}.${signature !== undefined ? signature : b64u(signer('sha256', Buffer.from(`${h}.${p}`), cle.privateKey))}`;
   };
@@ -398,6 +398,15 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   const formatsHors = [`${hN}.${pN}.${sN}==`, `${hN}.${pN}.${sN.replace(/-/g, '+').replace(/_/g, '/')}+`];
   const statutsHors = []; for (const j of formatsHors) statutsHors.push((await viaGoogle(j)).status);
   v('Google · format strict : un jeton neuf écrit hors base64url (« = », « + / ») est refusé', statutsHors.every(s => s === 400), statutsHors.join(','));
+  /* Relecture de code du 26/10 : la trace d'usage unique était gardée jusqu'à `exp`,
+     alors qu'un jeton reste accepté jusqu'à `exp` + 60 s (tolérance d'horloge). */
+  const sNow = Math.floor(Date.now() / 1000);
+  const presqueExpire = jetonGoogle({ iat: sNow - 3600, exp: sNow - 30 });
+  const avantPurgeG = await viaGoogle(presqueExpire);
+  await worker.scheduled({ cron: '17 3 * * *' }, env, { waitUntil() {} });
+  const apresPurgeG = await viaGoogle(presqueExpire);
+  v('Google · jeton dans la tolérance d\'horloge : la purge de nuit n\'efface pas la trace de son usage', avantPurgeG.status === 200 && apresPurgeG.status === 400,
+    `${avantPurgeG.status} / ${apresPurgeG.status}`);
   const rafaleG = jetonGoogle();
   const rg = await Promise.all(Array.from({ length: 8 }, () => viaGoogle(rafaleG)));
   v('Google · même jeton envoyé 8 fois simultanément : une seule session', rg.filter(x => x.status === 200).length === 1, rg.map(x => x.status).join(','));
@@ -417,10 +426,13 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
     'émis dans le futur': jetonGoogle({ iat: Math.floor(Date.now() / 1000) + 3600, exp: Math.floor(Date.now() / 1000) + 7200 }),
     'adresse non vérifiée par Google': jetonGoogle({ sub: '2000000000000000000002', email: 'nonverifiee@gmail.com', email_verified: false }),
     'pas un jeton': 'abc.def',
+    // Relecture de code du 26/10 : un JSON valide qui n'est pas un objet levait une exception → faux « Google injoignable » (503).
+    'en-tête qui n\'est pas un objet (null)': 'bnVsbA.e30.AAAA',
+    'charge signée qui n\'est pas un objet (null)': jetonGoogle({}, { chargeBrute: 'null' }),
   };
   const statutsPieges = {};
   for (const [nom, j] of Object.entries(pieges)) statutsPieges[nom] = (await viaGoogle(j)).status;
-  v('Google · 10 jetons piégés (signature, clé, algorithme, destinataire, émetteur, dates, adresse) : tous refusés (400)',
+  v('Google · 12 jetons piégés (signature, clé, algorithme, destinataire, émetteur, dates, adresse, structure) : tous refusés (400)',
     Object.values(statutsPieges).every(s => s === 400), JSON.stringify(statutsPieges));
   v('… sans ouvrir la moindre session ni créer de compte',
     sqlite.prepare('SELECT COUNT(*) AS n FROM sessions').get().n === sessionsAvant && nbComptes('victime@gmail.com') === 0 && nbComptes('nonverifiee@gmail.com') === 0);

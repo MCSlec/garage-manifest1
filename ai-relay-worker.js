@@ -271,7 +271,12 @@ async function identifier(request, env) {
   if (base64Data.length * 3 / 4 > MAX_IMAGE_OCTETS) return json({ error: "Image trop lourde (2 Mo au plus)" }, 413, env);
 
   /* Quotas, vérifiés AVANT l'appel payant. D'abord l'appareil ou le compte,
-     puis le plafond global du service. */
+     puis le plafond global du service.
+     CHOIX VOULU (relecture de code du 26/10) : une tentative compte même si le
+     fournisseur échoue ensuite (panne, quota épuisé) — on ne la « rend » pas. Rendre
+     le quota sur échec permettrait, pendant une panne, d'appeler le fournisseur
+     sans aucune borne ; le prix est qu'une longue panne peut user le plafond du
+     jour. On préfère borner les appels au fournisseur en toute circonstance. */
   const utilisateur = await utilisateurDeSession(request, env);
   const ip = request.headers.get("CF-Connecting-IP") || "inconnue";
   const perso = utilisateur

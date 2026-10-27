@@ -61,3 +61,36 @@ stocké s'il peut être calculé ». `INFO` ne garderait que ce que `SPECS` n'a 
 ## 3. Bancs après correction
 
 audit 0 erreur / 0 alerte · matcher 17/17 · fusions 19/19 · DOM 14/14 · rendu 51/51 · rouleau 19/19 · **imports 18/18 (nouveau)**.
+
+---
+
+# Relecture de code du 26/10/2026
+
+> `/code-review` sur les 34 commits `c0a64f0~1..HEAD`, sans passe de vérification :
+> les dix pistes ont été **confirmées une à une sur le code** avant toute
+> correction (§8 sexies). Chaque correctif a été reproduit **avant** (un test qui
+> échoue sur l'ancien code), puis vérifié par mutation.
+
+## 4. Corrigé (v20.198.0)
+
+| Réf. | Gravité | Défaut | Preuve | Correctif |
+|---|---|---|---|---|
+| **R-1** | 🟠 Logique | `identifyCar()` écrivait son résultat dans des globales (`lastAiError`, `lastAiErrorKind`, `lastMatch`). Une analyse **précédente** qui se terminait en retard (lot, coupure réseau) les écrasait : l'écran « L'analyse a pris trop de temps » s'affichait alors que des candidats valides venaient d'arriver. | `banc-p0.js`, nouveau test « analyse précédente terminée en retard » : échoue sur l'ancien code | Compteur de génération `analyseIA` : chaque appel reçoit un numéro, et **seul le dernier** a le droit d'écrire (`aJour()`). Le contrat de retour d'`identifyCar()` (`[{id, confidence}]`) reste inchangé : aucun appelant à modifier |
+| **R-2** | 🟠 Données | Importer un fichier (sans fusion) ne levait pas la pierre tombale `META.supprimes` : une voiture retirée puis **réimportée** était supprimée de nouveau au prochain « Récupérer » | `banc-compte-navigateur.js` : retrait → sauvegarde (la pierre tombale part au cloud) → import → récupération → la voiture doit rester | La prise est datée de l'import (`maj` = maintenant) **et** la pierre tombale locale est levée. C'est la **date** qui protège : le cloud garde sa propre copie de la pierre tombale, et « la modification la plus récente gagne ». Mutation qui retire la date : **détectée** (71/72). La levée, elle, aligne l'import sur `saveDraft` (pas de pierre tombale périmée exportée) ; sans effet observable sur la fusion puisque la date gagne déjà, sa mutation passe le banc (72/72) — attendu, et vérifié le 27/10 |
+| **R-3** | 🔴 Sécurité | La trace d'usage unique d'un jeton Google était purgée à `exp`, alors que le jeton reste accepté jusqu'à `exp` + 60 s (tolérance d'horloge) : une fenêtre de rejeu d'au plus une minute, une fois par nuit | `banc-compte.js`, test « tolérance d'horloge » | La trace vit jusqu'à `exp + DECALAGE_HORLOGE_S` : même constante pour accepter et pour oublier, les deux ne peuvent plus diverger |
+| **R-6** | 🟡 Robustesse | Un en-tête de jeton qui se décode en JSON **non objet** (`null`, `1`) faisait lever `entete.alg`, prise pour une panne de Google : 503 et fausse alerte au journal, déclenchable par n'importe qui | `banc-compte.js` : 2 nouveaux jetons piégés (`bnVsbA.e30.AAAA`, charge `null` signée), 12 au total | Contrôle de type → refus `format` (400) |
+| **R-7** | 🟡 Affichage | Pendant un lot, une photo non gardée (plafond par rareté atteint, ou trop lourde même recompressée) n'était annoncée nulle part | `banc-p0.js`, test « la dernière photo, refusée, est annoncée dans le bilan » | Compteur `lot.sansPhoto`, affiché dans le bilan du lot avec sa raison |
+| **R-10** | ⚪ Dette | Le commit `4bc1243` avait fusionné deux lignes sans rapport avec son objet (gestionnaire `setcover` / `addphoto`, chip de rareté) : infraction au §1.3 | `git diff` | Lignes rétablies à l'identique |
+
+## 5. Non corrigé — avec la raison
+
+| Réf. | Constat | Pourquoi pas maintenant | Quand y revenir |
+|---|---|---|---|
+| **R-4** | `normaliserPhotos()` remplace une photo trop lourde P par P' sans pierre tombale pour P : si P existait **déjà dans le cloud**, la fusion la ramènerait à côté de P' (doublon visuel) | **Inatteignable aujourd'hui.** Le scénario suppose une sauvegarde cloud contenant P, faite par l'ancien serveur à 12 Mo. Or ce serveur n'a **jamais été déployé** (le Worker de comptes n'existe pas encore : étape C), et `normaliserPhotos()` passe **avant chaque** sauvegarde : dès le premier déploiement, aucune photo > 1,5 Mo n'atteint le cloud. Cas résiduel théorique : la même ancienne photo importée par fichier sur **deux** appareils, recompressée par deux navigateurs aux encodeurs différents | Si un jour le plafond par photo baisse encore : poser alors une pierre tombale pour P au moment de la recompression |
+| **R-5** | Le compteur de stockage par compte (`usages`) ne fait que monter : aucune route ne supprime une photo de R2 | **R2 n'est pas branché** (mode gratuit, R2 exige une carte bancaire) : toutes les routes photo répondent 501, il n'y a rien à compter | À l'activation de R2 : route de suppression (pierres tombales de photos → `DELETE` R2 + décrément), et recomptage initial à partir de la liste du préfixe |
+| **R-8** | Le relais décompte la tentative **avant** l'appel au fournisseur et ne la rend pas en cas d'échec | **Choix voulu**, désormais écrit en commentaire dans `ai-relay-worker.js` : « rendre » la tentative permettrait à un script de marteler le fournisseur pendant une panne sans jamais consommer son quota. On borne les appels payants en toute circonstance | — |
+| **R-9** | `sansPhotosSupprimees()` recalcule le SHA-256 de toutes les photos à chaque fusion dès qu'une pierre tombale de photo existe | Coût réel seulement sur un très gros garage (≈ 1 000 photos) **et** avec le cloud actif. Aujourd'hui : cloud non déployé | Si une fusion se mesure à plus d'une seconde sur téléphone : table photo → empreinte en mémoire, ou ne hacher que les photos dont la taille correspond à une pierre tombale |
+
+## 6. Bancs après correction (27/10)
+
+17/17 verts : audit 0 erreur / 0 alerte · matcher 17 · fusions 19 · DOM 14 · rendu 51 · rouleau 19 · imports 20 · carte 7 · carte perso 13 · relais 36 · **comptes 100** · **comptes navigateur 72** · **P0 28** · photos 19 · mise en page 16 · thème 10 · i18n (recensement régénéré).

@@ -50,6 +50,7 @@ précédentes : ces règles n'existent que parce qu'elles sont écrites ici.
 | **`RESTE-A-FAIRE.md` : une ligne n'est cochée que si le propriétaire dit qu'elle est faite**, jamais par déduction | Propriétaire |
 | **Une question en attente se pose une fois**, puis vit dans `RESTE-A-FAIRE.md` (§8 sexies) ; pas de vérification programmée de la PR | Propriétaire, 30/09 |
 | **Point d'entrée pour les déploiements : `TUTO-GRATUIT.md`** (tout dans le navigateur, le propriétaire n'utilise pas la ligne de commande) | 01/10 |
+| **Le moment est délégué** : ce qui est utile et bon à faire *maintenant* (code, bancs, revues en lecture seule, docs, commits et push sur la branche de travail), l'agent le fait sans redemander. **Restent sur demande explicite** : le merge, toute dépense, les secrets. **Restent annoncées avec « go »** : les modifications d'un compte du propriétaire (lignes ci-dessus, inchangées) | Propriétaire, 26/10 (« si c'est utile et bon de le faire maintenant, tu le fais ») |
 
 ---
 
@@ -470,8 +471,8 @@ incrémenter conjointement :**
 1. `VERSION_MODULE` dans `gm-specs.js` (ligne ~22).
 2. `VERSION` (`"garage-v…"`) dans `sw.js` (ligne ~12).
 
-Ces deux numéros sont **tenus synchronisés** (au 14/10/2026 : `gm-specs.js` →
-`20.197.0`, `sw.js` → `garage-v20.197.0`). `VERSION_MODULE` s'affiche en outre
+Ces deux numéros sont **tenus synchronisés** (au 27/10/2026 : `gm-specs.js` →
+`20.198.0`, `sw.js` → `garage-v20.198.0`). `VERSION_MODULE` s'affiche en outre
 dans l'UI via `grefferVersion()`, ce qui permet de vérifier de visu quelle version
 tourne réellement sur l'appareil.
 
@@ -857,6 +858,11 @@ Règle posée par le propriétaire le 29/09 : il ne doit pas avoir à penser aux
 commandes « / ». **L'agent repère le moment où l'une d'elles apporte quelque
 chose, et demande l'autorisation de la lancer** — jamais de lancement d'office,
 jamais d'attente qu'on la lui réclame.
+
+> **Assoupli le 26/10** (délégation du moment, §0 bis) : une commande en
+> **lecture seule** (`/code-review`, `/security-review`) utile *maintenant* se
+> lance sans attendre, et son résultat est rendu dans le compte rendu. Une
+> commande qui **modifie** le code reste proposée selon le format ci-dessous.
 
 **Format de la demande** (court, une par moment opportun, pas de relance si
 refusée tant que le contexte ne change pas) :
