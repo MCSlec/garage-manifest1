@@ -53,7 +53,7 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok, d });
 
 (async () => {
   await new Promise(r => srv.listen(8097, r));
-  const nav = await chromium.launch({ executablePath: process.env.CHROMIUM || undefined, args: ['--no-sandbox'] });
+  const nav = await chromium.launch({ executablePath: process.env.CHROMIUM || '/opt/pw-browsers/chromium', args: ['--no-sandbox'] });
   const ctx = await nav.newContext({ viewport: { width: 390, height: 844 } });
   const page = await ctx.newPage();
   const errs = []; page.on('pageerror', e => errs.push(String(e)));

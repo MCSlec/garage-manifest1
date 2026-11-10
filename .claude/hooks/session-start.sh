@@ -29,8 +29,14 @@ if [ "$installee" != "$VERSION_PW" ]; then
     "playwright-core@$VERSION_PW" >/dev/null
 fi
 
-# Chromium fourni par l'environnement : on prend le premier trouvé.
-CHROME="$(ls -d /opt/pw-browsers/chromium-*/chrome-linux/chrome 2>/dev/null | head -1 || true)"
+# Chromium fourni par l'environnement. Le lien stable d'abord : il suit les montées de
+# version de l'image. Sinon le premier binaire trouvé — le dossier s'est appelé
+# « chrome-linux » puis « chrome-linux64 » (10/11 : l'ancien motif ne trouvait plus rien,
+# CHROMIUM restait vide et les bancs retombaient sur un chemin disparu).
+CHROME=""
+for candidat in /opt/pw-browsers/chromium /opt/pw-browsers/chromium-*/chrome-linux*/chrome; do
+  if [ -x "$candidat" ] && [ ! -d "$candidat" ]; then CHROME="$candidat"; break; fi
+done
 
 # Variables pour toute la session : les bancs lisent NODE_PATH et CHROMIUM.
 if [ -n "${CLAUDE_ENV_FILE:-}" ]; then

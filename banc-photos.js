@@ -29,7 +29,7 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
 
 (async () => {
   await new Promise(r => serveur.listen(PORT, r));
-  const nav = await chromium.launch({ executablePath: process.env.CHROMIUM || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--no-sandbox'] });
+  const nav = await chromium.launch({ executablePath: process.env.CHROMIUM || '/opt/pw-browsers/chromium', args: ['--no-sandbox'] });
   const ctx = await nav.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block' });
   await ctx.route(u => !u.href.startsWith(`http://localhost:${PORT}`), r => r.abort());   // relais IA & co : coupés
   const page = await ctx.newPage();

@@ -1,12 +1,12 @@
 'use strict';
 const {chromium}=require('playwright-core');
 const http=require('http'),fs=require('fs'),path=require('path');
-const R='/home/user/garage-manifest1';
+const R=__dirname;
 const T={'.html':'text/html','.js':'application/javascript','.json':'application/json','.png':'image/png','.webmanifest':'application/manifest+json'};
 const srv=http.createServer((q,s)=>{let p=decodeURIComponent(q.url.split('?')[0]);if(p==='/')p='/index.html';const f=path.join(R,p);if(!fs.existsSync(f)||fs.statSync(f).isDirectory()){s.writeHead(404);return s.end()}s.writeHead(200,{'Content-Type':T[path.extname(f)]||'text/plain'});s.end(fs.readFileSync(f))});
 const res=[];const v=(t,ok,d)=>res.push({t,ok,d});
 (async()=>{await new Promise(r=>srv.listen(8097,r));
-const n=await chromium.launch({executablePath:'/opt/pw-browsers/chromium-1194/chrome-linux/chrome',args:['--no-sandbox']});
+const n=await chromium.launch({executablePath:process.env.CHROMIUM||'/opt/pw-browsers/chromium',args:['--no-sandbox']});
 const ctx=await n.newContext({viewport:{width:390,height:844}});
 const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(String(e)));
 await p.goto('http://localhost:8097/index.html',{waitUntil:'networkidle'});

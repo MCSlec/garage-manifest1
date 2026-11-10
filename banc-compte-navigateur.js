@@ -105,7 +105,7 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   });
   await new Promise(ok => app.listen(PORT_APP, ok)); await new Promise(ok => api.listen(PORT_API, ok));
 
-  const nav = await chromium.launch({ executablePath: process.env.CHROMIUM || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--no-sandbox'] });
+  const nav = await chromium.launch({ executablePath: process.env.CHROMIUM || '/opt/pw-browsers/chromium', args: ['--no-sandbox'] });
   const erreurs = [];
   async function telephone(configure = true, { google = false, bloquerGoogle = false } = {}) {
     const ctx = await nav.newContext({ viewport: { width: 390, height: 844 } });

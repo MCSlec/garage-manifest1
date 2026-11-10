@@ -11,7 +11,7 @@
 const { chromium } = require('playwright-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 
-const RACINE = '/home/user/garage-manifest1';
+const RACINE = __dirname;
 const T = { '.html':'text/html', '.js':'application/javascript', '.json':'application/json',
             '.png':'image/png', '.webmanifest':'application/manifest+json' };
 const srv = http.createServer((q, s) => {
@@ -30,7 +30,7 @@ const v = (t, ok, d) => res.push({ t, ok, d });
 
 (async () => {
   await new Promise(r => srv.listen(8096, r));
-  const nav = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--no-sandbox'] });
+  const nav = await chromium.launch({ executablePath: process.env.CHROMIUM || '/opt/pw-browsers/chromium', args: ['--no-sandbox'] });
 
   for (const vp of VIEWPORTS) {
     const ctx = await nav.newContext({ viewport: { width: vp.w, height: vp.h } });

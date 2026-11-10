@@ -29,7 +29,7 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
 
 (async () => {
   await new Promise(r => serveur.listen(PORT, r));
-  const nav = await chromium.launch({ executablePath: process.env.CHROMIUM || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--no-sandbox'] });
+  const nav = await chromium.launch({ executablePath: process.env.CHROMIUM || '/opt/pw-browsers/chromium', args: ['--no-sandbox'] });
   const ctx = await nav.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, serviceWorkers: 'block' });
   /* Relais IA simulé : chaque appel prend la réponse suivante de la file. */
   const file = []; let appels = 0;

@@ -6,7 +6,7 @@
 const { chromium } = require('playwright-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 
-const RACINE = '/home/user/garage-manifest1';
+const RACINE = __dirname;
 const TYPES = { '.html':'text/html', '.js':'application/javascript', '.json':'application/json',
                 '.png':'image/png', '.webmanifest':'application/manifest+json' };
 
@@ -24,7 +24,7 @@ const verifier = (intitule, ok, detail) => { resultats.push({ intitule, ok, deta
 
 (async () => {
   await new Promise(r => serveur.listen(8099, r));
-  const nav = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
+  const nav = await chromium.launch({ executablePath: process.env.CHROMIUM || '/opt/pw-browsers/chromium',
                                       args: ['--no-sandbox'] });
   const ctx = await nav.newContext({ viewport: { width: 390, height: 844 } });  // iPhone vertical
   const page = await ctx.newPage();

@@ -27,7 +27,7 @@ const serveur = http.createServer((req, res) => {
 const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
 (async () => {
   await new Promise(r => serveur.listen(8101, r));
-  const nav = await chromium.launch({ executablePath: process.env.CHROMIUM || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--no-sandbox'] });
+  const nav = await chromium.launch({ executablePath: process.env.CHROMIUM || '/opt/pw-browsers/chromium', args: ['--no-sandbox'] });
   const page = await (await nav.newContext({ viewport: { width: 390, height: 844 } })).newPage();
   const externes = []; page.on('request', r => { const u = new URL(r.url()); if (u.hostname !== 'localhost') externes.push({ hote: u.hostname, type: r.resourceType() }); });
   const errs = []; page.on('pageerror', e => errs.push(String(e)));

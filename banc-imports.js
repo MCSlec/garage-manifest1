@@ -40,7 +40,7 @@ const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
 (async () => {
   await new Promise(r => serveur.listen(8097, r));
   const nav = await chromium.launch({
-    executablePath: process.env.CHROMIUM || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
+    executablePath: process.env.CHROMIUM || '/opt/pw-browsers/chromium',
     args: ['--no-sandbox'] });
   const ctx = await nav.newContext({ viewport: { width: 390, height: 844 } });
   const page = await ctx.newPage();

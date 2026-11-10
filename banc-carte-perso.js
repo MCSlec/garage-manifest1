@@ -115,7 +115,7 @@ const carte = http.createServer((req, res) => {
 const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
 (async () => {
   await new Promise(r => app.listen(PORT_APP, r)); await new Promise(r => carte.listen(PORT_CARTE, '127.0.0.1', r));
-  const nav = await chromium.launch({ executablePath: process.env.CHROMIUM || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--no-sandbox'] });
+  const nav = await chromium.launch({ executablePath: process.env.CHROMIUM || '/opt/pw-browsers/chromium', args: ['--no-sandbox'] });
 
   async function ouvrirCarte(urlCarte, { moteurCasse = false } = {}) {
     const ctx = await nav.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block' });
