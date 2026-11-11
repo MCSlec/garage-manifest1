@@ -31,8 +31,9 @@ la marque et le modèle proposés.
 - Le relais **ne conserve pas** la photo : il ne l'écrit ni en base ni dans un
   stockage, et ne la journalise pas.
 - Pour plafonner les abus (et la facture), il compte les identifications du
-  jour **par appareil** (adresse IP) ou **par compte** si tu es connecté. Ces
-  compteurs ne gardent qu'une **empreinte** SHA-256, jamais l'IP ni
+  jour **par appareil** (adresse IP ; en IPv6, seulement le préfixe réseau /64,
+  commun à tous les appareils d'une même connexion) ou **par compte** si tu es
+  connecté. Ces compteurs ne gardent qu'une **empreinte** SHA-256, jamais l'IP ni
   l'identifiant en clair, et sont effacés sous 48 heures par la purge nocturne
   du relais lui-même (il ne dépend pas du serveur de comptes pour cela).
 - Pour ne rien envoyer du tout : Réglages → vide le champ « Endpoint de
@@ -72,9 +73,13 @@ Précisions vérifiables dans le code :
 ## Ce qui est traité sans être conservé
 
 - **Ton adresse IP** sert à limiter les abus (au plus 10 demandes de code et 20
-  essais de connexion par quart d'heure et par adresse IP). Elle n'est
+  essais de connexion par quart d'heure et par adresse IP). En IPv6, seul le
+  préfixe réseau /64 est pris en compte, pas l'adresse entière. Elle n'est
   enregistrée que sous forme **d'empreinte** SHA-256, et le compteur est effacé
   sous 48 heures par la purge nocturne.
+- Un **compteur global**, sans aucune donnée personnelle, plafonne le nombre de
+  codes envoyés par jour pour tout le service (protection contre l'envoi en
+  masse d'e-mails à des inconnus).
 - De même, les compteurs par adresse e-mail (3 codes par quart d'heure, 10 par
   jour), qui empêchent d'inonder la boîte de quelqu'un ou de deviner un code,
   ne conservent qu'une empreinte.

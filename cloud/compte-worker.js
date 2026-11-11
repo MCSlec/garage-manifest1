@@ -48,10 +48,14 @@
 //   GET    /photos/:sha256       Bearer           → image | 404
 //   GET    /compte/export        Bearer           → 200 { email, cree, garage, photos:[…] }
 //   DELETE /compte               Bearer           → 200 (tout est effacé)
+//   GET    /sante                (public)         → 200 { ok, version, base, reglages, manquants:[…], origine, photos, google }
+//          Diagnostic de déploiement : dit ce qui MANQUE, jamais une valeur secrète.
+//          Un réglage obligatoire absent → 503 « Service non configuré » sur toutes les autres routes.
 //
 // LIAISONS ET VARIABLES (wrangler.toml)
 //   DB (D1), PHOTOS (R2, facultatif), APP_ORIGIN, MAIL_FROM
 //   GOOGLE_CLIENT_ID (facultatif, PUBLIC : ce n'est pas un secret)
+//   QUOTA_CODES_JOUR (facultatif : plafond de codes envoyés par jour, tout le service)
 //   Secrets : RESEND_API_KEY, CODE_SECRET  (wrangler secret put …)
 //
 // CONNEXION GOOGLE (14/10, « Continuer avec Google », voulue par le propriétaire)
@@ -77,6 +81,10 @@
 //   envoie les photos manquantes, sans migration.
 // ============================================================================
 
+/* Version du code, affichée par /sante : sur une capture d'écran, elle dit quel
+   code tourne réellement (une copie tronquée ou ancienne se voit tout de suite).
+   À changer à chaque modification de ce fichier. */
+const VERSION_SERVEUR   = '2026-11-10';
 const DUREE_CODE_MS     = 10 * 60 * 1000;          // code : 10 min
 const ESSAIS_CODE       = 5;                       // essais par code, puis il est détruit
 const DUREE_SESSION_MS  = 90 * 24 * 3600 * 1000;   // session : 90 jours
@@ -97,6 +105,12 @@ const QUOTAS_DEFAUT = {
   photos:       5000,                        // par compte (≈ 4 à 5 photos par voiture du catalogue)
   octets:       1.5 * 1024 ** 3,             // par compte : 1,5 Go ≈ 4 500 photos réalistes
   globalOctets: 50 * 1024 ** 3,              // tout le service : disjoncteur de facture (≈ 0,60 $/mois au-delà des 10 Go gratuits)
+  /* Codes envoyés par jour, toutes adresses confondues (QUOTA_CODES_JOUR). Les
+     limites par adresse et par appareil ne bornent pas le TOTAL : avec assez
+     d'adresses, un script viderait le quota d'e-mails et ferait écrire à des
+     inconnus au nom de l'app. Sous les 100 e-mails par jour de l'offre gratuite
+     de Resend, pour qu'un abus coupe les codes ici, proprement, avant là-bas. */
+  codesJour: 80,
 };
 const quota = (env, cle, defaut) => { const n = Number(env[cle]); return Number.isFinite(n) && n > 0 ? n : defaut; };
 const MAX_EMPREINTES    = 5000;                    // par requête /photos/manquantes (le client envoie par lots de 1 000)
@@ -112,6 +126,8 @@ const LIMITES = {
   codeParIp:        { max: 10, fenetreMs: 15 * 60 * 1000 },
   sessionParIp: { max: 20, fenetreMs: 15 * 60 * 1000 },
   googleParIp:  { max: 20, fenetreMs: 15 * 60 * 1000 },
+  /* Tout le service (le plafond vient de QUOTA_CODES_JOUR, voir QUOTAS_DEFAUT). */
+  codeGlobalJour: { fenetreMs: 24 * 3600 * 1000 },
 };
 
 // ---------------------------------------------------------------- outils ----
@@ -243,10 +259,47 @@ const json = (env, corps, statut = 200, extra = {}) => new Response(JSON.stringi
 });
 const erreur = (env, statut, message) => json(env, { erreur: message }, statut);
 
+/* Lit le corps en s'ARRÊTANT dès que la limite est dépassée. Avant, tout le corps
+   (la plateforme en accepte jusqu'à 100 Mo) était chargé en mémoire, puis
+   seulement refusé — sur des routes ouvertes à tous. Limite en OCTETS. */
+async function lireCorps(req, max) {
+  if (Number(req.headers.get('Content-Length')) > max) throw new Error('trop-gros');
+  if (!req.body) return new Uint8Array(0);
+  const lecteur = req.body.getReader();
+  const morceaux = []; let total = 0;
+  for (;;) {
+    const { done, value } = await lecteur.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > max) { try { await lecteur.cancel(); } catch {} throw new Error('trop-gros'); }
+    morceaux.push(value);
+  }
+  const octets = new Uint8Array(total); let i = 0;
+  for (const m of morceaux) { octets.set(m, i); i += m.byteLength; }
+  return octets;
+}
 async function lireJson(req, max = 64 * 1024) {
-  const t = await req.text();
-  if (t.length > max) throw new Error('trop-gros');
-  return JSON.parse(t);
+  const v = JSON.parse(new TextDecoder().decode(await lireCorps(req, max)));
+  /* Du JSON valide n'est pas forcément un objet (« null », « [1] », « 7 ») : lire
+     `corps.email` sur null levait une exception, donc « Erreur interne » (500) et
+     une alerte au journal, déclenchables par n'importe qui. C'est une requête
+     invalide : les routes répondent 400. */
+  if (!v || typeof v !== 'object' || Array.isArray(v)) throw new Error('pas-un-objet');
+  return v;
+}
+
+/* Appareil vu du réseau, pour les limites de débit. En IPv4, l'adresse. En
+   IPv6, le PRÉFIXE /64 : un abonné en reçoit un entier (des milliards
+   d'adresses), si bien que compter par adresse ne limitait rien. */
+function cleReseau(req) {
+  const ip = (req.headers.get('CF-Connecting-IP') || 'inconnue').trim().toLowerCase();
+  const v4 = /^::ffff:(\d+\.\d+\.\d+\.\d+)$/.exec(ip);
+  if (v4) return v4[1];
+  if (!ip.includes(':')) return ip;
+  const [tete, queue] = ip.split('::');
+  const t = tete ? tete.split(':') : [], q = queue ? queue.split(':') : [];
+  const groupes = queue === undefined ? t : [...t, ...Array(Math.max(0, 8 - t.length - q.length)).fill('0'), ...q];
+  return groupes.slice(0, 4).map(g => g.replace(/^0+(?=.)/, '')).join(':') + '::/64';
 }
 
 /* Fenêtre glissante simplifiée en base : une ligne par clé, remise à zéro à
@@ -299,11 +352,16 @@ async function routeCode(req, env) {
   let corps; try { corps = await lireJson(req); } catch { return erreur(env, 400, 'Requête invalide'); }
   const email = normaliserEmail(corps.email);
   if (!RE_EMAIL.test(email)) return erreur(env, 400, 'Adresse e-mail invalide');
-  const ip = req.headers.get('CF-Connecting-IP') || 'inconnue';
+  const ip = cleReseau(req);
   if (await depasseLimite(env, `code-ip:${ip}`, LIMITES.codeParIp)
    || await depasseLimite(env, `code-email:${email}`, LIMITES.codeParEmail)
    || await depasseLimite(env, `code-email-jour:${email}`, LIMITES.codeParEmailJour)) {
     return erreur(env, 429, 'Trop de demandes, réessaie plus tard');
+  }
+  // En DERNIER : une demande déjà refusée plus haut n'entame pas le plafond de tout le monde.
+  if (await depasseLimite(env, 'code-global', { ...LIMITES.codeGlobalJour, max: quota(env, 'QUOTA_CODES_JOUR', QUOTAS_DEFAUT.codesJour) })) {
+    console.error('[compte-worker] plafond global de codes du jour atteint (QUOTA_CODES_JOUR)');
+    return erreur(env, 429, 'Trop de demandes de connexion aujourd\'hui : réessaie demain');
   }
   const code = codeAleatoire();
   /* UN SEUL code actif par adresse : le nouveau remplace l'ancien (et remet
@@ -311,13 +369,34 @@ async function routeCode(req, env) {
      de deviner l'un d'eux. */
   await env.DB.prepare('INSERT OR REPLACE INTO codes (email, hash, expire, essais) VALUES (?, ?, ?, 0)')
     .bind(email, await hmacCode(env, email, code), Date.now() + DUREE_CODE_MS).run();
-  await envoyerCode(env, email, code);
+  /* Envoi refusé ou en panne chez le prestataire : on le DIT, au lieu d'un
+     « Erreur interne » qui ne distinguait pas une base mal reliée d'une adresse
+     refusée (en mode essai, Resend n'écrit qu'à l'adresse de son titulaire). Le
+     détail reste au journal. Ne dépend pas de l'existence d'un compte. */
+  try { await envoyerCode(env, email, code); }
+  catch (e) {
+    console.error('[compte-worker] envoi du code impossible :', e && e.message);
+    return erreur(env, 502, 'L\'e-mail n\'a pas pu être envoyé : réessaie plus tard');
+  }
   // Même réponse que le compte existe ou non (anti-énumération).
   return json(env, { ok: true });
 }
 
+/* Le compte d'une adresse, créé s'il n'existe pas — d'UNE instruction. Avant, la
+   connexion par code lisait puis insérait : une connexion Google arrivée entre
+   les deux créait le compte la première, l'insertion échouait (adresse unique)
+   et le joueur lisait « Erreur interne », son code déjà consommé. */
+async function compteParEmail(env, email, maintenant) {
+  const lire = () => env.DB.prepare('SELECT id FROM utilisateurs WHERE email = ?').bind(email).first();
+  const u = await lire();
+  if (u) return u;
+  const id = crypto.randomUUID();
+  const r = await env.DB.prepare('INSERT INTO utilisateurs (id, email, cree) VALUES (?, ?, ?) ON CONFLICT (email) DO NOTHING').bind(id, email, maintenant).run();
+  return r.meta && r.meta.changes === 1 ? { id } : await lire();     // course perdue : on relit le compte créé à l'instant
+}
+
 async function routeSession(req, env) {
-  const ip = req.headers.get('CF-Connecting-IP') || 'inconnue';
+  const ip = cleReseau(req);
   if (await depasseLimite(env, `session-ip:${ip}`, LIMITES.sessionParIp)) return erreur(env, 429, 'Trop de tentatives');
   let corps; try { corps = await lireJson(req); } catch { return erreur(env, 400, 'Requête invalide'); }
   const email = normaliserEmail(corps.email);
@@ -336,11 +415,8 @@ async function routeSession(req, env) {
   // Consommation atomique : deux envois simultanés du bon code n'ouvrent qu'une session.
   const conso = await env.DB.prepare('DELETE FROM codes WHERE email = ? AND hash = ?').bind(email, attendu).run();
   if (!conso.meta || conso.meta.changes !== 1) return erreur(env, 400, 'Code déjà utilisé');
-  let u = await env.DB.prepare('SELECT id FROM utilisateurs WHERE email = ?').bind(email).first();
-  if (!u) {
-    u = { id: crypto.randomUUID() };
-    await env.DB.prepare('INSERT INTO utilisateurs (id, email, cree) VALUES (?, ?, ?)').bind(u.id, email, maintenant).run();
-  }
+  const u = await compteParEmail(env, email, maintenant);
+  if (!u) return erreur(env, 503, 'Réessaie dans un instant');
   return ouvrirSession(env, u.id, email, maintenant);
 }
 
@@ -357,7 +433,7 @@ async function ouvrirSession(env, idUtilisateur, email, maintenant = Date.now())
 async function routeGoogle(req, env) {
   // Non configuré : état stable (501), comme le stockage photo absent.
   if (!env.GOOGLE_CLIENT_ID) return json(env, { erreur: 'Connexion Google non configurée sur ce serveur', google: false }, 501);
-  const ip = req.headers.get('CF-Connecting-IP') || 'inconnue';
+  const ip = cleReseau(req);
   if (await depasseLimite(env, `google-ip:${ip}`, LIMITES.googleParIp)) return erreur(env, 429, 'Trop de tentatives');
   let corps; try { corps = await lireJson(req, 8 * 1024); } catch { return erreur(env, 400, 'Requête invalide'); }
   let verif;
@@ -391,14 +467,10 @@ async function routeGoogle(req, env) {
     if (!googleFaitAutorite(email, charge)) {
       return json(env, { erreur: 'Avec cette adresse, connecte-toi avec un code reçu par e-mail', lier: true }, 409);
     }
-    let u = await env.DB.prepare('SELECT id FROM utilisateurs WHERE email = ?').bind(email).first();
-    if (!u) {
-      const id = crypto.randomUUID();
-      const r = await env.DB.prepare('INSERT INTO utilisateurs (id, email, cree) VALUES (?, ?, ?) ON CONFLICT (email) DO NOTHING').bind(id, email, maintenant).run();
-      // Perdu une course (compte créé à l'instant par un autre appel) : on relit. Google étant
-      // maître de l'adresse (contrôlé plus haut), rejoindre ce compte est légitime.
-      u = r.meta && r.meta.changes === 1 ? { id } : await env.DB.prepare('SELECT id FROM utilisateurs WHERE email = ?').bind(email).first();
-    }
+    // Google étant maître de l'adresse (contrôlé plus haut), rejoindre un compte créé à l'instant
+    // par un autre appel est légitime.
+    const u = await compteParEmail(env, email, maintenant);
+    if (!u) return erreur(env, 503, 'Réessaie dans un instant');
     await env.DB.prepare('INSERT INTO identites (fournisseur, sujet, utilisateur, cree) VALUES (?, ?, ?, ?) ON CONFLICT (fournisseur, sujet) DO NOTHING')
       .bind('google', sujet, u.id, maintenant).run();
     compte = await lien();                                      // la relecture départage deux connexions simultanées
@@ -460,8 +532,8 @@ async function routePhotosManquantes(req, env, u) {
 async function routePhotoEcrire(req, env, u, sha) {
   const type = (req.headers.get('Content-Type') || '').split(';')[0].trim();
   if (!TYPES_PHOTO.includes(type)) return erreur(env, 415, 'Type de photo non accepté');
-  const octets = await req.arrayBuffer();
-  if (!octets.byteLength || octets.byteLength > MAX_PHOTO_OCTETS) return erreur(env, 413, 'Photo vide ou trop lourde');
+  let octets; try { octets = await lireCorps(req, MAX_PHOTO_OCTETS); } catch { return erreur(env, 413, 'Photo vide ou trop lourde'); }
+  if (!octets.byteLength) return erreur(env, 413, 'Photo vide ou trop lourde');
   // Le contenu doit correspondre à l'empreinte annoncée : pas d'écrasement possible.
   if (await sha256hex(octets) !== sha) return erreur(env, 400, 'Empreinte ne correspondant pas au contenu');
   const cle = `u/${u.id}/${sha}`;
@@ -536,6 +608,42 @@ async function routeSupprimer(env, u) {
   return json(env, { ok: true, photosEffacees: cles.length });
 }
 
+// ------------------------------------------------------- diagnostic /sante --
+/* Ce que le propriétaire ouvre dans son navigateur après un déploiement. La
+   réponse « Session absente » de /garage ne prouvait RIEN : elle sort avant de
+   toucher à la base ou aux réglages (relecture du 10/11). Ici, chaque élément
+   est réellement vérifié — et seuls des NOMS de réglages sont rendus, jamais
+   une valeur secrète. `origine` est publique (c'est l'adresse de l'app, déjà
+   présente dans l'en-tête CORS de chaque réponse) : l'afficher montre d'un coup
+   d'œil la faute la plus courante, le « / » final. */
+const TABLES = ['codes', 'garages', 'identites', 'jetons_consommes', 'limites', 'sessions', 'usages', 'utilisateurs'];
+const REGLAGES = ['APP_ORIGIN', 'MAIL_FROM', 'CODE_SECRET', 'RESEND_API_KEY'];
+const reglagesManquants = (env) => [...(env.DB ? [] : ['DB']), ...REGLAGES.filter(k => !env[k])];
+const origineValide = (o) => typeof o === 'string' && /^https?:\/\/[a-z0-9.-]+(:\d+)?$/i.test(o);
+
+async function routeSante(env) {
+  let tablesManquantes = TABLES;
+  if (env.DB) {
+    try {
+      const r = await env.DB.prepare("SELECT name FROM sqlite_master WHERE type = 'table'").all();
+      const presentes = new Set((r.results || []).map(x => x.name));
+      tablesManquantes = TABLES.filter(t => !presentes.has(t));
+    } catch (e) { console.error('[compte-worker] /sante : base illisible', e && e.message); }
+  }
+  const base = !!env.DB && tablesManquantes.length === 0;
+  const manquants = reglagesManquants(env);
+  const reglages = REGLAGES.every(k => !!env[k]);
+  const valide = origineValide(env.APP_ORIGIN);
+  return json(env, {
+    service: 'garage-comptes', version: VERSION_SERVEUR,
+    ok: base && reglages && valide,
+    base, ...(env.DB && !base ? { tablesManquantes } : {}),
+    reglages, manquants,
+    origine: env.APP_ORIGIN ?? null, origineValide: valide,
+    photos: !!env.PHOTOS, google: !!env.GOOGLE_CLIENT_ID,
+  });
+}
+
 // ------------------------------------------------------------- aiguillage --
 /* Minimisation (RGPD art. 5.1.e) : rien d'échu ne reste en base. Les codes
    portent l'adresse de personnes qui n'ont parfois jamais créé de
@@ -562,10 +670,22 @@ export default {
 
   async fetch(req, env) {
     if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors(env) });
-    const origine = req.headers.get('Origin');
-    if (origine && origine !== env.APP_ORIGIN) return erreur(env, 403, 'Origine non autorisée');
     const url = new URL(req.url);
     const p = url.pathname.replace(/\/+$/, '') || '/';
+    // Avant tout le reste : le diagnostic doit répondre même quand la configuration est incomplète.
+    if (req.method === 'GET' && p === '/sante') {
+      try { return await routeSante(env); } catch (e) { console.error('[compte-worker] /sante', e && e.stack || e); return erreur(env, 500, 'Erreur interne'); }
+    }
+    /* Réglage obligatoire absent : on le dit (503), au lieu de répondre comme un
+       serveur prêt qui échouerait plus tard, au milieu d'une connexion. Le nom
+       du réglage part au journal ; /sante le montre au propriétaire. */
+    const manquants = reglagesManquants(env);
+    if (manquants.length) {
+      console.error('[compte-worker] configuration incomplète :', manquants.join(', '));
+      return erreur(env, 503, 'Service non configuré');
+    }
+    const origine = req.headers.get('Origin');
+    if (origine && origine !== env.APP_ORIGIN) return erreur(env, 403, 'Origine non autorisée');
     try {
       if (req.method === 'POST' && p === '/auth/code')    return await routeCode(req, env);
       if (req.method === 'POST' && p === '/auth/session') return await routeSession(req, env);

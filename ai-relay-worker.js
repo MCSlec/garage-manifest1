@@ -29,6 +29,8 @@
 //   Aucun compte n'est exigé : la première capture marche toujours.
 //   Compteurs pris d'un bloc (upsert + RETURNING) : une rafale ne passe pas.
 //   Image : 2 Mo au plus, JPEG / PNG / WebP. Route unique (POST /).
+//   Corps lu avec une borne (10/11) : au-delà de la limite, la lecture s'arrête.
+//   IPv6 : le quota « par appareil » compte par préfixe /64, pas par adresse.
 //   Sans base D1, le relais REFUSE de travailler (503) : jamais ouvert.
 //   L'ancienne route /notify (signalement par e-mail) est supprimée : plus
 //   appelée par l'app, elle était ouverte à tous sans limite.
@@ -88,6 +90,45 @@ async function sha256hex(texte) {
   const h = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(texte));
   return [...new Uint8Array(h)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
+/* Les deux fonctions qui suivent sont les MÊMES, au caractère près, que dans
+   cloud/compte-worker.js : les deux serveurs se collent séparément dans
+   Cloudflare, il n'y a donc pas de module commun. banc-relais.js vérifie
+   qu'elles n'ont pas divergé.
+
+   lireCorps — lit le corps en s'ARRÊTANT dès que la limite est dépassée. Avant,
+   tout le corps (la plateforme en accepte jusqu'à 100 Mo) était chargé en
+   mémoire, puis seulement refusé — sur une adresse ouverte à tous. */
+async function lireCorps(req, max) {
+  if (Number(req.headers.get('Content-Length')) > max) throw new Error('trop-gros');
+  if (!req.body) return new Uint8Array(0);
+  const lecteur = req.body.getReader();
+  const morceaux = []; let total = 0;
+  for (;;) {
+    const { done, value } = await lecteur.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > max) { try { await lecteur.cancel(); } catch {} throw new Error('trop-gros'); }
+    morceaux.push(value);
+  }
+  const octets = new Uint8Array(total); let i = 0;
+  for (const m of morceaux) { octets.set(m, i); i += m.byteLength; }
+  return octets;
+}
+
+/* cleReseau — l'appareil vu du réseau, pour le quota sans compte. En IPv4,
+   l'adresse. En IPv6, le PRÉFIXE /64 : un abonné en reçoit un entier (des
+   milliards d'adresses), si bien que compter par adresse ne limitait rien. */
+function cleReseau(req) {
+  const ip = (req.headers.get('CF-Connecting-IP') || 'inconnue').trim().toLowerCase();
+  const v4 = /^::ffff:(\d+\.\d+\.\d+\.\d+)$/.exec(ip);
+  if (v4) return v4[1];
+  if (!ip.includes(':')) return ip;
+  const [tete, queue] = ip.split('::');
+  const t = tete ? tete.split(':') : [], q = queue ? queue.split(':') : [];
+  const groupes = queue === undefined ? t : [...t, ...Array(Math.max(0, 8 - t.length - q.length)).fill('0'), ...q];
+  return groupes.slice(0, 4).map(g => g.replace(/^0+(?=.)/, '')).join(':') + '::/64';
+}
+
 /* Compteur du jour, pris et vérifié d'une seule instruction (même mécanique
    que cloud/compte-worker.js) : des appels simultanés ne peuvent pas passer
    ensemble sous le plafond. Clé stockée HACHÉE : ni IP ni identifiant lisibles. */
@@ -237,6 +278,14 @@ async function demanderAuModele(env, mediaType, base64Data) {
   return essais && quotas === essais ? { epuise: true } : {};
 }
 
+/* Confiance annoncée par le modèle, ramenée entre 0 et 1. Absente ou illisible :
+   0,5 (on ne sait pas). Avant, `Number(c) || 0.5` transformait aussi un vrai 0 —
+   « je n'en sais rien » — en 0,5, soit une proposition moyennement sûre. */
+function confiance(brute) {
+  const n = typeof brute === "number" ? brute : (typeof brute === "string" && brute.trim() !== "" ? Number(brute) : NaN);
+  return Number.isFinite(n) ? Math.max(0, Math.min(1, n)) : 0.5;
+}
+
 // ============================================================================
 // Identification par photo. Le prompt et le contrat de réponse sont INCHANGÉS ;
 // seuls les garde-fous d'entrée (taille, format, quotas) et les messages
@@ -251,9 +300,10 @@ async function identifier(request, env) {
     return json({ error: "Identification indisponible" }, 500, env);
   }
 
-  // Taille lue AVANT d'analyser le corps : un corps démesuré n'est jamais parsé.
-  const texte = await request.text();
-  if (texte.length > MAX_CORPS) return json({ error: "Image trop lourde (2 Mo au plus)" }, 413, env);
+  // Taille contrôlée PENDANT la lecture : un corps démesuré n'est ni chargé en entier, ni parsé.
+  let texte;
+  try { texte = new TextDecoder().decode(await lireCorps(request, MAX_CORPS)); }
+  catch { return json({ error: "Image trop lourde (2 Mo au plus)" }, 413, env); }
   let body;
   try {
     body = JSON.parse(texte);
@@ -278,7 +328,7 @@ async function identifier(request, env) {
      sans aucune borne ; le prix est qu'une longue panne peut user le plafond du
      jour. On préfère borner les appels au fournisseur en toute circonstance. */
   const utilisateur = await utilisateurDeSession(request, env);
-  const ip = request.headers.get("CF-Connecting-IP") || "inconnue";
+  const ip = cleReseau(request);
   const perso = utilisateur
     ? await compter(env, `ia-compte:${utilisateur}`, quota(env, "QUOTA_IA_COMPTE", QUOTAS_IA_DEFAUT.compte))
     : await compter(env, `ia-ip:${ip}`, quota(env, "QUOTA_IA_ANONYME", QUOTAS_IA_DEFAUT.anonyme));
@@ -310,7 +360,7 @@ async function identifier(request, env) {
           model: String(g.model || "").slice(0, 80),
           variant: String(g.variant || "").slice(0, 60),
           cues: String(g.cues || "").slice(0, 200),
-          confidence: Math.max(0, Math.min(1, Number(g.confidence) || 0.5)),
+          confidence: confiance(g.confidence),
         }));
     }
   } catch {

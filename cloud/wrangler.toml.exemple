@@ -17,6 +17,9 @@ MAIL_FROM = "Garage Manifest <connexion@ton-domaine.fr>"
 # QUOTA_PHOTOS = "5000"
 # QUOTA_OCTETS = "1610612736"
 # QUOTA_GLOBAL_OCTETS = "53687091200"
+# Plafond de codes de connexion envoyés par jour, tout le service (facultatif :
+# 80 par défaut, sous les 100 e-mails par jour de l'offre gratuite de Resend).
+# QUOTA_CODES_JOUR = "80"
 # « Continuer avec Google » (facultatif) : identifiant client OAuth de Google
 # Cloud — PUBLIC, ce n'est pas un secret. Absent = route /auth/google en 501.
 # Voir TUTO-GRATUIT.md, partie F.

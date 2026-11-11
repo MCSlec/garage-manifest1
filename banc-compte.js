@@ -22,16 +22,19 @@ process.removeAllListeners('warning'); // node:sqlite est « expérimental » : 
 const { DatabaseSync } = require('node:sqlite');
 
 /* ---- D1 simulé ---------------------------------------------------------- */
-function d1(sqlite) {
+function d1(sqlite, avant) {
   /* Latence d'une vraie base distante : chaque requête rend la main avant de
      s'exécuter. Sans elle, les requêtes simultanées ne s'entremêlent jamais et
-     un défaut de concurrence (lecture puis écriture séparées) reste invisible. */
-  const latence = () => new Promise(ok => setImmediate(ok));
+     un défaut de concurrence (lecture puis écriture séparées) reste invisible.
+     `avant(sql)` (facultatif) retient une instruction précise : c'est ce qui
+     permet de rejouer un entrelacement donné à coup sûr, au lieu d'espérer
+     qu'il se produise. */
+  const latence = async (sql) => { await new Promise(ok => setImmediate(ok)); if (avant) await avant(sql); };
   const lier = (sql, args = []) => ({
     bind: (...a) => lier(sql, a),
-    first: async () => { await latence(); return sqlite.prepare(sql).get(...args) ?? null; },
-    all: async () => { await latence(); return { results: sqlite.prepare(sql).all(...args) }; },
-    run: async () => { await latence(); const r = sqlite.prepare(sql).run(...args); return { meta: { changes: Number(r.changes) } }; },
+    first: async () => { await latence(sql); return sqlite.prepare(sql).get(...args) ?? null; },
+    all: async () => { await latence(sql); return { results: sqlite.prepare(sql).all(...args) }; },
+    run: async () => { await latence(sql); const r = sqlite.prepare(sql).run(...args); return { meta: { changes: Number(r.changes) } }; },
   });
   return { prepare: (sql) => lier(sql), batch: async (stmts) => Promise.all(stmts.map(s => s.run())) };
 }
@@ -67,7 +70,9 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
      et échouerait en production. */
   sqlite.exec('PRAGMA foreign_keys = ON');
   sqlite.exec(fs.readFileSync(path.join(__dirname, 'cloud', 'schema.sql'), 'utf8'));
-  const env = { DB: d1(sqlite), PHOTOS: r2(), APP_ORIGIN: 'https://app.test', MAIL_FROM: 'GM <x@app.test>', RESEND_API_KEY: 'test', CODE_SECRET: 'secret-de-banc-32-octets-minimum!' };
+  /* QUOTA_CODES_JOUR très haut : le banc demande plus de codes en une minute qu'un
+     vrai service en un jour. Le plafond lui-même a son test, en fin de banc. */
+  const env = { DB: d1(sqlite), PHOTOS: r2(), APP_ORIGIN: 'https://app.test', MAIL_FROM: 'GM <x@app.test>', RESEND_API_KEY: 'test', CODE_SECRET: 'secret-de-banc-32-octets-minimum!', QUOTA_CODES_JOUR: '100000' };
 
   /* « Google » du banc : une VRAIE paire de clés RSA, dont la partie publique est
      servie à l'adresse des clés de Google. Les jetons sont signés pour de vrai :
@@ -80,9 +85,13 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   let lecturesCles = 0, clesInjoignables = false;
 
   const mails = [];
+  let mailEnPanne = 0;                // statut HTTP que rend le faux Resend quand il refuse l'envoi
   const fetchReel = globalThis.fetch;
   globalThis.fetch = async (url, opt) => {
-    if (String(url).startsWith('https://api.resend.com/')) { mails.push(JSON.parse(opt.body)); return new Response('{"id":"x"}', { status: 200 }); }
+    if (String(url).startsWith('https://api.resend.com/')) {
+      if (mailEnPanne) return new Response('{"statusCode":403,"message":"You can only send testing emails to your own email address"}', { status: mailEnPanne });
+      mails.push(JSON.parse(opt.body)); return new Response('{"id":"x"}', { status: 200 });
+    }
     if (String(url) === 'https://www.googleapis.com/oauth2/v3/certs') {
       lecturesCles++;
       if (clesInjoignables) throw new TypeError('fetch failed');
@@ -184,7 +193,7 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   v('codes : toujours 6 chiffres, premier chiffre uniformément réparti (± 15 %)',
     tirages.every(c => /^\d{6}$/.test(c)) && premiers.every(n => Math.abs(n - 2000) < 300), premiers.join(','));
   const sansSecret = await worker.fetch(new Request('https://api.test/auth/code', { method: 'POST', headers: { Origin: 'https://app.test', 'Content-Type': 'application/json', 'CF-Connecting-IP': '10.9.9.9' }, body: '{"email":"z@exemple.fr"}' }), { ...env, CODE_SECRET: '' });
-  v('sans CODE_SECRET, le Worker refuse (500) plutôt que stocker un code faible', sansSecret.status === 500);
+  v('sans CODE_SECRET, le Worker refuse (503, « non configuré ») plutôt que stocker un code faible', sansSecret.status === 503 && !sqlite.prepare("SELECT 1 FROM codes WHERE email = 'z@exemple.fr'").get(), sansSecret.status);
 
   /* Limite de débit */
   ip = 200;
@@ -552,6 +561,145 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
     !sqlite.prepare("SELECT 1 FROM sessions WHERE hash = 'echue'").get() && (await appel('GET', '/garage', { session: sV })).status === 404);
   v('purge : compteur de débit hors fenêtre effacé, les autres gardés',
     purge.limites >= 1 && sqlite.prepare('SELECT COUNT(*) AS n FROM limites').get().n === avantPurge - purge.limites && avantPurge - purge.limites > 0, JSON.stringify(purge));
+
+  /* ======================================================================
+     Seconde relecture (10/11) — chaque test ci-dessous échouait sur le code
+     d'avant, et les compteurs de débit sont remis à zéro pour ne dépendre de
+     rien de ce qui précède.
+     ====================================================================== */
+  sqlite.exec('DELETE FROM limites');
+  const brutVers = (methode, chemin, { corps, ipX = '10.20.0.1', entetes = {}, envX = env } = {}) => worker.fetch(new Request('https://api.test' + chemin, {
+    method: methode, headers: { Origin: 'https://app.test', 'CF-Connecting-IP': ipX, ...(corps !== undefined ? { 'Content-Type': 'application/json' } : {}), ...entetes },
+    body: corps,
+  }), envX);
+  const texteErreur = async (x) => { try { return (await x.clone().json()).erreur || ''; } catch { return ''; } };
+
+  /* Corps JSON valide mais qui n'est pas un objet : c'est une requête invalide
+     (400), pas une panne (500 + alerte au journal, déclenchable par n'importe qui). */
+  const statutsNonObjet = {};
+  for (const [nom, chemin, corps] of [['code · null', '/auth/code', 'null'], ['code · tableau', '/auth/code', '[1]'], ['code · nombre', '/auth/code', '7'],
+    ['session · null', '/auth/session', 'null'], ['google · null', '/auth/google', 'null']]) statutsNonObjet[nom] = (await brutVers('POST', chemin, { corps, envX: { ...env, GOOGLE_CLIENT_ID: CLIENT } })).status;
+  ip = 500; const sNonObjet = await connecter('non-objet@exemple.fr');
+  statutsNonObjet['photos manquantes · null'] = (await appel('POST', '/photos/manquantes', { session: sNonObjet, brut: 'null', type: 'application/json' })).status;
+  statutsNonObjet['garage · null'] = (await appel('PUT', '/garage', { session: sNonObjet, brut: 'null', type: 'application/json', entetes: { 'If-Match': '0' } })).status;
+  v('corps JSON qui n\'est pas un objet (null, tableau, nombre) : 400 partout, jamais « Erreur interne »',
+    Object.values(statutsNonObjet).every(s => s === 400), JSON.stringify(statutsNonObjet));
+  await appel('DELETE', '/compte', { session: sNonObjet });
+
+  /* Envoi de l'e-mail refusé par le prestataire (en mode essai, Resend n'écrit
+     qu'à l'adresse de son titulaire) : message dédié, pas « Erreur interne ». */
+  mailEnPanne = 403;
+  r = await brutVers('POST', '/auth/code', { corps: JSON.stringify({ email: 'ailleurs@exemple.fr' }), ipX: '10.20.0.2' });
+  const msgMail = await texteErreur(r);
+  mailEnPanne = 0;
+  v('envoi du code refusé par le service d\'e-mail : 502 avec un message qui le dit (pas « Erreur interne »), sans détail du prestataire',
+    r.status === 502 && /e-mail/i.test(msgMail) && !/interne|resend|403/i.test(msgMail), `${r.status} ${msgMail}`);
+
+  /* Corps démesuré : la lecture s'arrête dès que la limite est dépassée, au
+     lieu de charger tout le corps en mémoire avant de le refuser. */
+  const corpsGeant = (octetsTotal) => { let lus = 0; const morceau = new Uint8Array(64 * 1024).fill(0x20);
+    const flux = new ReadableStream({ pull(c) { if (lus >= octetsTotal) return c.close(); lus += morceau.length; c.enqueue(morceau); } }, { highWaterMark: 0 });
+    return { flux, lus: () => lus }; };
+  const geant = corpsGeant(8 * 1024 * 1024);
+  r = await worker.fetch(new Request('https://api.test/auth/code', { method: 'POST', duplex: 'half', body: geant.flux,
+    headers: { Origin: 'https://app.test', 'CF-Connecting-IP': '10.20.0.3', 'Content-Type': 'application/json' } }), env);
+  v('corps de 8 Mo sur une route qui en attend 64 Ko : refusé sans le lire en entier (lecture bornée)',
+    r.status >= 400 && r.status < 500 && geant.lus() <= 512 * 1024, `${r.status}, ${Math.round(geant.lus() / 1024)} Ko lus`);
+  r = await brutVers('POST', '/auth/code', { corps: JSON.stringify({ email: 'annonce@exemple.fr' }), ipX: '10.20.0.4', entetes: { 'Content-Length': String(50 * 1024 * 1024) } });
+  v('… et une taille annoncée trop grande (Content-Length) est refusée d\'emblée', r.status >= 400 && r.status < 500 && !mails.some(m => m.to[0] === 'annonce@exemple.fr'), r.status);
+
+  /* IPv6 : un abonné dispose de milliards d'adresses dans son préfixe /64.
+     Compter par adresse entière laissait le limiteur par IP sans effet. */
+  sqlite.exec('DELETE FROM limites');
+  const statutsV6 = [];
+  for (let i = 0; i < 11; i++) statutsV6.push((await brutVers('POST', '/auth/code', { corps: JSON.stringify({ email: `v6-${i}@exemple.fr` }), ipX: `2001:db8:1:2:${(i + 1).toString(16)}::${i + 1}` })).status);
+  v('IPv6 : 11 adresses du même préfixe /64 comptent pour un seul appareil (la 11e demande de code est refusée)',
+    statutsV6.slice(0, 10).every(s => s === 200) && statutsV6[10] === 429, statutsV6.join(','));
+  r = await brutVers('POST', '/auth/code', { corps: JSON.stringify({ email: 'v6-autre@exemple.fr' }), ipX: '2001:db8:1:3::1' });
+  v('… et un autre préfixe /64 n\'est pas pénalisé', r.status === 200, r.status);
+  r = await brutVers('POST', '/auth/code', { corps: JSON.stringify({ email: 'v6-compresse@exemple.fr' }), ipX: '2001:db8:1:2::ffff' });
+  v('… quelle que soit l\'écriture de l\'adresse (forme abrégée « :: »)', r.status === 429, r.status);
+  // La fonction elle-même, sur les écritures qui piègent : « :: » AVANT le 4e groupe, zéros de tête, IPv4 encapsulée.
+  const cleReseau = new Function(/function cleReseau\(req\) \{[\s\S]*?\n\}/.exec(src)[0] + '; return cleReseau;')();
+  const cle = (adresse) => cleReseau({ headers: { get: () => adresse } });
+  const clesV6 = { a: cle('2001:db8::1'), b: cle('2001:db8:0:0:1::2'), c: cle('2001:0DB8:0000:0000:ffff::'), autre: cle('2001:db8:0:1::1'),
+    v4: cle('203.0.113.7'), v4dansV6: cle('::ffff:203.0.113.7'), absente: cleReseau({ headers: { get: () => null } }) };
+  v('… même préfixe sous trois écritures (« :: » avant le 4e groupe, zéros de tête, majuscules) : une seule clé ; IPv4 inchangée, même encapsulée',
+    clesV6.a === clesV6.b && clesV6.b === clesV6.c && clesV6.autre !== clesV6.a && clesV6.v4 === '203.0.113.7' && clesV6.v4dansV6 === '203.0.113.7' && clesV6.absente === 'inconnue',
+    JSON.stringify(clesV6));
+
+  /* Plafond global de codes par jour : disjoncteur du quota d'e-mails (et de la
+     réputation de l'expéditeur), comme le plafond global du relais IA. */
+  sqlite.exec('DELETE FROM limites');
+  env.QUOTA_CODES_JOUR = '3';
+  const avantPlafond = mails.length, statutsPlafond = [];
+  for (let i = 0; i < 4; i++) statutsPlafond.push(await brutVers('POST', '/auth/code', { corps: JSON.stringify({ email: `plafond-${i}@exemple.fr` }), ipX: `10.21.${i}.1` }));
+  const msgPlafond = await texteErreur(statutsPlafond[3]);
+  v('plafond global de codes du jour (QUOTA_CODES_JOUR) : au-delà, plus aucun e-mail ne part (429), message distinct',
+    statutsPlafond.slice(0, 3).every(x => x.status === 200) && statutsPlafond[3].status === 429 && mails.length - avantPlafond === 3 && /aujourd/i.test(msgPlafond),
+    `${statutsPlafond.map(x => x.status).join(',')} · ${mails.length - avantPlafond} e-mails · ${msgPlafond}`);
+  env.QUOTA_CODES_JOUR = '100000';
+  const plafondDefaut = Number((/codesJour:\s*(\d+)/.exec(src) || [])[1]);
+  v('… valeur par défaut sous les 100 e-mails par jour de l\'offre gratuite de Resend', plafondDefaut > 0 && plafondDefaut < 100, plafondDefaut);
+
+  /* Première connexion par code ET par Google au même instant, pour une adresse
+     sans compte. L'entrelacement est REJOUÉ, pas espéré : la connexion par code
+     est retenue juste avant de créer le compte, le temps que Google le crée. */
+  sqlite.exec('DELETE FROM limites');
+  env.GOOGLE_CLIENT_ID = CLIENT;
+  const emailCourse = 'course@gmail.com';
+  await brutVers('POST', '/auth/code', { corps: JSON.stringify({ email: emailCourse }), ipX: '10.22.0.1' });
+  const codeCourse = codeDuMail();
+  let ouvrirPorte; const porte = new Promise(ok => { ouvrirPorte = ok; });
+  let retenue = false;
+  const envRetenu = { ...env, DB: d1(sqlite, async (sql) => { if (/^INSERT INTO utilisateurs/.test(sql)) { retenue = true; await porte; } }) };
+  const parCode = brutVers('POST', '/auth/session', { corps: JSON.stringify({ email: emailCourse, code: codeCourse }), ipX: '10.22.0.2', envX: envRetenu });
+  for (let i = 0; i < 200 && !retenue; i++) await new Promise(ok => setImmediate(ok));
+  const parGoogle = await viaGoogle(jetonGoogle({ sub: '7000000000000000000007', email: emailCourse }));
+  ouvrirPorte();
+  const rCode = await parCode;
+  v('première connexion par code et par Google au même instant : les deux réussissent, sur un seul compte',
+    retenue && rCode.status === 200 && parGoogle.status === 200 && nbComptes(emailCourse) === 1, `retenue=${retenue} code=${rCode.status} google=${parGoogle.status} comptes=${nbComptes(emailCourse)}`);
+  const sCourse = rCode.status === 200 ? (await rCode.json()).session : null;
+  v('… et la session ouverte par code donne bien accès à CE compte', !!sCourse && (await appel('GET', '/garage', { session: sCourse })).status === 404);
+  delete env.GOOGLE_CLIENT_ID;
+
+  /* Diagnostic /sante : la page que le propriétaire ouvre dans son navigateur
+     pour vérifier le déploiement. Elle dit ce qui manque, jamais une valeur secrète. */
+  const envSante = { ...env, CODE_SECRET: 'SECRET-DES-CODES-A-NE-PAS-MONTRER', RESEND_API_KEY: 're_CLE_A_NE_PAS_MONTRER' };
+  const sante = async (envX, entetes = {}) => { const x = await worker.fetch(new Request('https://api.test/sante', { headers: entetes }), envX); return { statut: x.status, texte: await x.text() }; };
+  const lire = (t) => { try { return JSON.parse(t); } catch { return {}; } };
+  let s0 = await sante(envSante), j0 = lire(s0.texte);
+  v('/sante · configuration complète : 200, ok, base et réglages en place, origine affichée',
+    s0.statut === 200 && j0.ok === true && j0.base === true && j0.reglages === true && Array.isArray(j0.manquants) && j0.manquants.length === 0 && j0.origine === 'https://app.test' && typeof j0.version === 'string' && j0.version.length >= 8, s0.texte);
+  v('/sante · aucune valeur secrète dans la réponse (ni clé d\'e-mail, ni secret des codes)', !/SECRET-DES-CODES|re_CLE_A_NE_PAS/.test(s0.texte), s0.texte);
+  v('/sante · dit si le stockage photo et la connexion Google sont branchés', j0.photos === true && j0.google === false, s0.texte);
+  s0 = await sante({ ...envSante, PHOTOS: undefined, GOOGLE_CLIENT_ID: CLIENT }); j0 = lire(s0.texte);
+  v('/sante · mode essai sans stockage photo : toujours ok (le stockage photo est facultatif)', j0.ok === true && j0.photos === false && j0.google === true, s0.texte);
+  s0 = await sante({ ...envSante, CODE_SECRET: '', RESEND_API_KEY: undefined }); j0 = lire(s0.texte);
+  v('/sante · secret absent : ok faux, et le NOM du réglage manquant est donné',
+    j0.ok === false && j0.reglages === false && j0.manquants.includes('CODE_SECRET') && j0.manquants.includes('RESEND_API_KEY'), s0.texte);
+  s0 = await sante({ ...envSante, DB: undefined }); j0 = lire(s0.texte);
+  v('/sante · base non reliée : ok faux, base fausse, aucune exception', s0.statut === 200 && j0.ok === false && j0.base === false, s0.texte);
+  const sqliteVide = new DatabaseSync(':memory:');
+  s0 = await sante({ ...envSante, DB: d1(sqliteVide) }); j0 = lire(s0.texte);
+  v('/sante · base reliée mais sans ses tables (schéma non exécuté) : base fausse, tables manquantes nommées',
+    j0.ok === false && j0.base === false && Array.isArray(j0.tablesManquantes) && j0.tablesManquantes.includes('codes') && j0.tablesManquantes.includes('identites'), s0.texte);
+  s0 = await sante({ ...envSante, APP_ORIGIN: 'https://app.test/' }); j0 = lire(s0.texte);
+  v('/sante · origine mal saisie (« / » final) : signalée, avec la valeur telle qu\'elle est enregistrée',
+    j0.ok === false && j0.origineValide === false && j0.origine === 'https://app.test/', s0.texte);
+
+  /* Réglage obligatoire absent : le serveur le dit (503) au lieu de répondre
+     « Session absente » comme s'il était prêt. */
+  const statutsConfig = {};
+  for (const cle of ['DB', 'APP_ORIGIN', 'MAIL_FROM', 'CODE_SECRET', 'RESEND_API_KEY']) {
+    const x = await worker.fetch(new Request('https://api.test/garage'), { ...env, [cle]: undefined });
+    statutsConfig[cle] = x.status;
+  }
+  v('réglage obligatoire absent (base, origine, expéditeur, secrets) : 503 « non configuré » sur toute route, pas un faux « prêt »',
+    Object.values(statutsConfig).every(s => s === 503), JSON.stringify(statutsConfig));
+  r = await worker.fetch(new Request('https://api.test/garage'), env);
+  v('… et configuration complète, sans session : 401 comme avant', r.status === 401, r.status);
 
   globalThis.fetch = fetchReel; try { fs.unlinkSync(tmp); } catch {}
   let ko = 0; for (const x of res) { if (!x.ok) ko++; console.log(`  ${x.ok ? '\x1b[32m✓\x1b[0m' : '\x1b[31m✗\x1b[0m'} ${x.t}${!x.ok && x.d != null ? '  → ' + x.d : ''}`); }

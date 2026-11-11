@@ -49,12 +49,13 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   // API Anthropic et Gemini simulées : comptent les appels (= coût), peuvent
   // répondre en erreur, gardent la dernière requête pour en vérifier la forme.
   let appelsIA = 0, modeIA = 'ok', appelsGemini = 0, modeGemini = 'ok', derniereGemini = null;
+  let texteIA = '[{"brand":"Porsche","model":"911 GT3","confidence":0.9}]';   // ce que « répond » le modèle
   const fetchReel = globalThis.fetch;
   globalThis.fetch = async (url, init = {}) => {
     if (String(url).startsWith('https://api.anthropic.com/')) {
       appelsIA++;
       if (modeIA === 'erreur') return new Response('{"type":"error","error":{"message":"clé interne sk-ant-SECRET invalide"}}', { status: 401 });
-      return new Response(JSON.stringify({ content: [{ type: 'text', text: '[{"brand":"Porsche","model":"911 GT3","confidence":0.9}]' }] }), { status: 200 });
+      return new Response(JSON.stringify({ content: [{ type: 'text', text: texteIA }] }), { status: 200 });
     }
     if (String(url).startsWith('https://generativelanguage.googleapis.com/')) {
       appelsGemini++; derniereGemini = { url: String(url), headers: new Headers(init.headers), corps: JSON.parse(init.body) };
@@ -223,6 +224,49 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   let purgePlante = false;
   try { await purge({ scheduledTime: maintenant }, { ...env, DB: undefined }, {}); } catch { purgePlante = true; }
   v('purge sans base liée : journalisée, aucune exception', !purgePlante);
+
+  /* ======================================================================
+     Seconde relecture (10/11) — chaque test ci-dessous échouait sur le code d'avant.
+     ====================================================================== */
+  sqlite.exec('DELETE FROM limites');
+  const srcRelais = fs.readFileSync(path.join(__dirname, 'ai-relay-worker.js'), 'utf8');
+
+  /* Confiance : un 0 du modèle (« je n'en sais rien ») devenait 0,5. */
+  const texteIAOrigine = texteIA;
+  texteIA = '[{"brand":"A","model":"zéro","confidence":0},{"brand":"B","model":"texte","confidence":"0.7"},{"brand":"C","model":"absente"},{"brand":"D","model":"hors bornes","confidence":7}]';
+  r = await appel({ ipFixe: '10.30.0.1' });
+  const conf = r.status === 200 ? (await r.json()).map(g => g.confidence) : null;
+  texteIA = texteIAOrigine;
+  v('confiance du modèle : 0 reste 0 (pas 0,5), un nombre en texte est lu, une absence vaut 0,5 ; au plus 3 propositions',
+    JSON.stringify(conf) === '[0,0.7,0.5]', JSON.stringify(conf));
+
+  /* Corps démesuré : lecture arrêtée dès la limite, pas après avoir tout chargé. */
+  const corpsGeant = (octetsTotal) => { let lus = 0; const morceau = new Uint8Array(64 * 1024).fill(0x41);
+    const flux = new ReadableStream({ pull(c) { if (lus >= octetsTotal) return c.close(); lus += morceau.length; c.enqueue(morceau); } }, { highWaterMark: 0 });
+    return { flux, lus: () => lus }; };
+  const geant = corpsGeant(24 * 1024 * 1024), avantGeant = appelsIA;
+  r = await relais.fetch(new Request('https://relais.test/', { method: 'POST', duplex: 'half', body: geant.flux,
+    headers: { 'Content-Type': 'application/json', Origin: 'https://app.test', 'CF-Connecting-IP': '10.30.0.2' } }), env);
+  v('corps de 24 Mo : refusé (413) sans être lu en entier, aucun appel à l\'IA',
+    r.status === 413 && geant.lus() <= 4 * 1024 * 1024 && appelsIA === avantGeant, `${r.status}, ${(geant.lus() / 1048576).toFixed(1)} Mo lus`);
+  r = await relais.fetch(new Request('https://relais.test/', { method: 'POST', body: JSON.stringify({ image: IMAGE }),
+    headers: { 'Content-Type': 'application/json', Origin: 'https://app.test', 'CF-Connecting-IP': '10.30.0.3', 'Content-Length': String(60 * 1024 * 1024) } }), env);
+  v('… et une taille annoncée trop grande (Content-Length) est refusée d\'emblée (413)', r.status === 413 && appelsIA === avantGeant, r.status);
+
+  /* IPv6 : le quota « par appareil » comptait par adresse entière, alors qu'un
+     abonné dispose de tout un préfixe /64 — il n'y avait donc pas de quota. */
+  env.QUOTA_IA_ANONYME = '3';
+  const v6 = []; for (let i = 0; i < 4; i++) v6.push((await appel({ ipFixe: `2a01:cb00:12:34:${(i + 1).toString(16)}::${i + 7}` })).status);
+  v('IPv6 : 4 adresses du même préfixe /64, quota de 3 → la 4e est refusée (un préfixe = un appareil)', JSON.stringify(v6) === '[200,200,200,429]', JSON.stringify(v6));
+  v('… un autre préfixe /64 n\'est pas pénalisé', (await appel({ ipFixe: '2a01:cb00:12:35::1' })).status === 200);
+  delete env.QUOTA_IA_ANONYME;
+  /* Les deux serveurs sont collés séparément dans Cloudflare : pas de module
+     commun possible. Les fonctions partagées doivent donc rester IDENTIQUES,
+     sinon un correctif fait dans l'un manquera dans l'autre. */
+  const fonction = (source, nom) => (new RegExp(`(?:async )?function ${nom}\\([^)]*\\) \\{[\\s\\S]*?\\n\\}`).exec(source) || [''])[0];
+  const memes = ['cleReseau', 'lireCorps'].map(nom => [nom, fonction(srcRelais, nom), fonction(srcCompte, nom)]);
+  v('fonctions communes au relais et au serveur de comptes (cleReseau, lireCorps) : identiques au caractère près',
+    memes.every(([, a, b]) => a.length > 80 && a === b), memes.filter(([, a, b]) => a !== b || a.length <= 80).map(x => x[0]).join(', '));
 
   globalThis.fetch = fetchReel; try { fs.unlinkSync(tmp); } catch {}
   let ko = 0; for (const x of res) { if (!x.ok) ko++; console.log(`  ${x.ok ? '\x1b[32m✓\x1b[0m' : '\x1b[31m✗\x1b[0m'} ${x.t}${!x.ok && x.d != null ? '  → ' + x.d : ''}`); }
