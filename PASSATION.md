@@ -5,9 +5,11 @@
 > Il dit **où on en est, ce qui est prouvé, ce qui reste, et les pièges déjà payés**.
 > Le détail vit ailleurs ; ici, on pointe vers lui.
 >
-> **Dernière mise à jour : 27/10/2026** (branche
-> `claude/create-claude-documentation-8eo2t7`, version `20.198.0`). **Partie B du
-> tuto en cours, à moitié faite** : lire le §2 avant toute instruction au propriétaire.
+> **Dernière mise à jour : 17/11/2026** (branche
+> `claude/create-claude-documentation-8eo2t7`, version `20.199.0`). **Partie B du
+> tuto à moitié faite, rien de neuf côté propriétaire depuis le 04/10** (constaté
+> le 17/11) : lire le §2 avant toute instruction au propriétaire. Du 10 au 17/11 :
+> **seconde relecture complète** du code (`AUDIT-DEFAUTS.md`, « Seconde relecture »).
 > Le propriétaire suit la **feuille de route** en tête de `TUTO-GRATUIT.md` (étapes
 > 1 à 19, uniquement ce qui reste) : c'est elle qu'on cite, par son numéro.
 > **À mettre à jour à chaque fin de session** : remplacer, ne pas empiler (l'historique
@@ -27,12 +29,14 @@
    branche) se fait sans redemander.
 3. **Bancs** : le hook de démarrage installe Playwright. Commande de contrôle :
    ```sh
-   export NODE_PATH=$PWD/.claude/outils-bancs/node_modules CHROMIUM=/opt/pw-browsers/chromium-1194/chrome-linux/chrome
+   export NODE_PATH=$PWD/.claude/outils-bancs/node_modules CHROMIUM=/opt/pw-browsers/chromium
    for f in banc-*.js; do node $f >/dev/null 2>&1 && echo "OK $f" || echo "ÉCHEC $f"; done
    ```
-   Dernier passage complet : **17/17 verts** (27/10, v20.198.0), après les correctifs de
-   la relecture de code du 26/10 (`banc-compte` 100, `banc-compte-navigateur` 72,
-   `banc-p0` 28 ; détail : `AUDIT-DEFAUTS.md`, « Relecture de code du 26/10 »).
+   `/opt/pw-browsers/chromium` est un lien **stable** : le dossier versionné
+   (`chromium-1194/…`) a changé d'une image à l'autre et les bancs ne démarraient plus.
+   Dernier passage complet : voir `AUDIT-DEFAUTS.md`, « Seconde relecture » (19 bancs,
+   dont les nouveaux `banc-retouches.js` et `banc-sw.js`). Après un banc navigateur :
+   `git checkout -- banc-capture.png` (capture régénérée à chaque passage).
 4. **Connecteurs** : si « Cloudflare Developer Platform » est branché, **constater**
    l'état réel du compte (Workers, variables, liaisons, D1) et le comparer au §2
    ci-dessous avant d'affirmer quoi que ce soit.
@@ -52,13 +56,14 @@ faux. Seul le tableau de bord Cloudflare fait foi.
 | **App en ligne** (GitHub Pages, construite depuis `main`) | Version du **21/09**. Aucun travail fait depuis le 22/09 n'est en ligne | `git log origin/main` |
 | **Base D1 `garage-comptes`** | **Existe**, juridiction **`eu`**, 6 tables + 2 index **identiques** à `cloud/schema.sql` (comparaison automatique). Id `e8f5ab27-78b9-40af-ae61-508a25afff13` | Connecteur, 04/10 (`d1_databases_list`, `sqlite_master`) |
 | **Relais IA** `silent-firefly-2620` — **code** | Toujours l'**ancien** (Gemini du 31/08, clé en `?key=`, `/notify` ouvert, CORS en miroir, aucun plafond, renvoie le détail des erreurs Google) | Connecteur, 02/10 (`workers_get_worker_code`) |
-| Relais — **réglages** | `GEMINI_API_KEY` = **Secret**, clé **neuve** « garage-manifest-relais » (projet « Projet Gemini 2 ») · `IA_FOURNISSEUR=gemini` · `APP_ORIGIN=https://mcslec.github.io` · **`RESEND_API_KEY` encore présente** (Variable en clair) · **aucune liaison** · aucun cron. Dernière modification 04/10 20:55 UTC, **inchangé au 26/10** | Capture du propriétaire 04/10 + `workers_list` 26/10 |
+| Relais — **réglages** | `GEMINI_API_KEY` = **Secret**, clé **neuve** « garage-manifest-relais » (projet « Projet Gemini 2 ») · `IA_FOURNISSEUR=gemini` · `APP_ORIGIN=https://mcslec.github.io` · **`RESEND_API_KEY` encore présente** (Variable en clair) · **aucune liaison** · aucun cron. Dernière modification 04/10 20:55 UTC, **inchangé au 17/11** | Capture du propriétaire 04/10 + `workers_list` 26/10 |
 | ⚠️ Reconnaissance photo **en ce moment** | **Non vérifiée** depuis le 04/10 : l'ancien code met la clé **neuve** dans `?key=`. Si Google la refuse sous cette forme, la reconnaissance est en panne jusqu'au collage du nouveau code (B2), qui passe par l'en-tête | Déduction, à vérifier |
 | Clés Gemini (AI Studio) | `…eeUw` « CARDEX » (l'**ancienne** du relais, à supprimer après B5) ; `…kvaw` « Default Gemini API Key » (inutilisée par le relais) ; la neuve. Les projets sont en **« Niveau sans frais »** | Captures du propriétaire, 04/10 |
 | Claude Haiku | **N'a jamais tourné**, aucune clé Anthropic : rien de facturable | Code déployé + réglages |
 | Compte Resend | Offre gratuite, **sans domaine**, **aucune clé** : « Garage manifest » (27/08) **révoquée le 26/10** par le connecteur (ménage délégué par le propriétaire ; aucun appelant légitime, l'app de `main` n'appelle pas `/notify`). La ligne `RESEND_API_KEY` du relais contient donc une clé morte : à supprimer par hygiène (feuille de route, étape 2). Une clé neuve se crée à l'étape 12. Adresse du compte toujours **à vérifier** (étape 12) | Connecteur Resend, `list-api-keys` vide le 26/10 et le 27/10 |
 | R2 | Non activé (normal : mode essai, R2 exige une carte) | Connecteur, 02/10 |
-| Serveur de comptes | **N'existe pas** (partie C) | `workers_list`, 07/10 |
+| Serveur de comptes | **N'existe pas** (partie C) | `workers_list`, 17/11 |
+| Code à coller (étapes 3 et 8) | Le dépôt a changé depuis le tuto du 27/10 (relais : lecture bornée, IPv6 /64, confiance 0 ; comptes : `/sante`, plafond global de codes…). **Aucune incidence** : les étapes collent le fichier brut de la branche, donc toujours la dernière version. Vérification de l'étape 15 = **`/sante`** → `"ok":true` (l'ancienne, `/garage`, passait sans base reliée) | Dépôt |
 | Schéma de la base | **À jour** : 8 tables + 3 index, identiques au dépôt (C0 fait par le connecteur le 14/10, sur « go ») | Connecteur, `sqlite_master` comparé au dépôt |
 | Connexion Google | Code prêt, **en sommeil** (`GOOGLE_CLIENT_ID` vide côté app et serveur). Script de Google autorisé par le propriétaire le 14/10 | Dépôt |
 | Comptes dans l'app | Code prêt et testé, **en sommeil** (`COMPTE_URL` vide) | Dépôt |

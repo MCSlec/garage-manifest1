@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.198.0';
+  const VERSION_MODULE = '20.199.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -13329,12 +13329,19 @@
           const ph = Math.round(rect.h * echelle);
 
           const neuve = await pixelliser(src, px, py, pw, ph);
-          const n = await remplacerPhoto(src, neuve);
+          const cidOuvert = idFicheOuverte();
+          /* `partout` : la plaque est floutée dans TOUTES les prises qui
+             contiennent cette image — c'est l'image qu'on protège. */
+          const n = await remplacerPhoto(src, neuve, { partout: true });
           if (n > 0) {
+            /* Si cette photo avait été recadrée, son original — plaque lisible —
+               dormait encore dans la base des cadrages. « Permanent une fois
+               validé » vaut aussi pour lui. */
+            await oublierOriginal(empreintePhoto(src));
             b.textContent = 'Plaque floutée ✓';
             await new Promise(r => setTimeout(r, 400));
             fermer();
-            const cid = await idDepuisPhoto(neuve);
+            const cid = cidOuvert || await idDepuisPhoto(neuve);
             rechargerSurFiche(cid);
             return;
           }
@@ -13441,7 +13448,8 @@
     try {
       const st = _dbCadrage.transaction('pos', 'readonly').objectStore('pos');
       const r = st.getAll();
-      r.onsuccess = () => (r.result || []).forEach(x => _cadrages.set(x.id, x.y));
+      // Les originaux (« orig:… », une photo entière chacun) n'ont rien à faire en mémoire : lus à la demande.
+      r.onsuccess = () => (r.result || []).forEach(x => { if (String(x.id).indexOf('orig:') !== 0) _cadrages.set(x.id, x.y); });
     } catch (_) {}
   }
 
@@ -13714,11 +13722,16 @@
          <span class="gvr-v">v${esc(VERSION_MODULE)}</span>
        </div>
        <button class="btn" data-gvr="purge" style="width:100%;margin-top:12px">Forcer la mise à jour des modules</button>
-       <!-- suite : bloc partage juste après -->
+       <p class="gvr-n">Si une correction ne semble pas appliquée, ce bouton efface la copie
+       en cache des modules et recharge. Tes prises et tes photos ne sont pas touchées.</p>
        <button class="btn" data-gvr="rattacher" style="width:100%;margin-top:8px">Rattacher les voitures non classées</button>
-     </div>
-     <div class="section panel">
-       <div class="h2" style="margin-bottom:10px">Partage des non classées</div>
+       <p class="gvr-n">Cherche, parmi tes « Non classé », celles dont le modèle a rejoint le
+       catalogue. Chaque proposition attend ton accord.</p>`
+      /* « Partage des non classées » : affiché seulement quand l'envoi est possible.
+         Tant que NOTIFY_ENDPOINT est vide, rien ne part : proposer « Partager », et
+         répondre « Partage activé ✓ », promettait un envoi qui n'avait pas lieu. */
+      + (NOTIFY_ENDPOINT ? `
+       <div class="h2" style="margin:18px 0 10px">Partage des non classées</div>
        <p class="gvr-n" style="margin-top:0">Avec ton accord, les voitures non classées (photo,
        nom saisi, date — jamais ta position ni tes notes) sont envoyées au créateur de l'app
        pour l'aider à compléter le catalogue. Ça ne change rien à l'usage de l'app.</p>
@@ -13726,9 +13739,7 @@
        <div class="gpt-chg">
          <button class="btn" data-gvr="part-non">Ne pas partager</button>
          <button class="btn red" data-gvr="part-oui">Partager</button>
-       </div>
-       <p class="gvr-n">Si une correction ne semble pas appliquée, ce bouton efface la copie
-       en cache des modules et recharge. Tes prises et tes photos ne sont pas touchées.</p>`;
+       </div>` : '');
     vue.appendChild(el);
     majEtatPartage();
   }
@@ -13758,19 +13769,19 @@
       if (b.dataset.gvr === 'rattacher') {
         const txt0 = b.textContent;
         b.disabled = true; b.textContent = 'Recherche…';
-        let props = [];
-        try { props = await chercherRattachements(); } catch (_) {}
-        if (!props.length) {
+        /* Ce bouton appliquait TOUTES les correspondances d'un coup, sans rien
+           montrer — exactement ce que le panneau ci-dessous a été écrit pour
+           interdire (« Porsche Gt3 r » envoyée sur la 911 GT3 Touring, 93 % de
+           ressemblance). Il ouvre désormais ce panneau : la machine propose,
+           chaque ligne attend un accord. */
+        let n = 0;
+        try { n = await proposerRattachements(true); } catch (_) {}
+        if (!n) {
           b.textContent = 'Aucune correspondance trouvée';
           setTimeout(() => { b.disabled = false; b.textContent = txt0; }, 2600);
           return;
         }
-        const liste = props.map(p => `${p.custom.brand} ${p.custom.model} → ${p.cible.brand} ${p.cible.model}`).join('\n');
-        b.textContent = `Rattachement de ${props.length}…`;
-        console.info('[GMSpecs] rattachements :\n' + liste);
-        try { await appliquerRattachements(props); } catch (_) {}
-        b.textContent = 'Terminé ✓ rechargement…';
-        setTimeout(() => location.reload(), 500);
+        b.disabled = false; b.textContent = txt0;
         return;
       }
 
@@ -13879,8 +13890,28 @@
     }
   }
 
-  /** Remplace une photo dans la base de l'app. Renvoie le nombre de fiches touchées. */
-  async function remplacerPhoto(ancienne, nouvelle) {
+  /** Id de la voiture dont la fiche est ouverte (contrat data-car-id, CLAUDE.md §3). */
+  const idFicheOuverte = () => {
+    const el = document.querySelector('#overlay .detail-shell[data-car-id]');
+    return el ? el.dataset.carId : null;
+  };
+
+  /** Remplace une photo dans la base de l'app. Renvoie le nombre de fiches touchées.
+   *  `options.partout` : toutes les prises contenant l'image (floutage de plaque) ;
+   *  sinon la fiche ouverte seulement (un cadrage est propre à une voiture). */
+  async function remplacerPhoto(ancienne, nouvelle, options) {
+    /* Chemin nominal (10/11) : l'app fait le remplacement elle-même, via son
+       contrat window.GMGarage — état en mémoire, date de modification et pierre
+       tombale de l'ancienne version compris. Écrire ici directement dans
+       IndexedDB laissait l'ORIGINALE revenir à la fusion cloud : une plaque
+       « floutée pour de bon » réapparaissait lisible à côté de sa version
+       floutée. Le chemin direct ci-dessous ne sert plus que de repli pour un
+       index.html plus ancien encore en cache. */
+    const garage = global.GMGarage;
+    if (garage && typeof garage.remplacerPhoto === 'function') {
+      const r = await garage.remplacerPhoto(ancienne, nouvelle, options);
+      return r && r.ok ? r.n : 0;
+    }
     const db = await ouvrirGarage();
     if (!db.objectStoreNames.contains('spots')) return 0;
 
@@ -13909,10 +13940,35 @@
     return aModifier.length;
   }
 
-  /** Conserve l'original pour permettre un retour en arrière. */
+  /** Conserve l'original pour permettre un retour en arrière.
+   *  `emp` est l'empreinte de la photo qui sera AFFICHÉE (la version recadrée) :
+   *  c'est sous cette clé que l'éditeur la cherche à sa prochaine ouverture.
+   *  Elle était rangée sous l'empreinte de l'ANCIENNE photo, qui n'existe plus
+   *  après le remplacement — « Photo d'origine » n'apparaissait donc jamais.
+   *  Rend une promesse : l'écriture doit être finie avant le rechargement. */
   function garderOriginal(emp, src) {
-    if (!_dbCadrage) return;
-    try { _dbCadrage.transaction('pos', 'readwrite').objectStore('pos').put({ id: 'orig:' + emp, y: src }); } catch (_) {}
+    return new Promise((res) => {
+      if (!_dbCadrage) return res(false);
+      try {
+        const tx = _dbCadrage.transaction('pos', 'readwrite');
+        tx.objectStore('pos').put({ id: 'orig:' + emp, y: src });
+        tx.oncomplete = () => res(true);
+        tx.onerror = tx.onabort = () => res(false);
+      } catch (_) { res(false); }
+    });
+  }
+  /* Rend une promesse : suivi d'un rechargement de page, un effacement non attendu
+     est ANNULÉ avec sa transaction (constaté au banc : l'original restait). */
+  function oublierOriginal(emp) {
+    return new Promise((res) => {
+      if (!_dbCadrage) return res(false);
+      try {
+        const tx = _dbCadrage.transaction('pos', 'readwrite');
+        tx.objectStore('pos').delete('orig:' + emp);
+        tx.oncomplete = () => res(true);
+        tx.onerror = tx.onabort = () => res(false);
+      } catch (_) { res(false); }
+    });
   }
   function lireOriginal(emp) {
     return new Promise(r => {
@@ -14138,11 +14194,12 @@
         b.disabled = true; b.textContent = 'Restauration…';
         try {
           const orig = await lireOriginal(emp);
-          if (orig) {
-            await remplacerPhoto(src, orig);
+          const cid = idFicheOuverte();
+          if (orig && await remplacerPhoto(src, orig) > 0) {
             oublierCadrage(emp);
+            await oublierOriginal(emp);
             fermer();
-            rechargerSurFiche(await idDepuisPhoto(orig));
+            rechargerSurFiche(cid || await idDepuisPhoto(orig));
             return;
           }
         } catch (_) {}
@@ -14156,15 +14213,22 @@
         try {
           const neuve = await fabriquerRecadree(src, r, ratioCadre, z, Math.round(x));
           if (!neuve) { fermer(); return; }
-          garderOriginal(emp, src);
+          /* `src` est peut-être déjà une version recadrée : on garde la TOUTE
+             première photo, pas l'étape intermédiaire. L'original est écrit
+             AVANT le remplacement : un arrêt entre les deux laisse une entrée
+             inutile, jamais une photo perdue. */
+          const empNeuve = empreintePhoto(neuve), cid = idFicheOuverte();
+          await garderOriginal(empNeuve, (await lireOriginal(emp)) || src);
           const n = await remplacerPhoto(src, neuve);
           if (n > 0) {
+            if (empNeuve !== emp) await oublierOriginal(emp);
             b.textContent = 'Photo recadrée ✓';
             await new Promise(rs => setTimeout(rs, 450));
             fermer();
-            rechargerSurFiche(await idDepuisPhoto(neuve));
+            rechargerSurFiche(cid || await idDepuisPhoto(neuve));
             return;
           }
+          if (empNeuve !== emp) await oublierOriginal(empNeuve);   // même empreinte : c'est l'original déjà gardé, on le laisse
           console.warn('[GMSpecs] photo introuvable en base — repli sur l\'affichage. '
             + 'Lance GMSpecs.diagPhoto() pour comparer les empreintes.');
           sauverCadrage(emp, r);
@@ -14288,7 +14352,10 @@
     b.className = 'btn gcl-btn';
     b.type = 'button';
     b.textContent = nonClasse ? 'Associer à un modèle du catalogue' : 'Changer de modèle';
-    b.addEventListener('click', (e) => { e.stopPropagation(); ouvrirClasseur(cible.nom); });
+    /* L'id est lu AU CLIC, sur la fiche (data-car-id) : retrouver la capture par
+       son NOM affiché désignait la mauvaise prise dès que deux voitures portaient
+       le même libellé (une « Non classé » homonyme d'un modèle du catalogue). */
+    b.addEventListener('click', (e) => { e.stopPropagation(); ouvrirClasseur(cible.nom, idFicheOuverte()); });
     tete.insertAdjacentElement('afterend', b);
   }
 
@@ -14327,9 +14394,9 @@
     return null;
   }
 
-  function ouvrirClasseur(nom) {
+  function ouvrirClasseur(nom, idSource) {
     if (document.getElementById('gcls')) return;
-    _classeur = { nom };
+    _classeur = { nom, idSource: idSource || null };
 
     const ov = document.createElement('div');
     ov.id = 'gcls';
@@ -14375,7 +14442,7 @@
       if (b.dataset.gcs === 'fermer') { ov.remove(); _classeur = null; return; }
 
       b.disabled = true; b.style.opacity = .6;
-      const ok = await classerVers(nom, b.dataset.id);
+      const ok = await classerVers(nom, b.dataset.id, idSource);
       if (!ok) {
         b.disabled = false; b.style.opacity = 1;
         liste.insertAdjacentHTML('afterbegin',
@@ -14388,7 +14455,21 @@
   }
 
   /** Déplace la capture vers l'identifiant du catalogue choisi. */
-  async function classerVers(nom, idCible) {
+  async function classerVers(nom, idCible, idSource) {
+    /* Chemin nominal (10/11) : le contrat window.GMGarage.deplacerPrise — la prise
+       est datée, l'ancien identifiant reçoit une pierre tombale. Écrite ici
+       directement en base, l'association était défaite par la synchronisation :
+       l'ancienne prise revenait du cloud (voiture en double). Le chemin direct
+       ci-dessous reste le repli d'un index.html plus ancien encore en cache. */
+    const garage = global.GMGarage;
+    if (garage && typeof garage.deplacerPrise === 'function') {
+      try {
+        const source = idSource || ((await trouverCapture(nom)) || { spot: {} }).spot.carId;
+        if (!source) return false;
+        const r = await garage.deplacerPrise(source, idCible);
+        return !!(r && r.ok);
+      } catch (e) { console.warn('[GMSpecs] association impossible', e); return false; }
+    }
     try {
       const t = await trouverCapture(nom);
       if (!t) return false;
@@ -14580,8 +14661,20 @@
   }
 
   async function appliquerRattachements(props) {
-    const db = await ouvrirBase();
     const journal = [];
+    // Même chemin nominal que classerVers : le contrat de l'app (date + pierre tombale).
+    const garage = global.GMGarage;
+    if (garage && typeof garage.deplacerPrise === 'function') {
+      for (const pr of props) {
+        let ok = false;
+        try { ok = !!(await garage.deplacerPrise(pr.custom.id, pr.cible.id)).ok; } catch (_) {}
+        journal.push(ok ? `${pr.custom.brand} ${pr.custom.model} → ${pr.cible.brand} ${pr.cible.model}`
+                        : `échec : ${pr.custom.brand} ${pr.custom.model} (conservée)`);
+      }
+      console.info('[GMSpecs] rattachements :', journal);
+      return journal;
+    }
+    const db = await ouvrirBase();
     for (const pr of props) {
       const tx = db.transaction('spots', 'readwrite');
       const st = tx.objectStore('spots');
@@ -14620,12 +14713,16 @@
      ------------------------------------------------------------------- */
   let _bandeauFait = false;
 
-  async function proposerRattachements() {
-    if (_bandeauFait || document.getElementById('gmr-rat')) return;
+  /** Rend le nombre de propositions affichées. `aLaDemande` : bouton des Réglages
+   *  (le panneau automatique, lui, ne se montre qu'une fois par démarrage). */
+  async function proposerRattachements(aLaDemande) {
+    const ouvert = document.getElementById('gmr-rat');
+    if (ouvert) return ouvert.querySelectorAll('.gmr-li').length;
+    if (_bandeauFait && !aLaDemande) return 0;
     _bandeauFait = true;
     let props = [];
-    try { props = await chercherRattachements(); } catch (_) { return; }
-    if (!props.length) return;
+    try { props = await chercherRattachements(); } catch (_) { return 0; }
+    if (!props.length) return 0;
 
     const ligne = (p, i) => `
       <div class="gmr-li" data-i="${i}">
@@ -14663,7 +14760,7 @@
 
       if (a === 'autre') {
         el.remove();
-        ouvrirClasseur(`${p.custom.brand} ${p.custom.model}`.trim());
+        ouvrirClasseur(`${p.custom.brand} ${p.custom.model}`.trim(), p.custom.id);
         return;
       }
 
@@ -14676,6 +14773,7 @@
       }
     });
     document.body.appendChild(el);
+    return props.length;
   }
 
   /* ======================================================================

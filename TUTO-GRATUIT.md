@@ -163,7 +163,7 @@ sauvegarde. Peut se faire le même jour que la séance 1 ou un autre.
   à la fois : si la reconnaissance flanche, on saura que c'est le relais et pas la
   nouvelle app.
 - [ ] **18. Tester sur le téléphone** *(partie E)* : ferme complètement l'app et
-  rouvre-la (deux fois si besoin) → **Plus → Réglages** : version **20.198.0 ou
+  rouvre-la (deux fois si besoin) → **Plus → Réglages** : version **20.199.0 ou
   plus** → **Compte** → adresse **du compte Resend** → **Recevoir un code** → code →
   **Valider** → **Sauvegarder**. Écris-moi « comptes testés ».
 - [ ] **19. *(Facultatif)* « Continuer avec Google »** : partie F (identifiant Google,
@@ -621,7 +621,7 @@ Une fois la fusion faite :
 
 - [ ] Sur le téléphone, ferme complètement l'app puis rouvre-la (deux fois si
   besoin) : c'est ainsi que le téléphone télécharge la nouvelle version. Dans
-  **Plus → Réglages**, la version affichée doit être **20.198.0** ou plus.
+  **Plus → Réglages**, la version affichée doit être **20.199.0** ou plus.
 - [ ] **Plus → Réglages → Compte** → tape **l'adresse de ton compte Resend** →
   **Recevoir un code**.
 - [ ] Le mail arrive en moins d'une minute (regarde les **indésirables**). Le code

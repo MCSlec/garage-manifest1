@@ -134,6 +134,12 @@ Rien ne casse, mais c'est déroutant : à garder court, ou à dire autour de toi
 - [ ] Après la réussite de B5 : **supprimer l'ancienne clé Gemini** « CARDEX »
   (`…eeUw`) dans AI Studio. La clé « Default Gemini API Key » (`…kvaw`) ne sert pas
   au relais : à supprimer si rien d'autre ne l'utilise (à toi de voir).
+- [ ] *(Seulement si un jour tu passes au fournisseur Claude, donc en payant — rien à
+  faire en mode gratuit.)* Le relais vise par défaut **Claude Haiku 4.5**
+  (`claude-haiku-4-5-20251001`, toujours servi). Un modèle plus récent et nettement
+  moins cher existe (**Haiku 5.5**), mais il « réfléchit » par défaut, ce qui consomme
+  la petite réserve de réponse du relais (300 jetons) : la bascule se teste sur la
+  vraie API avant d'être faite. Noté le 11/11 ; à décider le jour où Claude sert.
 - ✅ **Ancienne clé Resend « Garage manifest » (27/08) révoquée** le 26/10 par la
   session, via le connecteur (ménage que tu m'as délégué) : aucun appelant légitime,
   et la liste des clés Resend est vide (constaté le 26/10 et le 27/10). Rien à faire

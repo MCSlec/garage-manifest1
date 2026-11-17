@@ -107,7 +107,7 @@
      Si l'un des deux change, le banc le verra. */
   function normaliser(s) {
     return (s == null ? '' : String(s))
-      .normalize('NFD').replace(/[̀-ͯ]/g, '')
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')   // accents combinants, écrits en échappements : invisibles tapés tels quels
       .toLowerCase().replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
   }
 

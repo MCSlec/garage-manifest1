@@ -5,11 +5,13 @@
    collection) vivent dans IndexedDB côté page, pas ici.
 
    v20.187.0 — Leaflet hébergé dans le dépôt : plus aucun CDN.
+   v20.199.0 — Installation depuis le serveur (cache HTTP contourné) ; la mise à
+             jour attend l'accord du joueur (« Mettre à jour » fonctionne).
              Le numéro DOIT être incrémenté à chaque modification d'un fichier
              mis en cache, sinon l'ancienne copie est resservie indéfiniment.
 */
 
-const VERSION = "garage-v20.198.0";
+const VERSION = "garage-v20.199.0";
 
 /* ESSENTIEL : sans ces fichiers, l'app ne démarre pas hors-ligne.
    Mis en cache de façon atomique — si l'un manque, l'installation doit échouer
@@ -52,18 +54,32 @@ const FRAIS = [/gm-[a-z0-9-]+\.js$/i, /\/sw\.js$/i];
 const estHorsCache = (url) => HORS_CACHE.some((re) => re.test(url.pathname));
 const estFrais     = (url) => FRAIS.some((re) => re.test(url.pathname));
 
+/* `cache: "reload"` : on va chercher les fichiers sur le SERVEUR, pas dans le cache
+   HTTP du navigateur. GitHub Pages autorise dix minutes de cache (max-age=600) :
+   une nouvelle version installée dans ce délai rangeait la copie PÉRIMÉE
+   d'index.html, et c'est elle qui démarrait hors ligne, jusqu'à la version
+   suivante (banc-sw.js). */
+const fraisDuServeur = (url) => new Request(url, { cache: "reload" });
+
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(VERSION).then(async (cache) => {
       // Le shell d'abord : toute erreur ici doit faire échouer l'installation.
-      await cache.addAll(SHELL);
+      await cache.addAll(SHELL.map(fraisDuServeur));
       // Les extras ensuite, individuellement et sans conséquence en cas d'échec.
       await Promise.all(
-        EXTRAS.map((url) => cache.add(url).catch(() => {
+        EXTRAS.map((url) => cache.add(fraisDuServeur(url)).catch(() => {
           console.warn("[SW] extra non mis en cache :", url);
         }))
       );
-      await self.skipWaiting();
+      /* PAS de skipWaiting() ici. Il activait la nouvelle version d'office, en
+         pleine utilisation : l'invitation « Nouvelle version disponible » de
+         l'app s'affichait quand même, mais son bouton « Mettre à jour » ne
+         faisait plus rien (la version était déjà active, la page ne se
+         rechargeait pas) — et l'app ouverte continuait sur l'ancienne page
+         avec le nouveau cache. La nouvelle version attend désormais l'accord
+         du joueur (message SKIP_WAITING ci-dessous) ou la fermeture de l'app.
+         Première installation : aucune version active, elle s'active seule. */
     })
   );
 });

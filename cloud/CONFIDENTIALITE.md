@@ -59,7 +59,7 @@ la marque et le modèle proposés.
 | **Tes photos**, désignées dans ta collection par leur empreinte SHA-256 | Idem | Tant que le compte existe. **Mode essai** (serveur sans stockage photo) : aucune photo ne quitte ton téléphone ; seules leurs empreintes figurent dans la collection sauvée |
 | **Volume stocké** (nombre de photos, octets) | Appliquer le quota de stockage du compte | Tant que le compte existe |
 | **Voitures retirées** (identifiant de la voiture, date du retrait) | Faire disparaître la voiture de tes autres appareils | Tant que le compte existe |
-| **Photos supprimées** (empreinte SHA-256 de la photo, date de suppression — jamais la photo elle-même) | Faire disparaître la photo de tes autres appareils | Tant que le compte existe (5 000 plus récentes au plus) |
+| **Photos supprimées ou remises** (identifiant de la voiture, empreinte SHA-256 de la photo, date de la suppression ou de la remise — jamais la photo elle-même) | Faire disparaître la photo de tes autres appareils, sans la retirer d'une autre voiture, et ne pas la refaire disparaître si tu la reprends | Tant que le compte existe (5 000 plus récentes au plus) |
 | **Si tu te connectes avec Google** : l'adresse e-mail de ton compte Google (vérifiée par Google), une **empreinte** SHA-256 de ton identifiant Google (jamais l'identifiant lui-même), la date de la liaison. Rien d'autre : ni nom, ni photo de profil, ni contacts | Te reconnaître à la connexion suivante, même si ton adresse Google change | Tant que le compte existe |
 
 Précisions vérifiables dans le code :

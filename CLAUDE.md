@@ -471,12 +471,12 @@ incrémenter conjointement :**
 1. `VERSION_MODULE` dans `gm-specs.js` (ligne ~22).
 2. `VERSION` (`"garage-v…"`) dans `sw.js` (ligne ~12).
 
-Ces deux numéros sont **tenus synchronisés** (au 27/10/2026 : `gm-specs.js` →
-`20.198.0`, `sw.js` → `garage-v20.198.0`). `VERSION_MODULE` s'affiche en outre
+Ces deux numéros sont **tenus synchronisés** (au 17/11/2026 : `gm-specs.js` →
+`20.199.0`, `sw.js` → `garage-v20.199.0`). `VERSION_MODULE` s'affiche en outre
 dans l'UI via `grefferVersion()`, ce qui permet de vérifier de visu quelle version
 tourne réellement sur l'appareil.
 
-> ℹ️ `APP_VERSION` dans `index.html` (aujourd'hui `3.2.0`) est un **repère produit
+> ℹ️ `APP_VERSION` dans `index.html` (aujourd'hui `3.3.0`) est un **repère produit
 > distinct** ; il se bump aux MAJ notables, mais ce n'est **pas** lui qui invalide
 > le cache. Le déclencheur de rafraîchissement, c'est `VERSION` dans `sw.js`.
 
@@ -588,7 +588,10 @@ modification n'impose aucun bump de version.
    ne prouve rien sur le câblage DOM. Un test d'exécution réelle (banc Playwright
    qui écrit des spots dans IndexedDB, ouvre les fiches, lit le DOM) est
    obligatoire pour toute modification de la greffe ou du contrat inter-modules.
-10. **Comptes** : toute modification de `gm-compte.js`, `cloud/` ou du contrat
+10. **Service worker** : toute modification de `sw.js` repasse `banc-sw.js`.
+    Jamais de `skipWaiting()` à l'installation : il rendait le bouton
+    « Mettre à jour » inopérant (la version s'activait seule).
+11. **Comptes** : toute modification de `gm-compte.js`, `cloud/` ou du contrat
     `GMGarage` repasse `banc-compte.js` **et** `banc-compte-navigateur.js` ;
     un changement de collecte met à jour `cloud/CONFIDENTIALITE.md` (§8 quinquies).
 
@@ -613,6 +616,8 @@ modification n'impose aucun bump de version.
 | `banc-relais.js` | Banc serveur du relais IA : quotas (dont rafale simultanée), taille/format d'image, origine, route unique, erreurs sans détail, fermeture sans D1 |
 | `banc-p0.js` | Banc navigateur du parcours **capture → révélation** (`design/SPEC-P0-*.md`) : analyse visible, écran selon le statut du matcher (sûr / ambigu / pistes faibles / rien / erreurs nommées), résultat tardif ignoré, révélation sans confettis en 3 paliers toujours sombre, « Ce que ça débloque » aux vrais compteurs, lot compact + bilan, mouvement réduit. `node banc-p0.js <dossier>` enregistre les captures |
 | `banc-photos.js` | Banc navigateur des limites de photos : plafond par rareté (`PHOTOS_PAR_RARETE`), taille par photo, recompression des anciennes photos (`GMGarage.normaliserPhotos`), suppression d'une photo et non-résurrection à la fusion cloud (pierres tombales) |
+| `banc-retouches.js` | Banc navigateur des retouches de `gm-specs.js` (floutage, recadrage, « Photo d'origine », « Associer », « Rattacher ») : vraie interface, puis synchronisation rejouée — rien ne doit revenir ; repli d'un `index.html` ancien |
+| `banc-sw.js` | Banc navigateur du **service worker**, sur un serveur au cache HTTP de GitHub Pages (`max-age=600`) : installation, nouveau déploiement, coquille rangée = la **nouvelle**, « Mettre à jour » qui recharge, « Plus tard » puis réouverture, hors ligne. **Aucune interception réseau** (elle désactiverait le cache HTTP éprouvé) |
 | `banc-imports.js` | Banc navigateur des **fichiers importés hostiles** (sauvegarde, profil d'équipage) : aucune charge ne doit s'exécuter, à l'import comme au redémarrage (DT-09, DT-10) ; contrat `data-car-id` |
 | `AUDIT-DEFAUTS.md` | Rapport de la chasse aux défauts du 29/09 : corrigé, et reste à décider |
 | `banc-i18n.js` → `I18N.md` | Recensement des textes d'interface (préparation i18n). `I18N.md` est **généré** : relancer `node banc-i18n.js --md`, ne jamais l'éditer à la main |
@@ -766,7 +771,22 @@ GMGarage.exporter()                   → { app, version, spots, meta, custom } 
 GMGarage.importer(data, { fusion })   → { n, rejected }
 GMGarage.normaliserPhotos()           → nombre de photos recompressées
 GMGarage.supprimerPhoto(src, { confirmer }) → { ok } | { ok:false, raison:'derniere'|'annule'|'introuvable' }
+GMGarage.remplacerPhoto(ancienne, nouvelle, { partout }) → { ok, n }   (10/11)
+GMGarage.deplacerPrise(deId, versId)  → { ok }                          (10/11)
 ```
+
+- **Toute écriture de collection passe par ce contrat**, `gm-specs.js` compris
+  (seconde relecture, 10/11). Floutage, recadrage, « Photo d'origine »,
+  « Associer à un modèle » et « Rattacher » écrivaient seuls dans IndexedDB :
+  ni `maj`, ni pierre tombale. La synchronisation défaisait donc le geste —
+  plaque floutée revenue **lisible**, « Non classé » revenue **en double**
+  (`banc-retouches.js`). L'écriture directe ne reste qu'en **repli** pour un
+  `index.html` plus ancien encore en cache.
+- `remplacerPhoto` vise la fiche **ouverte** (un cadrage est propre à une
+  voiture) ; `{ partout:true }` vise toutes les prises qui contiennent l'image
+  (floutage : c'est l'image qu'on protège). `deplacerPrise` refuse une cible
+  « Non classé » ou inconnue, écrit **avant** de supprimer, pose une pierre
+  tombale sur l'ancien id et lève celle de la cible.
 
 - `gm-compte.js` **ne touche jamais** à IndexedDB ni à `state` : tout passe par
   ce contrat. Une restauration cloud traverse donc **exactement les mêmes
@@ -799,6 +819,10 @@ GMGarage.supprimerPhoto(src, { confirmer }) → { ok } | { ok:false, raison:'der
 | Google ne **crée ni ne relie** un compte que s'il **fait autorité** sur l'adresse (Gmail, ou domaine géré `hd`) ; sinon **409 `{lier:true}`**, et le joueur passe par le code e-mail. La règle vaut **dans les deux ordres** | Une adresse d'ailleurs, vérifiée un jour chez Google mais plus détenue, ne doit ni ouvrir le compte de quelqu'un d'autre, ni le **créer avant lui** pour y revenir une fois le garage sauvegardé (compte « piégé d'avance », revue de sécurité du 14/10 : la première version ne bloquait que le premier ordre) |
 | D1 applique les **clés étrangères** (`PRAGMA foreign_keys = 1`, constaté le 14/10) : toute suppression efface les tables filles **avant** `utilisateurs` ; le banc active le même réglage | Sinon la suppression de compte (RGPD) échoue en production alors qu'elle passe au banc |
 | Sans `GOOGLE_CLIENT_ID` : **501** `{google:false}`, comme R2 absent | État de configuration stable, pas une panne |
+| **`GET /sante`** (10/11) : état de la configuration en « présent / absent » (base et 8 tables, 4 réglages obligatoires, origine bien formée, R2, Google) et `VERSION_SERVEUR` ; **jamais une valeur**. Un réglage obligatoire absent → **503 « Service non configuré »** partout ailleurs | La vérification du tuto (`/garage` → « Session absente ») passait **sans base reliée** : elle ne prouvait rien. `VERSION_SERVEUR` dit si le Worker en ligne est celui du dépôt, sans ouvrir le tableau de bord. **À changer à chaque modification du fichier** |
+| Corps de requête lu avec une **borne** (flux arrêté au-delà, `Content-Length` vérifié avant) ; JSON qui n'est pas un objet → 400 | Un corps énorme était lu en entier avant le contrôle de taille ; `null` faisait une 500 |
+| Limiteur par réseau : **IPv6 regroupée en /64** (un abonné reçoit un /64 entier) ; plafond **global** de codes par jour (`QUOTA_CODES_JOUR`, 80) | Sinon une seule box contournait le limiteur en changeant d'adresse, et des adresses e-mail jetables épuisaient le quota Resend gratuit (100/jour) de tout le service |
+| Création de compte par `INSERT … ON CONFLICT (email) DO NOTHING` puis relecture | Code e-mail et Google simultanés sur une même adresse : 500 sur l'un des deux (reproduit au banc par entrelacement forcé) |
 
 **Côté client :**
 - **« Continuer avec Google »** : en sommeil tant que `GOOGLE_CLIENT_ID` (dans
@@ -810,6 +834,15 @@ GMGarage.supprimerPhoto(src, { confirmer }) → { ok } | { ok:false, raison:'der
 - **En sommeil par défaut** : `COMPTE_URL = ''` → aucun panneau, aucune requête
   (pas même un pré-vol CORS — vérifié au banc). Les bancs l'activent par
   `window.GM_COMPTE_URL`.
+- **Garde de sauvegarde** (`gm-compte.js` 2.3.0, 10/11) : une sauvegarde ne retire
+  du cloud **que** ce qui porte une pierre tombale. L'appareil mémorise les ids
+  présents au cloud (`ids`, à la version connue) ; s'il en manque un ici sans
+  retrait volontaire ni fusion de doublon (`GMSpecs.fusionDe`), il **récupère
+  d'abord**. Avant : « Réinitialiser » puis « Sauvegarder » vidait le cloud.
+  Les prises d'un id **inconnu de cette version** de l'app (modèle ajouté par une
+  version plus récente) sont renvoyées **telles quelles**. La version annoncée
+  (`If-Match`) est lue **avec l'export**, les opérations passent en **file**, chaque
+  requête a un **délai** (30 s, ×4 pour les envois lourds).
 - **Synchronisation** : chaque prise porte `maj` (dernière modification) ; « Retirer
   du garage » laisse une **pierre tombale** datée (`META.supprimes`), exportée
   avec la sauvegarde. À la fusion cloud, la version la plus récente gagne
@@ -831,10 +864,18 @@ GMGarage.supprimerPhoto(src, { confirmer }) → { ok } | { ok:false, raison:'der
   dernière photo est refusée **sans** boîte de confirmation (on ne confirme pas
   pour ensuite refuser), sinon la boîte de l'app (`askConfirm`, comme « Retirer du
   garage ») est demandée par `gm-specs.js` via `{ confirmer:true }` ; la suppression laisse une **pierre tombale**
-  `META.photosSupprimees` { empreinte SHA-256 des octets → date }, même
+  `META.photosSupprimees` { **`"<carId>|<SHA-256 des octets>"`** → date }, même
   empreinte que `gm-compte.js`. Les photos s'additionnant à la fusion
   cloud, c'est **elle seule** qui empêche la photo de revenir d'un autre appareil
-  (`sansPhotosSupprimees`, appliquée à toutes les prises après l'import en fusion).
+  (`sansPhotosSupprimees`, appliquée après l'import en fusion aux seules prises
+  dont la voiture a une pierre tombale).
+  ⚠️ **Par voiture** (10/11) : une clé sur l'empreinte seule effaçait la même image
+  de **toutes** les voitures ; l'ancien format est désormais ignoré.
+  **Remise** : `META.photosRetablies` (mêmes clés → date) note qu'une photo
+  supprimée a été reprise (capture, import, retour à l'originale) ; une photo
+  n'est retirée que si sa pierre tombale est **plus récente** que sa remise.
+  Un remplacement (recadrage, floutage, recompression) pose une pierre tombale
+  sur l'ancienne version.
 - **Restauration** : une photo injoignable (hors 404) interrompt tout — sinon la
   sauvegarde qui suit un conflit effacerait du cloud une photo qui existe.
 - Le code n'est envoyé qu'avec l'adresse **demandée sur cet appareil**
