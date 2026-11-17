@@ -108,20 +108,50 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   v('hors ligne : c\'est bien la NOUVELLE version qui démarre', horsLigne && (await page.evaluate(() => window.__deploiement)) === 2, horsLigne ? await page.evaluate(() => window.__deploiement) : 'app non démarrée');
   await ctx.setOffline(false);
 
-  /* 5. « Plus tard », puis l'app est fermée : la mise à jour ne reste pas bloquée. */
+  /* 5. « Plus tard », un AUTRE onglet de l'app reste ouvert, puis réouverture : la nouvelle
+        version ne peut pas s'activer (un onglet utilise encore l'ancienne). L'invitation
+        doit revenir, et son bouton fonctionner. Déterministe : c'est le cas qui, sinon,
+        ne se produit que sous charge (réouverture plus rapide que la fermeture). */
+  const attendreUnSeul = async (p, nom) => { for (let i = 0; i < 40; i++) { const k = await p.evaluate(() => caches.keys()); if (k.length === 1 && k[0] === nom) return k; await new Promise(r => setTimeout(r, 200)); } return p.evaluate(() => caches.keys()); };
+  const ouvrir = async () => { const p = await ctx.newPage(); p.on('pageerror', e => erreurs.push(String(e))); await p.goto(URL_APP, { waitUntil: 'networkidle' }).catch(() => null); await p.waitForFunction(() => window.GMSpecs && window.GMGarage, { timeout: 20000 }).catch(() => null); return p; };
   deploiement = 3;
   await page.evaluate(async () => { const r = await navigator.serviceWorker.getRegistration(); await r.update(); });
   const invite3 = await page.waitForSelector('#swUpdate [data-swu="later"]', { timeout: 15000 }).catch(() => null);
   if (invite3) await page.evaluate(() => document.querySelector('#swUpdate [data-swu="later"]').click());
-  const avantFermeture = await caches_();
-  await page.close();                                   // plus aucun onglet de l'app : la version en attente peut s'activer
-  const page2 = await ctx.newPage(); page2.on('pageerror', e => erreurs.push(String(e)));
-  await page2.goto(URL_APP, { waitUntil: 'networkidle' });
-  await page2.waitForFunction(() => window.GMSpecs && window.GMGarage, { timeout: 20000 });
-  let finale = [];
-  for (let i = 0; i < 50; i++) { finale = await page2.evaluate(() => caches.keys()); if (finale.length === 1 && finale[0] === 'garage-banc-3') break; await new Promise(r => setTimeout(r, 200)); }
-  v('« Plus tard » puis app fermée et rouverte : la nouvelle version est en place (elle ne reste pas en attente indéfiniment)',
-    !!invite3 && avantFermeture.includes('garage-banc-2') && JSON.stringify(finale) === '["garage-banc-3"]', `${JSON.stringify(avantFermeture)} → ${JSON.stringify(finale)}`);
+  const autreOnglet = await ouvrir();
+  await page.close();
+  const page2 = await ouvrir();
+  const invite4 = await page2.waitForSelector('#swUpdate [data-swu="now"]', { timeout: 8000 }).catch(() => null);
+  if (invite4) {
+    await Promise.all([page2.waitForEvent('load', { timeout: 10000 }).catch(() => null), page2.evaluate(() => document.querySelector('#swUpdate [data-swu="now"]').click())]);
+    await page2.waitForFunction(() => window.GMSpecs && window.GMGarage, { timeout: 20000 }).catch(() => null);
+  }
+  const apres3 = await attendreUnSeul(page2, 'garage-banc-3');
+  v('« Plus tard », puis réouverture alors qu\'une version attend encore : l\'invitation revient, et « Mettre à jour » installe la nouvelle',
+    !!invite3 && !!invite4 && JSON.stringify(apres3) === '["garage-banc-3"]', `invitation=${!!invite4} → ${JSON.stringify(apres3)}`);
+
+  /* 6. « Plus tard », puis TOUS les onglets fermés, puis réouverture. Deux issues correctes
+        selon le moment où le navigateur relâche l'onglet fermé : la nouvelle version est
+        déjà active, ou elle attend encore et l'invitation revient (cas prouvé au §5). */
+  deploiement = 4;
+  await page2.evaluate(async () => { const r = await navigator.serviceWorker.getRegistration(); await r.update(); });
+  const invite5 = await page2.waitForSelector('#swUpdate [data-swu="later"]', { timeout: 15000 }).catch(() => null);
+  if (invite5) await page2.evaluate(() => document.querySelector('#swUpdate [data-swu="later"]').click());
+  await autreOnglet.close(); await page2.close();
+  const page3 = await ouvrir();
+  let finale = await attendreUnSeul(page3, 'garage-banc-4'), issue = 'active';
+  if (!(finale.length === 1 && finale[0] === 'garage-banc-4')) {
+    issue = 'invitation';
+    const invite6 = await page3.waitForSelector('#swUpdate [data-swu="now"]', { timeout: 8000 }).catch(() => null);
+    if (invite6) {
+      await Promise.all([page3.waitForEvent('load', { timeout: 10000 }).catch(() => null), page3.evaluate(() => document.querySelector('#swUpdate [data-swu="now"]').click())]);
+      await page3.waitForFunction(() => window.GMSpecs && window.GMGarage, { timeout: 20000 }).catch(() => null);
+      finale = await attendreUnSeul(page3, 'garage-banc-4');
+    } else issue = 'aucune issue';
+  }
+  if (process.env.TRACE) console.log('    issue après réouverture :', issue);
+  v('« Plus tard », app entièrement fermée puis rouverte : la nouvelle version est en place — jamais bloquée sur l\'ancienne',
+    !!invite5 && JSON.stringify(finale) === '["garage-banc-4"]', `${issue} : ${JSON.stringify(finale)}`);
 
   v('aucune erreur JS', erreurs.length === 0, erreurs.join(' | '));
   await nav.close(); serveur.close();

@@ -34,8 +34,9 @@
    ```
    `/opt/pw-browsers/chromium` est un lien **stable** : le dossier versionné
    (`chromium-1194/…`) a changé d'une image à l'autre et les bancs ne démarraient plus.
-   Dernier passage complet : voir `AUDIT-DEFAUTS.md`, « Seconde relecture » (19 bancs,
-   dont les nouveaux `banc-retouches.js` et `banc-sw.js`). Après un banc navigateur :
+   Dernier passage complet : **19/19 verts** (17/11, v20.199.0), dont les nouveaux
+   `banc-retouches.js` (28) et `banc-sw.js` (14) ; détail et mutations :
+   `AUDIT-DEFAUTS.md`, « Seconde relecture ». Après un banc navigateur :
    `git checkout -- banc-capture.png` (capture régénérée à chaque passage).
 4. **Connecteurs** : si « Cloudflare Developer Platform » est branché, **constater**
    l'état réel du compte (Workers, variables, liaisons, D1) et le comparer au §2
