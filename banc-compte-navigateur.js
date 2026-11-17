@@ -74,6 +74,8 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
 
   const env = { DB: d1(sqlite), PHOTOS: r2(), APP_ORIGIN: ORIGINE, MAIL_FROM: 'GM <x@test>', RESEND_API_KEY: 'test', CODE_SECRET: 'secret-de-banc-32-octets-minimum!', GOOGLE_CLIENT_ID: CLIENT_GOOGLE };
   const mails = []; let appelsApi = 0, requetesBrutes = 0; const requetesLots = [];
+  let ralentir = null;
+  const photosInvalides = [];                        // requêtes /photos/<x> dont <x> n'est pas une empreinte                               // (req) → millisecondes d'attente avant de répondre (réseau lent simulé)
   const fetchReel = globalThis.fetch;
   globalThis.fetch = async (u, o) => {
     if (String(u).startsWith('https://api.resend.com/')) { mails.push(JSON.parse(o.body)); return new Response('{}', { status: 200 }); }
@@ -97,6 +99,9 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
     if (process.env.TRACE) console.log("    API", req.method, req.url);
     const morceaux = []; for await (const c of req) morceaux.push(c);
     const corps = Buffer.concat(morceaux);
+    if (req.method !== 'OPTIONS' && req.url.startsWith('/photos/') && req.url !== '/photos/manquantes' && !/^\/photos\/[0-9a-f]{64}$/.test(req.url)) photosInvalides.push(req.url);
+    const attente = ralentir && req.method !== 'OPTIONS' ? ralentir(req) : 0;
+    if (attente) await new Promise(ok => setTimeout(ok, attente));
     if (suivreLot) { try { requetesLots.push(JSON.parse(corps.toString()).empreintes.length); } catch {} }
     const r = await worker.fetch(new Request(URL_API + req.url, { method: req.method, headers: req.headers,
       body: ['GET', 'HEAD', 'OPTIONS'].includes(req.method) ? undefined : corps }), env);
@@ -107,9 +112,10 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
 
   const nav = await chromium.launch({ executablePath: process.env.CHROMIUM || '/opt/pw-browsers/chromium', args: ['--no-sandbox'] });
   const erreurs = [];
-  async function telephone(configure = true, { google = false, bloquerGoogle = false } = {}) {
+  async function telephone(configure = true, { google = false, bloquerGoogle = false, delai = 0 } = {}) {
     const ctx = await nav.newContext({ viewport: { width: 390, height: 844 } });
     if (configure) await ctx.addInitScript(u => { window.GM_COMPTE_URL = u; }, URL_API);
+    if (delai) await ctx.addInitScript(d => { window.GM_COMPTE_DELAI_MS = d; }, delai);
     if (google) await ctx.addInitScript(id => { window.GM_GOOGLE_CLIENT_ID = id; }, CLIENT_GOOGLE);
     const page = await ctx.newPage();
     page.on('pageerror', e => erreurs.push(String(e)));
@@ -465,6 +471,131 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   await G3.page.waitForFunction(() => /indisponible/.test(document.getElementById('gcp-msg')?.textContent || ''), null, { timeout: 8000 }).catch(() => {});
   v('Google · script de Google bloqué (hors ligne, bloqueur) : message clair, le code par e-mail reste proposé',
     /indisponible/.test(await G3.page.textContent('#gcp-msg')) && !!(await G3.page.$('#gcp-email')) && !(await G3.page.$('#gcp-google')), await G3.page.textContent('#gcp-msg'));
+
+  /* 4 septies. Seconde relecture (10/11) : une sauvegarde ne doit JAMAIS faire disparaître du
+     cloud une voiture qui n'a pas été retirée volontairement (pierre tombale). */
+  sqlite.prepare('DELETE FROM limites').run();
+  const attendreMsg = (page, t, ms = 15000) => page.waitForFunction(x => (document.getElementById('gcp-msg')?.textContent || '').includes(x), t, { timeout: ms }).then(() => true, () => false);
+  const reinitialiser = async (page) => {
+    await ouvrirReglages(page);
+    await page.click('[data-act="reset"]');
+    await page.waitForSelector('#confirmWrap [data-cf="1"]', { timeout: 5000 });
+    const texte = await page.textContent('#confirmWrap');
+    await page.click('#confirmWrap [data-cf="1"]'); await page.waitForTimeout(400);
+    return texte;
+  };
+  const K1 = await telephone();
+  await idb(K1.page, 'put', [prise('ferrari-f40', [PH('K')]), prise('peugeot-205', [PH('L')])]);
+  await recharger(K1.page); await connecter(K1.page, 'garde@exemple.fr');
+  await ouvrirReglages(K1.page); await cliquer(K1.page, 'sauvegarder', 'Sauvegardé');
+  const idGarde = sqlite.prepare("SELECT id FROM utilisateurs WHERE email = 'garde@exemple.fr'").get().id;
+  const ecrireCloud = (donnees) => sqlite.prepare('UPDATE garages SET donnees = ?, version = version + 1 WHERE utilisateur = ?').run(JSON.stringify(donnees), idGarde);
+  // (a) « Réinitialiser le garage » puis « Sauvegarder »
+  const texteReset = await reinitialiser(K1.page);
+  v('garde · (préalable) « Réinitialiser » a vidé le garage local', Object.keys(await garage(K1.page)).length === 0);
+  v('garde · connecté : la confirmation de « Réinitialiser » dit que la sauvegarde cloud est conservée', /cloud/i.test(texteReset), texteReset.slice(0, 220));
+  await ouvrirReglages(K1.page); await K1.page.click('[data-gcp="sauvegarder"]'); await attendreMsg(K1.page, 'Sauvegardé');
+  let cgGarde = cloudDe('garde@exemple.fr');
+  v('garde · « Réinitialiser » puis « Sauvegarder » : le cloud garde ses 2 voitures (avant : sauvegarde vidée, sans un mot)', cgGarde.donnees.spots.length === 2, cgGarde.donnees.spots.length);
+  v('garde · … elles reviennent sur le téléphone, et le message le dit',
+    Object.keys(await garage(K1.page)).length === 2 && /récupérée/.test(await K1.page.textContent('#gcp-msg')), await K1.page.textContent('#gcp-msg'));
+  // (b) Session ouverte AVANT cette garde : l'appareil ne sait pas ce que contient le cloud.
+  await K1.page.evaluate(() => { const e = JSON.parse(localStorage.getItem('gm-compte')); delete e.ids; localStorage.setItem('gm-compte', JSON.stringify(e)); });
+  await reinitialiser(K1.page);
+  await ouvrirReglages(K1.page); await K1.page.click('[data-gcp="sauvegarder"]'); await attendreMsg(K1.page, 'Sauvegardé');
+  cgGarde = cloudDe('garde@exemple.fr');
+  v('garde · session ouverte avant cette garde (contenu du cloud inconnu) : on récupère d\'abord, rien n\'est perdu', cgGarde.donnees.spots.length === 2 && Object.keys(await garage(K1.page)).length === 2, cgGarde.donnees.spots.length);
+  // (c) Voiture ajoutée par une version PLUS RÉCENTE de l'app : id inconnu ici.
+  const futur = { carId: 'voiture-du-futur', at: '2026-10-01T12:00:00.000Z', coords: null, loc: 'Demain', note: 'ajoutée par une version plus récente',
+    photos: [shaDe(PH('K'))], cover: 0, variants: [], favorite: false, maj: maintenant() };
+  const fantaisie = { carId: 'Pas Un Identifiant !', at: '2026-10-01T12:00:00.000Z', photos: [], note: 'entrée fantaisiste' };
+  ecrireCloud({ ...cgGarde.donnees, spots: [...cgGarde.donnees.spots, futur, fantaisie] });
+  await ouvrirReglages(K1.page); await K1.page.click('[data-gcp="restaurer"]'); await attendreMsg(K1.page, 'Récupéré');
+  await idb(K1.page, 'put', [{ ...prise('bmw-m3', [PH('M')]), maj: maintenant() }]); await recharger(K1.page);
+  await ouvrirReglages(K1.page); await K1.page.click('[data-gcp="sauvegarder"]'); await attendreMsg(K1.page, 'Sauvegardé');
+  cgGarde = cloudDe('garde@exemple.fr');
+  const futurApres = cgGarde.donnees.spots.find(x => x.carId === 'voiture-du-futur');
+  v('garde · voiture d\'une version plus récente (id inconnu ici) : conservée telle quelle au cloud après une sauvegarde faite d\'ici',
+    !!futurApres && futurApres.note === futur.note && futurApres.photos[0] === futur.photos[0] && cgGarde.donnees.spots.some(x => x.carId === 'bmw-m3'), JSON.stringify(cgGarde.donnees.spots.map(x => x.carId)));
+  v('garde · … sans entrer dans le garage local, ni dans son registre', !(await garage(K1.page))['voiture-du-futur']);
+  await K1.page.click('[data-gcp="sauvegarder"]'); await attendreMsg(K1.page, 'Sauvegardé');
+  v('garde · … et elle survit aussi aux sauvegardes suivantes', cloudDe('garde@exemple.fr').donnees.spots.some(x => x.carId === 'voiture-du-futur'));
+  v('garde · … mais une entrée fantaisiste (identifiant impossible) n\'est pas conservée indéfiniment', !cloudDe('garde@exemple.fr').donnees.spots.some(x => x.carId === fantaisie.carId));
+  /* La garde ne doit PAS se déclencher à tort : un retrait volontaire (pierre tombale) et un doublon
+     de catalogue fusionné ne sont pas des pertes. Sinon, chaque sauvegarde retélécharge tout le garage. */
+  ecrireCloud({ ...cloudDe('garde@exemple.fr').donnees, spots: cloudDe('garde@exemple.fr').donnees.spots.filter(x => x.carId !== 'voiture-du-futur') });
+  await K1.page.click('[data-gcp="restaurer"]'); await attendreMsg(K1.page, 'Récupéré');
+  await retirerViaApp(K1.page, 'peugeot-205');
+  await ouvrirReglages(K1.page);
+  let appelsGarde = appelsApi;
+  await K1.page.click('[data-gcp="sauvegarder"]'); await attendreMsg(K1.page, 'Sauvegardé');
+  v('garde · voiture retirée volontairement : sauvegarde directe, sans récupération préalable (2 appels), et elle quitte le cloud',
+    appelsApi - appelsGarde === 2 && !cloudDe('garde@exemple.fr').donnees.spots.some(x => x.carId === 'peugeot-205'), appelsApi - appelsGarde);
+  // Le cloud contient une prise sous un identifiant RETIRÉ du catalogue (doublon fusionné) : l'app la range sous l'identifiant conservé.
+  cgGarde = cloudDe('garde@exemple.fr');
+  ecrireCloud({ ...cgGarde.donnees, spots: [...cgGarde.donnees.spots, { ...prise('bmw-serie-3', []), maj: maintenant() }] });
+  await K1.page.click('[data-gcp="restaurer"]'); await attendreMsg(K1.page, 'Récupéré');
+  appelsGarde = appelsApi;
+  await K1.page.click('[data-gcp="sauvegarder"]'); await attendreMsg(K1.page, 'Sauvegardé');
+  cgGarde = cloudDe('garde@exemple.fr');
+  v('garde · doublon de catalogue fusionné (bmw-serie-3 → bmw-serie3) : pas de récupération à chaque sauvegarde, et le cloud ne garde que l\'identifiant conservé',
+    appelsApi - appelsGarde === 2 && !!(await garage(K1.page))['bmw-serie3'] && cgGarde.donnees.spots.some(x => x.carId === 'bmw-serie3') && !cgGarde.donnees.spots.some(x => x.carId === 'bmw-serie-3'),
+    `${appelsApi - appelsGarde} appels · ${JSON.stringify(cgGarde.donnees.spots.map(x => x.carId))}`);
+  // (d) Sauvegarde et récupération lancées en même temps : la version annoncée doit être celle de l'EXPORT.
+  sqlite.prepare('DELETE FROM limites').run();
+  const K2 = await telephone();
+  await connecter(K2.page, 'garde@exemple.fr');
+  await ouvrirReglages(K2.page); await K2.page.click('[data-gcp="restaurer"]'); await attendreMsg(K2.page, 'Récupéré');
+  await idb(K2.page, 'put', [{ ...prise('alpine-a110', [PH('N')]), maj: maintenant() }]); await recharger(K2.page);
+  await ouvrirReglages(K2.page); await K2.page.click('[data-gcp="sauvegarder"]'); await attendreMsg(K2.page, 'Sauvegardé');
+  await idb(K1.page, 'put', [{ ...prise('porsche-911', [PH('O')]), maj: maintenant() }]); await recharger(K1.page);
+  ralentir = (req) => req.method === 'PUT' && req.url.startsWith('/photos/') ? 1500 : 0;
+  const course = await K1.page.evaluate(() => Promise.all([window.GMCompte.sauvegarder(), window.GMCompte.restaurer()]).then(() => 'ok', e => 'erreur : ' + (e && e.message)));
+  ralentir = null;
+  cgGarde = cloudDe('garde@exemple.fr');
+  const idsCourse = cgGarde.donnees.spots.map(x => x.carId);
+  v('garde · sauvegarde et récupération simultanées : la voiture de l\'autre appareil n\'est pas écrasée au cloud',
+    course === 'ok' && idsCourse.includes('alpine-a110') && idsCourse.includes('porsche-911'), `${course} · ${JSON.stringify(idsCourse)}`);
+  /* Même course, mais entre DEUX ONGLETS de l'app (même appareil, même état de session
+     dans localStorage) : la file d'attente ne les sépare pas. Seule la version lue AVEC
+     l'export protège : sinon l'onglet qui sauve annonce la version que l'autre vient de
+     récupérer, avec un contenu qui ne la contient pas. */
+  await idb(K2.page, 'put', [{ ...prise('lancia-delta', [PH('P')]), maj: maintenant() }]); await recharger(K2.page);
+  await ouvrirReglages(K2.page); await K2.page.click('[data-gcp="sauvegarder"]'); await attendreMsg(K2.page, 'Sauvegardé');
+  await idb(K1.page, 'put', [{ ...prise('fiat-500', [PH('Q')]), maj: maintenant() }]); await recharger(K1.page);
+  const onglet2 = await K1.ctx.newPage(); onglet2.on('pageerror', e => erreurs.push(String(e)));
+  await onglet2.goto(URL_APP, { waitUntil: 'networkidle' }); await onglet2.waitForFunction(() => window.GMCompte && window.GMGarage, { timeout: 15000 });
+  ralentir = (req) => req.method === 'PUT' && req.url.startsWith('/photos/') ? 1500 : 0;
+  const sauveOnglet1 = K1.page.evaluate(() => window.GMCompte.sauvegarder().then(() => 'ok', e => 'erreur : ' + (e && e.message)));
+  await K1.page.waitForTimeout(500);
+  const recupOnglet2 = await onglet2.evaluate(() => window.GMCompte.restaurer().then(() => 'ok', e => 'erreur : ' + (e && e.message)));
+  const resOnglet1 = await sauveOnglet1;
+  ralentir = null;
+  const idsOnglets = cloudDe('garde@exemple.fr').donnees.spots.map(x => x.carId);
+  v('garde · deux onglets : l\'un sauvegarde pendant que l\'autre récupère — la voiture de l\'autre appareil reste au cloud',
+    resOnglet1 === 'ok' && recupOnglet2 === 'ok' && idsOnglets.includes('lancia-delta') && idsOnglets.includes('fiat-500'), `${resOnglet1} · ${recupOnglet2} · ${JSON.stringify(idsOnglets)}`);
+  await onglet2.close();
+  // (e) Serveur qui ne répond pas : un délai, un message, et le bouton redevient utilisable.
+  sqlite.prepare('DELETE FROM limites').run();
+  const K3 = await telephone(true, { delai: 800 });           // requêtes courtes : 0,8 s ; envois lourds (collection, photos) : 3,2 s
+  await connecter(K3.page, 'garde@exemple.fr');
+  ralentir = (req) => req.method === 'GET' && req.url === '/garage' ? 6000 : 0;
+  await ouvrirReglages(K3.page); await K3.page.click('[data-gcp="restaurer"]');
+  const dit = await attendreMsg(K3.page, 'ne répond pas', 5000);
+  v('serveur muet : la récupération s\'arrête au délai, avec un message (avant : « en cours… » sans fin)',
+    dit && await K3.page.evaluate(() => !document.querySelector('[data-gcp="restaurer"]').disabled) && Object.keys(await garage(K3.page)).length === 0, await K3.page.textContent('#gcp-msg'));
+  ralentir = null; await K3.page.waitForTimeout(4000);
+  // (f) Contenu du cloud malformé : pas plus digne de confiance qu'un fichier reçu.
+  ecrireCloud({ app: 'garage-manifest', version: 1, meta: {}, custom: { list: [] }, spots: [null, 'x', 7,
+    { carId: 'lambo-miura', at: '2026-09-01T12:00:00.000Z', photos: 'pas-un-tableau' }, { carId: 'ferrari-f40', at: '2026-09-01T12:00:00.000Z', photos: [null, 5, 'zz'] }] });
+  await ouvrirReglages(K3.page); await K3.page.click('[data-gcp="restaurer"]');
+  const okMalforme = await attendreMsg(K3.page, 'Récupéré', 8000);
+  v('cloud malformé : aucune requête pour une « photo » qui n\'est pas une empreinte', photosInvalides.length === 0, JSON.stringify(photosInvalides));
+  v('cloud malformé (entrées nulles, photos qui ne sont pas une liste) : récupération sans plantage, les prises valides arrivent',
+    okMalforme && !!(await garage(K3.page))['lambo-miura'] && !!(await garage(K3.page))['ferrari-f40'], await K3.page.textContent('#gcp-msg'));
+  ecrireCloud({ app: 'garage-manifest', spots: { pas: 'une liste' } });
+  await K3.page.click('[data-gcp="restaurer"]');
+  v('cloud malformé (« spots » n\'est pas une liste) : message normal, rien de cassé', await attendreMsg(K3.page, 'Récupéré', 8000), await K3.page.textContent('#gcp-msg'));
 
   /* 5. Suppression du compte */
   const idPilote = sqlite.prepare("SELECT id FROM utilisateurs WHERE email = 'pilote@exemple.fr'").get().id;

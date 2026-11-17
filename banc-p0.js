@@ -221,6 +221,126 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   const bilan2 = await texte('.sheet');
   v('Lot : la dernière photo, refusée (Giulia déjà à 8 photos), est annoncée dans le bilan', /1 photo non gardée/.test(bilan2), bilan2.slice(0, 220));
 
+  /* ---- Seconde relecture (10/11) ---- */
+  const prises = async () => (await page.evaluate(() => window.GMGarage.exporter())).spots;
+  const fermerTout = () => page.evaluate(() => { document.querySelector('#revealWrap')?.remove(); document.querySelector('[data-close]')?.click(); });
+  const jourLocal = () => page.evaluate(() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; });
+
+  /* Champ de date vidé : « Enregistrer » levait une exception (date invalide) — rien
+     n'était enregistré, aucun message, et la photo était perdue. */
+  await fermerTout();
+  file.length = 0;
+  await photographier({ corps: [] });
+  await page.waitForSelector('#capBody [data-cap="manuel"]', { timeout: 8000 });
+  await page.evaluate(() => document.querySelector('#capBody [data-cap="manuel"]').click());
+  await page.fill('#pickQ', 'alpine a110');
+  await page.evaluate(() => document.querySelector('[data-pick="alpine-a110"]').click());
+  await page.fill('#when', '');
+  await page.evaluate(() => document.querySelector('[data-act="save"]').click());
+  await page.waitForTimeout(900);
+  const a110 = (await prises()).find(r => r.carId === 'alpine-a110');
+  const d110 = a110 ? await page.evaluate(at => { const d = new Date(at); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }, a110.at) : null;
+  v('date effacée dans le formulaire : la prise est enregistrée quand même, datée d\'aujourd\'hui (avant : rien, sans message)',
+    !!a110 && a110.photos.length === 1 && d110 === await jourLocal(), a110 ? a110.at : 'prise absente');
+
+  // Date FUTURE saisie au clavier (le champ l'interdit, pas la frappe) : ramenée à aujourd'hui.
+  await fermerTout();
+  await page.evaluate(() => document.querySelector('[data-tab="collection"]')?.click()); await page.waitForTimeout(200);
+  await page.evaluate(() => document.querySelector('[data-car="alpine-a110"]')?.click());
+  await page.waitForSelector('[data-addphoto]', { state: 'attached', timeout: 5000 });
+  await page.evaluate(() => document.querySelector('[data-addphoto]').click());
+  await page.waitForSelector('#fileInput', { state: 'attached', timeout: 5000 });
+  await page.setInputFiles('#fileInput', fichier);
+  await page.waitForSelector('#when', { timeout: 8000 });
+  await page.fill('#when', '2031-01-15');
+  await page.evaluate(() => document.querySelector('[data-act="save"]').click());
+  await page.waitForTimeout(900);
+  const a110b = (await prises()).find(r => r.carId === 'alpine-a110');
+  v('date future saisie au clavier : ramenée à aujourd\'hui', !!a110b && a110b.photos.length === 2 && Date.parse(a110b.at) <= Date.now() + 86400000, a110b && a110b.at);
+
+  /* Lot : une image illisible au milieu figeait la file — l'écran restait sur la photo
+     précédente, « Enregistrer » ne faisait plus rien, les photos suivantes étaient perdues. */
+  await fermerTout();
+  file.length = 0;
+  file.push({ corps: [{ brand: 'Ferrari', model: 'F40', confidence: 0.95 }] }, { corps: [{ brand: 'Alfa Romeo', model: 'Giulia', confidence: 0.93 }] });
+  await ouvrir();
+  await page.click('[data-cap="batch"]');
+  const lot3 = await page.evaluateHandle(() => window.__lot);
+  await lot3.asElement().setInputFiles([fichier, { name: 'cassee.jpg', mimeType: 'image/jpeg', buffer: Buffer.from('ceci n\'est pas une image') }, { ...fichier, name: 'g.jpg' }]);
+  let lotOk = true;
+  for (let i = 0; i < 2 && lotOk; i++) {
+    lotOk = !!(await page.waitForSelector('#capBody [data-cap="choix"].btn', { timeout: 6000 }).catch(() => null));
+    if (!lotOk) break;
+    if (i === 1) v('Lot : après une image illisible, la photo SUIVANTE est proposée (« Photo 3 / 3 »)', /Photo 3 \/ 3/.test(await texte('#capBody')), (await texte('#capBody')).slice(0, 60));
+    await page.click('#capBody [data-cap="choix"].btn');
+    await page.waitForSelector('[data-act="save"]:not([disabled])'); await page.click('[data-act="save"]');
+    await page.waitForTimeout(500);
+  }
+  const bilan3 = (await page.waitForSelector('#p0Bilan', { timeout: 4000 }).catch(() => null)) ? await texte('.sheet') : '';
+  v('Lot : une image illisible ne fige plus la file — le lot va au bout et le bilan l\'annonce', lotOk && /1 image illisible/.test(bilan3), bilan3.slice(0, 220) || 'lot figé');
+  // Toutes illisibles : le lot se termine quand même, par un bilan.
+  await fermerTout();
+  await ouvrir();
+  await page.click('[data-cap="batch"]');
+  const lot4 = await page.evaluateHandle(() => window.__lot);
+  await lot4.asElement().setInputFiles([{ name: 'x.jpg', mimeType: 'image/jpeg', buffer: Buffer.from('rien') }, { name: 'y.jpg', mimeType: 'image/jpeg', buffer: Buffer.from('rien non plus') }]);
+  const bilan4 = (await page.waitForSelector('#p0Bilan', { timeout: 4000 }).catch(() => null)) ? await texte('.sheet') : '';
+  v('Lot : toutes les images illisibles → un bilan, pas un écran figé', /2 images illisibles/.test(bilan4), bilan4.slice(0, 200) || 'pas de bilan');
+
+  /* Matcher : les « Non classé » entraient dans le catalogue du rapprochement puis
+     étaient retirés de l'affichage. Le STATUT était donc calculé sur une autre liste
+     que celle montrée : une hésitation réelle (205 Rallye / 205 GTI) devenait
+     « Modèle trouvé » parce qu'une voiture hors catalogue portait le nom exact. */
+  await fermerTout();
+  await page.evaluate(() => window.GMGarage.importer({ app: 'garage-manifest', version: 1,
+    spots: [{ carId: 'custom:peugeot-205-gti-rallye-banc', at: '2026-09-01T12:00:00.000Z', coords: null, loc: '', note: '', photos: [], cover: 0, variants: [], favorite: false }],
+    meta: {}, custom: { list: [{ id: 'custom:peugeot-205-gti-rallye-banc', brand: 'Peugeot', model: '205 GTI Rallye', yr: '' }] } }, { fusion: true }));
+  file.length = 0;
+  await photographier({ corps: [{ brand: 'Peugeot', model: '205 GTI Rallye', confidence: 0.9 }] });
+  await resultat();
+  const ecranCustom = await texte('#capBody');
+  v('Matcher : une « Non classé » homonyme ne transforme pas une hésitation en certitude (205 Rallye / 205 GTI → deux pistes et un écart)',
+    (await page.$$('#capBody .p0-cand')).length >= 2 && /Écart/.test(ecranCustom) && !/Modèle trouvé/.test(ecranCustom), ecranCustom.slice(0, 140));
+  await fermerTout();
+
+  /* Date du jour : calculée en UTC, une prise faite entre minuit et 1 h (2 h l'été),
+     heure de Paris, était datée de la VEILLE. Horloge figée, fuseau imposé. */
+  {
+    const ctxNuit = await nav.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block', timezoneId: 'Europe/Paris' });
+    await ctxNuit.route(u => !u.href.startsWith(`http://localhost:${PORT}`), r => r.abort());
+    const nuit = await ctxNuit.newPage();
+    await nuit.clock.setFixedTime(new Date('2026-11-10T23:30:00Z'));       // 00 h 30 le 11 à Paris
+    await nuit.goto(`http://localhost:${PORT}/index.html`, { waitUntil: 'networkidle' });
+    await nuit.waitForFunction(() => window.GMGarage && window.GMSpecs, { timeout: 15000 });
+    await nuit.evaluate(() => document.querySelector('[data-fab]').click());
+    await nuit.waitForSelector('#fileInput', { state: 'attached' });
+    await nuit.setInputFiles('#fileInput', fichier);
+    await nuit.waitForSelector('#capBody [data-cap="manuel"]', { timeout: 20000 });
+    await nuit.evaluate(() => document.querySelector('#capBody [data-cap="manuel"]').click());
+    await nuit.waitForSelector('#when', { timeout: 5000 });
+    const quand = await nuit.evaluate(() => ({ v: document.querySelector('#when').value, max: document.querySelector('#when').max }));
+    v('00 h 30 à Paris : la date proposée est celle du jour LOCAL (le 11), pas celle d\'UTC (le 10)', quand.v === '2026-11-11' && quand.max === '2026-11-11', JSON.stringify(quand));
+    await ctxNuit.close();
+    /* Fuseau en avance de plus de 12 h (Nouvelle-Zélande, UTC+13 l'été) : midi local
+       tombe la VEILLE en UTC. Rouvrir une prise proposait donc la veille, et chaque
+       enregistrement la reculait d'un jour. */
+    const ctxNZ = await nav.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block', timezoneId: 'Pacific/Auckland' });
+    await ctxNZ.route(u => !u.href.startsWith(`http://localhost:${PORT}`), r => r.abort());
+    const nz = await ctxNZ.newPage();
+    await nz.goto(`http://localhost:${PORT}/index.html`, { waitUntil: 'networkidle' });
+    await nz.waitForFunction(() => window.GMGarage && window.GMSpecs, { timeout: 15000 });
+    await nz.evaluate(() => window.GMGarage.importer({ app: 'garage-manifest', version: 1, meta: {}, custom: { list: [] },
+      spots: [{ carId: 'alpine-a110', at: new Date('2026-11-05T12:00:00').toISOString(), coords: null, loc: '', note: '', photos: [], cover: 0, variants: [], favorite: false }] }));
+    await nz.evaluate(() => document.querySelector('[data-tab="collection"]')?.click()); await nz.waitForTimeout(200);
+    await nz.evaluate(() => document.querySelector('[data-car="alpine-a110"]')?.click());
+    await nz.waitForSelector('[data-addphoto], [data-edit], [data-act="edit"]', { state: 'attached', timeout: 5000 }).catch(() => null);
+    const ouvert = await nz.evaluate(() => { const b = document.querySelector('[data-addphoto]') || document.querySelector('[data-edit]'); if (b) b.click(); return !!b; });
+    if (ouvert) { await nz.waitForSelector('#fileInput', { state: 'attached', timeout: 5000 }); await nz.setInputFiles('#fileInput', fichier); await nz.waitForSelector('#when', { timeout: 8000 }); }
+    const quandNZ = ouvert ? await nz.evaluate(() => document.querySelector('#when').value) : 'fiche sans bouton';
+    v('fuseau UTC+13 : rouvrir une prise du 5 propose bien le 5 (avant : le 4, et un jour de moins à chaque enregistrement)', quandNZ === '2026-11-05', quandNZ);
+    await ctxNZ.close();
+  }
+
   /* Mouvement réduit + thème clair, sur une vraie révélation */
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.evaluate(() => { document.querySelector('[data-close]')?.click(); document.documentElement.setAttribute('data-theme', 'light'); });

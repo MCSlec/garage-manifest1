@@ -29,6 +29,11 @@
    · Deux appareils : chaque sauvegarde annonce la version qu'elle remplace
      (If-Match). Si l'autre appareil a sauvé entre-temps (409), on RESTAURE
      d'abord en fusion (rien n'est perdu), puis on renvoie.
+   · Une sauvegarde ne retire du cloud que ce qui a été retiré VOLONTAIREMENT
+     (pierre tombale). Si l'appareil a perdu des voitures que le cloud possède
+     — « Réinitialiser », base locale indisponible, version de l'app qui ne
+     connaît pas encore un modèle — on récupère d'abord, et ce que cette
+     version ne sait pas lire est renvoyé tel quel (voir sauvegarder()).
    · Le jeton de session est gardé dans localStorage : c'est une préférence
      d'appareil, pas une donnée de collection (la collection reste en
      IndexedDB, CLAUDE.md §1.4).
@@ -36,7 +41,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_COMPTE = '2.2.0';
+  const VERSION_COMPTE = '2.3.0';
 
   /* Adresse du Worker de comptes, SANS « / » final.
      Ex. 'https://garage-comptes.<ton-compte>.workers.dev'. Vide = en sommeil.
@@ -58,6 +63,11 @@
   const SCRIPT_GOOGLE = 'https://accounts.google.com/gsi/client';
 
   const CLE = 'gm-compte';
+  /* Délai des requêtes. Sans lui, une connexion qui ne répond plus laissait
+     « Sauvegarde en cours… » affiché sans fin, bouton grisé. Les envois lourds
+     (photo, collection) ont quatre fois plus. `window.GM_COMPTE_DELAI_MS` : bancs. */
+  const DELAI_MS = Number(global.GM_COMPTE_DELAI_MS) > 0 ? Number(global.GM_COMPTE_DELAI_MS) : 30000;
+  const DELAI_LOURD_MS = DELAI_MS * 4;
   const CONCURRENCE_PHOTOS = 3;
   const LOT_EMPREINTES = 1000;     // le serveur refuse au-delà de 5 000 par requête : on reste loin
   /* Serveur sans stockage photo (mode essai, compte-worker.js) : état de
@@ -68,7 +78,7 @@
   // ------------------------------------------------------------ état ----
   const lireEtat = () => { try { return JSON.parse(localStorage.getItem(CLE)) || {}; } catch (_) { return {}; } };
   const ecrireEtat = (e) => { try { localStorage.setItem(CLE, JSON.stringify(e)); } catch (_) {} };
-  const oublierSession = () => { const e = lireEtat(); delete e.session; delete e.version; ecrireEtat(e); };
+  const oublierSession = () => { const e = lireEtat(); delete e.session; delete e.version; delete e.ids; ecrireEtat(e); };
 
   const DUREE_CODE_MS = 10 * 60 * 1000;               // = serveur
   function etat() {
@@ -81,23 +91,33 @@
   // ------------------------------------------------------------- réseau --
   class ErreurCompte extends Error { constructor(m, statut, corps) { super(m); this.statut = statut; this.corps = corps; } }
 
-  async function api(methode, chemin, { corps, brut, type, entetes = {}, reponseBrute = false } = {}) {
+  async function api(methode, chemin, { corps, brut, type, entetes = {}, reponseBrute = false, delai = DELAI_MS } = {}) {
     if (!base) throw new ErreurCompte('Compte non configuré', 0);
     const e = lireEtat();
     const h = { ...entetes };
     if (e.session) h.Authorization = `Bearer ${e.session}`;
     if (corps !== undefined) h['Content-Type'] = 'application/json';
     if (type) h['Content-Type'] = type;
-    let r;
+    // Le délai couvre la réponse ENTIÈRE, corps compris : une photo dont le
+    // téléchargement s'enlise est aussi une requête qui ne répond pas.
+    const ctl = new AbortController(); const minuterie = setTimeout(() => ctl.abort(), delai);
+    const panne = () => new ErreurCompte(ctl.signal.aborted ? 'Le serveur ne répond pas : réessaie dans un instant' : 'Pas de connexion au serveur', 0);
     try {
-      r = await fetch(base + chemin, { method: methode, headers: h, body: brut !== undefined ? brut : corps !== undefined ? JSON.stringify(corps) : undefined });
-    } catch (_) { throw new ErreurCompte('Pas de connexion au serveur', 0); }
-    if (r.status === 401) oublierSession();
-    if (reponseBrute && r.ok) return r;
-    const texte = await r.text();
-    let json = null; try { json = texte ? JSON.parse(texte) : null; } catch (_) {}
-    if (!r.ok) throw new ErreurCompte((json && json.erreur) || `Erreur ${r.status}`, r.status, json);
-    return json;
+      let r;
+      try {
+        r = await fetch(base + chemin, { method: methode, headers: h, signal: ctl.signal,
+          body: brut !== undefined ? brut : corps !== undefined ? JSON.stringify(corps) : undefined });
+      } catch (_) { throw panne(); }
+      if (r.status === 401) oublierSession();
+      let texte;
+      try {
+        if (reponseBrute && r.ok) return { type: r.headers.get('Content-Type') || '', octets: new Uint8Array(await r.arrayBuffer()) };
+        texte = await r.text();
+      } catch (_) { throw panne(); }
+      let json = null; try { json = texte ? JSON.parse(texte) : null; } catch (_) {}
+      if (!r.ok) throw new ErreurCompte((json && json.erreur) || `Erreur ${r.status}`, r.status, json);
+      return json;
+    } finally { clearTimeout(minuterie); }
   }
 
   // ------------------------------------------------------------ photos --
@@ -139,7 +159,7 @@
     const e = lireEtat();
     if (!e.emailEnAttente) throw new ErreurCompte('Demande d\'abord un code', 0);
     const r = await api('POST', '/auth/session', { corps: { email: e.emailEnAttente, code: String(code).replace(/\s/g, '') } });
-    ecrireEtat({ ...lireEtat(), session: r.session, email: r.email, emailEnAttente: undefined, codeDemande: undefined, version: 0 });
+    ecrireEtat({ ...lireEtat(), session: r.session, email: r.email, emailEnAttente: undefined, codeDemande: undefined, version: 0, ids: undefined });
     return true;
   }
   const annulerCode = () => { const e = lireEtat(); delete e.emailEnAttente; delete e.codeDemande; ecrireEtat(e); };
@@ -151,7 +171,7 @@
   async function connecterGoogle(credential) {
     if (!credential) throw new ErreurCompte('Connexion Google interrompue', 0);
     const r = await api('POST', '/auth/google', { corps: { credential } });
-    ecrireEtat({ ...lireEtat(), session: r.session, email: r.email, emailEnAttente: undefined, codeDemande: undefined, version: 0 });
+    ecrireEtat({ ...lireEtat(), session: r.session, email: r.email, emailEnAttente: undefined, codeDemande: undefined, version: 0, ids: undefined });
     return true;
   }
 
@@ -163,84 +183,140 @@
   }
 
   // ------------------------------------------------ sauvegarde / restauration --
-  async function sauvegarder({ progres } = {}, _deuxiemeEssai = false) {
+  /* Une opération à la fois. Deux boutons touchés coup sur coup (ou un conflit
+     qui relance une récupération pendant qu'une autre tourne) entremêlaient
+     export, import et numéro de version. Les appels publics passent à la file. */
+  let file = Promise.resolve();
+  const enSerie = (f) => (...a) => { const p = file.then(() => f(...a)); file = p.catch(() => {}); return p; };
+
+  const RE_EMPREINTE = /^[0-9a-f]{64}$/;
+  const RE_ID_CATALOGUE = /^[a-z0-9][a-z0-9-]{0,80}$/;
+  const fusionnee = (id) => { try { return !!(global.GMSpecs && typeof global.GMSpecs.fusionDe === 'function' && global.GMSpecs.fusionDe(id)); } catch (_) { return false; } };
+  const idsDe = (donnees) => new Set(((donnees && donnees.spots) || []).map(s => s && s.carId));
+  const tombesDe = (donnees) => (donnees && donnees.meta && donnees.meta.supprimes) || {};
+
+  /* GARDE. `e.ids` = les voitures que le cloud contient, à la version `e.version`
+     que cet appareil connaît. Si l'une d'elles n'est plus ici, et que ce n'est ni
+     un retrait volontaire (pierre tombale), ni un doublon de catalogue fusionné,
+     l'envoyer telle quelle l'effacerait du cloud. Cas réels : « Réinitialiser le
+     garage » (remise à zéro LOCALE, non propagée) suivi de « Sauvegarder » ;
+     base locale indisponible au démarrage (repli en mémoire : garage vide) ;
+     version de l'app qui ne connaît pas un modèle sauvé par une plus récente.
+     Session ouverte avant cette garde (`ids` absent) : contenu du cloud inconnu,
+     donc même prudence, une fois. */
+  function aRecupererDAbord(e, donnees) {
+    if (!(e.version > 0)) return false;              // rien au cloud que cet appareil ait vu
+    if (!Array.isArray(e.ids)) return true;
+    const ici = idsDe(donnees), tombes = tombesDe(donnees);
+    return e.ids.some(id => !ici.has(id) && !tombes[id] && !fusionnee(id));
+  }
+
+  async function sauvegarder({ progres } = {}) {
     if (!global.GMGarage) throw new ErreurCompte('Application pas encore prête', 0);
-    // Anciennes photos non compressées : ramenées sous le plafond du serveur (2 Mo) avant envoi.
-    if (typeof global.GMGarage.normaliserPhotos === 'function') await global.GMGarage.normaliserPhotos();
-    const donnees = global.GMGarage.exporter();
-    const photos = new Map();                        // empreinte → { type, octets }
-    const spots = [];
-    for (const s of donnees.spots || []) {
-      const emp = [];
-      for (const p of (s.photos || [])) {
-        const o = dataUrlVersOctets(p); if (!o) continue;
-        const h = await empreinte(o.octets);
-        photos.set(h, o); emp.push(h);
+    const auDepart = idsDe(global.GMGarage.exporter());
+    let inconnues = [], recuperations = 0;
+    for (;;) {
+      // Anciennes photos non compressées : ramenées sous le plafond du serveur (2 Mo) avant envoi.
+      if (typeof global.GMGarage.normaliserPhotos === 'function') await global.GMGarage.normaliserPhotos();
+      const donnees = global.GMGarage.exporter();
+      /* Version lue AVEC l'export, pas au moment d'envoyer : entre les deux, les
+         photos partent (plusieurs secondes). Si le numéro avait bougé entre-temps,
+         on annonçait la NOUVELLE version avec l'ANCIEN contenu, et le serveur
+         l'acceptait sans conflit — la voiture de l'autre appareil était écrasée. */
+      const connu = lireEtat(), versionConnue = connu.version || 0;
+      if (!recuperations && aRecupererDAbord(connu, donnees)) {
+        inconnues = (await restaurer({ progres })).inconnues || []; recuperations++;
+        continue;
       }
-      spots.push({ ...s, photos: emp });
-    }
-    const toutes = [...photos.keys()];
-    let manquantes = [], sansPhotos = false;
-    try {
-      for (let i = 0; i < toutes.length; i += LOT_EMPREINTES) {
-        const r = await api('POST', '/photos/manquantes', { corps: { empreintes: toutes.slice(i, i + LOT_EMPREINTES) } });
-        manquantes.push(...r.manquantes);
+      /* empreinte → dataURL. On garde la RÉFÉRENCE au texte déjà en mémoire, et on
+         ne décode qu'au moment d'envoyer : garder les octets de toutes les photos
+         doublait la mémoire (≈ 165 Mo pour 500 photos), de quoi faire fermer
+         l'onglet sur un téléphone. */
+      const photos = new Map();
+      const spots = [];
+      for (const s of donnees.spots || []) {
+        const emp = [];
+        for (const p of (s.photos || [])) {
+          const o = dataUrlVersOctets(p); if (!o) continue;
+          const h = await empreinte(o.octets);
+          photos.set(h, p); emp.push(h);
+        }
+        spots.push({ ...s, photos: emp });
       }
-    } catch (err) {
-      if (err.statut !== SANS_PHOTOS) throw err;
-      // Les empreintes restent dans la collection : quand le serveur aura son
-      // stockage, la sauvegarde suivante enverra ces photos, sans migration.
-      sansPhotos = true; manquantes = [];
-    }
-    /* Mémorisé dans les deux sens : le panneau suit le serveur le jour où il
-       gagne son stockage photo. Sans photo locale, on ne sait rien : on laisse. */
-    if (toutes.length) ecrireEtat({ ...lireEtat(), sansPhotos });
-    let faites = 0;
-    await enParallele(manquantes, CONCURRENCE_PHOTOS, async (h) => {
-      const o = photos.get(h);
-      await api('PUT', `/photos/${h}`, { brut: o.octets, type: o.type });
-      progres && progres({ etape: 'photos', faites: ++faites, total: manquantes.length });
-    });
-    const e = lireEtat();
-    try {
-      const r = await api('PUT', '/garage', { corps: { donnees: { ...donnees, spots } }, entetes: { 'If-Match': String(e.version || 0) } });
-      ecrireEtat({ ...lireEtat(), version: r.version, derniere: new Date().toISOString() });
-      return { version: r.version, photosEnvoyees: manquantes.length, voitures: spots.length, photosNonSauvegardees: sansPhotos ? toutes.length : 0 };
-    } catch (err) {
-      /* 409 : un autre appareil a sauvé entre-temps. On récupère sa version en
-         FUSION (le local fait autorité, le cloud apporte ce qui manque), puis
-         on renvoie une seule fois. */
-      if (err.statut === 409 && !_deuxiemeEssai) {
-        await restaurer({ progres });
-        return sauvegarder({ progres }, true);
+      /* Voitures du cloud que CETTE version de l'app ne sait pas lire (modèle
+         ajouté par une version plus récente) : renvoyées telles quelles. Sans
+         cela, un appareil en retard d'une mise à jour les effaçait pour tous. */
+      const ici = new Set(spots.map(s => s.carId));
+      for (const s of inconnues) if (!ici.has(s.carId)) { spots.push(s); ici.add(s.carId); }
+      const toutes = [...photos.keys()];
+      let manquantes = [], sansPhotos = false;
+      try {
+        for (let i = 0; i < toutes.length; i += LOT_EMPREINTES) {
+          const r = await api('POST', '/photos/manquantes', { corps: { empreintes: toutes.slice(i, i + LOT_EMPREINTES) } });
+          manquantes.push(...r.manquantes);
+        }
+      } catch (err) {
+        if (err.statut !== SANS_PHOTOS) throw err;
+        // Les empreintes restent dans la collection : quand le serveur aura son
+        // stockage, la sauvegarde suivante enverra ces photos, sans migration.
+        sansPhotos = true; manquantes = [];
       }
-      throw err;
+      /* Mémorisé dans les deux sens : le panneau suit le serveur le jour où il
+         gagne son stockage photo. Sans photo locale, on ne sait rien : on laisse. */
+      if (toutes.length) ecrireEtat({ ...lireEtat(), sansPhotos });
+      let faites = 0;
+      await enParallele(manquantes, CONCURRENCE_PHOTOS, async (h) => {
+        const o = photos.has(h) ? dataUrlVersOctets(photos.get(h)) : null;
+        if (!o) return;                                // empreinte que nous n'avons pas annoncée : rien à envoyer
+        await api('PUT', `/photos/${h}`, { brut: o.octets, type: o.type, delai: DELAI_LOURD_MS });
+        progres && progres({ etape: 'photos', faites: ++faites, total: manquantes.length });
+      });
+      try {
+        const r = await api('PUT', '/garage', { corps: { donnees: { ...donnees, spots } }, entetes: { 'If-Match': String(versionConnue) }, delai: DELAI_LOURD_MS });
+        ecrireEtat({ ...lireEtat(), version: r.version, ids: spots.map(s => s.carId), derniere: new Date().toISOString() });
+        return { version: r.version, photosEnvoyees: manquantes.length, voitures: spots.length, photosNonSauvegardees: sansPhotos ? toutes.length : 0,
+                 recuperees: [...idsDe(donnees)].filter(id => !auDepart.has(id)).length };
+      } catch (err) {
+        /* 409 : un autre appareil a sauvé entre-temps. On récupère sa version en
+           FUSION (la modification la plus récente gagne, rien n'est perdu), puis
+           on renvoie. Deux récupérations au plus par sauvegarde. */
+        if (err.statut !== 409 || recuperations >= 2) throw err;
+        inconnues = (await restaurer({ progres })).inconnues || []; recuperations++;
+      }
     }
   }
 
   async function restaurer({ progres } = {}) {
     let g;
-    try { g = await api('GET', '/garage'); }
-    catch (err) { if (err.statut === 404) return { rien: true }; throw err; }
+    try { g = await api('GET', '/garage', { delai: DELAI_LOURD_MS }); }
+    catch (err) {
+      if (err.statut !== 404) throw err;
+      ecrireEtat({ ...lireEtat(), version: 0, ids: [] });   // rien au cloud : la prochaine sauvegarde sera la première
+      return { rien: true, inconnues: [] };
+    }
+    /* Le contenu du cloud n'est pas plus digne de confiance qu'un fichier reçu :
+       une entrée nulle ou des « photos » qui ne sont pas une liste faisaient
+       planter la récupération sur un message technique. */
+    const cloud = g && g.donnees && typeof g.donnees === 'object' && !Array.isArray(g.donnees) ? g.donnees : {};
+    const spotsCloud = (Array.isArray(cloud.spots) ? cloud.spots : []).filter(s => s && typeof s === 'object' && !Array.isArray(s));
+    const empreintesDe = (s) => (Array.isArray(s.photos) ? s.photos : []).filter(h => typeof h === 'string' && RE_EMPREINTE.test(h));
     // Photos déjà présentes sur l'appareil : on ne les retélécharge pas.
     const locales = new Map();
     for (const s of (global.GMGarage.exporter().spots || [])) for (const p of (s.photos || [])) {
       const o = dataUrlVersOctets(p); if (o) locales.set(await empreinte(o.octets), p);
     }
-    const toutes = [...new Set((g.donnees.spots || []).flatMap(s => Array.isArray(s.photos) ? s.photos : []))]
-      .filter(h => /^[0-9a-f]{64}$/.test(h));
+    const toutes = [...new Set(spotsCloud.flatMap(empreintesDe))];
     const aTelecharger = toutes.filter(h => !locales.has(h));
     let faites = 0, echecs = 0, sansPhotos = false;
     await enParallele(aTelecharger, CONCURRENCE_PHOTOS, async (h) => {
       if (sansPhotos) return;                        // serveur sans photos : inutile d'insister
       try {
-        const r = await api('GET', `/photos/${h}`, { reponseBrute: true });
+        const r = await api('GET', `/photos/${h}`, { reponseBrute: true, delai: DELAI_LOURD_MS });
         // L'empreinte garantit les octets, pas l'en-tête : type en liste blanche.
-        const type = (r.headers.get('Content-Type') || '').split(';')[0].trim().toLowerCase();
+        const type = r.type.split(';')[0].trim().toLowerCase();
         if (!TYPES_PHOTO.has(type)) return;
-        const octets = new Uint8Array(await r.arrayBuffer());
         // Contrôle d'intégrité : le contenu doit correspondre à son empreinte.
-        if (await empreinte(octets) === h) locales.set(h, octetsVersDataUrl(octets, type));
+        if (await empreinte(r.octets) === h) locales.set(h, octetsVersDataUrl(r.octets, type));
       } catch (err) {
         /* 404 : la photo n'existe plus au cloud, il n'y a rien à perdre en
            l'ignorant. Toute AUTRE erreur (réseau, serveur) est passagère : on
@@ -255,12 +331,21 @@
       progres && progres({ etape: 'photos', faites: ++faites, total: aTelecharger.length });
     });
     if (echecs) throw new ErreurCompte(`${echecs} photo${echecs > 1 ? 's' : ''} n'${echecs > 1 ? 'ont' : 'a'} pas pu être téléchargée${echecs > 1 ? 's' : ''} : rien n'a été modifié, réessaie`, 0);
-    const donnees = { ...g.donnees, spots: (g.donnees.spots || []).map(s => ({
-      ...s, photos: (Array.isArray(s.photos) ? s.photos : []).map(h => locales.get(h)).filter(Boolean) })) };
+    const donnees = { ...cloud, spots: spotsCloud.map(s => ({ ...s, photos: empreintesDe(s).map(h => locales.get(h)).filter(Boolean) })) };
     const r = await global.GMGarage.importer(donnees, { fusion: true });
-    ecrireEtat({ ...lireEtat(), version: g.version, ...(aTelecharger.length ? { sansPhotos } : {}) });
-    return { voitures: r.n, rejetees: r.rejected, retirees: r.retirees || 0, photosTelechargees: sansPhotos ? 0 : aTelecharger.length, sansPhotos, version: g.version };
+    /* Ce que l'app n'a PAS repris alors que rien ne l'explique (ni retrait
+       volontaire, ni doublon fusionné) : un modèle que cette version ne connaît
+       pas. Gardé tel quel — photos en empreintes — pour être renvoyé à la
+       prochaine sauvegarde. Seuls les identifiants de forme « catalogue » sont
+       retenus : une entrée fantaisiste n'est pas conservée indéfiniment. */
+    const apres = global.GMGarage.exporter(), ici = idsDe(apres), tombes = tombesDe(apres);
+    const inconnues = spotsCloud.filter(s => typeof s.carId === 'string' && RE_ID_CATALOGUE.test(s.carId) && !ici.has(s.carId) && !tombes[s.carId] && !fusionnee(s.carId))
+      .map(s => ({ ...s, photos: empreintesDe(s) }));
+    const ids = [...new Set(spotsCloud.map(s => s.carId).filter(id => typeof id === 'string' && (ici.has(id) || RE_ID_CATALOGUE.test(id))))];
+    ecrireEtat({ ...lireEtat(), version: g.version, ids, ...(aTelecharger.length ? { sansPhotos } : {}) });
+    return { voitures: r.n, rejetees: r.rejected, retirees: r.retirees || 0, photosTelechargees: sansPhotos ? 0 : aTelecharger.length, sansPhotos, version: g.version, inconnues };
   }
+  const sauvegarderEnSerie = enSerie(sauvegarder), restaurerEnSerie = enSerie(restaurer);
 
   async function supprimerCompte() {
     const r = await api('DELETE', '/compte');
@@ -380,14 +465,15 @@
         annulerCode(); message = ''; rafraichir();
       } else if (action === 'sauvegarder') {
         dire('Sauvegarde en cours…');
-        const r = await sauvegarder({ progres: p => dire(`Envoi des photos : ${p.faites}/${p.total}`) });
-        message = r.photosNonSauvegardees
+        const r = await sauvegarderEnSerie({ progres: p => dire(`Envoi des photos : ${p.faites}/${p.total}`) });
+        message = (r.photosNonSauvegardees
           ? `Sauvegardé : ${r.voitures} voiture${r.voitures > 1 ? 's' : ''}, sans les photos (ce serveur ne les garde pas : elles restent sur ce téléphone).`
-          : `Sauvegardé : ${r.voitures} voiture${r.voitures > 1 ? 's' : ''}, ${r.photosEnvoyees} nouvelle${r.photosEnvoyees > 1 ? 's' : ''} photo${r.photosEnvoyees > 1 ? 's' : ''}.`;
+          : `Sauvegardé : ${r.voitures} voiture${r.voitures > 1 ? 's' : ''}, ${r.photosEnvoyees} nouvelle${r.photosEnvoyees > 1 ? 's' : ''} photo${r.photosEnvoyees > 1 ? 's' : ''}.`)
+          + (r.recuperees ? ` ${r.recuperees} voiture${r.recuperees > 1 ? 's' : ''} récupérée${r.recuperees > 1 ? 's' : ''} du cloud au passage.` : '');
         rafraichir();
       } else if (action === 'restaurer') {
         dire('Récupération en cours…');
-        const r = await restaurer({ progres: p => dire(`Photos : ${p.faites}/${p.total}`) });
+        const r = await restaurerEnSerie({ progres: p => dire(`Photos : ${p.faites}/${p.total}`) });
         message = r.rien ? 'Rien n\'est encore sauvé dans le cloud.' : `Récupéré : ${r.voitures} voiture${r.voitures > 1 ? 's' : ''}${r.retirees ? ` · ${r.retirees} retirée${r.retirees > 1 ? 's' : ''} sur un autre appareil` : ''}${r.sansPhotos ? ', sans les photos (ce serveur ne les garde pas)' : ''}.`;
         rafraichir();
       } else if (action === 'deconnecter') {
@@ -419,6 +505,6 @@
 
   global.GMCompte = Object.freeze({
     VERSION: VERSION_COMPTE, etat, demanderCode, verifierCode, connecterGoogle, annulerCode, deconnecter, enteteAuth,
-    sauvegarder, restaurer, supprimerCompte, exporterCompte,
+    sauvegarder: sauvegarderEnSerie, restaurer: restaurerEnSerie, supprimerCompte, exporterCompte,
   });
 })(window);

@@ -86,6 +86,16 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   v(`ancienne photo de ${(octets(lourde) / 1048576).toFixed(1)} Mo : recompressée sous 1,5 Mo, toujours une image valide`,
     n === 1 && octets(m3.photos[0]) <= 1.5 * 1048576 && Math.max(...taille) <= 1280, `${n} · ${(octets(m3.photos[0]) / 1048576).toFixed(2)} Mo · ${taille}`);
   v('… et les photos déjà légères ne sont pas touchées', m3.photos[1] === photo(1) && m3.photos.length === 2);
+  /* Seconde relecture (10/11) : la version recompressée REMPLACE l'ancienne. Sans pierre
+     tombale, un autre appareil (ou le cloud) qui possède encore l'ancienne la ramenait à la
+     fusion — la même image en double, dont une trop lourde pour le serveur. */
+  const shaLourde = require('crypto').createHash('sha256').update(Buffer.from(lourde.split(',')[1], 'base64')).digest('hex');
+  const metaNorm = (await idb('all')).find(r => r.carId === '__meta__') || {};
+  await page.evaluate(d => window.GMGarage.importer(d, { fusion: true }), { app: 'garage-manifest', version: 1, meta: {}, custom: { list: [] },
+    spots: [{ ...prise('bmw-m3', 0), photos: [lourde, photo(1)], maj: '2026-09-01T12:00:00.000Z' }] });
+  const m3Norm = (await idb('all')).find(r => r.carId === 'bmw-m3');
+  v('photo recompressée : l\'ancienne version, encore présente sur un autre appareil, ne revient pas en double à la synchronisation',
+    !!(metaNorm.photosSupprimees || {})['bmw-m3|' + shaLourde] && !!m3.maj && m3Norm.photos.length === 2 && !m3Norm.photos.includes(lourde), `photos=${m3Norm.photos.length} tombe=${!!(metaNorm.photosSupprimees || {})['bmw-m3|' + shaLourde]}`);
 
   /* Supprimer UNE photo : la corbeille greffée par gm-specs.js sur la photo
      affichée (.gsup-btn), qui passe désormais par window.GMGarage.supprimerPhoto */
@@ -119,8 +129,9 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
     f40.photos.length === 31 && f40.photos.includes(photo(3)), f40.photos.length);
   v('… sans rechargement de la page : la fiche reste ouverte, à jour',
     await page.evaluate(() => !!document.querySelector('#overlay .detail-hero') && document.querySelectorAll('#overlay .thumbstrip .ts').length === 7));
-  v('… horodatée (maj) et laissant une pierre tombale à l\'empreinte des octets, comme gm-compte.js',
-    !!p205.maj && !!((await meta()).photosSupprimees || {})[empreinte(photo(3))]);
+  v('… horodatée (maj) et laissant une pierre tombale propre à CETTE voiture (« voiture|empreinte des octets », comme gm-compte.js)',
+    !!p205.maj && !!((await meta()).photosSupprimees || {})['peugeot-205|' + empreinte(photo(3))] && !((await meta()).photosSupprimees || {})[empreinte(photo(3))],
+    JSON.stringify(Object.keys((await meta()).photosSupprimees || {})).slice(0, 120));
   await ajouterPhotoVia('peugeot-205');
   v('… et la place libérée sous le plafond est réutilisable (7 → 8)', (await nbPhotos('peugeot-205')) === 8, await nbPhotos('peugeot-205'));
 
@@ -129,13 +140,147 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   await page.evaluate(d => window.GMGarage.importer(d, { fusion: true }), { app: 'garage-manifest', version: 1, spots: [distante], meta: {}, custom: { list: [] } });
   const apres = (await idb('all')).find(r => r.carId === 'peugeot-205');
   v('fusion cloud : la photo supprimée ici ne revient PAS depuis l\'autre appareil', !apres.photos.includes(photo(3)), apres.photos.length);
-  const tombeAilleurs = { [empreinte(photo(5))]: new Date().toISOString() };
+  /* Seconde relecture (10/11) : la pierre tombale ne portait que l'empreinte. À la
+     synchronisation, la même image disparaissait donc de TOUTES les voitures —
+     une photo montrant deux voitures, retirée de l'une, était perdue pour l'autre. */
+  const f40ApresFusion = (await idb('all')).find(r => r.carId === 'ferrari-f40');
+  v('fusion cloud : la MÊME image, gardée sur une autre voiture (F40), n\'est pas emportée par la suppression faite sur la 205',
+    f40ApresFusion.photos.includes(photo(3)) && f40ApresFusion.photos.length === 31, f40ApresFusion.photos.length);
+  const tombeAilleurs = { ['peugeot-205|' + empreinte(photo(5))]: new Date().toISOString() };
   await page.evaluate(d => window.GMGarage.importer(d, { fusion: true }), { app: 'garage-manifest', version: 1, spots: [], meta: { photosSupprimees: tombeAilleurs }, custom: { list: [] } });
   const apres2 = (await idb('all')).find(r => r.carId === 'peugeot-205');
   v('fusion cloud : une photo supprimée sur l\'AUTRE appareil disparaît aussi ici', !apres2.photos.includes(photo(5)) && apres2.photos.includes(photo(4)), apres2.photos.length);
   const exportee = await page.evaluate(() => window.GMGarage.exporter());
-  v('… et les pierres tombales voyagent avec la sauvegarde (export)', Object.keys(exportee.meta.photosSupprimees || {}).length === 2);
+  const tombes205 = (t) => Object.keys(t || {}).filter(k => k.startsWith('peugeot-205|')).length;
+  v('… et les pierres tombales voyagent avec la sauvegarde (export)', tombes205(exportee.meta.photosSupprimees) === 2, JSON.stringify(Object.keys(exportee.meta.photosSupprimees || {})).slice(0, 200));
+  // Ancien format (empreinte seule, sans voiture) : ignoré — on ne supprime pas sans savoir de quelle voiture il s'agit.
+  await page.evaluate(d => window.GMGarage.importer(d, { fusion: true }), { app: 'garage-manifest', version: 1, spots: [], meta: { photosSupprimees: { [empreinte(photo(6))]: new Date().toISOString() } }, custom: { list: [] } });
+  const apres3 = (await idb('all')).find(r => r.carId === 'peugeot-205');
+  v('pierre tombale à l\'ancien format (sans voiture) : ignorée, la photo reste', apres3.photos.includes(photo(6)) && tombes205((await meta()).photosSupprimees) === 2 && !((await meta()).photosSupprimees || {})[empreinte(photo(6))], apres3.photos.length);
 
+  /* Photo supprimée puis REMISE (même image) : elle ne doit pas redisparaître à la
+     synchronisation suivante. Avant, rien ne disait que la remise était plus récente. */
+  await idb('put', [{ ...prise('bmw-m3', 0), photos: [photo(1), photo(2)], maj: '2026-09-01T12:00:00.000Z' }]);
+  await page.reload({ waitUntil: 'networkidle' }); await pret();
+  await ajouterPhotoVia('bmw-m3');
+  const X = (await idb('all')).find(r => r.carId === 'bmw-m3').photos[2];
+  const rSup = await page.evaluate(src => window.GMGarage.supprimerPhoto(src), X);
+  const tombeX = ((await meta()).photosSupprimees || {})['bmw-m3|' + empreinte(X)];
+  await ajouterPhotoVia('bmw-m3');                              // le même fichier : la même image, remise
+  const m3Remise = (await idb('all')).find(r => r.carId === 'bmw-m3');
+  // Le cloud, lui, connaît la suppression (sauvegardée entre-temps) et l'ancienne version de la prise.
+  await page.evaluate(d => window.GMGarage.importer(d, { fusion: true }), { app: 'garage-manifest', version: 1,
+    spots: [{ ...prise('bmw-m3', 0), photos: [photo(1), photo(2)], maj: '2026-09-01T12:00:00.000Z' }], meta: { photosSupprimees: { ['bmw-m3|' + empreinte(X)]: tombeX } }, custom: { list: [] } });
+  const m3Sync = (await idb('all')).find(r => r.carId === 'bmw-m3');
+  v('photo supprimée puis remise (même image) : elle survit à la synchronisation suivante',
+    rSup && rSup.ok && !!tombeX && m3Remise.photos.includes(X) && m3Sync.photos.includes(X), `remise=${m3Remise.photos.includes(X)} après synchro=${m3Sync.photos.includes(X)}`);
+  const exportRemise = await page.evaluate(() => window.GMGarage.exporter());
+  v('… la remise voyage avec la sauvegarde (export), sous la même clé que la pierre tombale',
+    !!(exportRemise.meta.photosRetablies || {})['bmw-m3|' + empreinte(X)] && Date.parse(exportRemise.meta.photosRetablies['bmw-m3|' + empreinte(X)]) > Date.parse(tombeX));
+  await page.evaluate(src => window.GMGarage.supprimerPhoto(src), X);
+  await page.evaluate(d => window.GMGarage.importer(d, { fusion: true }), { app: 'garage-manifest', version: 1, spots: [], meta: {}, custom: { list: [] } });
+  v('… et supprimée de nouveau ENSUITE, elle disparaît pour de bon (le dernier geste gagne)', !(await idb('all')).find(r => r.carId === 'bmw-m3').photos.includes(X));
+  /* Remise faite sur l'AUTRE appareil : le cloud apporte la photo ET sa remise, plus récente que la suppression d'ici. */
+  const tombeX2 = ((await meta()).photosSupprimees || {})['bmw-m3|' + empreinte(X)];
+  await page.evaluate(d => window.GMGarage.importer(d, { fusion: true }), { app: 'garage-manifest', version: 1,
+    spots: [{ ...prise('bmw-m3', 0), photos: [X, photo(1), photo(2)], maj: new Date(Date.now() + 60000).toISOString() }],
+    meta: { photosRetablies: { ['bmw-m3|' + empreinte(X)]: new Date(Date.now() + 60000).toISOString() } }, custom: { list: [] } });
+  v('remise faite sur l\'AUTRE appareil (plus récente que la suppression d\'ici) : la photo revient et reste',
+    !!tombeX2 && (await idb('all')).find(r => r.carId === 'bmw-m3').photos.includes(X));
+  // … et cette remise est RETENUE ici : une synchronisation suivante, même sans elle dans le message, ne retire pas la photo.
+  await page.evaluate(d => window.GMGarage.importer(d, { fusion: true }), { app: 'garage-manifest', version: 1, spots: [], meta: {}, custom: { list: [] } });
+  v('… la remise venue du cloud est enregistrée sur cet appareil (la photo tient à la synchronisation suivante)',
+    (await idb('all')).find(r => r.carId === 'bmw-m3').photos.includes(X) && !!((await meta()).photosRetablies || {})['bmw-m3|' + empreinte(X)]);
+  /* Fichier de sauvegarde réimporté (sans fusion) : une photo supprimée depuis y figure encore.
+     C'est le choix du joueur — elle ne doit pas redisparaître à la synchronisation suivante. */
+  await page.evaluate(src => window.GMGarage.supprimerPhoto(src), photo(2));
+  const tombe2 = ((await meta()).photosSupprimees || {})['bmw-m3|' + empreinte(photo(2))];
+  await page.waitForTimeout(20);
+  await page.evaluate(d => window.GMGarage.importer(d), { app: 'garage-manifest', version: 1,
+    spots: [{ ...prise('bmw-m3', 0), photos: [X, photo(1), photo(2)], maj: '2026-09-01T12:00:00.000Z' }], meta: {}, custom: { list: [] } });
+  await page.evaluate(d => window.GMGarage.importer(d, { fusion: true }), { app: 'garage-manifest', version: 1, spots: [],
+    meta: { photosSupprimees: { ['bmw-m3|' + empreinte(photo(2))]: tombe2 } }, custom: { list: [] } });
+  v('photo supprimée puis réimportée depuis un fichier : elle survit à la synchronisation suivante',
+    !!tombe2 && (await idb('all')).find(r => r.carId === 'bmw-m3').photos.includes(photo(2)));
+
+  /* Ce qui est persisté repasse par les filtres au démarrage : pierres tombales à l'ancien
+     format (empreinte seule) et entrées fantaisistes sont écartées, des deux tables. */
+  {
+    const m = await meta();
+    const bonne = 'bmw-m3|' + empreinte(photo(1)), date = new Date().toISOString();
+    await idb('put', [{ ...m, photosSupprimees: { ...(m.photosSupprimees || {}), [empreinte(photo(9))]: date, 'n\'importe quoi': date },
+      photosRetablies: { ...(m.photosRetablies || {}), [bonne]: date, [empreinte(photo(9))]: date, '<img src=x>': 'pas une date' } }]);
+    await page.reload({ waitUntil: 'networkidle' }); await pret();
+    const ex = await page.evaluate(() => window.GMGarage.exporter());
+    const cles = [...Object.keys(ex.meta.photosSupprimees || {}), ...Object.keys(ex.meta.photosRetablies || {})];
+    v('au démarrage : pierres tombales et remises persistées repassent par les filtres (ancien format et entrées fantaisistes écartés)',
+      cles.length > 0 && cles.every(k => /^[a-z0-9:-]+\|[0-9a-f]{64}$/.test(k)) && !!ex.meta.photosRetablies[bonne], JSON.stringify(cles).slice(0, 200));
+  }
+
+  /* Remplacer une photo (recadrage, floutage de plaque) : contrat GMGarage.remplacerPhoto.
+     gm-specs.js écrivait lui-même en base : ni date, ni pierre tombale — à la
+     synchronisation, l'ORIGINALE (plaque lisible) revenait à côté de la version floutée. */
+  const floutee = photo(77), origine = photo(1);
+  const aContrat = await page.evaluate(() => typeof window.GMGarage.remplacerPhoto === 'function');
+  // La même image (photo 1) figure aussi dans la 205 et la F40 : fiche de la M3 ouverte, seule la M3 est visée.
+  await page.evaluate(() => document.querySelector('[data-tab="collection"]')?.click()); await page.waitForTimeout(250);
+  await page.evaluate(() => document.querySelector('[data-car="bmw-m3"]')?.click());
+  await page.waitForSelector('#overlay .detail-hero', { state: 'attached', timeout: 5000 });
+  const rangOrigine = (await idb('all')).find(r => r.carId === 'bmw-m3').photos.indexOf(origine);
+  const rRemp = aContrat ? await page.evaluate(([a, b]) => window.GMGarage.remplacerPhoto(a, b), [origine, floutee]) : null;
+  const m3Flou = (await idb('all')).find(r => r.carId === 'bmw-m3');
+  v('GMGarage.remplacerPhoto : la nouvelle version prend la place de l\'ancienne, à la même position, prise horodatée',
+    !!rRemp && rRemp.ok && rRemp.n === 1 && rangOrigine >= 0 && m3Flou.photos[rangOrigine] === floutee && !m3Flou.photos.includes(origine) && Date.parse(m3Flou.maj) > Date.parse('2026-11-01'), JSON.stringify(rRemp));
+  const f40Remp = (await idb('all')).find(r => r.carId === 'ferrari-f40');
+  v('… sur la fiche OUVERTE seulement : la même image, dans une autre voiture (F40), reste intacte et sans pierre tombale',
+    f40Remp.photos.includes(origine) && !f40Remp.photos.includes(floutee) && !((await meta()).photosSupprimees || {})['ferrari-f40|' + empreinte(origine)]);
+  v('… et la fiche ouverte montre la nouvelle version sans rechargement',
+    await page.evaluate(f => [...document.querySelectorAll('#overlay .thumbstrip .ts img')].some(im => im.src === f), floutee));
+  const tombeOrigine = ((await meta()).photosSupprimees || {})['bmw-m3|' + empreinte(origine)];
+  await page.evaluate(d => window.GMGarage.importer(d, { fusion: true }), { app: 'garage-manifest', version: 1,
+    spots: [{ ...prise('bmw-m3', 0), photos: [origine, photo(2)], maj: '2026-09-01T12:00:00.000Z' }], meta: {}, custom: { list: [] } });
+  const m3FlouSync = (await idb('all')).find(r => r.carId === 'bmw-m3');
+  v('… et à la synchronisation, l\'originale (plaque lisible) ne revient PAS d\'un autre appareil',
+    !!tombeOrigine && !m3FlouSync.photos.includes(origine) && m3FlouSync.photos.includes(floutee), `tombe=${!!tombeOrigine} originale=${m3FlouSync.photos.includes(origine)}`);
+  // « Photo d'origine » du recadrage : on remet l'originale. La remise est plus récente que sa pierre tombale.
+  if (aContrat) await page.evaluate(([a, b]) => window.GMGarage.remplacerPhoto(a, b), [floutee, origine]);
+  await page.evaluate(d => window.GMGarage.importer(d, { fusion: true }), { app: 'garage-manifest', version: 1,
+    spots: [{ ...prise('bmw-m3', 0), photos: [floutee, photo(2)], maj: '2026-09-02T12:00:00.000Z' }], meta: { photosSupprimees: { ['bmw-m3|' + empreinte(origine)]: tombeOrigine || '2026-11-01T00:00:00.000Z' } }, custom: { list: [] } });
+  const m3Retour = (await idb('all')).find(r => r.carId === 'bmw-m3');
+  v('… retour à l\'originale : elle reste après synchronisation, et la version remplacée ne revient pas',
+    aContrat && m3Retour.photos.includes(origine) && !m3Retour.photos.includes(floutee), `originale=${m3Retour.photos.includes(origine)} remplacée=${m3Retour.photos.includes(floutee)}`);
+  v('… une photo inconnue ou une « nouvelle » qui n\'est pas une image : refusées, rien ne change',
+    aContrat && await page.evaluate(async ([a, b]) => { const x = await window.GMGarage.remplacerPhoto('data:image/jpeg;base64,AAAA', a); const y = await window.GMGarage.remplacerPhoto(b, 'javascript:alert(1)'); return x.ok === false && y.ok === false; }, [photo(9), origine])
+    && (await idb('all')).find(r => r.carId === 'bmw-m3').photos.includes(origine));
+
+  /* Floutage de plaque : `partout` — l'image est protégée dans TOUTES les prises qui la contiennent. */
+  const rPartout = aContrat ? await page.evaluate(([a, b]) => window.GMGarage.remplacerPhoto(a, b, { partout: true }), [photo(2), photo(78)]) : null;
+  const apresPartout = (await idb('all')).filter(r => r.carId !== '__meta__' && Array.isArray(r.photos));
+  const tombesPartout = (await meta()).photosSupprimees || {};
+  v('GMGarage.remplacerPhoto({ partout:true }) (floutage) : toutes les prises contenant l\'image, chacune avec sa pierre tombale',
+    !!rPartout && rPartout.ok && rPartout.n === 3 && !apresPartout.some(r => r.photos.includes(photo(2)))
+    && ['bmw-m3', 'peugeot-205', 'ferrari-f40'].every(id => apresPartout.find(r => r.carId === id).photos.includes(photo(78)) && tombesPartout[id + '|' + empreinte(photo(2))]),
+    JSON.stringify(rPartout));
+
+  /* Couverture choisie par le joueur : une nouvelle capture de la même voiture
+     ajoute sa photo EN TÊTE. L'index de couverture n'était pas décalé : la
+     couverture devenait, sans rien dire, la photo d'à côté. */
+  await idb('put', [{ ...prise('alpine-a110', 0), photos: [photo(1), photo(2), photo(3)], cover: 2 }]);
+  await page.reload({ waitUntil: 'networkidle' }); await pret();
+  const existeA110 = await page.evaluate(() => !!document.querySelector('[data-car="alpine-a110"]'));
+  await page.evaluate(() => { document.querySelector('[data-close]')?.click(); document.querySelector('[data-fab]').click(); });
+  await page.waitForSelector('#fileInput', { state: 'attached', timeout: 5000 });
+  await page.setInputFiles('#fileInput', { name: 'voiture.png', mimeType: 'image/png', buffer: PNG });
+  await page.waitForSelector('#capBody [data-cap="manuel"]', { timeout: 20000 });
+  await page.evaluate(() => document.querySelector('#capBody [data-cap="manuel"]').click());
+  await page.waitForSelector('#pickQ', { timeout: 5000 });
+  await page.fill('#pickQ', 'alpine a110');
+  await page.evaluate(() => document.querySelector('[data-pick="alpine-a110"]').click());
+  await page.waitForSelector('[data-act="save"]:not([disabled])', { timeout: 5000 });
+  await page.click('[data-act="save"]'); await page.waitForTimeout(700);
+  const a110 = (await idb('all')).find(r => r.carId === 'alpine-a110');
+  v('nouvelle capture d\'une voiture dont la couverture a été choisie : la couverture reste la MÊME photo',
+    existeA110 && a110.photos.length === 4 && a110.photos[a110.cover] === photo(3), `photos=${a110.photos.length} couverture=${a110.cover} (${a110.photos[a110.cover] === photo(3) ? 'bonne' : 'autre photo'})`);
   await idb('put', [prise('bmw-m3', 1)]);
   await page.reload({ waitUntil: 'networkidle' }); await pret();
   await supprimerVia('bmw-m3', null);

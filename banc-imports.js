@@ -208,6 +208,12 @@ const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   // Borne relevée de 50 à 500 le 29/09 : 50 amputait des collections réelles (capture sans plafond).
   v('taille · 510 photos importées pour une voiture → 500 conservées (borne anti-fichier piégé)', nbPhotos === 500, nbPhotos);
 
+  // Seconde relecture (10/11) : une « déclinaison » n'était bornée qu'en NOMBRE (20), pas en longueur.
+  await page.evaluate(() => window.GMGarage.importer({ app: 'garage-manifest', version: 1, meta: {}, custom: { list: [] }, spots: [
+    { carId: 'alfa-giulia', at: '2026-09-02T12:00:00.000Z', photos: [], variants: ['Veloce', 'x'.repeat(200000)] } ] }));
+  const declinaisons = (await parId())['alfa-giulia']?.variants || [];
+  v('taille · déclinaison démesurée (200 000 caractères) écartée, les vraies conservées', declinaisons.length === 1 && declinaisons[0] === 'Veloce', JSON.stringify(declinaisons).slice(0, 80));
+
   v('aucune erreur JS', errs.length === 0, errs.join(' | '));
 
   await nav.close(); serveur.close();

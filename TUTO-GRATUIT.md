@@ -140,10 +140,14 @@ sauvegarde. Peut se faire le même jour que la séance 1 ou un autre.
   **Add** → **`17 3 * * *`** → **Add/Deploy**.
 
 - [ ] **15. Vérifier** *(fiche C7)* Ouvre
-  `https://garage-comptes.cyril-lapopin.workers.dev/garage` (adapte si Cloudflare a
+  `https://garage-comptes.cyril-lapopin.workers.dev/sante` (adapte si Cloudflare a
   donné une autre adresse au worker).
-  ✅ La page affiche `{"erreur":"Session absente ou expirée"}` : le serveur tourne,
-  lit la base, et refuse poliment un inconnu. C'est **la bonne réponse**.
+  ✅ La page affiche une ligne qui commence par
+  `{"service":"garage-comptes","version":"…","ok":true,`
+  **`"ok":true`** = la base est reliée et complète, les quatre réglages sont là,
+  l'adresse de l'app est bien écrite. Si tu lis **`"ok":false`**, la même ligne dit
+  ce qui manque (voir le tableau de la fiche C7) : copie-la-moi telle quelle, elle
+  ne contient **aucun secret** (ni clé, ni adresse e-mail).
 
 - [ ] **16. M'envoyer l'adresse** *(partie D)* — l'adresse du worker, **et rien
   d'autre** (elle est publique). 👉 **De mon côté :** je l'inscris dans l'app
@@ -574,12 +578,26 @@ ce déclencheur, la promesse serait fausse. *(Le relais a sa propre purge depuis
 
 - [ ] Sur la page du worker, copie son adresse (*Domains & Routes* ou en haut :
   `https://garage-comptes.cyril-lapopin.workers.dev`).
-- [ ] Ouvre dans ton navigateur cette adresse suivie de `/garage`, par exemple
-  `https://garage-comptes.cyril-lapopin.workers.dev/garage`.
-- ✅ **Réussi** si la page affiche :
-  `{"erreur":"Session absente ou expirée"}`
-  C'est **la bonne réponse** : le serveur tourne, lit la base, et refuse poliment
-  quelqu'un qui n'est pas connecté.
+- [ ] Ouvre dans ton navigateur cette adresse suivie de `/sante`, par exemple
+  `https://garage-comptes.cyril-lapopin.workers.dev/sante`.
+- ✅ **Réussi** si la ligne affichée contient **`"ok":true`**, par exemple :
+  `{"service":"garage-comptes","version":"2026-11-10","ok":true,"base":true,"reglages":true,"manquants":[],"origine":"https://mcslec.github.io","origineValide":true,"photos":false,"google":false}`
+- Cette page est faite pour ça : elle ne montre **aucun secret** (seulement des
+  « présent / absent »), tu peux me la copier telle quelle. Comment la lire :
+
+  | Ce que dit la ligne | Ce que ça veut dire | Remède |
+  |---|---|---|
+  | `"ok":true` | Tout est en place | Passe à la partie D |
+  | `"base":false` et `"manquants":["DB"]` | La base n'est pas reliée | Refais C4, nom **`DB`** exactement |
+  | `"base":false` et `"tablesManquantes":[…]` | Base reliée mais incomplète | Dis-le-moi : je te redonne les lignes à coller dans la console D1 |
+  | `"reglages":false` et `"manquants":["CODE_SECRET"]` (ou un autre nom) | Ce réglage n'existe pas, ou son nom est mal écrit | Refais la ligne correspondante (C2 / C5), nom en MAJUSCULES, puis **Deploy** |
+  | `"origineValide":false` | `APP_ORIGIN` mal écrite (un `/` à la fin, un espace, pas de `https://`) | Exactement `https://mcslec.github.io` |
+  | `"photos":false`, `"google":false` | **Normal** en mode gratuit : pas de stockage de photos, pas de connexion Google | Rien à faire |
+
+- *Pourquoi `/sante` et plus `/garage` :* l'ancienne vérification (`/garage` →
+  « Session absente ou expirée ») réussissait **même sans base reliée** — le serveur
+  refuse un inconnu avant d'ouvrir la base. Elle ne prouvait donc rien, et la panne
+  n'apparaissait qu'au moment de demander un code, sous la forme « Erreur interne ».
 
 ---
 
@@ -708,10 +726,13 @@ un 429. Les causes restent les mêmes.)*
 ### Partie C / E — les comptes
 | Ce que tu vois | Cause probable | Remède |
 |---|---|---|
-| C7 affiche `{"erreur":"Erreur interne"}` | Liaison `DB` absente ou mal nommée | Refais C4, nom **`DB`** exactement |
+| C7 (`/sante`) affiche `"ok":false` | Un réglage ou la base manque : la ligne dit lequel (`manquants`, `tablesManquantes`, `origineValide`) | Tableau de la fiche C7 |
+| C7 affiche `{"erreur":"Route inconnue"}` | Ancien code du serveur (d'avant le 10/11), sans la page `/sante` | Refais la fin de C3 avec le code actuel, puis **Deploy** |
 | C7 affiche une page d'erreur Cloudflare (code 1101, ou « Worker threw exception ») | Code incomplet : copie tronquée | Refais la fin de C3 avec **Copy raw file**, puis **Deploy** |
 | C7 affiche `Hello World!` | Le code d'exemple est toujours là | Refais la fin de C3 : *Edit code*, tout remplacer, **Deploy** |
-| « Erreur interne » en demandant un code | L'adresse saisie n'est pas celle du compte Resend, **ou** `RESEND_API_KEY` / `MAIL_FROM` erronés | Tape l'adresse **du compte Resend**. Sinon, vérifie C1 et C5 (journaux du worker : `envoi-mail-403` = mauvaise adresse ou clé) |
+| « Service non configuré » dans l'app | Un réglage obligatoire manque au serveur | Ouvre `/sante` : `manquants` donne son nom |
+| « L'e-mail n'a pas pu être envoyé : réessaie plus tard » en demandant un code | L'adresse saisie n'est pas celle du compte Resend, **ou** `RESEND_API_KEY` / `MAIL_FROM` erronés | Tape l'adresse **du compte Resend**. Sinon, vérifie C1 et C5 (journaux du worker : `envoi-mail-403` = mauvaise adresse ou clé) |
+| « Trop de demandes de connexion aujourd'hui : réessaie demain » | Plafond du jour pour **tout le service** (80 codes), qui protège le quota d'e-mails gratuit | Revient le lendemain. Réglable : variable `QUOTA_CODES_JOUR` |
 | Aucun mail reçu, sans erreur | Filtre anti-spam | Regarde les **indésirables** ; marque le mail « pas spam » |
 | « Trop de demandes, réessaie plus tard » | Plus de 3 codes en 15 minutes | Protection anti-abus : patiente 15 minutes |
 | « Code incorrect » alors qu'il est juste | Un code plus récent l'a remplacé | Seul le **dernier** code reçu vaut : utilise le plus récent |

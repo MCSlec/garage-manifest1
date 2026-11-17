@@ -78,7 +78,14 @@ propriétaire authentifié. N'active jamais l'accès public.
 | `QUOTA_GLOBAL_OCTETS` | 50 Go pour tout le service | Disjoncteur de facture : au-delà, plus aucune photo n'est acceptée (≈ 0,60 $/mois une fois les 10 Go gratuits dépassés) |
 
 Au-delà, l'app affiche « Quota de stockage atteint » ; la collection reste
-entière sur le téléphone. **Ajoute aussi une alerte de facturation** dans le
+entière sur le téléphone.
+
+**Plafond des codes de connexion** : `QUOTA_CODES_JOUR` (défaut **80 par jour,
+pour tout le service**). Les limites par adresse et par appareil n'arrêtent pas
+quelqu'un qui change d'adresse à chaque demande : sans ce plafond, il pouvait
+épuiser le quota d'e-mails gratuit (100 par jour chez Resend) et empêcher tout
+le monde de se connecter. Au-delà : « Trop de demandes de connexion
+aujourd'hui : réessaie demain ». **Ajoute aussi une alerte de facturation** dans le
 tableau de bord Cloudflare : c'est ta vraie garantie contre une mauvaise
 surprise, quel que soit le code.
 
@@ -148,6 +155,21 @@ obligation dès qu'on collecte une adresse e-mail.
 
 ## Vérifier que tout marche
 
+0. **Avant tout : ouvre `<adresse du Worker>/sante`** dans un navigateur. La
+   réponse doit contenir `"ok":true`. Sinon elle dit ce qui manque, sans rien
+   révéler de secret (des « présent / absent », jamais une valeur) :
+
+   | Champ | Sens |
+   |---|---|
+   | `version` | Date du code déployé (`VERSION_SERVEUR`) : permet de savoir, sans ouvrir le tableau de bord, si le Worker en ligne est bien celui du dépôt |
+   | `base`, `tablesManquantes` | Liaison D1 `DB` présente, et les 8 tables de `schema.sql` y sont |
+   | `reglages`, `manquants` | `APP_ORIGIN`, `MAIL_FROM`, `CODE_SECRET`, `RESEND_API_KEY` : le nom de ceux qui manquent |
+   | `origine`, `origineValide` | `APP_ORIGIN` telle que le Worker la lit ; une origine avec un `/` final ou un espace refuserait toutes les requêtes de l'app |
+   | `photos`, `google` | Liaison R2 et `GOOGLE_CLIENT_ID` présents (facultatifs) |
+
+   Tant qu'un réglage obligatoire manque, toutes les autres routes répondent
+   **503 « Service non configuré »** (et le journal nomme le réglage) : le
+   service ne tourne jamais à moitié configuré.
 1. Réglages → panneau **Compte** → saisis ton adresse → « Recevoir un code ».
 2. Tape le code reçu (6 chiffres) → « Connecté ✓ ».
 3. « Sauvegarder » : le message indique le nombre de voitures et de photos.
