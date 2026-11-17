@@ -13,13 +13,28 @@
 
 ---
 
-## 🧭 Ta feuille de route — UNIQUEMENT ce qui reste (27/10)
+## 🧭 Ta feuille de route — UNIQUEMENT ce qui reste (17/11)
 
 > Ce qui est déjà fait **n'y figure pas** : tu n'as rien à refaire. Suis les étapes
 > **dans l'ordre**, sur un **ordinateur**. Chaque étape dit où cliquer, ce que tu dois
 > voir, et renvoie à sa fiche détaillée plus bas (le *pourquoi*). Si le résultat
 > annoncé n'apparaît pas : arrête-toi, regarde « Si ça ne marche pas » en bas, ou
 > envoie-moi une capture **où aucune clé n'est visible**.
+
+### Ce que chaque séance t'apporte
+
+| Séance | Ton temps | Ce que ça débloque, concrètement |
+|---|---|---|
+| **1 — Relais IA** (étapes 1 à 7) | ≈ 15 min | La **reconnaissance photo** marche de nouveau, gratuitement, **dans l'app actuelle** (sans fusion). Plafonds par jour : personne ne peut te coûter d'argent ni vider ton quota Gemini. Les traces d'appareil sont effacées chaque nuit (RGPD) |
+| **2 — Serveur de comptes** (étapes 8 à 16) | ≈ 20 min | Rien de visible tout de suite : le serveur est prêt. La page `/sante` prouve qu'il est bien réglé |
+| **3 — « merge » + téléphone** (étapes 17 et 18) | ≈ 10 min | **Tout le travail depuis fin août arrive dans l'app** : nouveau parcours de capture (analyse visible, choix quand l'IA hésite, révélation par rareté), limites de photos par rareté, suppression / floutage de plaque / recadrage fiables, messages clairs, mises à jour qui s'installent d'un bouton. **Et les comptes** : connexion par code e-mail, sauvegarde et récupération du garage sur un autre téléphone, retraits et photos synchronisés |
+| **4 — Google** (étape 19, facultative) | ≈ 15 min | Bouton **« Continuer avec Google »** : connexion en un toucher, sans attendre de code |
+
+**Volontairement pas encore là** (mode gratuit, sans carte bancaire) : les **photos** ne
+sont pas sauvegardées dans le cloud (seulement la collection — elles restent sur le
+téléphone), et les codes ne partent qu'à **ton** adresse Resend tant qu'il n'y a pas de
+domaine. Les deux s'ouvrent plus tard, en payant (≈ 10 €/an de domaine + R2), sans
+changer le code.
 
 ### Séance 1 — Finir le relais IA (≈ 15 min)
 
@@ -183,7 +198,7 @@ Google (7) et le téléphone (18) : les secrets ne passent **jamais** par moi.
 
 ---
 
-## Où tu en es (constaté le 26/10 par le connecteur Cloudflare et tes captures)
+## Où tu en es (constaté le 17/11 par le connecteur Cloudflare et tes captures : rien n'a bougé depuis le 04/10)
 
 | Étape | État | Preuve |
 |---|---|---|
