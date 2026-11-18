@@ -279,8 +279,8 @@ Capacitor autour du même code) :
   `CLAUDE.md` §1.2). **18/11 : identifiant créé (F1–F4) et inscrit dans l'app
   (v20.201.0).** Reste à toi, `TUTO-GRATUIT.md` **partie F** : supprimer le *code
   secret du client* apparu sur une capture (non bloquant : aucune adresse de
-  redirection), t'ajouter en **utilisateur test** (F5), puis l'essai après la
-  fusion, dont **iPhone** (F8). Variable `GOOGLE_CLIENT_ID` du serveur : faite (F6, 18/11).
+  redirection), puis l'essai après la fusion, dont **iPhone** (F8). Faits : variable
+  `GOOGLE_CLIENT_ID` du serveur (F6, 18/11) et utilisateur test (F5, 19/11).
   Apple : au passage en natif.
   ⏳ **Plus tard, avant d'ouvrir l'app au public : « Publier l'application »** chez
   Google. Le bouton reste grisé sans adresse de page d'accueil **et** de **politique

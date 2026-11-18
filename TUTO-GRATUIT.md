@@ -679,7 +679,7 @@ bouton, ni la moindre requête vers Google. Gratuit, **aucune carte bancaire**.
   **Origines JavaScript autorisées** : `https://mcslec.github.io` (exactement, sans
   `/` final, sans `garage-manifest1`) → **aucune** URI de redirection → **Créer**.
 - [x] **F4. Copier l'identifiant client** : il finit par `.apps.googleusercontent.com`.
-- [ ] **F5. Qui peut se connecter.** Tant que l'app est en mode **Test**, seuls les
+- [x] **F5. Qui peut se connecter.** *(19/11 : mode Test, le propriétaire est utilisateur test — 1/100, capture)* Tant que l'app est en mode **Test**, seuls les
   comptes ajoutés comme **utilisateurs test** peuvent se connecter : ajoute ta propre
   adresse Google (*Audience* → *Utilisateurs test* → **+ Add users**, jusqu'à 100).
   **C'est le réglage retenu le 18/11** : cohérent avec l'envoi de codes, qui ne
