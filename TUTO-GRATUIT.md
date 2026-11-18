@@ -666,19 +666,19 @@ bouton, ni la moindre requête vers Google. Gratuit, **aucune carte bancaire**.
 > me l'envoyer. Si Google t'affiche aussi un **secret client** (*client secret*),
 > celui-là, on n'en a **pas besoin** : ne le copie pas, ne l'envoie à personne.
 
-- [ ] **F1. Ouvrir Google Cloud.** Va sur **console.cloud.google.com** avec ton compte
+- [x] **F1. Ouvrir Google Cloud.** Va sur **console.cloud.google.com** avec ton compte
   Google. En haut, sélecteur de projet → **Nouveau projet** → nom `Garage Manifest` →
   **Créer**. *(Un projet à part, plutôt que celui de Gemini : l'identité et l'IA
   restent séparées, et le nom affiché aux joueurs est le bon.)*
-- [ ] **F2. Présenter l'app à Google.** Menu → **Google Auth Platform** (selon
+- [x] **F2. Présenter l'app à Google.** Menu → **Google Auth Platform** (selon
   l'interface : *API et services* → *Écran de consentement OAuth*) → **Commencer** :
   - nom de l'app : `Garage Manifest` ; e-mail d'assistance : ton adresse ;
   - audience : **Externe** ; coordonnées : ton adresse → accepte → **Créer**.
-- [ ] **F3. Créer l'identifiant.** **Clients** (ou *Identifiants*) → **Créer un client**
+- [x] **F3. Créer l'identifiant.** *(18/11 : ⚠️ le « code secret du client » est apparu sur une capture envoyée dans la conversation — à supprimer ou remplacer dans Clients → Garage Manifest web ; on ne s'en sert jamais)* **Clients** (ou *Identifiants*) → **Créer un client**
   → type **Application Web** → nom `Garage Manifest web` →
   **Origines JavaScript autorisées** : `https://mcslec.github.io` (exactement, sans
   `/` final, sans `garage-manifest1`) → **aucune** URI de redirection → **Créer**.
-- [ ] **F4. Copier l'identifiant client** : il finit par `.apps.googleusercontent.com`.
+- [x] **F4. Copier l'identifiant client** : il finit par `.apps.googleusercontent.com`.
 - [ ] **F5. Qui peut se connecter.** Tant que l'app est en mode **Test**, seuls les
   comptes ajoutés comme **utilisateurs test** peuvent se connecter : ajoute ta propre
   adresse Google (*Audience* → *Utilisateurs test*). Pour ouvrir à tous :
@@ -688,7 +688,7 @@ bouton, ni la moindre requête vers Google. Gratuit, **aucune carte bancaire**.
 - [ ] **F6. Le serveur.** Cloudflare → **garage-comptes** → **Settings** → *Variables
   and secrets* → **Add** : **Text** (case *Secret* décochée), nom `GOOGLE_CLIENT_ID`,
   valeur = l'identifiant de F4 → **Deploy**.
-- [ ] **F7. Me l'envoyer** dans la conversation. Je l'inscris dans l'app
+- [x] **F7. Me l'envoyer** dans la conversation. Je l'inscris dans l'app
   (`gm-compte.js`), j'augmente la version, je relance les bancs, je livre. Comme pour E,
   le bouton n'est visible sur ton téléphone qu'**après la fusion de la PR #1**.
 - [ ] **F8. Tester** : Réglages → Compte → **Continuer avec Google** → choisis ton

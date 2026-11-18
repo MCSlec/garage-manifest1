@@ -122,6 +122,8 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
     await ctx.route(u => u.hostname === 'garage-comptes.cyril-lapopin.workers.dev', (r) => { versProduction.push(r.request().method() + ' ' + r.request().url()); return r.abort(); });
     if (delai) await ctx.addInitScript(d => { window.GM_COMPTE_DELAI_MS = d; }, delai);
     if (google) await ctx.addInitScript(id => { window.GM_GOOGLE_CLIENT_ID = id; }, CLIENT_GOOGLE);
+    // Sans « google », Google reste en sommeil — sauf en configuration de production (l'identifiant inscrit dans gm-compte.js).
+    else if (configure !== 'production') await ctx.addInitScript(() => { window.GM_GOOGLE_CLIENT_ID = ''; });
     const page = await ctx.newPage();
     page.on('pageerror', e => erreurs.push(String(e)));
     const tel = { ctx, page, dialogues: [], refuser: false, requetesGoogle: [], versProduction };
@@ -626,12 +628,21 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   const urlProd = (/const COMPTE_URL = '([^']*)'/.exec(source) || [])[1];
   v('production : COMPTE_URL est une adresse https du serveur de comptes, sans « / » final',
     /^https:\/\/garage-comptes\.[a-z0-9-]+\.workers\.dev$/.test(urlProd || ''), urlProd);
+  const idProd = (/const GOOGLE_CLIENT_ID = '([^']*)'/.exec(source) || [])[1];
+  v('production : GOOGLE_CLIENT_ID est un identifiant client Google (public, « ….apps.googleusercontent.com »)',
+    /^\d+-[a-z0-9]+\.apps\.googleusercontent\.com$/.test(idProd || ''), idProd);
   const Prod = await telephone('production');
-  await ouvrirReglages(Prod.page);
   await Prod.page.waitForTimeout(800);
+  const googleAuDemarrage = Prod.requetesGoogle.length;
+  await ouvrirReglages(Prod.page);
+  await Prod.page.waitForSelector('#gcp-google #faux-google', { timeout: 8000 }).catch(() => null);
   v('production : le panneau « Compte » est proposé (adresse e-mail et code)', !!(await Prod.page.$('#gcp-compte #gcp-email')));
   v('production : aucune requête vers le serveur au démarrage ni à l\'ouverture des Réglages', Prod.versProduction.length === 0, JSON.stringify(Prod.versProduction));
-  v('production : aucune requête vers Google (identifiant Google non renseigné)', Prod.requetesGoogle.length === 0, JSON.stringify(Prod.requetesGoogle));
+  v('production : Google n\'est pas contacté au démarrage de l\'app', googleAuDemarrage === 0, googleAuDemarrage);
+  v('production : à l\'ouverture du panneau Compte, le script de Google est chargé UNE fois, avec l\'identifiant inscrit, et le bouton apparaît',
+    Prod.requetesGoogle.length === 1 && /accounts\.google\.com\/gsi\/client/.test(Prod.requetesGoogle[0] || '')
+    && await Prod.page.evaluate(id => !!window.__gsi && window.__gsi.client_id === id, idProd) && !!(await Prod.page.$('#gcp-google #faux-google')),
+    JSON.stringify(Prod.requetesGoogle));
 
   v('aucune erreur JS', erreurs.length === 0, erreurs.join(' | '));
 

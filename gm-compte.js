@@ -41,7 +41,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_COMPTE = '2.4.0';
+  const VERSION_COMPTE = '2.5.0';
 
   /* Adresse du Worker de comptes, SANS « / » final. Vide = en sommeil.
      Renseignée le 18/11 : serveur déployé et vérifié (TUTO-GRATUIT.md, séance 2).
@@ -60,9 +60,12 @@
      l'affichage du panneau Compte, et seulement hors connexion : Google n'est
      pas contacté à chaque ouverture de l'app. Le compte reste le nôtre : le
      serveur vérifie le jeton signé par Google et ouvre NOTRE session.
-     `window.GM_GOOGLE_CLIENT_ID` prend le pas (bancs). */
-  const GOOGLE_CLIENT_ID = '';
-  const idGoogle = String(global.GM_GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID || '').trim();
+     Renseigné le 18/11 : client « Garage Manifest web » du projet Google Cloud
+     « Garage Manifest », origine autorisée https://mcslec.github.io.
+     `window.GM_GOOGLE_CLIENT_ID` prend le pas, y compris VIDE (bancs : Google
+     en sommeil), comme GM_COMPTE_URL. */
+  const GOOGLE_CLIENT_ID = '971591613910-9rdu43efkpdpehdp9l0bh99pqplq65u4.apps.googleusercontent.com';
+  const idGoogle = String(typeof global.GM_GOOGLE_CLIENT_ID === 'string' ? global.GM_GOOGLE_CLIENT_ID : GOOGLE_CLIENT_ID).trim();
   const SCRIPT_GOOGLE = 'https://accounts.google.com/gsi/client';
 
   const CLE = 'gm-compte';

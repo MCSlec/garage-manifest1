@@ -472,7 +472,7 @@ incrémenter conjointement :**
 2. `VERSION` (`"garage-v…"`) dans `sw.js` (ligne ~12).
 
 Ces deux numéros sont **tenus synchronisés** (au 18/11/2026 : `gm-specs.js` →
-`20.200.0`, `sw.js` → `garage-v20.200.0`). `VERSION_MODULE` s'affiche en outre
+`20.201.0`, `sw.js` → `garage-v20.201.0`). `VERSION_MODULE` s'affiche en outre
 dans l'UI via `grefferVersion()`, ce qui permet de vérifier de visu quelle version
 tourne réellement sur l'appareil.
 
@@ -825,9 +825,16 @@ GMGarage.deplacerPrise(deId, versId)  → { ok }                          (10/11
 | Création de compte par `INSERT … ON CONFLICT (email) DO NOTHING` puis relecture | Code e-mail et Google simultanés sur une même adresse : 500 sur l'un des deux (reproduit au banc par entrelacement forcé) |
 
 **Côté client :**
-- **« Continuer avec Google »** : en sommeil tant que `GOOGLE_CLIENT_ID` (dans
-  `gm-compte.js`) est vide ; `window.GM_GOOGLE_CLIENT_ID` l'active aux bancs (faux
-  script de Google servi à l'adresse du vrai, chaque requête vers Google comptée).
+- **« Continuer avec Google »** : `GOOGLE_CLIENT_ID` (dans `gm-compte.js`) est
+  renseigné depuis le 18/11 (client Web du projet Google Cloud « Garage Manifest »,
+  public) ; vide = en sommeil. `window.GM_GOOGLE_CLIENT_ID` prend le pas, **y compris
+  vide** : les bancs l'activent (faux script de Google servi à l'adresse du vrai,
+  chaque requête vers Google comptée) ou le mettent en sommeil. Configuration de
+  production vérifiée au banc : Google **jamais** contacté au démarrage, script
+  chargé **une fois** à l'ouverture du panneau Compte. Le serveur doit porter la
+  **même** valeur (`GOOGLE_CLIENT_ID`, variable Texte), sinon 501 ou refus.
+  Futurs clients Android / iOS : à ajouter dans le même projet ; iOS imposera
+  d'accepter plusieurs identifiants (`aud`) côté serveur.
   `GMCompte.connecterGoogle(jeton)` est le point d'entrée unique : l'app native y
   passera le jeton rendu par le SDK Google. Après connexion, tout est identique à
   une connexion par code (même session, même sauvegarde).
