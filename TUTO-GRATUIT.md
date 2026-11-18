@@ -681,10 +681,14 @@ bouton, ni la moindre requête vers Google. Gratuit, **aucune carte bancaire**.
 - [x] **F4. Copier l'identifiant client** : il finit par `.apps.googleusercontent.com`.
 - [ ] **F5. Qui peut se connecter.** Tant que l'app est en mode **Test**, seuls les
   comptes ajoutés comme **utilisateurs test** peuvent se connecter : ajoute ta propre
-  adresse Google (*Audience* → *Utilisateurs test*). Pour ouvrir à tous :
-  **Publier l'application**. Avec les seules informations de base (adresse, nom),
-  Google ne demande en principe pas de vérification — **si un écran en réclame une,
-  ou un paiement, arrête-toi et préviens-moi.**
+  adresse Google (*Audience* → *Utilisateurs test* → **+ Add users**, jusqu'à 100).
+  **C'est le réglage retenu le 18/11** : cohérent avec l'envoi de codes, qui ne
+  part encore que vers ton adresse (Resend sans domaine).
+  *Ouvrir à tous* (**Publier l'application**) viendra plus tard : le bouton reste
+  **grisé** tant que *Branding* ne porte pas l'adresse de la page d'accueil **et**
+  celle d'une **page de politique de confidentialité publiée** — qui n'existe pas
+  encore (`RESTE-A-FAIRE.md`). **Si un écran réclame une vérification ou un
+  paiement, arrête-toi et préviens-moi.**
 - [ ] **F6. Le serveur.** Cloudflare → **garage-comptes** → **Settings** → *Variables
   and secrets* → **Add** : **Text** (case *Secret* décochée), nom `GOOGLE_CLIENT_ID`,
   valeur = l'identifiant de F4 → **Deploy**.

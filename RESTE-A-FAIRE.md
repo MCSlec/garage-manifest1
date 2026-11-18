@@ -275,10 +275,18 @@ Capacitor autour du même code) :
   l'environnement Claude) : aujourd'hui seuls les résumés de recherche sont
   lisibles, ce qui ralentit le sourçage.
 - [ ] **Merger la PR #1** (jamais fait sans ta demande explicite).
-- [ ] **« Continuer avec Google » : code prêt, en sommeil** (v20.197.0, 14/10 — script
-  de Google autorisé par toi, `CLAUDE.md` §1.2). Reste à toi, **après la partie C** :
-  `TUTO-GRATUIT.md` **partie F** (identifiant Google, gratuit, ≈ 15 min), me donner
-  l'identifiant (public), puis l'essai sur **iPhone**. Apple : au passage en natif.
+- [ ] **« Continuer avec Google »** (script de Google autorisé par toi le 14/10,
+  `CLAUDE.md` §1.2). **18/11 : identifiant créé (F1–F4) et inscrit dans l'app
+  (v20.201.0).** Reste à toi, `TUTO-GRATUIT.md` **partie F** : supprimer le *code
+  secret du client* apparu sur une capture (non bloquant : aucune adresse de
+  redirection), t'ajouter en **utilisateur test** (F5), variable `GOOGLE_CLIENT_ID`
+  sur `garage-comptes` (F6), puis l'essai après la fusion, dont **iPhone** (F8).
+  Apple : au passage en natif.
+  ⏳ **Plus tard, avant d'ouvrir l'app au public : « Publier l'application »** chez
+  Google. Le bouton reste grisé sans adresse de page d'accueil **et** de **politique
+  de confidentialité publiée** (constaté le 18/11) : cette page dépend de tes
+  mentions légales (§ ci-dessus). D'ici là, seuls les comptes Google « testeurs »
+  peuvent utiliser le bouton ; les autres joueurs gardent le code par e-mail.
   Revue de sécurité du 14/10 faite, **deux défauts corrigés** (23/10). Conséquence
   voulue : Google ne marche que pour les adresses **Gmail** ou d'un domaine géré par
   Google ; les autres passent par le code e-mail. 🟡 Pour plus tard, si utile :
