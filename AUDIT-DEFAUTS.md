@@ -186,3 +186,20 @@ mutations relancées et détectées.
   série — le réflexe que `PASSATION.md` interdit (« relancer la mutation avant d'écrire
   son résultat »). Les chiffres qui font foi sont ceux de ce paragraphe, recopiés des
   sorties.
+
+## 11. Relecture avant fusion (19/11) — non bloquante, à traiter
+
+Relecture indépendante, en lecture seule, du code écrit pendant la seconde relecture
+(`d0bd7d4..`, sept fichiers de l'app et des serveurs), faite à la demande de fusion du
+propriétaire. **Aucun constat bloquant** : ni faille, ni perte de données en usage normal.
+Ce sont des **pistes**, à confirmer par un test qui échoue avant tout correctif
+(CLAUDE.md §8 sexies).
+
+| Réf. | Fichier | Constat | Piste |
+|---|---|---|---|
+| **F-1** | `gm-compte.js` | « Se déconnecter » / « Supprimer mon compte » ne passent pas par la file (`enSerie`) : une sauvegarde en cours réécrit `version`/`ids` dans l'état vidé ; avec R2, un envoi de photo déjà authentifié pourrait survivre à la suppression | Faire passer les deux par la file |
+| **F-2** | `gm-compte.js` | Appareil en retard d'une version : l'id inconnu reste dans `e.ids`, donc **chaque** sauvegarde refait une récupération complète (juste, mais coûteux) | Mémoriser les inconnues à part et les exclure de la garde |
+| **F-3** | `index.html` | `remplacerPhoto` : si ancienne et nouvelle version ont les **mêmes octets**, pierre tombale et remise portent la même date ; `photoRetiree` exige « strictement plus récente » → la photo disparaît à la synchronisation | Sortir tôt si les deux empreintes sont égales |
+| **F-4** | `index.html` | `remplacerPhoto` hors `partout` : sans fiche ouverte contenant l'image, repli sur `toutes[0]` (voiture arbitraire) | Refuser plutôt que deviner |
+| **F-5** | `index.html` | `deplacerPrise` vers une voiture pas encore prise : la couverture choisie sur la « Non classé » est perdue | `cover` de la source quand la cible n'existe pas |
+| **F-6** | `index.html` | Lot : A-11 couvre l'échec du **décodage** ; une exception d'`afterPhoto()` fige encore la file (message « Image illisible » inexact) | Même passage à la suivante |

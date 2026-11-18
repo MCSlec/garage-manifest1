@@ -87,6 +87,11 @@ relais se font depuis le navigateur du propriétaire (`TUTO-GRATUIT.md` B5).
 
 ## 3. Ce qui reste : la prochaine étape concrète
 
+> **19/11 — PR #1 fusionnée** à la demande du propriétaire (« merge »), après relecture
+> en lecture seule : 6 constats **non bloquants** (`AUDIT-DEFAUTS.md` §11, F-1 à F-6),
+> à traiter dans une prochaine session, test d'abord. Reste au propriétaire : essais
+> sur téléphone (étape 18, F8), suppression du code secret Google.
+
 **État au 27/10 : A faite, B à moitié.** Le propriétaire suit la feuille de route de
 `TUTO-GRATUIT.md` (étapes 1 à 19) ; le tableau ci-dessous en est la version session.
 **Ordre de la feuille** : B3 → fin de B4 → B2 → B2 bis → B5, puis C dans l'ordre
