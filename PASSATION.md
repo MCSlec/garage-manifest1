@@ -34,7 +34,8 @@
    ```
    `/opt/pw-browsers/chromium` est un lien **stable** : le dossier versionné
    (`chromium-1194/…`) a changé d'une image à l'autre et les bancs ne démarraient plus.
-   Dernier passage complet : **19/19 verts** (17/11, v20.199.0), dont les nouveaux
+   Dernier passage complet : **19/19 verts** (18/11, v20.200.0, adresse du serveur de
+   comptes inscrite ; comptes navigateur 93), dont les nouveaux
    `banc-retouches.js` (28) et `banc-sw.js` (14) ; détail et mutations :
    `AUDIT-DEFAUTS.md`, « Seconde relecture ». Après un banc navigateur :
    `git checkout -- banc-capture.png` (capture régénérée à chaque passage).
