@@ -704,6 +704,8 @@ bouton, ni la moindre requête vers Google. Gratuit, **aucune carte bancaire**.
 
 | Symptôme | Cause | Remède |
 |---|---|---|
+| Console : « Accès à Google Cloud bloqué » (rencontré le 18/11) | Google impose la validation en deux étapes pour la console depuis août 2026 | **Activer la MFA** (notification sur le téléphone + codes de secours gardés hors de la conversation), attendre 2–3 min, actualiser |
+| Console : « Essayez Google Cloud avec 300 $ » | Offre d'essai | **Ne pas cliquer** : elle demande une carte bancaire, et l'identifiant Google n'en a pas besoin |
 | Fenêtre Google « Erreur 400 : origin_mismatch » | Origine mal saisie en F3 | Exactement `https://mcslec.github.io` |
 | « Accès bloqué : l'app n'a pas terminé la validation » | Mode Test, ton adresse n'est pas testeuse | F5 : ajoute-toi, ou publie |
 | Pas de bouton Google dans Compte | Identifiant pas encore livré, ou ancienne version en cache | F7 ; ferme et rouvre l'app |
