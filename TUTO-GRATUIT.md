@@ -689,9 +689,12 @@ bouton, ni la moindre requête vers Google. Gratuit, **aucune carte bancaire**.
   celle d'une **page de politique de confidentialité publiée** — qui n'existe pas
   encore (`RESTE-A-FAIRE.md`). **Si un écran réclame une vérification ou un
   paiement, arrête-toi et préviens-moi.**
-- [ ] **F6. Le serveur.** Cloudflare → **garage-comptes** → **Settings** → *Variables
+- [x] **F6. Le serveur.** *(18/11 : variable déployée, constatée sur capture)*
+  Cloudflare → **garage-comptes** → **Settings** → *Variables
   and secrets* → **Add** : **Text** (case *Secret* décochée), nom `GOOGLE_CLIENT_ID`,
-  valeur = l'identifiant de F4 → **Deploy**.
+  valeur = l'identifiant de F4 → **Deploy**. Contrôle : `/sante` → `"google":true`.
+  *(Le bandeau jaune « Update your Wrangler configuration » ne concerne que les
+  déploiements en ligne de commande : à ignorer, le tableau de bord fait foi.)*
 - [x] **F7. Me l'envoyer** dans la conversation. Je l'inscris dans l'app
   (`gm-compte.js`), j'augmente la version, je relance les bancs, je livre. Comme pour E,
   le bouton n'est visible sur ton téléphone qu'**après la fusion de la PR #1**.
