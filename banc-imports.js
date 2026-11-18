@@ -43,6 +43,14 @@ const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
     executablePath: process.env.CHROMIUM || '/opt/pw-browsers/chromium',
     args: ['--no-sandbox'] });
   const ctx = await nav.newContext({ viewport: { width: 390, height: 844 } });
+  /* Ce banc tourne avec la configuration de production (identifiant Google
+     renseigné) et ouvre les Réglages, donc le panneau Compte : l'app y charge le
+     script de Google. Un banc ne dépend jamais d'un service tiers — le 18/11, le
+     cadre du bouton servi par Google a levé sa propre erreur (« gis is not
+     defined ») et fait échouer « aucune erreur JS » sur un code qui n'est pas le
+     nôtre. Google est donc rendu injoignable : c'est aussi le cas réel d'un
+     bloqueur ou d'un réseau coupé, que l'app doit traverser sans erreur. */
+  await ctx.route(/^https:\/\/(accounts\.google\.com|[a-z0-9.-]*\.gstatic\.com)\//, r => r.abort());
   const page = await ctx.newPage();
   const errs = []; page.on('pageerror', e => errs.push(String(e)));
   const URL = 'http://localhost:8097/index.html';

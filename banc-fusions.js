@@ -49,6 +49,8 @@ const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
     executablePath: process.env.CHROMIUM || '/opt/pw-browsers/chromium',
     args: ['--no-sandbox'] });
   const ctx = await nav.newContext({ viewport: { width: 390, height: 844 } });
+  // Google injoignable : un banc ne dépend jamais d'un service tiers (voir banc-imports.js, 18/11).
+  await ctx.route(/^https:\/\/(accounts\.google\.com|[a-z0-9.-]*\.gstatic\.com)\//, r => r.abort());
   const page = await ctx.newPage();
   const errs = []; page.on('pageerror', e => errs.push(String(e)));
   const URL = 'http://localhost:8096/index.html';

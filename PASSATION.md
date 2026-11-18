@@ -34,10 +34,15 @@
    ```
    `/opt/pw-browsers/chromium` est un lien **stable** : le dossier versionné
    (`chromium-1194/…`) a changé d'une image à l'autre et les bancs ne démarraient plus.
-   Dernier passage complet : **19/19 verts** (18/11, v20.200.0, adresse du serveur de
-   comptes inscrite ; comptes navigateur 93), dont les nouveaux
+   Dernier passage complet : **19/19 verts** (18/11, v20.201.0, adresses du serveur de
+   comptes **et** identifiant Google inscrits ; comptes navigateur 95), dont les nouveaux
    `banc-retouches.js` (28) et `banc-sw.js` (14) ; détail et mutations :
-   `AUDIT-DEFAUTS.md`, « Seconde relecture ». Après un banc navigateur :
+   `AUDIT-DEFAUTS.md`, « Seconde relecture ». ⚠️ **Aucun banc ne joint Google** : avec
+   l'identifiant renseigné, ouvrir les Réglages charge le vrai script, et le 18/11 le
+   cadre du bouton de Google a levé sa propre erreur (« gis is not defined ») dans
+   `banc-imports.js`. Les bancs qui ouvrent les Réglages coupent `accounts.google.com`
+   et `*.gstatic.com` (`ctx.route`) ; seul `banc-compte-navigateur.js` sert un **faux**
+   script Google. Tout nouveau banc qui ouvre les Réglages fait de même. Après un banc navigateur :
    `git checkout -- banc-capture.png` (capture régénérée à chaque passage).
 4. **Connecteurs** : si « Cloudflare Developer Platform » est branché, **constater**
    l'état réel du compte (Workers, variables, liaisons, D1) et le comparer au §2

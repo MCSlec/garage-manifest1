@@ -8,6 +8,8 @@ const res=[];const v=(t,ok,d)=>res.push({t,ok,d});
 (async()=>{await new Promise(r=>srv.listen(8097,r));
 const n=await chromium.launch({executablePath:process.env.CHROMIUM||'/opt/pw-browsers/chromium',args:['--no-sandbox']});
 const ctx=await n.newContext({viewport:{width:390,height:844}});
+// Google injoignable : un banc ne dépend jamais d'un service tiers (voir banc-imports.js, 18/11).
+await ctx.route(/^https:\/\/(accounts\.google\.com|[a-z0-9.-]*\.gstatic\.com)\//,r=>r.abort());
 const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(String(e)));
 await p.goto('http://localhost:8097/index.html',{waitUntil:'networkidle'});
 
