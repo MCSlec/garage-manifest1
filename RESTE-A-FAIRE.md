@@ -274,7 +274,7 @@ Capacitor autour du même code) :
 - [ ] **Accès réseau** aux sites de fiches techniques (réglage de
   l'environnement Claude) : aujourd'hui seuls les résumés de recherche sont
   lisibles, ce qui ralentit le sourçage.
-- [ ] **Merger la PR #1** (jamais fait sans ta demande explicite).
+- [x] **Merger la PR #1** (fait le 19/11, sur ton « merge »).
 - [ ] **« Continuer avec Google »** (script de Google autorisé par toi le 14/10,
   `CLAUDE.md` §1.2). **18/11 : identifiant créé (F1–F4) et inscrit dans l'app
   (v20.201.0).** Reste à toi, `TUTO-GRATUIT.md` **partie F** : supprimer le *code
