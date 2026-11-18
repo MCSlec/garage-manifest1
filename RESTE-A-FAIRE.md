@@ -71,6 +71,13 @@ Guide détaillé : `cloud/DEPLOIEMENT.md`.
   échouent. Sans risque (`CREATE TABLE IF NOT EXISTS`) ; « go schéma » et je le fais
   par le connecteur.
 
+> ✅ **18/11 : voie gratuite déployée par le tableau de bord** (séance 2 de
+> `TUTO-GRATUIT.md`) : Worker `garage-comptes` en ligne (code relu par le connecteur,
+> identique au dépôt), base `DB`, `APP_ORIGIN`, `MAIL_FROM`, secrets `CODE_SECRET` et
+> `RESEND_API_KEY`, purge de nuit. Envoi d'un code **vérifié** (réponse `{"ok":true}`).
+> Adresse inscrite dans l'app (`COMPTE_URL`, v20.200.0) : effective **après la fusion**.
+> Les étapes 1 à 4 ci-dessous sont l'équivalent en ligne de commande.
+
 **➜ Voie gratuite, pour essayer sur toi seul (prête depuis la v20.196.0)** —
 **`TUTO-GRATUIT.md`, parties A, C, D, E** (tout dans le navigateur). Résumé, pour qui
 préfère la ligne de commande (`cloud/DEPLOIEMENT.md`, « Mode essai gratuit ») :
@@ -85,15 +92,26 @@ préfère la ligne de commande (`cloud/DEPLOIEMENT.md`, « Mode essai gratuit »
    (toute autre adresse ne recevra rien), code reçu, « Sauvegarder ». Le panneau doit
    dire « Collection seule ».
 
-⚠️ Une fois `COMPTE_URL` livrée, le panneau « Compte » est visible par **tout le
-monde** : un autre joueur qui tente sa chance ne recevra pas de code (Resend refuse).
-Rien ne casse, mais c'est déroutant : à garder court, ou à dire autour de toi.
+⚠️ Une fois `COMPTE_URL` livrée (sur la branche le 18/11, **en ligne après la
+fusion**), le panneau « Compte » est visible par **tout le monde** : un autre joueur
+qui tente sa chance ne recevra pas de code (Resend refuse) et lira « L'e-mail n'a pas
+pu être envoyé : réessaie plus tard ». Rien ne casse, mais c'est déroutant : à garder
+court, ou à dire autour de toi. *Option possible, non faite (elle demanderait de
+recoller le code du serveur) :* un message dédié quand Resend refuse un destinataire
+(« comptes en phase de test »).
 
 **Voie complète (ouverture au public)** :
 
 1. [ ] Créer un compte **Cloudflare** (gratuit).
 2. [ ] Acheter un **nom de domaine** (≈ 10 €/an) — nécessaire pour que Resend
    écrive à n'importe quelle adresse.
+   **Aucune boîte mail dédiée n'est nécessaire** (question du 18/11) : l'expéditeur
+   `codes@tondomaine` n'a pas besoin d'exister comme boîte, et `contact@tondomaine`
+   (contact RGPD) se **redirige gratuitement** vers ta boîte habituelle par Cloudflare
+   *Email Routing*, triée par un filtre Gmail sur le destinataire. En attendant le
+   domaine : adresse « + » de Gmail (`ton.adresse+garage@…`) pour le contact, filtre
+   sur l'objet « ton code Garage Manifest » pour les codes. Une boîte dédiée reste
+   possible (séparation totale, transmission du projet) : décision libre, sans urgence.
 3. [ ] Créer **un** compte **Resend** et y vérifier le domaine (SPF / DKIM).
    - [x] Compte Resend créé, offre gratuite, **sans domaine** (01/10). Sans domaine,
      Resend n'envoie qu'à l'adresse du titulaire du compte : suffisant pour un essai
@@ -160,7 +178,9 @@ de chez nous (`vendor/`, aucun CDN — vérifié par `banc-carte.js`). Restent d
   un modèle hébergé chez Cloudflare, qui héberge déjà le relais).
 - [ ] 🟡 **Lien « Ouvrir dans Maps » → Google Maps**, seulement si tu touches le
   lien sur la fiche. À décider : le garder, ou le remplacer par notre carte.
-- Comptes (Cloudflare, Resend) : en sommeil tant que `COMPTE_URL` est vide.
+- Comptes (Cloudflare, Resend) : serveur en ligne et adresse inscrite dans l'app le
+  18/11 ; **aucune requête** tant que le joueur ne touche pas au panneau Compte
+  (vérifié au banc, configuration de production).
 
 ## 3. ⚖️ Avant d'ouvrir les comptes au public
 

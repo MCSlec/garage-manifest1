@@ -112,14 +112,19 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
 
   const nav = await chromium.launch({ executablePath: process.env.CHROMIUM || '/opt/pw-browsers/chromium', args: ['--no-sandbox'] });
   const erreurs = [];
+  /* configure : true → serveur du banc ; false → sommeil forcé (GM_COMPTE_URL vide) ;
+     'production' → aucune surcharge : l'adresse inscrite dans gm-compte.js, comme sur un vrai téléphone. */
   async function telephone(configure = true, { google = false, bloquerGoogle = false, delai = 0 } = {}) {
     const ctx = await nav.newContext({ viewport: { width: 390, height: 844 } });
-    if (configure) await ctx.addInitScript(u => { window.GM_COMPTE_URL = u; }, URL_API);
+    if (configure === true) await ctx.addInitScript(u => { window.GM_COMPTE_URL = u; }, URL_API);
+    else if (configure === false) await ctx.addInitScript(() => { window.GM_COMPTE_URL = ''; });
+    const versProduction = [];
+    await ctx.route(u => u.hostname === 'garage-comptes.cyril-lapopin.workers.dev', (r) => { versProduction.push(r.request().method() + ' ' + r.request().url()); return r.abort(); });
     if (delai) await ctx.addInitScript(d => { window.GM_COMPTE_DELAI_MS = d; }, delai);
     if (google) await ctx.addInitScript(id => { window.GM_GOOGLE_CLIENT_ID = id; }, CLIENT_GOOGLE);
     const page = await ctx.newPage();
     page.on('pageerror', e => erreurs.push(String(e)));
-    const tel = { ctx, page, dialogues: [], refuser: false, requetesGoogle: [] };
+    const tel = { ctx, page, dialogues: [], refuser: false, requetesGoogle: [], versProduction };
     // TOUTE requête vers Google est comptée, sur chaque téléphone : c'est la preuve du « en sommeil ».
     await ctx.route(u => /(^|\.)google(apis)?\.com$/.test(u.hostname), (route) => {
       tel.requetesGoogle.push(route.request().url());
@@ -613,6 +618,20 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   v('non configuré : aucun panneau « Compte »', !(await D.page.$('#gcp-compte')));
   v('non configuré : aucune requête vers le serveur de comptes, pas même un pré-vol', requetesBrutes === appels0);
   v('non configuré : aucune requête vers Google', D.requetesGoogle.length === 0, JSON.stringify(D.requetesGoogle));
+
+  /* 7. Configuration de PRODUCTION (18/11) : l'adresse du vrai serveur est inscrite dans
+     gm-compte.js. Sans surcharge, l'app doit afficher le panneau — et ne contacter le
+     serveur QU'À la demande du joueur : ni au démarrage, ni à l'ouverture des Réglages. */
+  const source = fs.readFileSync(path.join(RACINE, 'gm-compte.js'), 'utf8');
+  const urlProd = (/const COMPTE_URL = '([^']*)'/.exec(source) || [])[1];
+  v('production : COMPTE_URL est une adresse https du serveur de comptes, sans « / » final',
+    /^https:\/\/garage-comptes\.[a-z0-9-]+\.workers\.dev$/.test(urlProd || ''), urlProd);
+  const Prod = await telephone('production');
+  await ouvrirReglages(Prod.page);
+  await Prod.page.waitForTimeout(800);
+  v('production : le panneau « Compte » est proposé (adresse e-mail et code)', !!(await Prod.page.$('#gcp-compte #gcp-email')));
+  v('production : aucune requête vers le serveur au démarrage ni à l\'ouverture des Réglages', Prod.versProduction.length === 0, JSON.stringify(Prod.versProduction));
+  v('production : aucune requête vers Google (identifiant Google non renseigné)', Prod.requetesGoogle.length === 0, JSON.stringify(Prod.requetesGoogle));
 
   v('aucune erreur JS', erreurs.length === 0, erreurs.join(' | '));
 

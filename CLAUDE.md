@@ -471,8 +471,8 @@ incrémenter conjointement :**
 1. `VERSION_MODULE` dans `gm-specs.js` (ligne ~22).
 2. `VERSION` (`"garage-v…"`) dans `sw.js` (ligne ~12).
 
-Ces deux numéros sont **tenus synchronisés** (au 17/11/2026 : `gm-specs.js` →
-`20.199.0`, `sw.js` → `garage-v20.199.0`). `VERSION_MODULE` s'affiche en outre
+Ces deux numéros sont **tenus synchronisés** (au 18/11/2026 : `gm-specs.js` →
+`20.200.0`, `sw.js` → `garage-v20.200.0`). `VERSION_MODULE` s'affiche en outre
 dans l'UI via `grefferVersion()`, ce qui permet de vérifier de visu quelle version
 tourne réellement sur l'appareil.
 
@@ -608,7 +608,7 @@ modification n'impose aucun bump de version.
 | `ai-relay-worker.js` | Relais IA Cloudflare — déployé **à part**, hors dossier statique |
 | `banc-v1.html` | ⚠️ **Contient le prototype complet du « Rouleau »** (~737 lignes), pas un simple banc jetable — voir §8 bis. Hors cache, ne pas livrer comme app, **et ne jamais supprimer** |
 | `gm-rouleau.js` | Le Rouleau extrait (§8 bis), non intégré ; banc `banc-rouleau.js` |
-| `gm-compte.js` | Compte par e-mail + sauvegarde cloud (§8 quinquies). **En sommeil** tant que `COMPTE_URL` est vide |
+| `gm-compte.js` | Compte par e-mail + sauvegarde cloud (§8 quinquies). `COMPTE_URL` renseignée le 18/11 (`garage-comptes`, déployé et vérifié) ; vide = en sommeil |
 | `cloud/` | Serveur de comptes — déployé **à part** : `compte-worker.js`, `schema.sql`, `wrangler.toml.exemple`, `DEPLOIEMENT.md`, `CONFIDENTIALITE.md` (projet RGPD, à maintenir dans le même commit que tout changement de collecte) |
 | `banc-compte.js` / `banc-compte-navigateur.js` | Bancs du serveur (Worker réel, D1/R2 simulés) et de bout en bout (app + Worker dans Chromium) |
 | `vendor/leaflet/` | Leaflet 1.9.4 hébergé dans le dépôt (§1.2) ; banc `banc-carte.js` : aucun script ni style chargé depuis un autre domaine |
@@ -831,9 +831,12 @@ GMGarage.deplacerPrise(deId, versId)  → { ok }                          (10/11
   `GMCompte.connecterGoogle(jeton)` est le point d'entrée unique : l'app native y
   passera le jeton rendu par le SDK Google. Après connexion, tout est identique à
   une connexion par code (même session, même sauvegarde).
-- **En sommeil par défaut** : `COMPTE_URL = ''` → aucun panneau, aucune requête
-  (pas même un pré-vol CORS — vérifié au banc). Les bancs l'activent par
-  `window.GM_COMPTE_URL`.
+- **Adresse du serveur** : `COMPTE_URL` (renseignée le 18/11). Vide → en sommeil :
+  aucun panneau, aucune requête (pas même un pré-vol CORS — vérifié au banc).
+  `window.GM_COMPTE_URL` prend le pas, **y compris vide** (sommeil forcé des bancs) :
+  avant, une chaîne vide retombait sur `COMPTE_URL`. Configuration de production
+  vérifiée au banc : panneau proposé, **aucune requête** au démarrage ni à
+  l'ouverture des Réglages — le serveur n'est contacté qu'à la demande du joueur.
 - **Garde de sauvegarde** (`gm-compte.js` 2.3.0, 10/11) : une sauvegarde ne retire
   du cloud **que** ce qui porte une pierre tombale. L'appareil mémorise les ids
   présents au cloud (`ids`, à la version connue) ; s'il en manque un ici sans

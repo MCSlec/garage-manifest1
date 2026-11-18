@@ -36,21 +36,21 @@ téléphone), et les codes ne partent qu'à **ton** adresse Resend tant qu'il n'
 domaine. Les deux s'ouvrent plus tard, en payant (≈ 10 €/an de domaine + R2), sans
 changer le code.
 
-### Séance 1 — Finir le relais IA (≈ 15 min)
+### Séance 1 — Finir le relais IA (≈ 15 min) — ✅ faite le 18/11
 
 **Résultat :** la reconnaissance photo tourne gratuitement, avec des plafonds, **dans
 l'app actuelle** — sans attendre la mise en ligne de la PR.
 
 Tout se passe sur **dash.cloudflare.com → Workers & Pages → `silent-firefly-2620`**.
 
-- [ ] **1. Relier la base** *(fiche B3, 2 min)*
+- [x] **1. Relier la base** *(fiche B3, 2 min)*
   Onglet **Settings** → **Bindings** → **Add binding** → **D1 database** →
   *Variable name* **`DB`** → *D1 database* **`garage-comptes`** → **Deploy**.
   ✅ La liaison `DB` apparaît dans la liste.
   *(Le code actuel l'ignore : rien ne change encore pour l'app. C'est voulu — on pose
   la base **avant** le nouveau code pour que la reconnaissance ne coupe pas.)*
 
-- [ ] **2. Ménage des réglages** *(fin de B4, 1 min)*
+- [x] **2. Ménage des réglages** *(fin de B4, 1 min)*
   **Settings** → **Variables and Secrets** → corbeille 🗑️ sur **`RESEND_API_KEY`**
   (et sur `NOTIFY_TO` et `IA_SECOURS` s'ils existent) → **Deploy**.
   ⚠️ **Ne touche pas** à `GEMINI_API_KEY`, `IA_FOURNISSEUR`, `APP_ORIGIN`.
@@ -59,7 +59,7 @@ Tout se passe sur **dash.cloudflare.com → Workers & Pages → `silent-firefly-
   *(La clé Resend qu'elle contenait est déjà révoquée chez Resend depuis le 26/10 :
   la ligne ne sert plus à rien, on la retire par hygiène.)*
 
-- [ ] **3. Coller le nouveau code** *(fiche B2, 3 min)*
+- [x] **3. Coller le nouveau code** *(fiche B2, 3 min)*
   1. Ouvre cette adresse dans un nouvel onglet — c'est le code brut, en texte seul :
      `https://raw.githubusercontent.com/MCSlec/garage-manifest1/claude/create-claude-documentation-8eo2t7/ai-relay-worker.js`
   2. **Ctrl+A** puis **Ctrl+C** (Mac : Cmd+A, Cmd+C).
@@ -69,12 +69,12 @@ Tout se passe sur **dash.cloudflare.com → Workers & Pages → `silent-firefly-
   👉 **Écris-moi « collé »** : je relis par le connecteur le code **réellement en
   ligne** et je le compare au dépôt (une copie tronquée se voit tout de suite).
 
-- [ ] **4. La purge de nuit** *(fiche B2 bis, 1 min — après l'étape 3, jamais avant)*
+- [ ] ⚠️ *(ajoutée le 18/11 — vérifie qu'elle est bien **enregistrée** : « At 03:17 AM » visible, aucun bandeau « Unsaved changes »)* **4. La purge de nuit** *(fiche B2 bis, 1 min — après l'étape 3, jamais avant)*
   **Settings** → **Trigger Events** → **Cron Triggers** → **Add** → expression
   **`17 3 * * *`** → **Add/Deploy**.
   ✅ Le déclencheur apparaît (« At 03:17 AM »).
 
-- [ ] **5. Test sans frais** *(fiche B5, 1 min)*
+- [x] **5. Test sans frais** *(fiche B5, 1 min)*
   Ouvre l'app `https://mcslec.github.io/garage-manifest1/` → **F12** → **Console** →
   colle (si Chrome refuse : tape `allow pasting`, Entrée, recommence) :
   ```js
@@ -84,19 +84,19 @@ Tout se passe sur **dash.cloudflare.com → Workers & Pages → `silent-firefly-
   ou appel à Gemini : ne coûte rien). **503** → refais l'étape 1 · **500** → les
   réglages de l'étape 2 · **« bloqué »** → `APP_ORIGIN`.
 
-- [ ] **6. La vraie photo** *(fiche B5, 3 min)*
+- [x] **6. La vraie photo** *(fiche B5, 3 min)*
   `silent-firefly-2620` → onglet **Observability** → journaux en direct, laisse ouvert.
   Sur le téléphone : photographie une voiture (ou importe une photo nette).
   ✅ L'app propose une ou plusieurs voitures **et** la requête apparaît en **200**
   dans les journaux, sans ligne `[relais]` rouge.
 
-- [ ] **7. Ménage chez Google** *(1 min, seulement si l'étape 6 a réussi)*
+- [x] **7. Ménage chez Google** *(1 min, seulement si l'étape 6 a réussi)*
   **aistudio.google.com/app/apikey** → l'ancienne clé **« CARDEX »** (`…eeUw`) →
   ⋮ → **Supprimer**. La clé « Default Gemini API Key » (`…kvaw`) : à supprimer
   aussi si rien d'autre ne s'en sert. **Ne touche pas** à `garage-manifest-relais`
   (c'est celle du relais).
 
-### Séance 2 — Le serveur de comptes (≈ 20 min)
+### Séance 2 — Le serveur de comptes (≈ 20 min) — ✅ faite le 18/11 (étape 15 validée par l'envoi réussi d'un code)
 
 **Résultat :** rien de visible tout de suite ; ça prépare les comptes et la
 sauvegarde. Peut se faire le même jour que la séance 1 ou un autre.
@@ -105,27 +105,27 @@ sauvegarde. Peut se faire le même jour que la séance 1 ou un autre.
 > secret **qu'au moment de le coller** (étapes 11 et 12). Un secret qui attend dans
 > le presse-papier pendant qu'on clique ailleurs finit collé au mauvais endroit.
 
-- [ ] **8. Créer le serveur** *(fiche C3, 4 min)*
+- [x] **8. Créer le serveur** *(fiche C3, 4 min)*
   **Workers & Pages** → **Create** → **Workers** → **Start with Hello World!** →
   nom **`garage-comptes`** → **Deploy**. Puis **Edit code**, et même geste qu'à
   l'étape 3 avec ce code-ci :
   `https://raw.githubusercontent.com/MCSlec/garage-manifest1/claude/create-claude-documentation-8eo2t7/cloud/compte-worker.js`
   → Ctrl+A, Ctrl+C → dans l'éditeur Ctrl+A, Ctrl+V → **Deploy**.
 
-- [ ] **9. Relier la base** *(fiche C4, 1 min)*
+- [x] **9. Relier la base** *(fiche C4, 1 min)*
   `garage-comptes` → **Settings** → **Bindings** → **Add binding** → **D1 database** →
   **`DB`** → **`garage-comptes`** → **Deploy**. **Pas** de liaison R2 (elle exige une
   carte bancaire ; sans elle, le serveur garde la collection et laisse les photos sur
   le téléphone).
 
-- [ ] **10. Les deux réglages en texte** *(fiche C5)*
+- [x] **10. Les deux réglages en texte** *(fiche C5)*
   **Settings** → **Variables and Secrets** → **Add variable**, case **Secret
   décochée** (c'est la case au bout de la ligne *Value* ; *+ Add* ajoute une ligne) :
   - `APP_ORIGIN` = `https://mcslec.github.io`
   - `MAIL_FROM` = `Garage Manifest <onboarding@resend.dev>`
   → **Deploy**.
 
-- [ ] **11. Le secret des codes** *(fiche C2)*
+- [x] **11. Le secret des codes** *(fiche C2)*
   Dans un **autre onglet**, F12 → Console → colle puis Entrée :
   ```js
   btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32))))
@@ -134,7 +134,7 @@ sauvegarde. Peut se faire le même jour que la séance 1 ou un autre.
   **Add variable** → nom **`CODE_SECRET`**, colle la valeur, case **Secret cochée** →
   **Deploy**.
 
-- [ ] **12. La clé Resend** *(fiche C1)*
+- [x] **12. La clé Resend** *(fiche C1)*
   Dans un autre onglet : **resend.com** → **API Keys** → **Create API Key** → nom
   `garage-comptes`, permission **Sending access** → **copie la clé** (affichée une
   seule fois) → reviens sur `garage-comptes` → **Add variable** → nom
@@ -144,17 +144,17 @@ sauvegarde. Peut se faire le même jour que la séance 1 ou un autre.
   *(Rien à supprimer chez Resend : l'ancienne clé a été révoquée le 26/10 et la liste
   était vide. Si tu y vois une autre clé que celle que tu viens de créer, dis-le-moi.)*
 
-- [ ] **13. Contrôler les réglages** (Settings → Variables and Secrets).
+- [x] **13. Contrôler les réglages** (Settings → Variables and Secrets).
   ✅ Quatre lignes : `APP_ORIGIN` et `MAIL_FROM` lisibles, `CODE_SECRET` et
   `RESEND_API_KEY` **masquées**. Une valeur secrète lisible en clair = case non
   cochée : supprime la ligne et recrée-la. Puis copie n'importe quel mot pour vider
   le presse-papier.
 
-- [ ] **14. La purge de nuit** *(fiche C6, 1 min — indispensable, c'est une promesse
+- [x] **14. La purge de nuit** *(fiche C6, 1 min — indispensable, c'est une promesse
   RGPD)* `garage-comptes` → **Settings** → **Trigger Events** → **Cron Triggers** →
   **Add** → **`17 3 * * *`** → **Add/Deploy**.
 
-- [ ] **15. Vérifier** *(fiche C7)* Ouvre
+- [x] **15. Vérifier** *(fiche C7)* Ouvre
   `https://garage-comptes.cyril-lapopin.workers.dev/sante` (adapte si Cloudflare a
   donné une autre adresse au worker).
   ✅ La page affiche une ligne qui commence par
@@ -164,7 +164,7 @@ sauvegarde. Peut se faire le même jour que la séance 1 ou un autre.
   ce qui manque (voir le tableau de la fiche C7) : copie-la-moi telle quelle, elle
   ne contient **aucun secret** (ni clé, ni adresse e-mail).
 
-- [ ] **16. M'envoyer l'adresse** *(partie D)* — l'adresse du worker, **et rien
+- [x] **16. M'envoyer l'adresse** *(partie D)* — l'adresse du worker, **et rien
   d'autre** (elle est publique). 👉 **De mon côté :** je l'inscris dans l'app
   (`COMPTE_URL`), j'augmente la version, je repasse les bancs, je pousse sur la
   branche.
@@ -198,7 +198,7 @@ Google (7) et le téléphone (18) : les secrets ne passent **jamais** par moi.
 
 ---
 
-## Où tu en es (18/11 : séance 1 faite — étapes 1 à 7 —, test console 400, vraie photo reconnue, CARDEX supprimée)
+## Où tu en es (18/11 : séances 1 et 2 faites — étapes 1 à 16 —, il reste « merge » puis le test du téléphone)
 
 | Étape | État | Preuve |
 |---|---|---|
@@ -211,7 +211,8 @@ Google (7) et le téléphone (18) : les secrets ne passent **jamais** par moi.
 | **B2 bis** — purge de nuit (cron) | ✅ Ajoutée le 18/11 (« At 03:17 AM ») — vérifier qu'elle a bien été **enregistrée** (Save) | — |
 | **C0** — tables de la connexion Google dans la base | ✅ **Faite** (14/10, par le connecteur après ton « go ») | 8 tables et 3 index constatés |
 | **Ancienne clé Resend** « Garage manifest » | ✅ **Révoquée** (26/10, par le connecteur après ton accord) | Liste des clés Resend vide |
-| **C** — serveur de comptes (C1 à C7) | ❌ À faire | Un seul Worker sur ton compte |
+| **C** — serveur de comptes (C1 à C7) | ✅ **Fait** (18/11) : `garage-comptes` en ligne, code relu par le connecteur, base et réglages en place, purge de nuit, envoi d'un code réussi | Connecteur + tes captures |
+| **D** — adresse inscrite dans l'app | ✅ **Fait** (18/11, v20.200.0) — effectif après la fusion | Dépôt |
 | **F** — identifiant Google | Facultatif | — |
 
 **Ce que règle la fin de B** (le nouveau code remplace entièrement l'actuel) :

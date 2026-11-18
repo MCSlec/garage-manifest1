@@ -41,14 +41,17 @@
 (function (global) {
   'use strict';
 
-  const VERSION_COMPTE = '2.3.0';
+  const VERSION_COMPTE = '2.4.0';
 
-  /* Adresse du Worker de comptes, SANS « / » final.
-     Ex. 'https://garage-comptes.<ton-compte>.workers.dev'. Vide = en sommeil.
-     `window.GM_COMPTE_URL`, posé avant le chargement, prend le pas : c'est le
-     point d'entrée des bancs (banc-compte-navigateur.js). */
-  const COMPTE_URL = '';
-  let base = String(global.GM_COMPTE_URL || COMPTE_URL || '').replace(/\/+$/, '');
+  /* Adresse du Worker de comptes, SANS « / » final. Vide = en sommeil.
+     Renseignée le 18/11 : serveur déployé et vérifié (TUTO-GRATUIT.md, séance 2).
+     `window.GM_COMPTE_URL`, posé avant le chargement, prend le pas — y compris
+     VIDE, qui force le sommeil : c'est le point d'entrée des bancs
+     (banc-compte-navigateur.js). Avant, une chaîne vide retombait sur
+     COMPTE_URL : une fois l'adresse inscrite, aucun banc n'aurait plus pu
+     vérifier le sommeil. */
+  const COMPTE_URL = 'https://garage-comptes.cyril-lapopin.workers.dev';
+  let base = String(typeof global.GM_COMPTE_URL === 'string' ? global.GM_COMPTE_URL : COMPTE_URL).trim().replace(/\/+$/, '');
 
   /* « Continuer avec Google » (14/10). Identifiant client OAuth de Google
      Cloud : PUBLIC, ce n'est pas un secret. Vide = EN SOMMEIL : ni bouton, ni
