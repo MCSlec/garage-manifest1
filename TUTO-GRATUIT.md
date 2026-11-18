@@ -69,7 +69,7 @@ Tout se passe sur **dash.cloudflare.com → Workers & Pages → `silent-firefly-
   👉 **Écris-moi « collé »** : je relis par le connecteur le code **réellement en
   ligne** et je le compare au dépôt (une copie tronquée se voit tout de suite).
 
-- [ ] ⚠️ *(ajoutée le 18/11 — vérifie qu'elle est bien **enregistrée** : « At 03:17 AM » visible, aucun bandeau « Unsaved changes »)* **4. La purge de nuit** *(fiche B2 bis, 1 min — après l'étape 3, jamais avant)*
+- [x] **4. La purge de nuit** *(fiche B2 bis, 1 min — après l'étape 3, jamais avant)*
   **Settings** → **Trigger Events** → **Cron Triggers** → **Add** → expression
   **`17 3 * * *`** → **Add/Deploy**.
   ✅ Le déclencheur apparaît (« At 03:17 AM »).
@@ -208,7 +208,7 @@ Google (7) et le téléphone (18) : les secrets ne passent **jamais** par moi.
 | **B4 (fin)** — supprimer `RESEND_API_KEY` du relais | ✅ **Fait** (18/11) (simple hygiène : la clé qu'elle contient est **révoquée** chez Resend depuis le 26/10) | Toujours là le 04/10 ; relais inchangé depuis |
 | **B3** — liaison `DB` du relais | ✅ **Fait** (18/11) | Aucune liaison |
 | **B2** — coller le nouveau code | ✅ **Fait** (18/11, version `ff85a8c8`, relu par le connecteur : identique au dépôt) | Le relais tourne encore sur le code Gemini du 31/08 |
-| **B2 bis** — purge de nuit (cron) | ✅ Ajoutée le 18/11 (« At 03:17 AM ») — vérifier qu'elle a bien été **enregistrée** (Save) | — |
+| **B2 bis** — purge de nuit (cron) | ✅ **Faite** (18/11, « At 03:17 AM », enregistrement vérifié sur capture) | — |
 | **C0** — tables de la connexion Google dans la base | ✅ **Faite** (14/10, par le connecteur après ton « go ») | 8 tables et 3 index constatés |
 | **Ancienne clé Resend** « Garage manifest » | ✅ **Révoquée** (26/10, par le connecteur après ton accord) | Liste des clés Resend vide |
 | **C** — serveur de comptes (C1 à C7) | ✅ **Fait** (18/11) : `garage-comptes` en ligne, code relu par le connecteur, base et réglages en place, purge de nuit, envoi d'un code réussi | Connecteur + tes captures |

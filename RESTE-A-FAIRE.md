@@ -146,7 +146,7 @@ recoller le code du serveur) :* un message dédié quand Resend refuse un destin
   `cloud/CONFIDENTIALITE.md`.
 - [x] Après la bascule : **une** capture de test et un coup d'œil au journal
   (`npx wrangler tail`) — le banc simule l'API, il ne remplace pas un vrai appel.
-- [ ] **Déclencheur de purge du relais** — ajouté le 18/11 (« At 03:17 AM » à l'écran), **« Save » à confirmer** (`TUTO-GRATUIT.md` B2 bis, cron
+- [x] **Déclencheur de purge du relais** — fait le 18/11 (« At 03:17 AM », enregistré) (`TUTO-GRATUIT.md` B2 bis, cron
   `17 3 * * *`), **après** le collage du nouveau code. Ajouté le 07/10 : sans lui,
   les empreintes d'IP du relais ne sont jamais effacées.
 - [x] Après la réussite de B5 : **supprimer l'ancienne clé Gemini** « CARDEX »
