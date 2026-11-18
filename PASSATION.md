@@ -91,6 +91,13 @@ relais se font depuis le navigateur du propriétaire (`TUTO-GRATUIT.md` B5).
 > en lecture seule : 6 constats **non bloquants** (`AUDIT-DEFAUTS.md` §11, F-1 à F-6),
 > à traiter dans une prochaine session, test d'abord. Reste au propriétaire : essais
 > sur téléphone (étape 18, F8), suppression du code secret Google.
+>
+> **Constaté en production le 19/11 (D1, lecture seule)** : 1 compte, 1 liaison Google
+> (la connexion Google a donc abouti au moins une fois), 1 garage en **version 3**
+> (12 Ko, 39 voitures, sans photos), dernière écriture 23:52 UTC. La sauvegarde
+> fonctionne ; son message est invisible (F-9). Le relais avait une surcharge locale
+> avec « / » final, vidée par le propriétaire (F-7). F8 et l'étape 18 ne sont pas
+> cochées tant que le propriétaire ne l'a pas dit.
 
 **État au 27/10 : A faite, B à moitié.** Le propriétaire suit la feuille de route de
 `TUTO-GRATUIT.md` (étapes 1 à 19) ; le tableau ci-dessous en est la version session.
