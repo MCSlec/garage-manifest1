@@ -198,17 +198,17 @@ Google (7) et le téléphone (18) : les secrets ne passent **jamais** par moi.
 
 ---
 
-## Où tu en es (constaté le 17/11 par le connecteur Cloudflare et tes captures : rien n'a bougé depuis le 04/10)
+## Où tu en es (18/11 : séance 1 faite — étapes 1 à 7 —, test console 400, vraie photo reconnue, CARDEX supprimée)
 
 | Étape | État | Preuve |
 |---|---|---|
 | **A** — base D1 `garage-comptes` | ✅ **Faite** (04/10), en **juridiction UE**, tables à jour (dont celles de la connexion Google, ajoutées le 14/10) | Lue par le connecteur, comparée au dépôt |
 | **B1** — clé Gemini neuve (« garage-manifest-relais », projet « Projet Gemini 2 ») | ✅ **Faite** (04/10) | Ta capture |
 | **B4** — `GEMINI_API_KEY` en **Secret**, `IA_FOURNISSEUR`, `APP_ORIGIN` | ✅ **Faites** (04/10) | Ta capture |
-| **B4 (fin)** — supprimer `RESEND_API_KEY` du relais | ❌ À faire (simple hygiène : la clé qu'elle contient est **révoquée** chez Resend depuis le 26/10) | Toujours là le 04/10 ; relais inchangé depuis |
-| **B3** — liaison `DB` du relais | ❌ À faire | Aucune liaison |
-| **B2** — coller le nouveau code | ❌ À faire | Le relais tourne encore sur le code Gemini du 31/08 |
-| **B2 bis** — purge de nuit (cron) | ❌ À faire, **après** B2 | — |
+| **B4 (fin)** — supprimer `RESEND_API_KEY` du relais | ✅ **Fait** (18/11) (simple hygiène : la clé qu'elle contient est **révoquée** chez Resend depuis le 26/10) | Toujours là le 04/10 ; relais inchangé depuis |
+| **B3** — liaison `DB` du relais | ✅ **Fait** (18/11) | Aucune liaison |
+| **B2** — coller le nouveau code | ✅ **Fait** (18/11, version `ff85a8c8`, relu par le connecteur : identique au dépôt) | Le relais tourne encore sur le code Gemini du 31/08 |
+| **B2 bis** — purge de nuit (cron) | ✅ Ajoutée le 18/11 (« At 03:17 AM ») — vérifier qu'elle a bien été **enregistrée** (Save) | — |
 | **C0** — tables de la connexion Google dans la base | ✅ **Faite** (14/10, par le connecteur après ton « go ») | 8 tables et 3 index constatés |
 | **Ancienne clé Resend** « Garage manifest » | ✅ **Révoquée** (26/10, par le connecteur après ton accord) | Liste des clés Resend vide |
 | **C** — serveur de comptes (C1 à C7) | ❌ À faire | Un seul Worker sur ton compte |

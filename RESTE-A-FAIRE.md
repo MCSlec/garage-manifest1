@@ -119,19 +119,19 @@ Rien ne casse, mais c'est déroutant : à garder court, ou à dire autour de toi
 
 - [x] Plafonds validés le 29/09 (3 000/jour au total, 30/jour sans compte, 200/jour
   avec compte) et `/notify` supprimé — **faits dans le code**.
-- [ ] **Redéployer le relais** avec la liaison D1 `DB` et la variable `APP_ORIGIN`
+- [x] **Redéployer le relais** avec la liaison D1 `DB` et la variable `APP_ORIGIN`
   (**`TUTO-GRATUIT.md`, parties A et B** ; README §3bis). Tant que ce n'est pas fait, c'est l'ANCIEN relais, ouvert, qui tourne.
 - [x] Relais **multi-fournisseur** (Claude ou Gemini, bascule par la variable
   `IA_FOURNISSEUR`, secours facultatif `IA_SECOURS`) — **fait dans le code** le 30/09.
-- [ ] **Régler le fournisseur** au redéploiement (README §3bis, étape 3) :
+- [x] **Régler le fournisseur** au redéploiement (README §3bis, étape 3) :
   **`gemini`, sans secours** (mode gratuit, §0). Pour Gemini, lire d'abord le point « offre gratuite » de
   `cloud/CONFIDENTIALITE.md`.
-- [ ] Après la bascule : **une** capture de test et un coup d'œil au journal
+- [x] Après la bascule : **une** capture de test et un coup d'œil au journal
   (`npx wrangler tail`) — le banc simule l'API, il ne remplace pas un vrai appel.
-- [ ] **Déclencheur de purge du relais** (`TUTO-GRATUIT.md` B2 bis, cron
+- [ ] **Déclencheur de purge du relais** — ajouté le 18/11 (« At 03:17 AM » à l'écran), **« Save » à confirmer** (`TUTO-GRATUIT.md` B2 bis, cron
   `17 3 * * *`), **après** le collage du nouveau code. Ajouté le 07/10 : sans lui,
   les empreintes d'IP du relais ne sont jamais effacées.
-- [ ] Après la réussite de B5 : **supprimer l'ancienne clé Gemini** « CARDEX »
+- [x] Après la réussite de B5 : **supprimer l'ancienne clé Gemini** « CARDEX »
   (`…eeUw`) dans AI Studio. La clé « Default Gemini API Key » (`…kvaw`) ne sert pas
   au relais : à supprimer si rien d'autre ne l'utilise (à toi de voir).
 - [ ] *(Seulement si un jour tu passes au fournisseur Claude, donc en payant — rien à
