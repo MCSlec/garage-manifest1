@@ -689,7 +689,7 @@ bouton, ni la moindre requête vers Google. Gratuit, **aucune carte bancaire**.
   celle d'une **page de politique de confidentialité publiée** — qui n'existe pas
   encore (`RESTE-A-FAIRE.md`). **Si un écran réclame une vérification ou un
   paiement, arrête-toi et préviens-moi.**
-- [x] **F6. Le serveur.** *(18/11 : variable déployée, constatée sur capture)*
+- [x] **F6. Le serveur.** *(18/11 : variable déployée, `/sante` → `"google":true` constaté)*
   Cloudflare → **garage-comptes** → **Settings** → *Variables
   and secrets* → **Add** : **Text** (case *Secret* décochée), nom `GOOGLE_CLIENT_ID`,
   valeur = l'identifiant de F4 → **Deploy**. Contrôle : `/sante` → `"google":true`.
