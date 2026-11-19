@@ -114,6 +114,9 @@ relais se font depuis le navigateur du propriétaire (`TUTO-GRATUIT.md` B5).
 > **19/11, ensuite — sur la branche aussi** (v20.204.0) : bouton **retour** du téléphone
 > (`banc-retour.js`) et carte qui recouvrait la fiche ouverte depuis elle (`banc-carte.js`).
 > ⚠️ Tout nouvel écran plein écran s'ajoute à `COUCHES_RETOUR` (`CLAUDE.md` §3).
+>
+> **19/11 — PR #3 fusionnée** sur « MERGE PR » : lot F-1 à F-9, bouton retour et carte
+> **en ligne** (v20.204.0). La branche reprend `main` (avance rapide).
 
 **État au 27/10 : A faite, B à moitié.** Le propriétaire suit la feuille de route de
 `TUTO-GRATUIT.md` (étapes 1 à 19) ; le tableau ci-dessous en est la version session.
