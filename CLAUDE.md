@@ -143,7 +143,9 @@ une image ≤ 2 Mo en JPEG/PNG/WebP, une **route unique** (`POST /`), aucune err
 détaillée renvoyée, et **503 sans base D1** (jamais de relais ouvert). Aucun
 compte n'est exigé pour capturer. Côté app, le jeton de session n'est envoyé
 **qu'au relais officiel** (`AI_ENDPOINT_DEFAULT`), jamais à un relais
-personnalisé. `/notify` n'existe plus.
+personnalisé. La comparaison ignore les « / » finaux et **rien d'autre** (F-7, 19/11 :
+l'adresse officielle saisie avec « / » consommait le quota anonyme) ; un hôte qui
+*commence* comme le relais officiel reste un autre serveur (banc). `/notify` n'existe plus.
 
 **Fournisseur au choix** (30/09) : `IA_FOURNISSEUR` = `anthropic` (défaut) ou
 `gemini` ; `IA_SECOURS` facultatif, appelé **seulement** si le premier échoue —
@@ -288,6 +290,18 @@ Règles à ne jamais enfreindre :
   affichait le couple de la 2.0 essence, M4 CS avec la masse de la G82).
 - **Un seul bloc de chaque.** Ne pas dupliquer le bloc « Générations » entre
   `index.html` et `gm-specs.js`.
+- **Bouton retour du téléphone** (19/11, `banc-retour.js`) : `index.html` compte les
+  « couches » ouvertes dans le DOM (onglet autre que Collection, `#overlay`, puis les
+  écrans posés dessus) et aligne l'historique sur ce compte ; « retour » ferme la couche
+  du dessus par **son propre bouton d'annulation**. ⚠️ **Tout nouvel écran plein écran**
+  posé sur `body` (par `index.html` ou `gm-specs.js`) **s'ajoute à `COUCHES_RETOUR`**,
+  avec son id et son bouton de fermeture — sinon « retour » fermerait la fiche **sous**
+  lui. Ne jamais appeler `history.pushState` ailleurs : l'historique est **dérivé** du
+  DOM, le tenir à la main en deux endroits le désynchroniserait. Pendant que la page est
+  quittée (`beforeunload`), l'historique n'est plus touché : un `history.go()` lancé après
+  `location.reload()` **annule** le rechargement (retouches de `gm-specs.js`, constaté au banc).
+- **Carte** : `#huntMap` porte `isolation:isolate`. Les calques de Leaflet (z-index 400
+  à 1000) passaient sinon **devant les fiches** (50) ouvertes depuis la carte (19/11).
 
 ---
 
@@ -472,7 +486,7 @@ incrémenter conjointement :**
 2. `VERSION` (`"garage-v…"`) dans `sw.js` (ligne ~12).
 
 Ces deux numéros sont **tenus synchronisés** (au 19/11/2026 : `gm-specs.js` →
-`20.202.0`, `sw.js` → `garage-v20.202.0`). `VERSION_MODULE` s'affiche en outre
+`20.204.0`, `sw.js` → `garage-v20.204.0`). `VERSION_MODULE` s'affiche en outre
 dans l'UI via `grefferVersion()`, ce qui permet de vérifier de visu quelle version
 tourne réellement sur l'appareil.
 
@@ -616,6 +630,7 @@ modification n'impose aucun bump de version.
 | `banc-relais.js` | Banc serveur du relais IA : quotas (dont rafale simultanée), taille/format d'image, origine, route unique, erreurs sans détail, fermeture sans D1 |
 | `banc-p0.js` | Banc navigateur du parcours **capture → révélation** (`design/SPEC-P0-*.md`) : analyse visible, écran selon le statut du matcher (sûr / ambigu / pistes faibles / rien / erreurs nommées), résultat tardif ignoré, révélation sans confettis en 3 paliers toujours sombre, « Ce que ça débloque » aux vrais compteurs, lot compact + bilan, mouvement réduit. `node banc-p0.js <dossier>` enregistre les captures |
 | `banc-galerie.js` | Banc navigateur du bouton **« Enregistrer cette photo sur le téléphone »** (`grefferEnregistrementPhoto`, gm-specs.js) : Android → téléchargement aux octets **exacts** de la photo affichée ; iPhone → feuille de partage (seule voie vers « Photos »), annulation respectée, panne → téléchargement ; rien sur une voiture verrouillée ; bouton visible et hors de la corbeille. Une app web ne peut **pas** écrire seule dans la galerie : ne pas promettre un enregistrement automatique |
+| `banc-retour.js` | Banc navigateur du **bouton retour** du téléphone (`history.back()`, comme Android) : fiche, carte puis fiche, confirmation (retour = « non »), éditeur de recadrage, capture, étape consommée quand on ferme par la croix, étapes d'une session précédente traversées. Sur l'ancien code, chaque « retour » quittait l'app |
 | `banc-photos.js` | Banc navigateur des limites de photos : plafond par rareté (`PHOTOS_PAR_RARETE`), taille par photo, recompression des anciennes photos (`GMGarage.normaliserPhotos`), suppression d'une photo et non-résurrection à la fusion cloud (pierres tombales) |
 | `banc-retouches.js` | Banc navigateur des retouches de `gm-specs.js` (floutage, recadrage, « Photo d'origine », « Associer », « Rattacher ») : vraie interface, puis synchronisation rejouée — rien ne doit revenir ; repli d'un `index.html` ancien |
 | `banc-sw.js` | Banc navigateur du **service worker**, sur un serveur au cache HTTP de GitHub Pages (`max-age=600`) : installation, nouveau déploiement, coquille rangée = la **nouvelle**, « Mettre à jour » qui recharge, « Plus tard » puis réouverture, hors ligne. **Aucune interception réseau** (elle désactiverait le cache HTTP éprouvé) |
@@ -852,8 +867,15 @@ GMGarage.deplacerPrise(deId, versId)  → { ok }                          (10/11
   d'abord**. Avant : « Réinitialiser » puis « Sauvegarder » vidait le cloud.
   Les prises d'un id **inconnu de cette version** de l'app (modèle ajouté par une
   version plus récente) sont renvoyées **telles quelles**. La version annoncée
-  (`If-Match`) est lue **avec l'export**, les opérations passent en **file**, chaque
+  (`If-Match`) est lue **avec l'export**, les opérations passent en **file** —
+  « Se déconnecter » et « Supprimer mon compte » **compris** (F-1, 19/11 : sinon la
+  réponse tardive d'une sauvegarde réécrivait l'état d'un appareil déconnecté) —, chaque
   requête a un **délai** (30 s, ×4 pour les envois lourds).
+- **Message du panneau Compte** (F-9, 19/11, « Sauvegarder ne me dit rien ») : placé
+  **sous la ligne du bouton touché**, et ramené à l'écran s'il est recouvert (bandeau
+  partenaire, barre d'onglets). Les bancs vérifient qu'il est **vu** (`elementFromPoint`),
+  pas seulement présent dans le DOM. Avant la 1re sauvegarde, l'état « photos » est
+  **inconnu** : le panneau ne promet rien (F-8).
 - **Synchronisation** : chaque prise porte `maj` (dernière modification) ; « Retirer
   du garage » laisse une **pierre tombale** datée (`META.supprimes`), exportée
   avec la sauvegarde. À la fusion cloud, la version la plus récente gagne

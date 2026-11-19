@@ -51,6 +51,27 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   const codeExterne = externes.filter(e => e.type === 'script' || e.type === 'stylesheet');
   v('aucun script ni style chargé depuis un autre domaine', codeExterne.length === 0, JSON.stringify(codeExterne));
   v('seules les tuiles OpenStreetMap sont externes', externes.every(e => e.hote.endsWith('tile.openstreetmap.org')), JSON.stringify([...new Set(externes.map(e => e.hote))]));
+  /* Fiche ouverte DEPUIS la carte (19/11, capture du propriétaire : « la carte ne s'en va
+     pas »). Les calques de Leaflet ont un z-index de 400 et le voile des fiches de 50 :
+     sans contexte d'empilement propre à la carte, elle se dessinait PAR-DESSUS la fiche. */
+  await page.click('#huntMap path.leaflet-interactive', { force: true }).catch(() => {});
+  await page.waitForSelector('.leaflet-popup [data-car]', { timeout: 4000 }).catch(() => {});
+  await page.evaluate(() => document.querySelector('.leaflet-popup [data-car]')?.click());
+  await page.waitForSelector('#overlay .detail-shell', { state: 'attached', timeout: 5000 }).catch(() => {});
+  await page.waitForTimeout(400);
+  const dessus = await page.evaluate(() => {
+    const f = document.querySelector('#overlay .sheet') || document.querySelector('#overlay .detail-shell');
+    if (!f) return 'aucune fiche ouverte';
+    const r = f.getBoundingClientRect(), pts = [];
+    for (const [fx, fy] of [[.5, .3], [.5, .5], [.3, .7], [.7, .85]]) {
+      const x = r.left + r.width * fx, y = Math.min(innerHeight - 2, r.top + r.height * fy);
+      const el = document.elementFromPoint(x, y);
+      pts.push(el && el.closest('#overlay') ? 'fiche' : (el && el.closest('#huntMap') ? 'CARTE' : (el ? (el.id || el.className || el.tagName) : 'rien')));
+    }
+    return pts;
+  });
+  v('fiche ouverte depuis la carte : la fiche est au-dessus de la carte (rien de la carte ne la recouvre)',
+    Array.isArray(dessus) && dessus.every(x => x === 'fiche'), JSON.stringify(dessus));
   v('aucune erreur JS', errs.length === 0, errs.join(' | '));
   await nav.close(); serveur.close();
   let ko = 0; for (const x of res) { if (!x.ok) ko++; console.log(`  ${x.ok ? '\x1b[32m✓\x1b[0m' : '\x1b[31m✗\x1b[0m'} ${x.t}${!x.ok && x.d != null ? '  → ' + x.d : ''}`); }

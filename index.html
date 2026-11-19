@@ -455,7 +455,11 @@
   .mission.done .bn{ color:var(--rare); }
 
   /* ---- Carte de chasse ---- */
-  #huntMap{ height:calc(100vh - var(--topbar,132px) - 120px); min-height:340px; border-radius:14px; overflow:hidden; border:1px solid var(--line); background:#0a0a0c; }
+  #huntMap{ height:calc(100vh - var(--topbar,132px) - 120px); min-height:340px; border-radius:14px; overflow:hidden; border:1px solid var(--line); background:#0a0a0c;
+    /* 19/11 : les calques de Leaflet ont des z-index de 400 à 1000. Sans contexte d'empilement
+       propre, ils passaient devant tout ce qui est plus bas (fiches à 50, barres à 30) : la
+       carte recouvrait la fiche ouverte depuis elle. `isolation` les enferme dans la carte. */
+    position:relative; isolation:isolate; }
   .map-dark .leaflet-tile-pane{ filter:invert(1) hue-rotate(180deg) brightness(.9) contrast(.9) saturate(.6); }
   .map-dark .leaflet-container{ background:#0a0a0c; }
   .leaflet-popup-content-wrapper,.leaflet-popup-tip{ background:var(--panel)!important; color:var(--fg)!important; }
@@ -3077,7 +3081,12 @@ const VARIANTS = {
       /* Compte connecté → quota du compte au relais (plus large que l'anonyme).
          Le jeton ne part QUE vers le relais officiel : un relais personnalisé
          (Réglages) est un serveur tiers, il ne doit jamais le recevoir. */
-      const auth = (url === AI_ENDPOINT_DEFAULT && window.GMCompte && typeof window.GMCompte.enteteAuth === "function") ? window.GMCompte.enteteAuth() : {};
+      /* F-7 (19/11, constaté en production) : l'adresse officielle saisie à la main avec un
+         « / » final n'était pas reconnue — le joueur connecté consommait le quota anonyme.
+         Comparaison sans les « / » finaux, et RIEN d'autre : même origine, même chemin.
+         Un hôte qui commence comme le relais officiel reste un autre serveur. */
+      const sansSlash = (u) => String(u).replace(/\/+$/, "");
+      const auth = (sansSlash(url) === sansSlash(AI_ENDPOINT_DEFAULT) && window.GMCompte && typeof window.GMCompte.enteteAuth === "function") ? window.GMCompte.enteteAuth() : {};
       const envoyer = (h) => fetch(url, { method:"POST", headers:{ "Content-Type":"application/json", ...h }, body:JSON.stringify({ image: thumbDataUrl }), signal:ctl.signal });
       let res;
       try {
@@ -3765,8 +3774,19 @@ const VARIANTS = {
     if (typeof nouvelle !== "string" || !PHOTO_RE.test(nouvelle) || ancienne === nouvelle) return { ok: false, n: 0 };
     const toutes = [...state.spots.values()].filter(r => Array.isArray(r.photos) && r.photos.includes(ancienne));
     if (!toutes.length) return { ok: false, n: 0 };
-    const prises = partout ? toutes : [toutes.find(r => r.carId === activeDetail) || toutes[0]];
+    /* F-4 (19/11) : sans fiche ouverte qui la contient, une image présente dans PLUSIEURS
+       prises désignait une voiture au hasard (la première trouvée). Ambigu → refus ; une
+       seule prise → pas d'ambiguïté, elle est visée. */
+    // Fiche ouverte lue dans le DOM (contrat data-car-id) : `activeDetail` n'est jamais remis à zéro à la fermeture.
+    const idOuverte = overlay.querySelector('.detail-shell[data-car-id]')?.dataset.carId || null;
+    const ouverte = toutes.find(r => r.carId === idOuverte);
+    if (!partout && !ouverte && toutes.length > 1) return { ok: false, n: 0 };
+    const prises = partout ? toutes : [ouverte || toutes[0]];
     const hAncienne = await empreintePhoto(ancienne), hNouvelle = await empreintePhoto(nouvelle), maintenant = new Date().toISOString();
+    /* F-3 (19/11) : mêmes OCTETS sous un autre texte (étiquette du type) = la même photo.
+       Pierre tombale et remise y portaient la même clé et la même date ; la remise n'étant
+       pas « plus récente », la photo était effacée à la synchronisation suivante. */
+    const memePhoto = !!hAncienne && hAncienne === hNouvelle;
     for (const rec of prises) {
       const couverture = rec.photos[rec.cover || 0] === ancienne ? nouvelle : rec.photos[rec.cover || 0];
       // Nouvelle version déjà présente dans la prise : on retire seulement l'ancienne, sans doublon.
@@ -3774,8 +3794,8 @@ const VARIANTS = {
       rec.cover = Math.max(0, rec.photos.indexOf(couverture));
       rec.maj = maintenant;
       await Store.put(rec);
-      if (hAncienne) marquerPhotoSupprimee(rec.carId, hAncienne, maintenant);
-      if (hNouvelle) marquerPhotoRetablie(rec.carId, hNouvelle, maintenant);
+      if (hAncienne && !memePhoto) marquerPhotoSupprimee(rec.carId, hAncienne, maintenant);
+      if (hNouvelle && !memePhoto) marquerPhotoRetablie(rec.carId, hNouvelle, maintenant);
     }
     await saveMeta();
     if (activeDetail && overlay.innerHTML && prises.some(r => r.carId === activeDetail)) openDetail(activeDetail);
@@ -3803,7 +3823,10 @@ const VARIANTS = {
       coords: existante?.coords || source.coords || null,
       note: [...new Set(notes)].join(" · ").slice(0, 2000),
       photos: photos.slice(0, MAX_PHOTOS_VOITURE),
-      cover: Math.min(existante?.cover || 0, Math.max(0, photos.length - 1)),
+      /* F-5 (19/11) : la couverture est une PHOTO, pas un rang. Vers une voiture pas encore
+         au garage, c'est celle choisie sur la prise déplacée (elle était remise à la 1re). */
+      cover: (() => { const p = existante ? existante.photos?.[existante.cover || 0] : source.photos?.[source.cover || 0];
+                      const i = photos.slice(0, MAX_PHOTOS_VOITURE).indexOf(p); return i >= 0 ? i : 0; })(),
       variants: [...new Set([...(existante?.variants || []), ...(source.variants || [])])].slice(0, 20),
       favorite: !!(existante?.favorite || source.favorite),
       maj: maintenant,
@@ -4814,6 +4837,70 @@ const VARIANTS = {
   /* ====================================================== TOAST */
   let toastT = null;
   function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), 2200); }
+
+  /* ====================================================== BOUTON RETOUR (19/11)
+     Signalé par le propriétaire : « la flèche retour du téléphone ne marche pas
+     toujours ». Dans une app installée, le retour d'Android = history.back() ; l'app
+     n'inscrivait RIEN dans l'historique, donc « retour » QUITTAIT l'app au lieu de
+     fermer la fiche ouverte.
+     PRINCIPE (celui des apps natives) : une étape d'historique par « couche » ouverte
+     — onglet autre que Collection, fiche/feuille/capture (#overlay), puis chaque
+     écran posé par-dessus (confirmation, révélation, éditeurs de gm-specs.js).
+     « Retour » ferme la couche du DESSUS ; à la fin, il ramène à l'onglet Collection ;
+     seulement ensuite il quitte l'app.
+     ÉTAT DÉRIVÉ, PAS TENU À LA MAIN : on ne modifie pas chaque fonction qui ouvre ou
+     ferme quelque chose (il y en a des dizaines, dans deux fichiers) ; on COMPTE les
+     couches présentes dans le DOM (`profondeurRetour`) et on aligne l'historique sur
+     ce compte à chaque changement (MutationObserver). Une couche fermée par sa croix
+     consomme donc son étape d'elle-même (`history.go(-n)`, dont le popstate est ignoré),
+     sinon il faudrait appuyer plusieurs fois sur retour pour sortir.
+     Chaque couche se ferme par SON propre bouton d'annulation (même code que le doigt) :
+     la confirmation répond « non », l'éditeur de recadrage annule, le consentement au
+     partage est refusé (le choix prudent). */
+  const TAB_ACCUEIL = "collection";
+  const COUCHES_RETOUR = [            // de la plus haute à la plus basse (z-index)
+    ["#gpt-ask",     (el) => el.querySelector('[data-gpt="refuse"]')?.click()],
+    ["#gcls",        (el) => el.querySelector('[data-gcs="fermer"]')?.click()],
+    ["#gcz-full",    (el) => el.querySelector('[data-cz="annul"]')?.click()],
+    ["#gfl-full",    (el) => el.querySelector('[data-gfl="annul"]')?.click()],
+    ["#confirmWrap", (el) => el.click()],                 // clic sur le fond = « non »
+    ["#revealWrap",  (el) => el.remove()],                // sans enchaîner sur « Ce que ça débloque »
+    ["#gmr-rat",     (el) => el.querySelector('[data-rat="fermer"]')?.click()],
+  ];
+  const profondeurRetour = () => COUCHES_RETOUR.reduce((n, [s]) => n + (document.querySelector(s) ? 1 : 0), 0)
+    + (overlay.childElementCount ? 1 : 0) + (state.tab !== TAB_ACCUEIL ? 1 : 0);
+  let etapesRetour = 0, popstateIgnores = 0, pageQuittee = false;
+  /* Page en train d'être quittée (gm-specs.js recharge la page après une retouche) : on ne
+     touche plus à l'historique. Un `history.go(-n)` lancé APRÈS `location.reload()`
+     ANNULAIT le rechargement (constaté au banc des retouches : la fiche ne se rouvrait
+     plus). `beforeunload` part pendant l'appel lui-même, donc avant notre alignement ;
+     les étapes laissées derrière sont traversées au premier « retour » de la page suivante. */
+  addEventListener("beforeunload", () => { pageQuittee = true; });
+  addEventListener("pageshow", (e) => { if (e.persisted) pageQuittee = false; });
+  function alignerRetour() {
+    if (pageQuittee) return;
+    const p = profondeurRetour();
+    if (p > etapesRetour) { while (etapesRetour < p) history.pushState({ gm: ++etapesRetour }, ""); }
+    else if (p < etapesRetour) { const n = etapesRetour - p; etapesRetour = p; popstateIgnores++; history.go(-n); }
+  }
+  function fermerDessus() {
+    for (const [s, fermer] of COUCHES_RETOUR) {
+      const el = document.querySelector(s); if (!el) continue;
+      try { fermer(el); } catch {}
+      if (el.isConnected) el.remove();                    // filet : la couche ne doit pas survivre au retour
+      return true;
+    }
+    if (overlay.childElementCount) { const x = overlay.querySelector("[data-close]"); if (x) x.click(); else closeOverlay(); return true; }
+    if (state.tab !== TAB_ACCUEIL) { state.tab = TAB_ACCUEIL; render(); return true; }
+    return false;
+  }
+  window.addEventListener("popstate", () => {
+    if (popstateIgnores > 0) { popstateIgnores--; return; }       // notre propre history.go(-n)
+    etapesRetour = Math.max(0, etapesRetour - 1);
+    // Rien à fermer, mais une étape à nous : laissée par une session précédente (page rechargée) → on la traverse.
+    if (!fermerDessus() && history.state && history.state.gm) history.back();
+  });
+  for (const cible of [document.body, overlay, $("#view")]) if (cible) new MutationObserver(alignerRetour).observe(cible, { childList: true });
 
   /* ====================================================== ÉVÉNEMENTS (délégation) */
   document.addEventListener("click", (e) => {

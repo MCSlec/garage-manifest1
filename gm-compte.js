@@ -41,7 +41,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_COMPTE = '2.5.0';
+  const VERSION_COMPTE = '2.6.0';
 
   /* Adresse du Worker de comptes, SANS « / » final. Vide = en sommeil.
      Renseignée le 18/11 : serveur déployé et vérifié (TUTO-GRATUIT.md, séance 2).
@@ -91,7 +91,10 @@
     const e = lireEtat();
     const enAttente = !e.session && e.emailEnAttente && Date.now() - (e.codeDemande || 0) < DUREE_CODE_MS ? e.emailEnAttente : null;
     return { configure: !!base, connecte: !!(base && e.session), email: e.email || null, codeEnvoyeA: enAttente, google: !!(base && idGoogle),
-             version: e.version || 0, derniereSauvegarde: e.derniere || null, sansPhotos: !!e.sansPhotos };
+             version: e.version || 0, derniereSauvegarde: e.derniere || null, sansPhotos: !!e.sansPhotos,
+             /* F-8 (19/11) : tant qu'aucune sauvegarde n'a eu lieu, l'app ne SAIT pas si le
+                serveur garde les photos — le panneau ne doit rien promettre. */
+             photosInconnues: typeof e.sansPhotos !== 'boolean' };
   }
 
   // ------------------------------------------------------------- réseau --
@@ -359,6 +362,11 @@
     return r;
   }
   const exporterCompte = () => api('GET', '/compte/export');
+  /* F-1 (19/11) : « Se déconnecter » et « Supprimer mon compte » passent eux aussi par la
+     file. Touchés pendant une sauvegarde, ils agissaient tout de suite ; la réponse de la
+     sauvegarde, arrivée après, réécrivait version et voitures du cloud dans l'état d'un
+     appareil déconnecté (ou d'un compte effacé). Ils attendent désormais leur tour. */
+  const deconnecterEnSerie = enSerie(deconnecter), supprimerEnSerie = enSerie(supprimerCompte);
   /* En-tête de session pour le relais IA (quota du compte). index.html ne
      l'envoie qu'au relais officiel, jamais à un relais personnalisé. */
   const enteteAuth = () => { const e = lireEtat(); return base && e.session ? { Authorization: `Bearer ${e.session}` } : {}; };
@@ -369,13 +377,14 @@
      module est configuré. Réutilise les classes existantes (panel, srow, btn). */
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   let message = '';
+  let actionMessage = null;     // ligne du dernier bouton touché : le message s'affiche juste dessous (F-9)
   const CHAMP = 'flex:1;min-width:0;background:var(--bg);border:1px solid var(--line);border-radius:9px;color:var(--fg);padding:10px 12px;font:400 14px var(--sans)';
 
   function panneauHTML() {
     const e = etat();
     const corps = e.connecte ? `
           <div class="srow"><div class="l"><b>Connecté</b><span>${esc(e.email)}${e.derniereSauvegarde ? ` · dernière sauvegarde le ${esc(new Date(e.derniereSauvegarde).toLocaleString('fr-FR'))}` : ''}</span></div><button class="btn" data-gcp="deconnecter">Se déconnecter</button></div>
-          <div class="srow"><div class="l"><b>Sauvegarder dans le cloud</b><span>${e.sansPhotos ? 'Collection seule, retrouvable sur tous tes appareils : ce serveur ne garde pas les photos, elles restent sur ce téléphone' : 'Collection et photos, retrouvables sur tous tes appareils'}</span></div><button class="btn red" data-gcp="sauvegarder">Sauvegarder</button></div>
+          <div class="srow"><div class="l"><b>Sauvegarder dans le cloud</b><span>${e.sansPhotos ? 'Collection seule, retrouvable sur tous tes appareils : ce serveur ne garde pas les photos, elles restent sur ce téléphone' : e.photosInconnues ? 'Ta collection, retrouvable sur tous tes appareils' : 'Collection et photos, retrouvables sur tous tes appareils'}</span></div><button class="btn red" data-gcp="sauvegarder">Sauvegarder</button></div>
           <div class="srow"><div class="l"><b>Récupérer mon garage</b><span>Ajoute ici ce qui est sauvé dans le cloud, sans rien effacer</span></div><button class="btn" data-gcp="restaurer">Récupérer</button></div>
           <div class="srow"><div class="l"><b>Supprimer mon compte</b><span>Efface ton compte et tout ce qui est sauvé dans le cloud (ce téléphone garde son garage)</span></div><button class="btn red ghost" data-gcp="supprimer">Supprimer</button></div>` : e.codeEnvoyeA ? `
           <div class="srow"><div class="l"><b>Code envoyé</b><span>à ${esc(e.codeEnvoyeA)} — valable 10 minutes</span></div><button class="btn" data-gcp="changer">Changer d'adresse</button></div>
@@ -400,6 +409,7 @@
     if (!panneau) return;
     if (ancien) { if (ancien.previousElementSibling === panneau) return; ancien.remove(); }
     panneau.insertAdjacentHTML('afterend', panneauHTML());
+    placerMessage();
     if (document.getElementById('gcp-google')) monterBoutonGoogle();
   }
 
@@ -439,6 +449,7 @@
     }
   }
   async function surReponseGoogle(reponse) {
+    actionMessage = null;                             // bouton de Google : message sous la première ligne
     try {
       dire('Connexion avec Google…');
       await connecterGoogle(reponse && reponse.credential);
@@ -447,13 +458,36 @@
       dire(err && err.message ? err.message : 'Connexion Google impossible');
     }
   }
-  function rafraichir() { const p = document.getElementById('gcp-compte'); if (p) { p.remove(); } greffer(); }
-  function dire(t) { message = t; const m = document.getElementById('gcp-msg'); if (m) m.textContent = t; }
+  function rafraichir() { const p = document.getElementById('gcp-compte'); if (p) { p.remove(); } greffer(); montrerMessage(); }
+  function dire(t) { message = t; const m = document.getElementById('gcp-msg'); if (m) { m.textContent = t; placerMessage(); montrerMessage(); } }
+  /* F-9 (19/11, constaté en production : « Sauvegarder ne me dit rien »). Le message vivait
+     en BAS du panneau, sous « Supprimer mon compte » : hors de l'écran, et derrière le
+     bandeau partenaire fixé en bas. Il se place désormais sous la ligne du bouton touché
+     (sinon sous la première ligne : après une connexion, la ligne touchée n'existe plus),
+     et s'il est malgré tout recouvert ou hors de l'écran, il y est ramené. Le test est
+     « ce point de l'écran montre-t-il le message ? » : il vaut quels que soient la barre
+     d'onglets, le bandeau ou la taille de l'écran. */
+  function placerMessage() {
+    const m = document.getElementById('gcp-msg'), p = document.getElementById('gcp-compte');
+    if (!m || !p) return;
+    const b = actionMessage && p.querySelector(`[data-gcp="${actionMessage}"]`);
+    const ligne = (b && b.closest('.srow')) || p.querySelector('.srow');
+    if (ligne && ligne.nextElementSibling !== m) ligne.insertAdjacentElement('afterend', m);
+  }
+  function montrerMessage() {
+    const m = document.getElementById('gcp-msg');
+    if (!m || !m.textContent.trim()) return;
+    const r = m.getBoundingClientRect();
+    const x = r.left + Math.min(r.width / 2, 40), y = r.top + r.height / 2;
+    const dessus = r.height > 0 && y > 0 && y < innerHeight ? document.elementFromPoint(x, y) : null;
+    if (!(dessus && (dessus === m || m.contains(dessus)))) m.scrollIntoView({ block: 'center' });
+  }
 
   async function surClic(ev) {
     const b = ev.target.closest('[data-gcp]'); if (!b) return;
     ev.preventDefault();
     const action = b.dataset.gcp;
+    actionMessage = action;
     b.disabled = true;
     try {
       if (action === 'code') {
@@ -483,10 +517,12 @@
         message = r.rien ? 'Rien n\'est encore sauvé dans le cloud.' : `Récupéré : ${r.voitures} voiture${r.voitures > 1 ? 's' : ''}${r.retirees ? ` · ${r.retirees} retirée${r.retirees > 1 ? 's' : ''} sur un autre appareil` : ''}${r.sansPhotos ? ', sans les photos (ce serveur ne les garde pas)' : ''}.`;
         rafraichir();
       } else if (action === 'deconnecter') {
-        await deconnecter(); message = 'Déconnecté.'; rafraichir();
+        dire('Déconnexion…');
+        await deconnecterEnSerie(); message = 'Déconnecté.'; rafraichir();
       } else if (action === 'supprimer') {
         if (!global.confirm('Supprimer ton compte et tout ce qui est sauvé dans le cloud ? Ce téléphone garde son garage. Irréversible.')) return;
-        await supprimerCompte(); message = 'Compte supprimé.'; rafraichir();
+        dire('Suppression du compte…');
+        await supprimerEnSerie(); message = 'Compte supprimé.'; rafraichir();
       }
     } catch (err) {
       dire(err && err.message ? err.message : 'Erreur');
@@ -510,7 +546,7 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', installer); else installer();
 
   global.GMCompte = Object.freeze({
-    VERSION: VERSION_COMPTE, etat, demanderCode, verifierCode, connecterGoogle, annulerCode, deconnecter, enteteAuth,
-    sauvegarder: sauvegarderEnSerie, restaurer: restaurerEnSerie, supprimerCompte, exporterCompte,
+    VERSION: VERSION_COMPTE, etat, demanderCode, verifierCode, connecterGoogle, annulerCode, deconnecter: deconnecterEnSerie, enteteAuth,
+    sauvegarder: sauvegarderEnSerie, restaurer: restaurerEnSerie, supprimerCompte: supprimerEnSerie, exporterCompte,
   });
 })(window);

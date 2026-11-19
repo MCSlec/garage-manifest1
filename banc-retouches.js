@@ -261,6 +261,34 @@ const sha = (d) => crypto.createHash('sha256').update(Buffer.from(d.split(',')[1
   v('deplacerPrise vers une voiture retirée auparavant : elle revit, et la synchronisation suivante ne l\'efface pas',
     e.spots.some(s => s.carId === 'renault-clio' && s.photos[0] === P2), JSON.stringify(e.spots.map(s => s.carId)));
 
+  /* ---------- 7 bis. Relecture avant fusion du 19/11 (F-3, F-4, F-5) ---------- */
+  const P4 = await image('#c08a1f'), P5 = await image('#6a1fc0'), P6 = await image('#1fc0b5');
+  // F-5 : vers une voiture PAS ENCORE au garage, la couverture choisie sur la « Non classé » est gardée.
+  await page.evaluate(d => window.GMGarage.importer(d), { app: 'garage-manifest', version: 1, meta: {}, custom: { list: [{ id: 'custom:miura-banc', brand: 'Lamborghini', model: 'Miura', yr: '' }] },
+    spots: [prise('custom:miura-banc', [P5, P6], { cover: 1 })] });
+  await page.evaluate(() => window.GMGarage.deplacerPrise('custom:miura-banc', 'lambo-miura'));
+  const miura = await priseDe('lambo-miura');
+  v('F-5 · deplacerPrise vers une voiture pas encore au garage : la couverture choisie (2e photo) reste la même photo',
+    !!miura && miura.photos[miura.cover || 0] === P6, miura && JSON.stringify({ cover: miura.cover, n: miura.photos.length }));
+  // F-4 : une image présente dans DEUX prises, aucune fiche ouverte → la retouche ne choisit pas une voiture au hasard.
+  await page.evaluate(() => document.querySelector('[data-close]')?.click()); await page.waitForTimeout(250);
+  await page.evaluate(d => window.GMGarage.importer(d), { app: 'garage-manifest', version: 1, meta: {}, custom: { list: [] },
+    spots: [prise('peugeot-205', [P4]), prise('renault-clio', [P4])] });
+  const rAmbigu = await page.evaluate(([a, b]) => window.GMGarage.remplacerPhoto(a, b), [P4, P5]);
+  e = await etat();
+  v('F-4 · image de deux voitures, aucune fiche ouverte : remplacement refusé, aucune des deux ne change',
+    rAmbigu && rAmbigu.ok === false && e.spots.find(s => s.carId === 'peugeot-205').photos.includes(P4) && e.spots.find(s => s.carId === 'renault-clio').photos.includes(P4), JSON.stringify(rAmbigu));
+  const rUnique = await page.evaluate(([a, b]) => window.GMGarage.remplacerPhoto(a, b), [P6, P4]);
+  v('F-4 · image d\'une seule voiture, aucune fiche ouverte : remplacement fait (pas d\'ambiguïté)',
+    rUnique && rUnique.ok === true && (await priseDe('lambo-miura')).photos.includes(P4) && !(await priseDe('lambo-miura')).photos.includes(P6), JSON.stringify(rUnique));
+  // F-3 : mêmes octets, texte différent (étiquette du type) — la « nouvelle » version n'est pas une autre photo.
+  const P5bis = P5.replace('data:image/jpeg', 'data:image/png');
+  await page.evaluate(([a, b]) => window.GMGarage.remplacerPhoto(a, b, { partout: true }), [P5, P5bis]);
+  await fusionCloud([]);
+  const miura2 = await priseDe('lambo-miura');
+  v('F-3 · remplacement par les MÊMES octets : la photo n\'est pas effacée à la synchronisation suivante',
+    !!miura2 && miura2.photos.includes(P5bis), miura2 && JSON.stringify({ n: miura2.photos.length, p5bis: miura2.photos.includes(P5bis), p5: miura2.photos.includes(P5) }));
+
   /* ---------- 8. Repli : index.html plus ancien encore en cache (contrat sans les nouvelles fonctions) ---------- */
   await ouvrirFiche('porsche-911');
   await page.evaluate(() => { const g = window.GMGarage; window.GMGarage = Object.freeze({ exporter: g.exporter, importer: g.importer, normaliserPhotos: g.normaliserPhotos, supprimerPhoto: g.supprimerPhoto }); });

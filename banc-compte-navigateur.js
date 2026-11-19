@@ -75,6 +75,7 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   const env = { DB: d1(sqlite), PHOTOS: r2(), APP_ORIGIN: ORIGINE, MAIL_FROM: 'GM <x@test>', RESEND_API_KEY: 'test', CODE_SECRET: 'secret-de-banc-32-octets-minimum!', GOOGLE_CLIENT_ID: CLIENT_GOOGLE };
   const mails = []; let appelsApi = 0, requetesBrutes = 0; const requetesLots = [];
   let ralentir = null;
+  let ralentirReponse = null;   // délai APRÈS traitement : la requête a déjà agi côté serveur, sa réponse arrive tard
   const photosInvalides = [];                        // requêtes /photos/<x> dont <x> n'est pas une empreinte                               // (req) → millisecondes d'attente avant de répondre (réseau lent simulé)
   const fetchReel = globalThis.fetch;
   globalThis.fetch = async (u, o) => {
@@ -106,6 +107,8 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
     const r = await worker.fetch(new Request(URL_API + req.url, { method: req.method, headers: req.headers,
       body: ['GET', 'HEAD', 'OPTIONS'].includes(req.method) ? undefined : corps }), env);
     const h = {}; r.headers.forEach((val, k) => { h[k] = val; });
+    const tard = ralentirReponse && req.method !== 'OPTIONS' ? ralentirReponse(req) : 0;
+    if (tard) await new Promise(ok => setTimeout(ok, tard));
     rep.writeHead(r.status, h); rep.end(Buffer.from(await r.arrayBuffer()));
   });
   await new Promise(ok => app.listen(PORT_APP, ok)); await new Promise(ok => api.listen(PORT_API, ok));
@@ -380,6 +383,19 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   await capturer(S1); await S1.page.waitForTimeout(1500);
   const postPerso = vuesS1.find(x => x.methode === 'POST');
   v('relais · relais personnalisé : identification envoyée SANS le jeton (serveur tiers)', !!postPerso && postPerso.hote === 'autre-relais.test' && !postPerso.auth, JSON.stringify(vuesS1));
+  /* (c bis) F-7, constaté en production le 19/11 : l'adresse OFFICIELLE saisie à la main
+     avec un « / » final n'était pas reconnue — le joueur connecté consommait le quota
+     anonyme. Même relais, donc le jeton doit partir… */
+  const avecAi = async (ai) => { const m = (await idb(S1.page, 'all')).find(x => x.carId === '__meta__') || { carId: '__meta__' }; await idb(S1.page, 'put', [{ ...m, ai }]); await recharger(S1.page); vuesS1.length = 0; };
+  await avecAi(RELAIS + '/');
+  await capturer(S1); await S1.page.waitForTimeout(1500);
+  const postSlash = vuesS1.find(x => x.methode === 'POST');
+  v('relais · adresse officielle saisie avec « / » final : reconnue, le jeton part (quota du compte)', !!postSlash && /^Bearer /.test(postSlash.auth || ''), JSON.stringify(vuesS1));
+  // … mais un hôte qui COMMENCE comme le relais officiel est un autre serveur : jamais le jeton.
+  await avecAi(RELAIS + '.autre-relais.test/');
+  await capturer(S1); await S1.page.waitForTimeout(1500);
+  const postImitation = vuesS1.find(x => x.methode === 'POST');
+  v('relais · hôte qui imite le relais officiel (préfixe) : SANS le jeton', !!postImitation && !postImitation.auth, JSON.stringify(vuesS1));
   const m0 = (await idb(S1.page, 'all')).find(x => x.carId === '__meta__'); await idb(S1.page, 'put', [{ ...m0, ai: '' }]); await recharger(S1.page);
   // (d) limite atteinte : le message du relais est affiché
   const R2 = await telephone(false);
@@ -603,6 +619,91 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   ecrireCloud({ app: 'garage-manifest', spots: { pas: 'une liste' } });
   await K3.page.click('[data-gcp="restaurer"]');
   v('cloud malformé (« spots » n\'est pas une liste) : message normal, rien de cassé', await attendreMsg(K3.page, 'Récupéré', 8000), await K3.page.textContent('#gcp-msg'));
+
+  /* 4 octies. Relecture du 19/11, défauts vus en PRODUCTION (captures du propriétaire) */
+  const LT = await telephone();
+  await idb(LT.page, 'put', [prise('lambo-miura', [PH('L')]), prise('ferrari-f40', [PH('M')])]);
+  await recharger(LT.page);
+  await connecter(LT.page, 'lecteur@exemple.fr');
+  await ouvrirReglages(LT.page);
+  /* F-8 : avant toute sauvegarde, l'app ne SAIT pas si le serveur garde les photos.
+     Le panneau annonçait « Collection et photos » — faux sur le serveur en essai. */
+  const texteAvant = await LT.page.textContent('#gcp-compte');
+  v('F-8 · avant la 1re sauvegarde : le panneau ne promet pas les photos (état inconnu)',
+    !/Collection et photos/.test(texteAvant) && !/Collection seule/.test(texteAvant) && /retrouvable sur tous tes appareils/.test(texteAvant), texteAvant);
+  /* F-9 : le message de sauvegarde était en bas du panneau, hors de l'écran et sous le
+     bandeau partenaire : « Sauvegarder ne me dit rien ». Le bouton est placé au milieu de
+     l'écran, comme sur la capture ; le message doit être VU (dans l'écran, non recouvert). */
+  const messageVu = (page) => page.evaluate(() => {
+    const m = document.getElementById('gcp-msg'); if (!m || !m.textContent.trim()) return 'vide';
+    const r = m.getBoundingClientRect(); const x = r.left + Math.min(r.width / 2, 40), y = r.top + r.height / 2;
+    if (!(r.height > 0 && y > 0 && y < innerHeight)) return 'hors écran (y=' + Math.round(y) + ')';
+    const dessus = document.elementFromPoint(x, y);
+    return dessus === m || m.contains(dessus) ? true : 'recouvert par ' + (dessus && (dessus.id || dessus.className || dessus.tagName));
+  });
+  await LT.page.evaluate(() => document.querySelector('[data-gcp="sauvegarder"]').scrollIntoView({ block: 'center' }));
+  await LT.page.evaluate(() => document.querySelector('[data-gcp="sauvegarder"]').click());
+  await attendreMsg(LT.page, 'Sauvegardé');
+  v('F-9 · après « Sauvegarder » : le message est visible à l\'écran (pas sous le bandeau)', (await messageVu(LT.page)) === true, await messageVu(LT.page));
+  v('F-9 · … et placé juste sous la ligne du bouton touché (là où le regard est déjà)',
+    await LT.page.evaluate(() => { const prec = document.getElementById('gcp-msg')?.previousElementSibling;
+      return !!prec && prec.classList.contains('srow') && !!prec.querySelector('[data-gcp="sauvegarder"]'); }));
+  /* Bouton touché TOUT EN BAS de l'écran : le message, posé dessous, tomberait hors de
+     l'écran → il y est ramené. Vérifié PENDANT la sauvegarde (« en cours »), avant que le
+     panneau ne soit redessiné (le redessin fait bouger la page et masquerait le défaut). */
+  ralentirReponse = (req) => req.method === 'PUT' && req.url === '/garage' ? 2500 : 0;
+  // Petit écran : la fenêtre s'arrête juste sous le bouton (scrollIntoView ne suffit pas, la vue des Réglages ne défile pas ainsi).
+  const basBouton = await LT.page.evaluate(() => Math.ceil(document.querySelector('[data-gcp="sauvegarder"]').closest('.srow').getBoundingClientRect().bottom));
+  await LT.page.setViewportSize({ width: 390, height: basBouton + 4 });
+  await LT.page.evaluate(() => { document.getElementById('gcp-msg').textContent = ''; document.querySelector('[data-gcp="sauvegarder"]').click(); });
+  await attendreMsg(LT.page, 'en cours', 5000);
+  await LT.page.waitForTimeout(300);
+  const vuEnCours = await messageVu(LT.page);
+  await attendreMsg(LT.page, 'Sauvegardé');
+  ralentirReponse = null;
+  await LT.page.setViewportSize({ width: 390, height: 844 });
+  v('F-9 · bouton touché en bas de l\'écran : « Sauvegarde en cours… » est ramené à l\'écran', vuEnCours === true, vuEnCours);
+  v('F-8 · après la 1re sauvegarde (serveur avec photos) : « Collection et photos »', /Collection et photos/.test(await LT.page.textContent('#gcp-compte')));
+  await LT.page.evaluate(() => document.querySelector('[data-gcp="restaurer"]').scrollIntoView({ block: 'center' }));
+  await LT.page.evaluate(() => document.querySelector('[data-gcp="restaurer"]').click());
+  await attendreMsg(LT.page, 'Récupéré');
+  v('F-9 · après « Récupérer » : le message est visible à l\'écran', (await messageVu(LT.page)) === true, await messageVu(LT.page));
+  /* F-1 : « Se déconnecter » pendant une sauvegarde. La requête a DÉJÀ agi au serveur,
+     sa réponse arrive après la déconnexion : elle réécrivait version et voitures du
+     cloud dans l'état d'un appareil déconnecté. La déconnexion attend son tour. */
+  await idb(LT.page, 'put', [prise('peugeot-205', [PH('N')])]); await recharger(LT.page); await ouvrirReglages(LT.page);
+  /* Le geste part QUAND la collection est déjà écrite au serveur et que sa réponse est en
+     route : c'est la fenêtre du défaut (attendre un temps fixe le ratait selon la charge). */
+  let putTraite = false;
+  const aprèsPutGarage = async () => { for (let i = 0; i < 100 && !putTraite; i++) await new Promise(ok => setTimeout(ok, 100)); };
+  ralentirReponse = (req) => { if (req.method === 'PUT' && req.url === '/garage') { putTraite = true; return 2500; } return 0; };
+  await LT.page.evaluate(() => document.querySelector('[data-gcp="sauvegarder"]').click());
+  await aprèsPutGarage();
+  await LT.page.evaluate(() => document.querySelector('[data-gcp="deconnecter"]')?.click());
+  await LT.page.waitForFunction(() => !window.GMCompte.etat().connecte, null, { timeout: 15000 }).catch(() => {});
+  await LT.page.waitForTimeout(3500);
+  ralentirReponse = null;
+  const etatL = await LT.page.evaluate(() => JSON.parse(localStorage.getItem('gm-compte') || '{}'));
+  v('F-1 · déconnexion pendant une sauvegarde : l\'appareil déconnecté ne garde ni version ni liste du cloud',
+    !etatL.session && !etatL.version && !etatL.ids && !etatL.derniere, JSON.stringify(etatL));
+  const idLecteur = sqlite.prepare("SELECT id FROM utilisateurs WHERE email = 'lecteur@exemple.fr'").get().id;
+  const gL = sqlite.prepare('SELECT donnees FROM garages WHERE utilisateur = ?').get(idLecteur);
+  v('F-1 · … et la sauvegarde commencée a bien abouti (3 voitures au cloud)', gL && JSON.parse(gL.donnees).spots.length === 3, gL && JSON.parse(gL.donnees).spots.length);
+  /* Même chose avec « Supprimer mon compte » : il attend la fin de la sauvegarde. */
+  await connecter(LT.page, 'lecteur@exemple.fr'); await ouvrirReglages(LT.page);
+  await cliquer(LT.page, 'restaurer', 'Récupéré');            // appareil à jour : la sauvegarde suivante passe du premier coup
+  await idb(LT.page, 'put', [prise('bmw-m3', [PH('P')])]); await recharger(LT.page); await ouvrirReglages(LT.page);
+  putTraite = false;
+  ralentirReponse = (req) => { if (req.method === 'PUT' && req.url === '/garage') { putTraite = true; return 2500; } return 0; };
+  await LT.page.evaluate(() => document.querySelector('[data-gcp="sauvegarder"]').click());
+  await aprèsPutGarage();
+  await LT.page.evaluate(() => document.querySelector('[data-gcp="supprimer"]')?.click());
+  await attendreMsg(LT.page, 'Compte supprimé', 15000);
+  await LT.page.waitForTimeout(3500);
+  ralentirReponse = null;
+  const etatL2 = await LT.page.evaluate(() => JSON.parse(localStorage.getItem('gm-compte') || '{}'));
+  v('F-1 · suppression pendant une sauvegarde : rien ne reste sur le serveur, ni dans l\'état de l\'appareil',
+    !sqlite.prepare("SELECT 1 FROM utilisateurs WHERE email = 'lecteur@exemple.fr'").get() && !etatL2.version && !etatL2.ids && !etatL2.session, JSON.stringify(etatL2));
 
   /* 5. Suppression du compte */
   const idPilote = sqlite.prepare("SELECT id FROM utilisateurs WHERE email = 'pilote@exemple.fr'").get().id;
