@@ -471,8 +471,8 @@ incrémenter conjointement :**
 1. `VERSION_MODULE` dans `gm-specs.js` (ligne ~22).
 2. `VERSION` (`"garage-v…"`) dans `sw.js` (ligne ~12).
 
-Ces deux numéros sont **tenus synchronisés** (au 18/11/2026 : `gm-specs.js` →
-`20.201.0`, `sw.js` → `garage-v20.201.0`). `VERSION_MODULE` s'affiche en outre
+Ces deux numéros sont **tenus synchronisés** (au 19/11/2026 : `gm-specs.js` →
+`20.202.0`, `sw.js` → `garage-v20.202.0`). `VERSION_MODULE` s'affiche en outre
 dans l'UI via `grefferVersion()`, ce qui permet de vérifier de visu quelle version
 tourne réellement sur l'appareil.
 
@@ -615,6 +615,7 @@ modification n'impose aucun bump de version.
 | `vendor/protomaps-leaflet/` | Moteur de rendu de **notre** carte (§1.2), chargé seulement si `CARTE_URL` est renseignée ; banc `banc-carte-perso.js` (fabrique une vraie archive PMTiles) ; guide `cloud/CARTE.md` |
 | `banc-relais.js` | Banc serveur du relais IA : quotas (dont rafale simultanée), taille/format d'image, origine, route unique, erreurs sans détail, fermeture sans D1 |
 | `banc-p0.js` | Banc navigateur du parcours **capture → révélation** (`design/SPEC-P0-*.md`) : analyse visible, écran selon le statut du matcher (sûr / ambigu / pistes faibles / rien / erreurs nommées), résultat tardif ignoré, révélation sans confettis en 3 paliers toujours sombre, « Ce que ça débloque » aux vrais compteurs, lot compact + bilan, mouvement réduit. `node banc-p0.js <dossier>` enregistre les captures |
+| `banc-galerie.js` | Banc navigateur du bouton **« Enregistrer cette photo sur le téléphone »** (`grefferEnregistrementPhoto`, gm-specs.js) : Android → téléchargement aux octets **exacts** de la photo affichée ; iPhone → feuille de partage (seule voie vers « Photos »), annulation respectée, panne → téléchargement ; rien sur une voiture verrouillée ; bouton visible et hors de la corbeille. Une app web ne peut **pas** écrire seule dans la galerie : ne pas promettre un enregistrement automatique |
 | `banc-photos.js` | Banc navigateur des limites de photos : plafond par rareté (`PHOTOS_PAR_RARETE`), taille par photo, recompression des anciennes photos (`GMGarage.normaliserPhotos`), suppression d'une photo et non-résurrection à la fusion cloud (pierres tombales) |
 | `banc-retouches.js` | Banc navigateur des retouches de `gm-specs.js` (floutage, recadrage, « Photo d'origine », « Associer », « Rattacher ») : vraie interface, puis synchronisation rejouée — rien ne doit revenir ; repli d'un `index.html` ancien |
 | `banc-sw.js` | Banc navigateur du **service worker**, sur un serveur au cache HTTP de GitHub Pages (`max-age=600`) : installation, nouveau déploiement, coquille rangée = la **nouvelle**, « Mettre à jour » qui recharge, « Plus tard » puis réouverture, hors ligne. **Aucune interception réseau** (elle désactiverait le cache HTTP éprouvé) |

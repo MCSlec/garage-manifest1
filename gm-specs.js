@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.201.0';
+  const VERSION_MODULE = '20.202.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -13127,6 +13127,96 @@
     hero.appendChild(b);
   }
 
+  /* ======================================================================
+     ENREGISTRER UNE PHOTO SUR LE TÉLÉPHONE (19/11, demande du propriétaire)
+     ----------------------------------------------------------------------
+     Une app web ne peut PAS écrire seule dans la galerie : aucun navigateur
+     n'offre d'accès à la photothèque (c'est voulu, sinon n'importe quel site
+     pourrait la remplir). Et une photo prise par « Appareil photo » depuis
+     l'app n'est remise QU'À l'app, pas rangée dans la galerie. Le geste
+     possible : un bouton, sur la photo affichée, à côté de la corbeille.
+
+     DEUX CHEMINS, parce que les deux systèmes ne rangent pas au même endroit :
+       · iPhone / iPad : un téléchargement part dans « Fichiers », jamais dans
+         « Photos ». Seule la feuille de partage propose « Enregistrer l'image »,
+         qui l'y range → navigator.share({ files }).
+       · Android, ordinateur : un téléchargement direct arrive dans
+         « Téléchargements », que la galerie affiche (album « Download ») —
+         un toucher, sans feuille de partage à parcourir.
+     Partage annulé par le joueur (AbortError) : on ne télécharge PAS à la place
+     (il a dit non). Autre échec du partage : repli sur le téléchargement.
+
+     Ce qui est enregistré est la photo TELLE QUE L'APP LA GARDE (1 280 px au
+     plus, recompressée à la capture) : l'original pleine définition n'a jamais
+     été conservé. Le dire au propriétaire, ne pas le maquiller.
+     ====================================================================== */
+  const EXT_PHOTO = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
+  const estIOS = () => /iP(hone|ad|od)/.test(navigator.userAgent || '')
+    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);   // iPad récent : se présente comme un Mac
+
+  /** dataURL → File, nommé d'après la voiture : « garage-manifest-ferrari-f40-xxxx.jpg ». */
+  function fichierPhoto(src, carId) {
+    const m = /^data:(image\/(?:jpeg|png|webp));base64,(.+)$/.exec(src || '');
+    if (!m) return null;
+    const bin = atob(m[2]); const octets = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) octets[i] = bin.charCodeAt(i);
+    const nom = `garage-manifest-${String(carId || 'photo').replace(/[^a-z0-9-]/gi, '-')}-${empreintePhoto(src).replace('.', '-')}.${EXT_PHOTO[m[1]]}`;
+    return new File([octets], nom, { type: m[1] });
+  }
+
+  async function enregistrerPhoto(src, carId) {
+    const f = fichierPhoto(src, carId);
+    if (!f) return { ok: false, voie: null };
+    if (estIOS() && navigator.canShare && navigator.share) {
+      let partageable = false; try { partageable = navigator.canShare({ files: [f] }); } catch (_) {}
+      if (partageable) {
+        try { await navigator.share({ files: [f] }); return { ok: true, voie: 'partage' }; }
+        catch (e) { if (e && e.name === 'AbortError') return { ok: false, voie: 'partage', annule: true }; }
+      }
+    }
+    const url = URL.createObjectURL(f);
+    const a = document.createElement('a'); a.href = url; a.download = f.name; a.style.display = 'none';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);    // laissé le temps au navigateur de lire le fichier
+    return { ok: true, voie: 'telechargement' };
+  }
+
+  const ICONE_ENR = '<svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>';
+  const ICONE_OK = '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+
+  function grefferEnregistrementPhoto() {
+    if (document.querySelector('#overlay [data-verrou]')) return;     // contrat DOM §3 : rien sur une voiture non collectée
+    const hero = document.querySelector('#overlay .detail-hero');
+    if (!hero || hero.querySelector('.genr-btn')) return;
+    const img = hero.querySelector('img');
+    if (!img) return;
+    const src = img.currentSrc || img.src;
+    if (!src || src.indexOf('data:image') !== 0) return;
+
+    const b = document.createElement('button');
+    b.className = 'genr-btn';
+    b.type = 'button';
+    b.title = 'Enregistrer cette photo sur le téléphone';
+    b.setAttribute('aria-label', 'Enregistrer cette photo sur le téléphone');
+    b.innerHTML = ICONE_ENR;
+    b.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      // Photo lue AU CLIC : celle qu'on regarde, même après un changement de vignette.
+      const hv = document.querySelector('#overlay .detail-hero') || hero;
+      const iv = hv.querySelector('img') || img;
+      const sv = iv.currentSrc || iv.src;
+      if (!sv || sv.indexOf('data:image') !== 0) return;
+      let r = { ok: false };
+      try { r = await enregistrerPhoto(sv, idFicheOuverte()); } catch (err) { console.warn('[GMSpecs] enregistrement impossible', err); }
+      if (!r.ok) return;
+      // Retour visible là où le doigt vient de toucher (leçon F-9 : un message hors de l'écran n'existe pas).
+      b.classList.add('genr-ok'); b.innerHTML = ICONE_OK;
+      b.setAttribute('aria-label', r.voie === 'partage' ? 'Photo partagée' : 'Photo téléchargée');
+      setTimeout(() => { b.classList.remove('genr-ok'); b.innerHTML = ICONE_ENR; b.setAttribute('aria-label', 'Enregistrer cette photo sur le téléphone'); }, 1800);
+    });
+    hero.appendChild(b);
+  }
+
   async function supprimerPhoto(src, bouton) {
     /* Chemin nominal (30/09) : l'app fait la suppression elle-même, via son
        contrat window.GMGarage — état en mémoire, date de modification et
@@ -15227,6 +15317,15 @@
     stroke-linecap:round; stroke-linejoin:round; }
   .gsup-btn:active{ transform:scale(.94); }
   .gsup-btn.gsup-non{ border-color:var(--red); color:var(--red); }
+  /* Enregistrer la photo : même pastille que la corbeille, juste à sa gauche. */
+  .genr-btn{ position:absolute; right:51px; top:9px; z-index:4; width:34px; height:34px;
+    display:grid; place-items:center; border-radius:999px;
+    border:1px solid rgba(255,255,255,.18); background:rgba(11,11,13,.72);
+    backdrop-filter:blur(6px); color:#fff; cursor:pointer; }
+  .genr-btn svg{ width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:2;
+    stroke-linecap:round; stroke-linejoin:round; }
+  .genr-btn:active{ transform:scale(.94); }
+  .genr-btn.genr-ok{ border-color:rgba(255,255,255,.6); }   /* la coche suffit : pas de couleur hors palette (DESIGN.md) */
 
   .gfl-ouvrir{ position:absolute; left:9px; bottom:9px; z-index:4; display:flex; align-items:center;
     gap:6px; padding:7px 11px; border-radius:999px; border:1px solid rgba(255,255,255,.18);
@@ -15350,8 +15449,9 @@
       try { grefferClasser(); } catch (_) {}
       try { grefferFloutage(); } catch (_) {}
       try { grefferSuppressionPhoto(); } catch (_) {}
+      try { grefferEnregistrementPhoto(); } catch (_) {}
     }).observe(cible, { childList: true, subtree: true });
-    try { greffer(); recadrerTout(); grefferCadrage(); grefferClasser(); grefferBandeauSponsor(); grefferFloutage(); grefferSuppressionPhoto(); } catch (_) {}
+    try { greffer(); recadrerTout(); grefferCadrage(); grefferClasser(); grefferBandeauSponsor(); grefferFloutage(); grefferSuppressionPhoto(); grefferEnregistrementPhoto(); } catch (_) {}
     chargerCadrages().then(() => { try { recadrerTout(); } catch (_) {} });
     console.info(`[GMSpecs] module v${VERSION_MODULE} chargé`);
     brancherMystere();
@@ -17484,6 +17584,7 @@
     /** Change la région active (à brancher sur la langue choisie plus tard). */
     definirRegion: (r) => { REGION_COURANTE = r; },
     grefferFloutage, pixelliser, grefferSuppressionPhoto, supprimerPhoto,
+    grefferEnregistrementPhoto, enregistrerPhoto,
     appliquerCorrectifsRarete, CORRECTIFS_RARETE,
     retirerDoublons, DOUBLONS_A_RETIRER, FUSIONS, fusionDe,
     rechargerSurFiche, retournerSurFiche, idDepuisPhoto,

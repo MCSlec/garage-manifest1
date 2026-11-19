@@ -171,7 +171,7 @@ sauvegarde. Peut se faire le même jour que la séance 1 ou un autre.
 
 ### Séance 3 — Mettre en ligne et tester (≈ 10 min)
 
-- [ ] **17. Écrire « merge »** quand tu le décides. Ton app en ligne est construite
+- [x] **17. Écrire « merge »** *(19/11 : PR #1 fusionnée, après relecture)* quand tu le décides. Ton app en ligne est construite
   depuis `main`, qui n'a **aucun** des travaux depuis fin août (parcours de capture,
   corrections, comptes…). Je ne fusionne jamais sans ce mot.
   *Mon conseil :* au plus tôt **après l'étape 6 réussie**. On ne change qu'une chose
