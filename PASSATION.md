@@ -34,8 +34,8 @@
    ```
    `/opt/pw-browsers/chromium` est un lien **stable** : le dossier versionné
    (`chromium-1194/…`) a changé d'une image à l'autre et les bancs ne démarraient plus.
-   Dernier passage complet : **19/19 verts** (18/11, v20.201.0, adresses du serveur de
-   comptes **et** identifiant Google inscrits ; comptes navigateur 95), dont les nouveaux
+   Dernier passage complet : **20/20 verts** (19/11, v20.202.0, configuration de
+   production ; comptes navigateur 95, `banc-galerie.js` 14, nouveau), dont les nouveaux
    `banc-retouches.js` (28) et `banc-sw.js` (14) ; détail et mutations :
    `AUDIT-DEFAUTS.md`, « Seconde relecture ». ⚠️ **Aucun banc ne joint Google** : avec
    l'identifiant renseigné, ouvrir les Réglages charge le vrai script, et le 18/11 le
@@ -98,6 +98,11 @@ relais se font depuis le navigateur du propriétaire (`TUTO-GRATUIT.md` B5).
 > fonctionne ; son message est invisible (F-9). Le relais avait une surcharge locale
 > avec « / » final, vidée par le propriétaire (F-7). F8 et l'étape 18 ne sont pas
 > cochées tant que le propriétaire ne l'a pas dit.
+>
+> **19/11, après la fusion — sur la branche, PAS en ligne** : bouton « Enregistrer cette
+> photo sur le téléphone » (v20.202.0, `banc-galerie.js`). La branche a repris `main`
+> (fusion de la PR #1) : pour mettre en ligne, il faut une **nouvelle PR** et un nouveau
+> « merge » du propriétaire. Une PR ne s'ouvre que s'il le demande.
 
 **État au 27/10 : A faite, B à moitié.** Le propriétaire suit la feuille de route de
 `TUTO-GRATUIT.md` (étapes 1 à 19) ; le tableau ci-dessous en est la version session.
