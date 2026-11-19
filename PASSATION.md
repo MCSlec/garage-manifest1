@@ -99,10 +99,11 @@ relais se font depuis le navigateur du propriétaire (`TUTO-GRATUIT.md` B5).
 > avec « / » final, vidée par le propriétaire (F-7). F8 et l'étape 18 ne sont pas
 > cochées tant que le propriétaire ne l'a pas dit.
 >
-> **19/11, après la fusion — sur la branche, PAS en ligne** : bouton « Enregistrer cette
-> photo sur le téléphone » (v20.202.0, `banc-galerie.js`). La branche a repris `main`
-> (fusion de la PR #1) : pour mettre en ligne, il faut une **nouvelle PR** et un nouveau
-> « merge » du propriétaire. Une PR ne s'ouvre que s'il le demande.
+> **19/11 — PR #2 fusionnée** sur « vas-y merge ça » : bouton « Enregistrer cette photo
+> sur le téléphone » (v20.202.0, `banc-galerie.js`) **en ligne**. Méthode qui a servi :
+> la branche reprend `main` après chaque fusion (avance rapide), la mise en ligne
+> suivante passe par une **nouvelle PR**, ouverte seulement sur demande du propriétaire.
+> Prochain lot proposé : F-7 à F-9 (`AUDIT-DEFAUTS.md` §11), puis F-1 à F-6.
 
 **État au 27/10 : A faite, B à moitié.** Le propriétaire suit la feuille de route de
 `TUTO-GRATUIT.md` (étapes 1 à 19) ; le tableau ci-dessous en est la version session.
