@@ -263,6 +263,10 @@ Capacitor autour du même code) :
   domaine n'écrit qu'à ton adresse : ça sert à éprouver le parcours de connexion sur
   ton téléphone, pas à ouvrir les comptes au public.
 - [ ] Sauvegarde cloud **manuelle** (bouton, choix par défaut) ou automatique.
+  **Recommandation révisée le 19/11 : automatique** (« go synchro auto »), vu ton objectif
+  de suivre ta progression sur plusieurs appareils : récupération à la connexion et à
+  l'ouverture de l'app, sauvegarde en arrière-plan après chaque prise. Gratuit (≈ 12 Ko
+  par sauvegarde).
 - [ ] Photos sauvegardées : **toutes** (choix par défaut, dédupliquées) ou la
   couverture seulement.
 - [ ] **i18n (chantier B, option b)** : lancer le mécanisme `t("…")` ? Quelles
@@ -322,6 +326,7 @@ Capacitor autour du même code) :
   fusion de la PR #1, branche `main` uniquement : « merge » deviendrait aussi le feu
   vert du déploiement, et la production serait par construction égale au dépôt.
   Pas avant : le relais de `main` est l'ancien (Claude Haiku, sans clé → panne).
+  **Débloqué depuis le 19/11** : la PR #1 est fusionnée, `main` porte le relais actuel.
   Demande un fichier `wrangler` pour le relais, à écrire pour qu'il n'efface pas
   les réglages du tableau de bord.
 - [ ] 🟡 **Empreintes d'IP scellées par un secret** (HMAC au lieu de SHA-256 simple).
