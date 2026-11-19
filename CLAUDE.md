@@ -143,7 +143,9 @@ une image ≤ 2 Mo en JPEG/PNG/WebP, une **route unique** (`POST /`), aucune err
 détaillée renvoyée, et **503 sans base D1** (jamais de relais ouvert). Aucun
 compte n'est exigé pour capturer. Côté app, le jeton de session n'est envoyé
 **qu'au relais officiel** (`AI_ENDPOINT_DEFAULT`), jamais à un relais
-personnalisé. `/notify` n'existe plus.
+personnalisé. La comparaison ignore les « / » finaux et **rien d'autre** (F-7, 19/11 :
+l'adresse officielle saisie avec « / » consommait le quota anonyme) ; un hôte qui
+*commence* comme le relais officiel reste un autre serveur (banc). `/notify` n'existe plus.
 
 **Fournisseur au choix** (30/09) : `IA_FOURNISSEUR` = `anthropic` (défaut) ou
 `gemini` ; `IA_SECOURS` facultatif, appelé **seulement** si le premier échoue —
@@ -472,7 +474,7 @@ incrémenter conjointement :**
 2. `VERSION` (`"garage-v…"`) dans `sw.js` (ligne ~12).
 
 Ces deux numéros sont **tenus synchronisés** (au 19/11/2026 : `gm-specs.js` →
-`20.202.0`, `sw.js` → `garage-v20.202.0`). `VERSION_MODULE` s'affiche en outre
+`20.203.0`, `sw.js` → `garage-v20.203.0`). `VERSION_MODULE` s'affiche en outre
 dans l'UI via `grefferVersion()`, ce qui permet de vérifier de visu quelle version
 tourne réellement sur l'appareil.
 
@@ -852,8 +854,15 @@ GMGarage.deplacerPrise(deId, versId)  → { ok }                          (10/11
   d'abord**. Avant : « Réinitialiser » puis « Sauvegarder » vidait le cloud.
   Les prises d'un id **inconnu de cette version** de l'app (modèle ajouté par une
   version plus récente) sont renvoyées **telles quelles**. La version annoncée
-  (`If-Match`) est lue **avec l'export**, les opérations passent en **file**, chaque
+  (`If-Match`) est lue **avec l'export**, les opérations passent en **file** —
+  « Se déconnecter » et « Supprimer mon compte » **compris** (F-1, 19/11 : sinon la
+  réponse tardive d'une sauvegarde réécrivait l'état d'un appareil déconnecté) —, chaque
   requête a un **délai** (30 s, ×4 pour les envois lourds).
+- **Message du panneau Compte** (F-9, 19/11, « Sauvegarder ne me dit rien ») : placé
+  **sous la ligne du bouton touché**, et ramené à l'écran s'il est recouvert (bandeau
+  partenaire, barre d'onglets). Les bancs vérifient qu'il est **vu** (`elementFromPoint`),
+  pas seulement présent dans le DOM. Avant la 1re sauvegarde, l'état « photos » est
+  **inconnu** : le panneau ne promet rien (F-8).
 - **Synchronisation** : chaque prise porte `maj` (dernière modification) ; « Retirer
   du garage » laisse une **pierre tombale** datée (`META.supprimes`), exportée
   avec la sauvegarde. À la fusion cloud, la version la plus récente gagne

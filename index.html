@@ -3077,7 +3077,12 @@ const VARIANTS = {
       /* Compte connecté → quota du compte au relais (plus large que l'anonyme).
          Le jeton ne part QUE vers le relais officiel : un relais personnalisé
          (Réglages) est un serveur tiers, il ne doit jamais le recevoir. */
-      const auth = (url === AI_ENDPOINT_DEFAULT && window.GMCompte && typeof window.GMCompte.enteteAuth === "function") ? window.GMCompte.enteteAuth() : {};
+      /* F-7 (19/11, constaté en production) : l'adresse officielle saisie à la main avec un
+         « / » final n'était pas reconnue — le joueur connecté consommait le quota anonyme.
+         Comparaison sans les « / » finaux, et RIEN d'autre : même origine, même chemin.
+         Un hôte qui commence comme le relais officiel reste un autre serveur. */
+      const sansSlash = (u) => String(u).replace(/\/+$/, "");
+      const auth = (sansSlash(url) === sansSlash(AI_ENDPOINT_DEFAULT) && window.GMCompte && typeof window.GMCompte.enteteAuth === "function") ? window.GMCompte.enteteAuth() : {};
       const envoyer = (h) => fetch(url, { method:"POST", headers:{ "Content-Type":"application/json", ...h }, body:JSON.stringify({ image: thumbDataUrl }), signal:ctl.signal });
       let res;
       try {
@@ -3765,8 +3770,19 @@ const VARIANTS = {
     if (typeof nouvelle !== "string" || !PHOTO_RE.test(nouvelle) || ancienne === nouvelle) return { ok: false, n: 0 };
     const toutes = [...state.spots.values()].filter(r => Array.isArray(r.photos) && r.photos.includes(ancienne));
     if (!toutes.length) return { ok: false, n: 0 };
-    const prises = partout ? toutes : [toutes.find(r => r.carId === activeDetail) || toutes[0]];
+    /* F-4 (19/11) : sans fiche ouverte qui la contient, une image présente dans PLUSIEURS
+       prises désignait une voiture au hasard (la première trouvée). Ambigu → refus ; une
+       seule prise → pas d'ambiguïté, elle est visée. */
+    // Fiche ouverte lue dans le DOM (contrat data-car-id) : `activeDetail` n'est jamais remis à zéro à la fermeture.
+    const idOuverte = overlay.querySelector('.detail-shell[data-car-id]')?.dataset.carId || null;
+    const ouverte = toutes.find(r => r.carId === idOuverte);
+    if (!partout && !ouverte && toutes.length > 1) return { ok: false, n: 0 };
+    const prises = partout ? toutes : [ouverte || toutes[0]];
     const hAncienne = await empreintePhoto(ancienne), hNouvelle = await empreintePhoto(nouvelle), maintenant = new Date().toISOString();
+    /* F-3 (19/11) : mêmes OCTETS sous un autre texte (étiquette du type) = la même photo.
+       Pierre tombale et remise y portaient la même clé et la même date ; la remise n'étant
+       pas « plus récente », la photo était effacée à la synchronisation suivante. */
+    const memePhoto = !!hAncienne && hAncienne === hNouvelle;
     for (const rec of prises) {
       const couverture = rec.photos[rec.cover || 0] === ancienne ? nouvelle : rec.photos[rec.cover || 0];
       // Nouvelle version déjà présente dans la prise : on retire seulement l'ancienne, sans doublon.
@@ -3774,8 +3790,8 @@ const VARIANTS = {
       rec.cover = Math.max(0, rec.photos.indexOf(couverture));
       rec.maj = maintenant;
       await Store.put(rec);
-      if (hAncienne) marquerPhotoSupprimee(rec.carId, hAncienne, maintenant);
-      if (hNouvelle) marquerPhotoRetablie(rec.carId, hNouvelle, maintenant);
+      if (hAncienne && !memePhoto) marquerPhotoSupprimee(rec.carId, hAncienne, maintenant);
+      if (hNouvelle && !memePhoto) marquerPhotoRetablie(rec.carId, hNouvelle, maintenant);
     }
     await saveMeta();
     if (activeDetail && overlay.innerHTML && prises.some(r => r.carId === activeDetail)) openDetail(activeDetail);
@@ -3803,7 +3819,10 @@ const VARIANTS = {
       coords: existante?.coords || source.coords || null,
       note: [...new Set(notes)].join(" · ").slice(0, 2000),
       photos: photos.slice(0, MAX_PHOTOS_VOITURE),
-      cover: Math.min(existante?.cover || 0, Math.max(0, photos.length - 1)),
+      /* F-5 (19/11) : la couverture est une PHOTO, pas un rang. Vers une voiture pas encore
+         au garage, c'est celle choisie sur la prise déplacée (elle était remise à la 1re). */
+      cover: (() => { const p = existante ? existante.photos?.[existante.cover || 0] : source.photos?.[source.cover || 0];
+                      const i = photos.slice(0, MAX_PHOTOS_VOITURE).indexOf(p); return i >= 0 ? i : 0; })(),
       variants: [...new Set([...(existante?.variants || []), ...(source.variants || [])])].slice(0, 20),
       favorite: !!(existante?.favorite || source.favorite),
       maj: maintenant,

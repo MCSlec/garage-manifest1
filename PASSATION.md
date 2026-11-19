@@ -34,8 +34,8 @@
    ```
    `/opt/pw-browsers/chromium` est un lien **stable** : le dossier versionné
    (`chromium-1194/…`) a changé d'une image à l'autre et les bancs ne démarraient plus.
-   Dernier passage complet : **20/20 verts** (19/11, v20.202.0, configuration de
-   production ; comptes navigateur 95, `banc-galerie.js` 14, nouveau), dont les nouveaux
+   Dernier passage complet : **20/20 verts** (19/11, v20.203.0, configuration de
+   production ; comptes navigateur 106, retouches 32, `banc-galerie.js` 14), dont les nouveaux
    `banc-retouches.js` (28) et `banc-sw.js` (14) ; détail et mutations :
    `AUDIT-DEFAUTS.md`, « Seconde relecture ». ⚠️ **Aucun banc ne joint Google** : avec
    l'identifiant renseigné, ouvrir les Réglages charge le vrai script, et le 18/11 le
@@ -104,6 +104,11 @@ relais se font depuis le navigateur du propriétaire (`TUTO-GRATUIT.md` B5).
 > la branche reprend `main` après chaque fusion (avance rapide), la mise en ligne
 > suivante passe par une **nouvelle PR**, ouverte seulement sur demande du propriétaire.
 > Prochain lot proposé : F-7 à F-9 (`AUDIT-DEFAUTS.md` §11), puis F-1 à F-6.
+>
+> **19/11, lot F-1 à F-9 traité — sur la branche, PAS en ligne** (v20.203.0, `gm-compte.js`
+> 2.6.0) : 7 corrigés, F-6 sans changement (non reproductible), F-2 reporté (remède au
+> niveau du contrat `GMGarage`). Détail et mutations : `AUDIT-DEFAUTS.md` §11. Mise en
+> ligne : nouvelle PR sur « merge » du propriétaire.
 
 **État au 27/10 : A faite, B à moitié.** Le propriétaire suit la feuille de route de
 `TUTO-GRATUIT.md` (étapes 1 à 19) ; le tableau ci-dessous en est la version session.
