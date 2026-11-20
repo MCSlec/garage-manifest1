@@ -300,6 +300,9 @@ Règles à ne jamais enfreindre :
   DOM, le tenir à la main en deux endroits le désynchroniserait. Pendant que la page est
   quittée (`beforeunload`), l'historique n'est plus touché : un `history.go()` lancé après
   `location.reload()` **annule** le rechargement (retouches de `gm-specs.js`, constaté au banc).
+  ⚠️ **Tout lien vers une autre application** (`mailto:`, `tel:`…) passe par `ouvrirExterne()` :
+  Chromium déclenche `beforeunload` sur un tel lien **alors que la page reste** (20/11, banc) ;
+  ouvert autrement, il couperait le suivi du bouton retour jusqu'au rechargement.
 - **Carte** : `#huntMap` porte `isolation:isolate`. Les calques de Leaflet (z-index 400
   à 1000) passaient sinon **devant les fiches** (50) ouvertes depuis la carte (19/11).
 
@@ -485,12 +488,12 @@ incrémenter conjointement :**
 1. `VERSION_MODULE` dans `gm-specs.js` (ligne ~22).
 2. `VERSION` (`"garage-v…"`) dans `sw.js` (ligne ~12).
 
-Ces deux numéros sont **tenus synchronisés** (au 19/11/2026 : `gm-specs.js` →
-`20.204.0`, `sw.js` → `garage-v20.204.0`). `VERSION_MODULE` s'affiche en outre
+Ces deux numéros sont **tenus synchronisés** (au 20/11/2026 : `gm-specs.js` →
+`20.205.0`, `sw.js` → `garage-v20.205.0`). `VERSION_MODULE` s'affiche en outre
 dans l'UI via `grefferVersion()`, ce qui permet de vérifier de visu quelle version
 tourne réellement sur l'appareil.
 
-> ℹ️ `APP_VERSION` dans `index.html` (aujourd'hui `3.3.0`) est un **repère produit
+> ℹ️ `APP_VERSION` dans `index.html` (aujourd'hui `3.4.0`) est un **repère produit
 > distinct** ; il se bump aux MAJ notables, mais ce n'est **pas** lui qui invalide
 > le cache. Le déclencheur de rafraîchissement, c'est `VERSION` dans `sw.js`.
 
@@ -624,13 +627,13 @@ modification n'impose aucun bump de version.
 | `gm-rouleau.js` | Le Rouleau extrait (§8 bis), non intégré ; banc `banc-rouleau.js` |
 | `gm-compte.js` | Compte par e-mail + sauvegarde cloud (§8 quinquies). `COMPTE_URL` renseignée le 18/11 (`garage-comptes`, déployé et vérifié) ; vide = en sommeil |
 | `cloud/` | Serveur de comptes — déployé **à part** : `compte-worker.js`, `schema.sql`, `wrangler.toml.exemple`, `DEPLOIEMENT.md`, `CONFIDENTIALITE.md` (projet RGPD, à maintenir dans le même commit que tout changement de collecte) |
-| `banc-compte.js` / `banc-compte-navigateur.js` | Bancs du serveur (Worker réel, D1/R2 simulés) et de bout en bout (app + Worker dans Chromium) |
+| `banc-compte.js` / `banc-compte-navigateur.js` | Bancs du serveur (Worker réel, D1/R2 simulés) et de bout en bout (app + Worker dans Chromium). Le second couvre la **synchronisation automatique** (section 4 nonies : connexion, rafale = un envoi, pas d'aller-retour entre deux téléphones, désactivation, panne puis reprise, « Réinitialiser » connecté, arrière-plan, app fermée avant l'envoi) ; ses autres téléphones la gardent **éteinte** (`auto:false`), car ils comptent les requêtes |
 | `vendor/leaflet/` | Leaflet 1.9.4 hébergé dans le dépôt (§1.2) ; banc `banc-carte.js` : aucun script ni style chargé depuis un autre domaine |
 | `vendor/protomaps-leaflet/` | Moteur de rendu de **notre** carte (§1.2), chargé seulement si `CARTE_URL` est renseignée ; banc `banc-carte-perso.js` (fabrique une vraie archive PMTiles) ; guide `cloud/CARTE.md` |
 | `banc-relais.js` | Banc serveur du relais IA : quotas (dont rafale simultanée), taille/format d'image, origine, route unique, erreurs sans détail, fermeture sans D1 |
 | `banc-p0.js` | Banc navigateur du parcours **capture → révélation** (`design/SPEC-P0-*.md`) : analyse visible, écran selon le statut du matcher (sûr / ambigu / pistes faibles / rien / erreurs nommées), résultat tardif ignoré, révélation sans confettis en 3 paliers toujours sombre, « Ce que ça débloque » aux vrais compteurs, lot compact + bilan, mouvement réduit. `node banc-p0.js <dossier>` enregistre les captures |
 | `banc-galerie.js` | Banc navigateur du bouton **« Enregistrer cette photo sur le téléphone »** (`grefferEnregistrementPhoto`, gm-specs.js) : Android → téléchargement aux octets **exacts** de la photo affichée ; iPhone → feuille de partage (seule voie vers « Photos »), annulation respectée, panne → téléchargement ; rien sur une voiture verrouillée ; bouton visible et hors de la corbeille. Une app web ne peut **pas** écrire seule dans la galerie : ne pas promettre un enregistrement automatique |
-| `banc-retour.js` | Banc navigateur du **bouton retour** du téléphone (`history.back()`, comme Android) : fiche, carte puis fiche, confirmation (retour = « non »), éditeur de recadrage, capture, étape consommée quand on ferme par la croix, étapes d'une session précédente traversées. Sur l'ancien code, chaque « retour » quittait l'app |
+| `banc-retour.js` | Banc navigateur du **bouton retour** du téléphone (`history.back()`, comme Android) : fiche, carte puis fiche, confirmation (retour = « non »), éditeur de recadrage, capture, étape consommée quand on ferme par la croix, étapes d'une session précédente traversées ; « Envoyer un retour » ouvre la messagerie sans couper le suivi (lien `mailto:`). Sur l'ancien code, chaque « retour » quittait l'app |
 | `banc-photos.js` | Banc navigateur des limites de photos : plafond par rareté (`PHOTOS_PAR_RARETE`), taille par photo, recompression des anciennes photos (`GMGarage.normaliserPhotos`), suppression d'une photo et non-résurrection à la fusion cloud (pierres tombales) |
 | `banc-retouches.js` | Banc navigateur des retouches de `gm-specs.js` (floutage, recadrage, « Photo d'origine », « Associer », « Rattacher ») : vraie interface, puis synchronisation rejouée — rien ne doit revenir ; repli d'un `index.html` ancien |
 | `banc-sw.js` | Banc navigateur du **service worker**, sur un serveur au cache HTTP de GitHub Pages (`max-age=600`) : installation, nouveau déploiement, coquille rangée = la **nouvelle**, « Mettre à jour » qui recharge, « Plus tard » puis réouverture, hors ligne. **Aucune interception réseau** (elle désactiverait le cache HTTP éprouvé) |
@@ -784,7 +787,8 @@ restauration du garage entre appareils. Guide : `cloud/DEPLOIEMENT.md`.
 
 ```
 GMGarage.exporter()                   → { app, version, spots, meta, custom }  (= fichier d'export)
-GMGarage.importer(data, { fusion })   → { n, rejected }
+GMGarage.importer(data, { fusion, silencieux }) → { n, rejected, retirees }
+GMGarage.pret()                       → true une fois la collection chargée   (20/11)
 GMGarage.normaliserPhotos()           → nombre de photos recompressées
 GMGarage.supprimerPhoto(src, { confirmer }) → { ok } | { ok:false, raison:'derniere'|'annule'|'introuvable' }
 GMGarage.remplacerPhoto(ancienne, nouvelle, { partout }) → { ok, n }   (10/11)
@@ -859,7 +863,8 @@ GMGarage.deplacerPrise(deId, versId)  → { ok }                          (10/11
   `window.GM_COMPTE_URL` prend le pas, **y compris vide** (sommeil forcé des bancs) :
   avant, une chaîne vide retombait sur `COMPTE_URL`. Configuration de production
   vérifiée au banc : panneau proposé, **aucune requête** au démarrage ni à
-  l'ouverture des Réglages — le serveur n'est contacté qu'à la demande du joueur.
+  l'ouverture des Réglages **hors connexion** — le serveur n'est contacté qu'une fois
+  le joueur connecté (synchronisation automatique, ci-dessous).
 - **Garde de sauvegarde** (`gm-compte.js` 2.3.0, 10/11) : une sauvegarde ne retire
   du cloud **que** ce qui porte une pierre tombale. L'appareil mémorise les ids
   présents au cloud (`ids`, à la version connue) ; s'il en manque un ici sans
@@ -881,9 +886,36 @@ GMGarage.deplacerPrise(deId, versId)  → { ok }                          (10/11
   avec la sauvegarde. À la fusion cloud, la version la plus récente gagne
   (plus de concaténation des notes), les photos s'additionnent, et un retrait
   plus récent que la dernière modification supprime la prise **sur tous les
-  appareils**. « Tout effacer » reste une remise à zéro locale, non propagée.
+  appareils**. « Tout effacer » reste une remise à zéro locale, non propagée
+  (connecté, la synchronisation ramène donc le garage du cloud : la question le dit).
   La fusion des doublons de catalogue (`FUSIONS`, `fusionnerPrise`) est une
   autre fonction, inchangée.
+- **Synchronisation AUTOMATIQUE** (`gm-compte.js` 2.7.0, 20/11, décision du propriétaire) :
+  connecté, plus besoin des boutons. Activée par défaut, désactivable dans le panneau
+  (`synchroAuto`, préférence de l'appareil). Mécanique, et ses invariants :
+  - **Signal dérivé du stockage, pas tenu à la main** : `Store.put/del/clear` d'`index.html`
+    émettent `gm:collection` (une fois l'app prête), dans la **tâche suivante** — après la
+    mise à jour de l'état en mémoire. Un nouveau chemin d'écriture est donc couvert d'office.
+  - **La récupération écrit en silence** (`importer(…, { silencieux:true })`) : aucune
+    modification en attente n'en naît. ⚠️ Ne jamais retirer ce silence : deux téléphones dont
+    les données locales diffèrent d'un détail gardé par la fusion (défis du jour, équipage)
+    se renverraient la balle **sans fin**.
+  - **Modification en attente** = compteur `modif` persisté (survit à la fermeture de l'app) ;
+    une sauvegarde ne le lève que s'il n'a pas bougé depuis l'export (un geste pendant
+    l'envoi des photos n'est pas dans ce qui part).
+  - **Aucun envoi inutile** : signature SHA-256 du garage envoyé (JSON canonique, date
+    d'export exclue) mémorisée (`empreinteCloud`) ; en mode auto, identique → ni requête ni
+    écriture. Le bouton « Sauvegarder » envoie toujours.
+  - **Déclencheurs** : geste → envoi après 4 s de calme (rafale = un envoi) ; app en
+    arrière-plan → envoi immédiat ; ouverture de l'app, retour sur l'app (≥ 2 min) et retour
+    du réseau → récupération **si la version du cloud a changé** ; connexion → récupération
+    puis envoi. Même file que les boutons. Erreur → ligne d'état du panneau, relance
+    espacée (30 s → 15 min), jamais de message par-dessus l'app.
+  - Ce qui décrit le cloud **d'un compte** (`version`, `ids`, `empreinteCloud`, `modif`…)
+    part avec la session (`ETAT_DU_COMPTE`) : un second compte n'en hérite pas.
+  - `index.html` ancien en cache (sans `GMGarage.pret`) : pas de synchro auto, les boutons
+    restent. Limite connue : un geste fait **pendant** l'écriture d'une récupération est lui
+    aussi silencieux ; il part avec le geste suivant.
 - **Photos** : plafond **par rareté** à la capture (`PHOTOS_PAR_RARETE` dans
   `index.html` : 3 courant → 30 légendaire), **jamais** de retrait des photos
   existantes au-delà ; 1,5 Mo par photo côté app (recompression plutôt que

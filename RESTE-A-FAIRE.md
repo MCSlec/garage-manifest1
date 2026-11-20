@@ -262,11 +262,18 @@ Capacitor autour du même code) :
   `PHOTOS` est absent, refus net des envois de photos, banc mis à jour). Resend sans
   domaine n'écrit qu'à ton adresse : ça sert à éprouver le parcours de connexion sur
   ton téléphone, pas à ouvrir les comptes au public.
-- [ ] Sauvegarde cloud **manuelle** (bouton, choix par défaut) ou automatique.
-  **Recommandation révisée le 19/11 : automatique** (« go synchro auto »), vu ton objectif
-  de suivre ta progression sur plusieurs appareils : récupération à la connexion et à
-  l'ouverture de l'app, sauvegarde en arrière-plan après chaque prise. Gratuit (≈ 12 Ko
-  par sauvegarde).
+- [x] Sauvegarde cloud **manuelle** ou **automatique** → **automatique** (ton « go synchro
+  auto », 20/11). Récupération à la connexion et à l'ouverture de l'app, envoi en
+  arrière-plan quelques secondes après chaque geste ; désactivable dans Réglages › Compte.
+- [ ] 🟢 **Essayer la synchro auto sur deux appareils** (après ton « merge », v20.205.0) :
+  connecte-toi sur le PC **et** sur le téléphone, capture une voiture sur l'un, rouvre
+  l'app sur l'autre : elle doit y être, sans toucher « Sauvegarder » ni « Récupérer ».
+  Dans Réglages › Compte, la ligne « Synchronisation automatique » dit « à jour ».
+- [ ] 🟡 **Adresse e-mail dédiée pour « Envoyer un retour »** (ton choix du 20/11 : une
+  adresse réservée à l'app, pas ta perso — elle est **publique** dans le code). Crée-la
+  (un Gmail gratuit suffit, ex. « garage-manifest… ») et donne-la moi : je l'inscris
+  (`ADRESSE_RETOUR` dans `index.html`). D'ici là, le bouton ouvre ta messagerie avec le
+  mail pré-rempli, **sans destinataire**.
 - [ ] Photos sauvegardées : **toutes** (choix par défaut, dédupliquées) ou la
   couverture seulement.
 - [ ] **i18n (chantier B, option b)** : lancer le mécanisme `t("…")` ? Quelles

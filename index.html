@@ -2479,6 +2479,7 @@ const VARIANTS = {
     check:'<path d="M20 6L9 17l-5-5"/>',
     download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>',
     upload:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>',
+    mail:'<path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="M22 6l-10 7L2 6"/>',
     trash:'<path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>',
     rotate:'<path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.5 9a9 9 0 0 1 14.9-3.4L23 10M1 14l4.6 4.4A9 9 0 0 0 20.5 15"/>',
     star:'<path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.9L12 17.8l-6.2 3.3L7 14.2l-5-4.9 6.9-1z"/>',
@@ -2495,6 +2496,20 @@ const VARIANTS = {
   /* ====================================================== STOCKAGE (IndexedDB) */
   // Store "spots" : un enregistrement par voiture collectée.
   // Repli mémoire si IndexedDB indisponible (ex. aperçu sandbox) → l'app tourne quand même.
+  /* Synchronisation automatique (20/11) : toute écriture de la collection, une fois l'app
+     démarrée, est SIGNALÉE (événement « gm:collection » sur window). gm-compte.js l'écoute
+     pour sauvegarder en arrière-plan ; il ne touche jamais lui-même à IndexedDB (contrat
+     GMGarage). Les écritures d'une récupération cloud sont SILENCIEUSES (importer({ silencieux }))
+     : sans cela, récupérer déclenchait une sauvegarde, que l'autre appareil récupérait, qui
+     déclenchait une sauvegarde… — un aller-retour sans fin entre deux téléphones.
+     Le silence se décide à l'écriture ; le signal part APRÈS (tâche suivante) : l'appelant
+     met l'état en mémoire à jour juste après `await Store.put()`, et une sauvegarde lancée
+     entre les deux aurait exporté l'ancien état en croyant la modification envoyée. */
+  let collectionPrete = false, signalSuspendu = 0;
+  const signalerCollection = () => {
+    if (!collectionPrete || signalSuspendu) return;
+    setTimeout(() => { try { window.dispatchEvent(new CustomEvent("gm:collection")); } catch {} }, 0);
+  };
   const Store = (() => {
     const DB = "garage-manifest", STORE = "spots", VER = 1;
     let db = null, mem = null;
@@ -2517,9 +2532,9 @@ const VARIANTS = {
       open,
       isMemory: () => !!mem,
       async all()   { if (mem) return [...mem.values()]; return wrap(tx("readonly").getAll()); },
-      async put(v)  { if (mem) { mem.set(v.carId, v); return; } return wrap(tx("readwrite").put(v)); },
-      async del(id) { if (mem) { mem.delete(id); return; } return wrap(tx("readwrite").delete(id)); },
-      async clear() { if (mem) { mem.clear(); return; } return wrap(tx("readwrite").clear()); },
+      async put(v)  { if (mem) mem.set(v.carId, v); else await wrap(tx("readwrite").put(v)); signalerCollection(); },
+      async del(id) { if (mem) mem.delete(id); else await wrap(tx("readwrite").delete(id)); signalerCollection(); },
+      async clear() { if (mem) mem.clear(); else await wrap(tx("readwrite").clear()); signalerCollection(); },
     };
   })();
 
@@ -2555,7 +2570,7 @@ const VARIANTS = {
   };
   // Bump à chaque MAJ notable, en même temps que VERSION dans sw.js — sert de repère
   // pour toi et tes potes quand ils te remontent un bug ("ça plante en v3.1.0").
-  const APP_VERSION = "3.3.0";
+  const APP_VERSION = "3.4.0";
   let installPrompt = null;
 
   /* ---- Voitures « Non classé » : captures hors catalogue officiel ---- */
@@ -2983,7 +2998,7 @@ const VARIANTS = {
         <div class="h2" style="margin-bottom:6px">Application</div>
         <div class="rows">
           ${installRow}
-          <div class="srow"><div class="l"><b>Envoyer un retour</b><span>Bug, idée, ressenti — inclut la version pour que je m'y retrouve</span></div><button class="btn" data-act="feedback" aria-label="Envoyer un retour">${icon("upload","icon")}</button></div>
+          <div class="srow"><div class="l"><b>Envoyer un retour</b><span>Bug, idée, ressenti — inclut la version pour que je m'y retrouve</span></div><button class="btn" data-act="feedback" aria-label="Envoyer un retour">${icon("mail","icon")}</button></div>
           <div class="srow"><div class="l"><b>Thème</b><span>Sombre, clair, ou selon ton téléphone</span></div><div class="theme-pick" id="themePick">
             <button data-theme-set="dark">Sombre</button>
             <button data-theme-set="light">Clair</button>
@@ -4191,7 +4206,15 @@ const VARIANTS = {
      le module ne touche jamais à IndexedDB ni à `state` directement. */
   window.GMGarage = Object.freeze({
     exporter: () => donneesExport(),
-    importer: async (data, options) => { const r = await importerDonnees(data, options); render(); return r; },
+    // `silencieux` : écritures non signalées (récupération cloud de gm-compte.js, voir signalerCollection).
+    importer: async (data, options) => {
+      const silence = !!(options && options.silencieux);
+      if (silence) signalSuspendu++;
+      try { const r = await importerDonnees(data, options); render(); return r; }
+      finally { if (silence) signalSuspendu--; }
+    },
+    // Collection chargée (événement « gm:pret » au même moment) : avant, exporter() rendrait un garage VIDE.
+    pret: () => collectionPrete,
     normaliserPhotos: () => normaliserPhotos(),
     supprimerPhoto: (src, options) => supprimerPhoto(src, options),
     remplacerPhoto: (ancienne, nouvelle, options) => remplacerPhoto(ancienne, nouvelle, options),
@@ -4204,7 +4227,7 @@ const VARIANTS = {
     let connecte = false;
     try { connecte = !!(window.GMCompte && window.GMCompte.etat().connecte); } catch {}
     const question = connecte
-      ? "Effacer toutes les prises et photos de ce téléphone ? Ta sauvegarde cloud n'est pas touchée : « Récupérer » ou « Sauvegarder » les ramènera ici. Pour tout effacer partout, supprime d'abord ton compte."
+      ? "Effacer toutes les prises et photos de ce téléphone ? Ta sauvegarde cloud n'est pas touchée : elle reviendra ici à la prochaine synchronisation (ou avec « Récupérer »). Pour tout effacer partout, supprime d'abord ton compte."
       : "Effacer TOUTES tes prises et photos ? Cette action est irréversible.";
     if (!await askConfirm(question, "Tout effacer", true)) return;
     await Store.clear();
@@ -4539,7 +4562,7 @@ const VARIANTS = {
     return `
       <div class="section panel" style="padding:10px">
         <div id="huntMap"></div>
-        <p class="map-note">${n ? `${n} prise${n>1?"s":""} géolocalisée${n>1?"s":""} · fond de carte © OpenStreetMap (connexion requise)` : "Aucune prise géolocalisée — active « Ajouter ma position GPS » à l'enregistrement."}</p>
+        <p class="map-note">${n ? `${n} prise${n>1?"s":""} géolocalisée${n>1?"s":""}` : "Aucune prise géolocalisée — active « Ajouter ma position GPS » à l'enregistrement."} · fond de carte <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener" style="color:inherit">© OpenStreetMap</a> (connexion requise)</p>
       </div>`;
   }
   async function initHuntMap() {
@@ -4580,14 +4603,23 @@ const VARIANTS = {
     return { app:"garage-manifest", type:"profile", v:1, name:(META.name||"Pilote anonyme").slice(0,24),
       ts:new Date().toISOString(), score:st.score, count:st.count, rank:st.rank.name, legends };
   }
+  /* « Envoyer un retour » (20/11 : « ça m'ouvre la feuille de partage au lieu d'un mail »).
+     Un lien mailto: ouvre DIRECTEMENT la messagerie, mail pré-rempli. L'adresse est PUBLIQUE
+     (code en ligne, lisible par les robots à spam) : une adresse DÉDIÉE à l'app, jamais une
+     adresse personnelle — choix du propriétaire, adresse à renseigner (RESTE-A-FAIRE). Vide :
+     le mail s'ouvre sans destinataire. Le texte est aussi copié : sans messagerie installée,
+     un lien mailto: ne fait rien, et rien ne le signale à la page. */
+  const ADRESSE_RETOUR = "";
   async function sendFeedback() {
     const st = computeStats();
-    const text = `Feedback Garage Manifest v${APP_VERSION}\nPilote : ${META.name || "?"}\nCollection : ${st.count}/${TOTAL} · ${st.score} pts\n\n[Décris ici le bug ou ton idée]`;
-    if (navigator.share) {
-      try { await navigator.share({ title: "Feedback Garage Manifest", text }); return; } catch {}
-    }
-    try { await navigator.clipboard.writeText(text); toast("Modèle copié — colle-le où tu veux (groupe, mail…)"); }
-    catch { toast("Copie impossible sur cet appareil"); }
+    const adresse = /^[^\s@?&#:/]+@[^\s@?&#:/]+\.[a-z]{2,}$/i.test(ADRESSE_RETOUR) ? ADRESSE_RETOUR : "";
+    const sujet = `Retour Garage Manifest v${APP_VERSION}`;
+    const corps = [`Pilote : ${META.name || "?"}`, `Collection : ${st.count}/${TOTAL} · ${st.score} pts`,
+      `Version : app ${APP_VERSION} · module ${window.GMSpecs?.VERSION || "?"}`, "", "[Décris ici le bug ou ton idée]", ""].join("\r\n");
+    ouvrirExterne(`mailto:${adresse}?subject=${encodeURIComponent(sujet)}&body=${encodeURIComponent(corps)}`);
+    let copie = false;
+    try { await navigator.clipboard.writeText(`${sujet}\n${corps.replace(/\r\n/g, "\n")}`); copie = true; } catch {}
+    toast(copie ? "Ta messagerie s'ouvre — le texte est aussi copié, au cas où" : "Ta messagerie s'ouvre");
   }
   async function shareProfile() {
     if (!META.name) { const n = await askText("Ton nom de pilote (visible par ton équipage) :", "Ex. Cyril"); if (n===null) return; META.name = (n.trim().slice(0,24)) || "Pilote anonyme"; await saveMeta(); }
@@ -4875,8 +4907,18 @@ const VARIANTS = {
      ANNULAIT le rechargement (constaté au banc des retouches : la fiche ne se rouvrait
      plus). `beforeunload` part pendant l'appel lui-même, donc avant notre alignement ;
      les étapes laissées derrière sont traversées au premier « retour » de la page suivante. */
-  addEventListener("beforeunload", () => { pageQuittee = true; });
+  addEventListener("beforeunload", () => { if (!lienExterne) pageQuittee = true; });
   addEventListener("pageshow", (e) => { if (e.persisted) pageQuittee = false; });
+  /* Lien vers une AUTRE application (mailto:, tel:…). Chromium déclenche « beforeunload »
+     pendant le clic, de façon synchrone, alors que la page reste (constaté au banc, 20/11) :
+     la garde ci-dessus croyait la page quittée et ne suivait plus le bouton retour jusqu'au
+     rechargement. Tout lien de ce genre passe par ici. */
+  let lienExterne = false;
+  function ouvrirExterne(url) {
+    const a = document.createElement("a"); a.href = url; a.rel = "noopener";
+    lienExterne = true;
+    try { document.body.appendChild(a); a.click(); } finally { a.remove(); lienExterne = false; }
+  }
   function alignerRetour() {
     if (pageQuittee) return;
     const p = profondeurRetour();
@@ -5059,6 +5101,8 @@ const VARIANTS = {
     } catch {}
     if (navigator.storage?.persist) { try { await navigator.storage.persist(); } catch {} }
     state.ready = true;
+    collectionPrete = true;              // les écritures du démarrage (migrations) ne sont pas des gestes du joueur
+    try { window.dispatchEvent(new CustomEvent("gm:pret")); } catch {}
     render();
     registerSW();
   }

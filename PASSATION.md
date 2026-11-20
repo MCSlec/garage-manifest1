@@ -5,11 +5,11 @@
 > Il dit **où on en est, ce qui est prouvé, ce qui reste, et les pièges déjà payés**.
 > Le détail vit ailleurs ; ici, on pointe vers lui.
 >
-> **Dernière mise à jour : 17/11/2026** (branche
-> `claude/create-claude-documentation-8eo2t7`, version `20.199.0`). **Partie B du
-> tuto à moitié faite, rien de neuf côté propriétaire depuis le 04/10** (constaté
-> le 17/11) : lire le §2 avant toute instruction au propriétaire. Du 10 au 17/11 :
-> **seconde relecture complète** du code (`AUDIT-DEFAUTS.md`, « Seconde relecture »).
+> **Dernière mise à jour : 20/11/2026** (branche
+> `claude/create-claude-documentation-8eo2t7`, version `20.205.0`). En ligne : v20.204.0
+> (PR #3). Sur la branche, en attente de « merge » : synchronisation automatique,
+> attribution OpenStreetMap, « Envoyer un retour » par e-mail (§3). Comptes, Google et
+> relais IA **en service** (§2) : lire le §2 avant toute instruction au propriétaire.
 > Le propriétaire suit la **feuille de route** en tête de `TUTO-GRATUIT.md` (étapes
 > 1 à 19, uniquement ce qui reste) : c'est elle qu'on cite, par son numéro.
 > **À mettre à jour à chaque fin de session** : remplacer, ne pas empiler (l'historique
@@ -34,9 +34,9 @@
    ```
    `/opt/pw-browsers/chromium` est un lien **stable** : le dossier versionné
    (`chromium-1194/…`) a changé d'une image à l'autre et les bancs ne démarraient plus.
-   Dernier passage complet : **21/21 verts** (19/11, v20.204.0, configuration de
-   production ; comptes navigateur 106, retouches 32, carte 8, `banc-galerie.js` 14,
-   `banc-retour.js` 11), dont les nouveaux
+   Dernier passage complet : **21/21 verts** (20/11, v20.205.0, configuration de
+   production ; comptes navigateur 129 dont la synchro auto, retouches 32, carte 10,
+   `banc-galerie.js` 14, `banc-retour.js` 15), dont les nouveaux
    `banc-retouches.js` (28) et `banc-sw.js` (14) ; détail et mutations :
    `AUDIT-DEFAUTS.md`, « Seconde relecture ». ⚠️ **Aucun banc ne joint Google** : avec
    l'identifiant renseigné, ouvrir les Réglages charge le vrai script, et le 18/11 le
@@ -74,7 +74,7 @@ faux. Seul le tableau de bord Cloudflare fait foi.
 | Code à coller (étapes 3 et 8) | Le dépôt a changé depuis le tuto du 27/10 (relais : lecture bornée, IPv6 /64, confiance 0 ; comptes : `/sante`, plafond global de codes…). **Aucune incidence** : les étapes collent le fichier brut de la branche, donc toujours la dernière version. Vérification de l'étape 15 = **`/sante`** → `"ok":true` (l'ancienne, `/garage`, passait sans base reliée) | Dépôt |
 | Schéma de la base | **À jour** : 8 tables + 3 index, identiques au dépôt (C0 fait par le connecteur le 14/10, sur « go ») | Connecteur, `sqlite_master` comparé au dépôt |
 | Connexion Google | Projet Google Cloud **« Garage Manifest »** (compte dédié ou perso du propriétaire), écran de consentement créé (Externe, **mode Test** au 18/11), client **Web** « Garage Manifest web », origine `https://mcslec.github.io`. ID client (public) inscrit dans `gm-compte.js` le 18/11 (v20.201.0). *Code secret du client* apparu sur une capture : **remplacé le 20/11** (l'ancien supprimé, dit par le propriétaire). Reste : sa confirmation de F8. **F5 faite le 19/11** : mode Test, le propriétaire inscrit comme utilisateur test (1/100 ; « Publier » reste grisé tant qu'il manque une page de confidentialité publiée). Variable `GOOGLE_CLIENT_ID` (Texte) **déployée** sur `garage-comptes` le 18/11 (F6, capture du tableau de bord) ; **`/sante` → `"google":true` constaté le 18/11** (capture : `ok`, `base`, `reglages` vrais, `manquants` vide, `photos:false` attendu sans R2). `/sante` dit « présent », pas « identique à l'app » : la concordance des deux valeurs ne se prouve qu'à l'essai F8. Futurs clients Android / iOS : à **ajouter** dans le même projet ; iOS demandera que le serveur accepte plusieurs identifiants | Captures du propriétaire, 18/11 |
-| Comptes dans l'app | `COMPTE_URL` = `https://garage-comptes.cyril-lapopin.workers.dev` (18/11, v20.200.0) : **effectif après la fusion** de la PR #1. Aucune requête avant que le joueur touche au panneau (banc) | Dépôt |
+| Comptes dans l'app | `COMPTE_URL` = `https://garage-comptes.cyril-lapopin.workers.dev` (18/11, v20.200.0), **en ligne** depuis la PR #1. Hors connexion : aucune requête (banc). **Connecté, à partir de v20.205.0 (branche, pas encore en ligne)** : synchronisation automatique — récupération à l'ouverture si le cloud a changé, envoi quelques secondes après chaque geste. Au premier lancement de cette version, un téléphone déjà connecté fait **une** récupération complète (signature du cloud encore inconnue), puis plus rien tant que rien ne change | Dépôt |
 
 **Ce que les connecteurs permettent** (vérifié le 07/10 ; le 22/10, le connecteur Cloudflare s'annonce **déprécié** au profit de `https://mcp.cloudflare.com/mcp`, qui couvre toute l'API. Il n'est **pas** branché : le propriétaire l'ajoute sur `claude.ai/customize/connectors`, puis ouvre une **nouvelle** session (les connecteurs se lisent au démarrage). Il permettrait à la session de faire la partie non secrète de B et C, toujours après « go ») : Cloudflare = lire les
 Workers et leur code, créer et interroger D1. **Pas** de juridiction à la création,
@@ -122,6 +122,16 @@ relais se font depuis le navigateur du propriétaire (`TUTO-GRATUIT.md` B5).
 > (e-mail reçu, code validé, dit par le propriétaire). Constat D1 en lecture seule : 1 compte,
 > 1 session, 1 liaison Google, aucun code en attente (consommé) → le code e-mail et Google
 > ouvrent **le même compte**. Garage en version 4.
+>
+> **20/11 — sur la branche, PAS en ligne** (v20.205.0, `gm-compte.js` 2.7.0, `APP_VERSION`
+> 3.4.0) : **synchronisation automatique** (« go synchro auto ») — contrat et invariants dans
+> `CLAUDE.md` §8 quinquies ; **attribution OpenStreetMap** sur la carte vide ; **« Envoyer un
+> retour »** ouvre la messagerie (`mailto:`) au lieu de la feuille de partage (signalé par le
+> propriétaire, capture Windows). Adresse du destinataire : **vide** en attendant l'adresse
+> **dédiée** que le propriétaire doit créer (son choix ; `RESTE-A-FAIRE.md` §5) — ne jamais y
+> mettre son adresse personnelle. Piège trouvé au banc : un lien `mailto:` déclenche
+> `beforeunload` dans Chromium → `ouvrirExterne()` (`CLAUDE.md` §3). Mise en ligne : nouvelle
+> PR sur « merge » du propriétaire, puis son essai sur deux appareils.
 
 **État au 27/10 : A faite, B à moitié.** Le propriétaire suit la feuille de route de
 `TUTO-GRATUIT.md` (étapes 1 à 19) ; le tableau ci-dessous en est la version session.
