@@ -6,7 +6,7 @@
 > Le détail vit ailleurs ; ici, on pointe vers lui.
 >
 > **Dernière mise à jour : 20/11/2026** (branche
-> `claude/create-claude-documentation-8eo2t7`, version `20.205.0`). En ligne : v20.204.0
+> `claude/create-claude-documentation-8eo2t7`, version `20.206.0`). En ligne : v20.204.0
 > (PR #3). Sur la branche, en attente de « merge » : synchronisation automatique,
 > attribution OpenStreetMap, « Envoyer un retour » par e-mail (§3). Comptes, Google et
 > relais IA **en service** (§2) : lire le §2 avant toute instruction au propriétaire.
@@ -34,8 +34,8 @@
    ```
    `/opt/pw-browsers/chromium` est un lien **stable** : le dossier versionné
    (`chromium-1194/…`) a changé d'une image à l'autre et les bancs ne démarraient plus.
-   Dernier passage complet : **21/21 verts** (20/11, v20.205.0, configuration de
-   production ; comptes navigateur 129 dont la synchro auto, retouches 32, carte 10,
+   Dernier passage complet : **21/21 verts** (20/11, v20.206.0, configuration de
+   production ; comptes navigateur 129 dont la synchro auto, dom 19, retouches 32, carte 10,
    `banc-galerie.js` 14, `banc-retour.js` 15), dont les nouveaux
    `banc-retouches.js` (28) et `banc-sw.js` (14) ; détail et mutations :
    `AUDIT-DEFAUTS.md`, « Seconde relecture ». ⚠️ **Aucun banc ne joint Google** : avec
@@ -123,7 +123,7 @@ relais se font depuis le navigateur du propriétaire (`TUTO-GRATUIT.md` B5).
 > 1 session, 1 liaison Google, aucun code en attente (consommé) → le code e-mail et Google
 > ouvrent **le même compte**. Garage en version 4.
 >
-> **20/11 — sur la branche, PAS en ligne** (v20.205.0, `gm-compte.js` 2.7.0, `APP_VERSION`
+> **20/11 — sur la branche, PAS en ligne** (v20.206.0, `gm-compte.js` 2.7.0, `APP_VERSION`
 > 3.4.0) : **synchronisation automatique** (« go synchro auto ») — contrat et invariants dans
 > `CLAUDE.md` §8 quinquies ; **attribution OpenStreetMap** sur la carte vide ; **« Envoyer un
 > retour »** ouvre la messagerie (`mailto:`) au lieu de la feuille de partage (signalé par le
@@ -131,7 +131,9 @@ relais se font depuis le navigateur du propriétaire (`TUTO-GRATUIT.md` B5).
 > **dédiée** que le propriétaire doit créer (son choix ; `RESTE-A-FAIRE.md` §5) — ne jamais y
 > mettre son adresse personnelle. Piège trouvé au banc : un lien `mailto:` déclenche
 > `beforeunload` dans Chromium → `ouvrirExterne()` (`CLAUDE.md` §3). Mise en ligne : nouvelle
-> PR sur « merge » du propriétaire, puis son essai sur deux appareils.
+> PR sur « merge » du propriétaire, puis son essai sur deux appareils. Puis (v20.206.0) :
+> choisir Essence / Diesel ne ramène plus sur la photo (fiche redessinée = position gardée,
+> `CLAUDE.md` §3, `banc-dom.js`).
 
 **État au 27/10 : A faite, B à moitié.** Le propriétaire suit la feuille de route de
 `TUTO-GRATUIT.md` (étapes 1 à 19) ; le tableau ci-dessous en est la version session.

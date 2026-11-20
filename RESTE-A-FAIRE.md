@@ -265,7 +265,7 @@ Capacitor autour du même code) :
 - [x] Sauvegarde cloud **manuelle** ou **automatique** → **automatique** (ton « go synchro
   auto », 20/11). Récupération à la connexion et à l'ouverture de l'app, envoi en
   arrière-plan quelques secondes après chaque geste ; désactivable dans Réglages › Compte.
-- [ ] 🟢 **Essayer la synchro auto sur deux appareils** (après ton « merge », v20.205.0) :
+- [ ] 🟢 **Essayer la synchro auto sur deux appareils** (après ton « merge », v20.206.0) :
   connecte-toi sur le PC **et** sur le téléphone, capture une voiture sur l'un, rouvre
   l'app sur l'autre : elle doit y être, sans toucher « Sauvegarder » ni « Récupérer ».
   Dans Réglages › Compte, la ligne « Synchronisation automatique » dit « à jour ».

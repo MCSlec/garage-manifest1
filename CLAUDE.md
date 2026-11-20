@@ -303,6 +303,11 @@ Règles à ne jamais enfreindre :
   ⚠️ **Tout lien vers une autre application** (`mailto:`, `tel:`…) passe par `ouvrirExterne()` :
   Chromium déclenche `beforeunload` sur un tel lien **alors que la page reste** (20/11, banc) ;
   ouvert autrement, il couperait le suivi du bouton retour jusqu'au rechargement.
+- **Fiche redessinée = position gardée** (20/11, `banc-dom.js`) : `openDetail()` sur la voiture
+  **déjà ouverte** (motorisation choisie, favori, couverture…) garde la page du carrousel et
+  le défilement, restaurés tout de suite **et** après la greffe de `gm-specs.js` (qui allonge
+  la page fiche). Sinon choisir Essence / Diesel ramenait sur la photo. Une autre voiture, ou
+  une fiche rouverte, repart de la photo.
 - **Carte** : `#huntMap` porte `isolation:isolate`. Les calques de Leaflet (z-index 400
   à 1000) passaient sinon **devant les fiches** (50) ouvertes depuis la carte (19/11).
 
@@ -489,7 +494,7 @@ incrémenter conjointement :**
 2. `VERSION` (`"garage-v…"`) dans `sw.js` (ligne ~12).
 
 Ces deux numéros sont **tenus synchronisés** (au 20/11/2026 : `gm-specs.js` →
-`20.205.0`, `sw.js` → `garage-v20.205.0`). `VERSION_MODULE` s'affiche en outre
+`20.206.0`, `sw.js` → `garage-v20.206.0`). `VERSION_MODULE` s'affiche en outre
 dans l'UI via `grefferVersion()`, ce qui permet de vérifier de visu quelle version
 tourne réellement sur l'appareil.
 

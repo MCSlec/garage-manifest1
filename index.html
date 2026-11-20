@@ -3715,6 +3715,15 @@ const VARIANTS = {
   }
 
   function openDetail(carId) {
+    /* Fiche DÉJÀ ouverte sur cette voiture, redessinée (motorisation choisie, favori,
+       couverture…) : on garde la page du carrousel et le défilement. Avant, choisir
+       Essence / Diesel ramenait sur la photo (signalé par le propriétaire, 20/11). Lu dans
+       le DOM (comme la fiche ouverte de remplacerPhoto) : `activeDetail` n'est jamais remis
+       à zéro à la fermeture, et une fiche rouverte doit repartir de la photo. */
+    const pagerAvant = overlay.querySelector("#pager"), corpsAvant = overlay.querySelector(".sh-body");
+    const memeFiche = !!pagerAvant && overlay.querySelector(".detail-shell[data-car-id]")?.getAttribute("data-car-id") === carId;
+    const pageAvant = memeFiche && pagerAvant.clientWidth ? Math.round(pagerAvant.scrollLeft / pagerAvant.clientWidth) : 0;
+    const defileAvant = memeFiche && corpsAvant ? corpsAvant.scrollTop : 0;
     activeDetail = carId;
     if (!state.motoSel) state.motoSel = {}; // couche additive motorisations — init défensive, pas de déclaration globale connue
     const c = CARS_BY_ID[carId], rec = state.spots.get(carId), h = !!rec;
@@ -3739,6 +3748,15 @@ const VARIANTS = {
         const dots = $("#dots"); if (dots) [...dots.children].forEach((d,idx) => d.classList.toggle("on", idx===i));
         const hint = document.querySelector(".swipe-hint"); if (hint) hint.style.opacity = i===0 ? "1" : "0";
       }, { passive:true });
+    }
+    if (memeFiche && (pageAvant || defileAvant)) {
+      const remettre = () => {
+        const p = $("#pager"), b = overlay.querySelector(".sh-body");
+        if (p && pageAvant) p.scrollLeft = pageAvant * p.clientWidth;
+        if (b) b.scrollTop = defileAvant;
+      };
+      // Tout de suite, puis après la greffe de gm-specs.js (MutationObserver), qui allonge la page fiche.
+      remettre(); requestAnimationFrame(remettre);
     }
     if (h) { const t = $("#detNote"); if (t) t.addEventListener("blur", async () => { const n = t.value.trim(); if (n === (rec.note || "")) return; rec.note = n; rec.maj = new Date().toISOString(); await Store.put(rec); }); }
   }
