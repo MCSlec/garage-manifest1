@@ -117,6 +117,11 @@ relais se font depuis le navigateur du propriétaire (`TUTO-GRATUIT.md` B5).
 >
 > **19/11 — PR #3 fusionnée** sur « MERGE PR » : lot F-1 à F-9, bouton retour et carte
 > **en ligne** (v20.204.0). La branche reprend `main` (avance rapide).
+>
+> **20/11 — étape 18 faite** : connexion par **code e-mail** essayée sur le téléphone
+> (e-mail reçu, code validé, dit par le propriétaire). Constat D1 en lecture seule : 1 compte,
+> 1 session, 1 liaison Google, aucun code en attente (consommé) → le code e-mail et Google
+> ouvrent **le même compte**. Garage en version 4.
 
 **État au 27/10 : A faite, B à moitié.** Le propriétaire suit la feuille de route de
 `TUTO-GRATUIT.md` (étapes 1 à 19) ; le tableau ci-dessous en est la version session.

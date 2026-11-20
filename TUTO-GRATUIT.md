@@ -177,7 +177,7 @@ sauvegarde. Peut se faire le même jour que la séance 1 ou un autre.
   *Mon conseil :* au plus tôt **après l'étape 6 réussie**. On ne change qu'une chose
   à la fois : si la reconnaissance flanche, on saura que c'est le relais et pas la
   nouvelle app.
-- [ ] **18. Tester sur le téléphone** *(partie E)* : ferme complètement l'app et
+- [x] **18. Tester sur le téléphone** *(partie E)* *(20/11 : code e-mail reçu et validé, confirmé par le propriétaire ; base : toujours 1 seul compte, donc même compte que Google)* : ferme complètement l'app et
   rouvre-la (deux fois si besoin) → **Plus → Réglages** : version **20.199.0 ou
   plus** → **Compte** → adresse **du compte Resend** → **Recevoir un code** → code →
   **Valider** → **Sauvegarder**. Écris-moi « comptes testés ».
