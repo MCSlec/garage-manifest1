@@ -674,7 +674,7 @@ bouton, ni la moindre requête vers Google. Gratuit, **aucune carte bancaire**.
   l'interface : *API et services* → *Écran de consentement OAuth*) → **Commencer** :
   - nom de l'app : `Garage Manifest` ; e-mail d'assistance : ton adresse ;
   - audience : **Externe** ; coordonnées : ton adresse → accepte → **Créer**.
-- [x] **F3. Créer l'identifiant.** *(18/11 : ⚠️ le « code secret du client » est apparu sur une capture envoyée dans la conversation — à supprimer ou remplacer dans Clients → Garage Manifest web ; on ne s'en sert jamais)* **Clients** (ou *Identifiants*) → **Créer un client**
+- [x] **F3. Créer l'identifiant.** *(18/11 : le « code secret du client » était apparu sur une capture envoyée dans la conversation ; **remplacé le 20/11** — l'ancien supprimé, il ne reste que celui du 20/11, jamais affiché ni utilisé)* **Clients** (ou *Identifiants*) → **Créer un client**
   → type **Application Web** → nom `Garage Manifest web` →
   **Origines JavaScript autorisées** : `https://mcslec.github.io` (exactement, sans
   `/` final, sans `garage-manifest1`) → **aucune** URI de redirection → **Créer**.
