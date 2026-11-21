@@ -10,12 +10,18 @@
 >
 > **Règle de maintenance :** toute modification du serveur qui change ce qui est
 > collecté, combien de temps, ou par qui, modifie ce fichier dans le même commit.
+>
+> **Ce fichier est la source de la page publique** `pages/confidentialite.html`,
+> générée par `node banc-pages.js --html` (21/11). Ce préambule, jusqu'au premier
+> `---`, n'y figure pas. Après toute modification : régénérer ; `node banc-pages.js`
+> échoue si la page n'est plus à jour.
 
 ---
 
 ## Qui est responsable
 
-Responsable du traitement : **[À COMPLÉTER — nom, adresse ou e-mail de contact]**.
+Responsable du traitement : **[À COMPLÉTER — nom du responsable]**.
+Contact : [garagemanifest.app@gmail.com](mailto:garagemanifest.app@gmail.com).
 
 ## Sans compte : ta collection reste sur ton téléphone
 
@@ -25,9 +31,9 @@ sauvegarde n'est faite ailleurs.
 
 **Une exception, active par défaut : la reconnaissance automatique.** Quand tu
 photographies ou importes une voiture, la photo est envoyée, **pour cette seule
-identification**, au relais de reconnaissance (`ai-relay-worker.js`, hébergé
-chez Cloudflare), qui la transmet au fournisseur du modèle d'IA et te renvoie
-la marque et le modèle proposés.
+identification**, à notre relais de reconnaissance, hébergé chez Cloudflare,
+qui la transmet au fournisseur du modèle d'IA et te renvoie la marque et le
+modèle proposés.
 - Le relais **ne conserve pas** la photo : il ne l'écrit ni en base ni dans un
   stockage, et ne la journalise pas.
 - Pour plafonner les abus (et la facture), il compte les identifications du
@@ -36,8 +42,10 @@ la marque et le modèle proposés.
   connecté. Ces compteurs ne gardent qu'une **empreinte** SHA-256, jamais l'IP ni
   l'identifiant en clair, et sont effacés sous 48 heures par la purge nocturne
   du relais lui-même (il ne dépend pas du serveur de comptes pour cela).
-- Pour ne rien envoyer du tout : Réglages → vide le champ « Endpoint de
-  reconnaissance IA » et choisis la voiture à la main.
+- Une photo ajoutée **depuis la fiche d'une voiture** (« Ajouter une photo »)
+  n'est jamais envoyée : la voiture est déjà connue, il n'y a rien à
+  identifier. **[À DÉCIDER — un réglage pour couper complètement la
+  reconnaissance automatique n'existe pas encore.]**
 - **[À COMPLÉTER — au lancement : la durée pendant laquelle le fournisseur
   d'IA conserve les requêtes reçues par son API, et son engagement de ne pas
   s'en servir pour entraîner ses modèles, d'après ses conditions commerciales
@@ -124,7 +132,7 @@ données ne servent qu'à te rendre ton garage.
 | **Cloudflare, Inc.** | Hébergement du serveur (Workers), de la base (D1) et des photos (R2). La base est créée sous **juridiction UE** : elle est stockée et traitée dans l'Union européenne (réglage fixé à sa création, constaté le 04/10/2026 par l'API Cloudflare : `jurisdiction: "eu"`) | Tout ce qui est listé plus haut |
 | **Resend** | Envoi de l'e-mail de connexion | Ton adresse e-mail et le code |
 | **Google LLC** (seulement si tu choisis « Continuer avec Google ») | Te connecter avec ton compte Google : Google confirme ton identité et ton adresse | Google sait que tu te connectes à Garage Manifest ; il ne reçoit **rien** de ta collection |
-| **Fournisseur du modèle d'IA** : **Anthropic, PBC** (Claude) ou **Google LLC** (Gemini), selon le réglage `IA_FOURNISSEUR` du relais, plus l'autre si un secours `IA_SECOURS` est configuré. **[À COMPLÉTER — nommer ici le ou les fournisseurs réellement actifs au lancement.]** | Reconnaissance de la voiture sur la photo | La photo envoyée à l'identification, sans ton adresse ni ton identifiant (le relais ne transmet que l'image) |
+| **Fournisseur du modèle d'IA** : **Anthropic, PBC** (Claude) ou **Google LLC** (Gemini), selon la configuration du relais. **[À COMPLÉTER — nommer ici le ou les fournisseurs réellement actifs au lancement.]** | Reconnaissance de la voiture sur la photo | La photo envoyée à l'identification, sans ton adresse ni ton identifiant (le relais ne transmet que l'image) |
 
 Ces sociétés sont établies aux **États-Unis**. **[À COMPLÉTER — vérifier au
 moment du lancement leur adhésion au Data Privacy Framework UE–États-Unis ou
@@ -152,7 +160,8 @@ leurs clauses contractuelles types, et l'indiquer ici.]**
 
 - **Suppression** : Réglages → Compte → « Supprimer mon compte ». Effacement
   **immédiat et total** côté serveur : adresse, sessions, collection et photos.
-  Ton téléphone garde son garage local.
+  Ton téléphone garde son garage local. Sans l'app : voir
+  [Supprimer ton compte](./suppression-compte.html).
   **[À VÉRIFIER au lancement — durée des sauvegardes techniques de Cloudflare D1
   (« Time Travel ») selon l'offre choisie, pendant laquelle une donnée effacée
   reste restaurable par l'hébergeur ; l'indiquer ici.]**
@@ -163,7 +172,7 @@ leurs clauses contractuelles types, et l'indiquer ici.]**
   disponible sur demande à l'adresse de contact.
 - **Rectification** : modifie ta collection dans l'app puis sauvegarde ; pour
   changer d'adresse e-mail, contacte-nous.
-- **Réclamation** : tu peux saisir la CNIL (cnil.fr).
+- **Réclamation** : tu peux saisir la CNIL ([cnil.fr](https://www.cnil.fr)).
 
 ## Comptes inactifs
 

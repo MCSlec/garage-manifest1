@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.208.0';
+  const VERSION_MODULE = '20.209.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS

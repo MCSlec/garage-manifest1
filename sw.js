@@ -11,7 +11,7 @@
              mis en cache, sinon l'ancienne copie est resservie indéfiniment.
 */
 
-const VERSION = "garage-v20.208.0";
+const VERSION = "garage-v20.209.0";
 
 /* ESSENTIEL : sans ces fichiers, l'app ne démarre pas hors-ligne.
    Mis en cache de façon atomique — si l'un manque, l'installation doit échouer
@@ -98,6 +98,12 @@ self.addEventListener("fetch", (event) => {
 
   let url;
   try { url = new URL(req.url); } catch { return; }
+
+  /* Pages web des stores (pages/ : confidentialité, support, suppression de compte) :
+     le service worker ne s'en mêle pas. Hors ligne, le repli ci-dessous leur aurait
+     substitué l'app — une politique de confidentialité remplacée par l'app trompe le
+     lecteur, et l'app y démarrait à une mauvaise adresse (21/11, banc-sw.js). */
+  if (url.origin === self.location.origin && /\/pages\//.test(url.pathname)) return;
 
   // Navigations (ouverture de l'app) → réseau d'abord, app-shell en repli hors-ligne.
   if (req.mode === "navigate") {

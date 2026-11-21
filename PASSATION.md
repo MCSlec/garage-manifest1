@@ -9,7 +9,8 @@
 > `claude/create-claude-documentation-8eo2t7`, version `20.208.0`). **En ligne : v20.208.0**
 > (PR #4, #5 puis #6, 21/11) : synchronisation automatique, attribution OpenStreetMap,
 > « Envoyer un retour » par e-mail vers l'adresse dédiée, sélecteur Essence/Diesel,
-> corrections de la relecture du 21/11. La branche est alignée sur `main`. Comptes, Google et
+> corrections de la relecture du 21/11. Sur la branche, en attente de « merge » (v20.209.0) :
+> les **pages web des stores** (`pages/`, générées par `banc-pages.js`, à finir plus tard). Comptes, Google et
 > relais IA **en service** (§2) : lire le §2 avant toute instruction au propriétaire.
 > Le propriétaire suit la **feuille de route** en tête de `TUTO-GRATUIT.md` (étapes
 > 1 à 19, uniquement ce qui reste) : c'est elle qu'on cite, par son numéro.
@@ -35,7 +36,7 @@
    ```
    `/opt/pw-browsers/chromium` est un lien **stable** : le dossier versionné
    (`chromium-1194/…`) a changé d'une image à l'autre et les bancs ne démarraient plus.
-   Dernier passage complet : **21/21 verts** (21/11, v20.207.0, configuration de
+   Dernier passage complet : **21/21 verts** (21/11, v20.207.0 ; depuis, `banc-pages.js` (22e) et `banc-sw.js` 15 verts en v20.209.0), configuration de
    production ; comptes navigateur 136 dont la synchro auto, dom 19, retouches 32, carte 10,
    `banc-galerie.js` 14, `banc-retour.js` 15), dont les nouveaux
    `banc-retouches.js` (28) et `banc-sw.js` (14) ; détail et mutations :

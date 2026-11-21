@@ -187,6 +187,16 @@ de chez nous (`vendor/`, aucun CDN — vérifié par `banc-carte.js`). Restent d
 
 ## 3. ⚖️ Avant d'ouvrir les comptes au public
 
+**Pages web exigées par les stores : commencées le 21/11** (`pages/`, ta demande) —
+`confidentialite.html` (générée depuis `cloud/CONFIDENTIALITE.md`), `support.html`,
+`suppression-compte.html`. Elles portent un bandeau « version de travail » tant que
+des passages surlignés restent à compléter (les lignes ci-dessous). En ligne au
+prochain « merge », à l'adresse `…/garage-manifest1/pages/…` ; on les finira plus tard.
+À faire aussi à ce moment-là : un **lien vers la politique dans l'app** (Réglages),
+exigé par Apple. ⚠️ Le jour où la **publicité** arrive, la politique change (identifiant
+publicitaire, régie, consentement) : la phrase « aucune publicité ciblée, aucun
+traceur » devra être réécrite.
+
 Tout est dans `cloud/CONFIDENTIALITE.md` :
 
 - [ ] Identité et contact du **responsable du traitement**, date de publication.
@@ -202,6 +212,11 @@ Tout est dans `cloud/CONFIDENTIALITE.md` :
   après 3 ans sans connexion, précédée d'un e-mail). Je code la purge dès que
   c'est tranché.
 - [ ] 🟡 **Âge minimum** des utilisateurs.
+- [ ] 🟡 **Couper la reconnaissance automatique** : la politique affirmait qu'on pouvait ne
+  rien envoyer à l'IA en vidant le champ « Endpoint » — **faux** (champ vide = relais par
+  défaut), corrigé le 21/11. Aujourd'hui, seule une photo ajoutée depuis la fiche d'une
+  voiture n'est jamais envoyée. Faut-il un vrai réglage « reconnaissance automatique :
+  oui / non » ? (Recommandé avant la sortie : simple, et rassurant pour la confidentialité.)
 
 ## 4. 🔴 Notre propre carte (plus aucun appel externe)
 
