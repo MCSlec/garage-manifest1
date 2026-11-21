@@ -830,16 +830,27 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   await AU2.page.click('[data-cf="1"]');
   v('auto · « Réinitialiser » connecté : le cloud n\'est PAS vidé, et le garage revient tout seul sur ce téléphone',
     await attendre(async () => Object.keys(await garage(AU2.page)).length === 8) && nbCloud() === 8 && /prochaine synchronisation/.test(questionReset), { local: Object.keys(await garage(AU2.page)).length, cloud: nbCloud(), questionReset });
+  /* Récupération en PANNE à l'ouverture de l'app (relecture du 21/11) : elle réessaie seule,
+     sans attendre un retour sur l'app ni un retour du réseau. */
+  await AU1.ctx.addInitScript(() => { window.GM_COMPTE_RELANCE_MS = 800; });
+  let pannesGet = 0;
+  await AU1.ctx.route(`${URL_API}/garage`, r => (r.request().method() === 'GET' && pannesGet++ === 0) ? r.fulfill({ status: 503, body: '{"erreur":"indisponible"}', headers: CORS_PANNE }) : r.continue());
+  await geste(AU2.page, prise('renault-megane', [PH('d1')]));
+  await attendre(() => nbCloud() === 9);
+  await recharger(AU1.page);
+  v('auto · récupération en panne à l\'ouverture : nouvel essai tout seul, la voiture de l\'autre téléphone arrive',
+    await attendre(async () => !!(await garage(AU1.page))['renault-megane'], 8000) && pannesGet >= 2, { pannesGet, cloud: nbCloud() });
+  await AU1.ctx.unroute(`${URL_API}/garage`);
   // App passée en arrière-plan : ce qui attend part tout de suite, sans attendre le calme
   sqlite.prepare('DELETE FROM limites').run();
   const AU3 = await telephone(true, { auto: true, synchroMs: 60000 });
   await connecter(AU3.page, MAIL_AUTO);
-  await attendre(async () => Object.keys(await garage(AU3.page)).length === 8);
+  await attendre(async () => Object.keys(await garage(AU3.page)).length === 9);
   await AU3.page.waitForTimeout(800);
   await geste(AU3.page, prise('renault-captur', [PH('a7')]));
   await AU3.page.waitForTimeout(300);
   await AU3.page.evaluate(() => { Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' }); document.dispatchEvent(new Event('visibilitychange')); });
-  v('auto · geste puis app en arrière-plan : envoyé aussitôt (le calme de 60 s n\'est pas attendu)', await attendre(() => nbCloud() === 9, 6000), nbCloud());
+  v('auto · geste puis app en arrière-plan : envoyé aussitôt (le calme de 60 s n\'est pas attendu)', await attendre(() => nbCloud() === 10, 6000), nbCloud());
   // App FERMÉE avant que l'envoi ait pu se faire : la modification attend, et part à la réouverture
   await recharger(AU3.page);
   await AU3.ctx.route(`${URL_API}/garage`, r => r.request().method() === 'PUT' ? r.abort() : r.continue());
@@ -850,9 +861,27 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   await AU3.ctx.unroute(`${URL_API}/garage`);
   AU3.page = await AU3.ctx.newPage(); AU3.page.on('pageerror', e => erreurs.push(String(e)));
   await AU3.page.goto(URL_APP, { waitUntil: 'networkidle' }); await AU3.page.waitForFunction(() => window.GMGarage, { timeout: 15000 });
-  v('auto · app fermée avant l\'envoi : à la réouverture, ce qui attendait part', await attendre(() => nbCloud() === 10, 8000), nbCloud());
-  // Déconnecté : plus aucun échange
-  await ouvrirReglages(AU3.page); await cliquer(AU3.page, 'deconnecter', 'Déconnecté');
+  v('auto · app fermée avant l\'envoi : à la réouverture, ce qui attendait part', await attendre(() => nbCloud() === 11, 8000), nbCloud());
+  /* Un geste fait PENDANT une récupération silencieuse (relecture du 21/11) : le silence
+     était GLOBAL, il couvrait aussi les gestes du joueur, qui n'étaient alors jamais envoyés. */
+  await AU3.page.waitForTimeout(800);
+  const dejaPris = new Set(['ferrari-f40', 'peugeot-205', 'bmw-m3', 'lambo-miura', 'alpine-a110', 'renault-clio', 'renault-5', 'renault-twingo', 'renault-captur', 'renault-zoe', 'renault-4', 'renault-megane', 'renault-espace']);
+  const lotSilence = [...fs.readFileSync(path.join(RACINE, 'index.html'), 'utf8').matchAll(/\{ id: "([a-z0-9-]+)"/g)].map(m => m[1]).filter(id => !dejaPris.has(id)).slice(0, 40).map(id => prise(id, [PH('zz')]));
+  v('(préparation) rien en attente avant le geste', !(await etatAuto(AU3.page)).aEnvoyer);
+  await AU3.page.evaluate(async ([lot, p]) => {
+    const recuperation = window.GMGarage.importer({ app: 'garage-manifest', spots: lot }, { fusion: true, silencieux: true });
+    await new Promise(r => setTimeout(r, 0));
+    await window.GMGarage.importer({ app: 'garage-manifest', spots: [p] });       // le geste du joueur, au même moment
+    await recuperation;
+  }, [lotSilence, prise('renault-espace', [PH('c1')])]);
+  await AU3.page.waitForTimeout(300);
+  v('auto · un geste fait PENDANT une récupération silencieuse est noté « à envoyer »', (await etatAuto(AU3.page)).aEnvoyer);
+  await AU3.page.evaluate(() => { Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' }); document.dispatchEvent(new Event('visibilitychange')); });
+  v('… et il part au cloud', await attendre(() => (((cloudDe(MAIL_AUTO) || {}).donnees || { spots: [] }).spots).some(x => x.carId === 'renault-espace'), 8000));
+  // Déconnecté : plus aucun échange. Synchro d'abord DÉSACTIVÉE : ce choix doit survivre à la déconnexion.
+  await ouvrirReglages(AU3.page); await cliquer(AU3.page, 'auto', 'utilise « Sauvegarder »');
+  await cliquer(AU3.page, 'deconnecter', 'Déconnecté');
+  v('auto · « désactivée » survit à la déconnexion (préférence de l\'appareil, pas du compte)', (await etatAuto(AU3.page)).synchroAuto === false);
   const appelsDeco = appelsApi;
   await geste(AU3.page, prise('renault-4', [PH('a9')]));
   await AU3.page.waitForTimeout(1500);
@@ -860,9 +889,24 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   // Deux comptes sur un même appareil : la signature et la version du premier ne passent pas au second
   const etatDeco = await AU3.page.evaluate(() => JSON.parse(localStorage.getItem('gm-compte') || '{}'));
   v('auto · après déconnexion : ni version, ni signature, ni modification en attente ne restent', !etatDeco.version && !etatDeco.empreinteCloud && !etatDeco.modif, JSON.stringify(etatDeco));
+  /* Mode essai (serveur sans stockage photo) puis R2 branché : la photo restée sur le
+     téléphone part TOUTE SEULE (relecture du 21/11 : le garage étant identique au cloud,
+     la synchro concluait « rien à envoyer » et la photo n'aurait jamais quitté l'appareil). */
+  sqlite.prepare('DELETE FROM limites').run();
+  const r2Auto = env.PHOTOS; delete env.PHOTOS;
+  const AU4 = await telephone(true, { auto: true, synchroMs: 600 });
+  await idb(AU4.page, 'put', [prise('alpine-a110', [PH('e1')])]); await recharger(AU4.page);
+  await connecter(AU4.page, 'essai-auto@exemple.fr');
+  const photoE1 = () => [...r2Auto._m.keys()].some(k => k.endsWith(shaDe(PH('e1'))));
+  const cloudEssai = () => cloudDe('essai-auto@exemple.fr');
+  v('(préparation) mode essai : collection au cloud, sans la photo', await attendre(() => !!cloudEssai()) && !photoE1() && (await etatAuto(AU4.page)).sansPhotos);
+  env.PHOTOS = r2Auto;
+  await AU4.page.waitForTimeout(800);
+  await AU4.page.evaluate(() => window.dispatchEvent(new CustomEvent('gm:collection')));
+  v('auto · R2 branché ensuite : la photo restée sur le téléphone part toute seule', await attendre(photoE1, 8000));
 
   /* 5. Suppression du compte */
-  const idPilote =sqlite.prepare("SELECT id FROM utilisateurs WHERE email = 'pilote@exemple.fr'").get().id;
+  const idPilote = sqlite.prepare("SELECT id FROM utilisateurs WHERE email = 'pilote@exemple.fr'").get().id;
   await ouvrirReglages(A.page); await cliquer(A.page, 'supprimer', 'Compte supprimé');
   v('suppression : plus rien sur le serveur pour ce compte (compte, garage, photos)', !sqlite.prepare("SELECT 1 FROM utilisateurs WHERE email = 'pilote@exemple.fr'").get()
     && !sqlite.prepare('SELECT 1 FROM garages WHERE utilisateur = ?').get(idPilote) && ![...env.PHOTOS._m.keys()].some(k => k.startsWith(`u/${idPilote}/`)));

@@ -6,9 +6,10 @@
 > Le détail vit ailleurs ; ici, on pointe vers lui.
 >
 > **Dernière mise à jour : 20/11/2026** (branche
-> `claude/create-claude-documentation-8eo2t7`, version `20.206.0`). En ligne : v20.204.0
-> (PR #3). Sur la branche, en attente de « merge » : synchronisation automatique,
-> attribution OpenStreetMap, « Envoyer un retour » par e-mail (§3). Comptes, Google et
+> `claude/create-claude-documentation-8eo2t7`, version `20.207.0`). **En ligne : v20.206.0**
+> (PR #4, 21/11) : synchronisation automatique, attribution OpenStreetMap, « Envoyer un
+> retour » par e-mail, sélecteur Essence/Diesel. Sur la branche, en attente de « merge » :
+> les corrections de la relecture du 21/11 (§3). Comptes, Google et
 > relais IA **en service** (§2) : lire le §2 avant toute instruction au propriétaire.
 > Le propriétaire suit la **feuille de route** en tête de `TUTO-GRATUIT.md` (étapes
 > 1 à 19, uniquement ce qui reste) : c'est elle qu'on cite, par son numéro.
@@ -34,8 +35,8 @@
    ```
    `/opt/pw-browsers/chromium` est un lien **stable** : le dossier versionné
    (`chromium-1194/…`) a changé d'une image à l'autre et les bancs ne démarraient plus.
-   Dernier passage complet : **21/21 verts** (20/11, v20.206.0, configuration de
-   production ; comptes navigateur 129 dont la synchro auto, dom 19, retouches 32, carte 10,
+   Dernier passage complet : **21/21 verts** (21/11, v20.207.0, configuration de
+   production ; comptes navigateur 136 dont la synchro auto, dom 19, retouches 32, carte 10,
    `banc-galerie.js` 14, `banc-retour.js` 15), dont les nouveaux
    `banc-retouches.js` (28) et `banc-sw.js` (14) ; détail et mutations :
    `AUDIT-DEFAUTS.md`, « Seconde relecture ». ⚠️ **Aucun banc ne joint Google** : avec
@@ -134,6 +135,14 @@ relais se font depuis le navigateur du propriétaire (`TUTO-GRATUIT.md` B5).
 > PR sur « merge » du propriétaire, puis son essai sur deux appareils. Puis (v20.206.0) :
 > choisir Essence / Diesel ne ramène plus sur la photo (fiche redessinée = position gardée,
 > `CLAUDE.md` §3, `banc-dom.js`).
+>
+> **21/11 — PR #4 fusionnée** sur « merge et relis » : v20.206.0 **en ligne** (déploiement
+> Pages `3edba2d` réussi). La branche reprend `main` (avance rapide). Puis, **sur la branche**
+> (v20.207.0, `gm-compte.js` 2.7.1) : corrections de la relecture du 21/11 — silence des
+> récupérations porté **par écriture** (un geste fait pendant une récupération était perdu
+> pour la synchro), relance d'une récupération en échec, photos envoyées seules quand le
+> serveur gagne R2, préférence « désactivée » gardée à la déconnexion, garde `mailto:` d'une
+> seconde. Non fait : `304` sur `If-None-Match` (redéploiement serveur, `CLAUDE.md` §8 quinquies).
 
 **État au 27/10 : A faite, B à moitié.** Le propriétaire suit la feuille de route de
 `TUTO-GRATUIT.md` (étapes 1 à 19) ; le tableau ci-dessous en est la version session.

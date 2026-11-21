@@ -166,7 +166,10 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   await page.evaluate(() => document.querySelector('[data-tab="collection"]')?.click()); await page.waitForTimeout(200);
   await page.evaluate(() => document.querySelector('[data-tab="plus"]')?.click()); await page.waitForTimeout(250);
   await page.evaluate(() => document.querySelector('.plus-row[data-tab="settings"]')?.click()); await page.waitForTimeout(300);
-  await page.evaluate(() => document.querySelector('[data-act="feedback"]')?.click()); await page.waitForTimeout(300);
+  /* Le « beforeunload » est aussi rejoué en DIFFÉRÉ (50 ms) : un navigateur qui le déclenche
+     après le clic, et non pendant, ne doit pas non plus couper le suivi (relecture du 21/11). */
+  await page.evaluate(() => { document.querySelector('[data-act="feedback"]')?.click(); setTimeout(() => window.dispatchEvent(new Event('beforeunload')), 50); });
+  await page.waitForTimeout(300);
   const envoi = await page.evaluate(() => ({ liens: window.__liens.filter(l => l.startsWith('mailto:')), partages: window.__partages,
     version: window.GMSpecs && window.GMSpecs.VERSION }));
   const mail = envoi.liens[0] || '';
