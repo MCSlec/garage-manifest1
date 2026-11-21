@@ -269,16 +269,14 @@ Capacitor autour du même code) :
   auto », 20/11 ; en ligne le 21/11, v20.206.0). À cocher quand tu me diras que l'essai
   ci-dessous est concluant. Récupération à la connexion et à l'ouverture de l'app, envoi en
   arrière-plan quelques secondes après chaque geste ; désactivable dans Réglages › Compte.
-- [ ] 🟢 **Essayer la synchro auto sur deux appareils** (**en ligne depuis le 21/11**, v20.206.0 ;
-  corrections de la relecture du 21/11 en v20.207.0, au prochain « merge ») :
+- [ ] 🟢 **Essayer la synchro auto sur deux appareils** (**en ligne depuis le 21/11**, v20.207.0) :
   connecte-toi sur le PC **et** sur le téléphone, capture une voiture sur l'un, rouvre
   l'app sur l'autre : elle doit y être, sans toucher « Sauvegarder » ni « Récupérer ».
   Dans Réglages › Compte, la ligne « Synchronisation automatique » dit « à jour ».
-- [ ] 🟡 **Adresse e-mail dédiée pour « Envoyer un retour »** (ton choix du 20/11 : une
-  adresse réservée à l'app, pas ta perso — elle est **publique** dans le code). Crée-la
-  (un Gmail gratuit suffit, ex. « garage-manifest… ») et donne-la moi : je l'inscris
-  (`ADRESSE_RETOUR` dans `index.html`). D'ici là, le bouton ouvre ta messagerie avec le
-  mail pré-rempli, **sans destinataire**.
+- [x] **Adresse e-mail dédiée pour « Envoyer un retour »** : `garagemanifest.app@gmail.com`,
+  créée et donnée par toi le 21/11, inscrite dans l'app (`ADRESSE_RETOUR`, v20.208.0, en
+  ligne au prochain « merge »). Elle est **publique** dans le code : c'est voulu, ce n'est
+  pas ta perso.
 - [ ] Photos sauvegardées : **toutes** (choix par défaut, dédupliquées) ou la
   couverture seulement.
 - [ ] **i18n (chantier B, option b)** : lancer le mécanisme `t("…")` ? Quelles
