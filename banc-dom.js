@@ -54,6 +54,28 @@ const verifier = (intitule, ok, detail) => { resultats.push({ intitule, ok, deta
   await page.evaluate(() => document.querySelector('#overlay [data-close],#overlay .scrim')?.click());
   await page.waitForTimeout(400);
 
+  /* --- Fiche plein écran (21/11) : le verrou reste étanche ------------------
+     Voiture NON capturée, sans `INFO.hp` mais avec une fiche technique (599 GTO) : la
+     puissance de la fiche ne doit PAS apparaître (elle n'est reprise que pour une voiture
+     capturée), et « Changer de modèle » n'a rien à reclasser. Le lien vers la base de la
+     série spéciale, lui, est public (c'est le catalogue, pas la fiche). */
+  await page.evaluate(() => { const b = document.createElement('button'); b.setAttribute('data-car', 'ferrari-599-gto');
+    document.body.appendChild(b); b.click(); b.remove(); });
+  await page.waitForTimeout(900);
+  const gto = await page.evaluate(() => ({
+    verrou: !!document.querySelector('#overlay [data-verrou]'),
+    puissance: [...document.querySelectorAll('#overlay .specs-info dt')].some(d => /puissance/i.test(d.textContent)),
+    reclasser: !!document.querySelector('#overlay .gcl-btn'),
+    base: document.querySelector('#overlay .fx-serie[data-car]')?.getAttribute('data-car') || null,
+    titre: document.querySelector('#overlay .fx-modele')?.textContent.trim() || null,
+  }));
+  verifier('fiche non capturée (599 GTO) : en-tête plein écran avec le modèle', gto.verrou && gto.titre === '599 GTO', JSON.stringify(gto));
+  verifier('fiche non capturée : AUCUNE puissance tirée de la fiche technique (verrou étanche)', gto.verrou && !gto.puissance, JSON.stringify(gto));
+  verifier('fiche non capturée : pas de « Changer de modèle » (aucune prise à reclasser)', gto.verrou && !gto.reclasser, JSON.stringify(gto));
+  verifier('série spéciale : renvoie à sa base (599 GTO → ferrari-599)', gto.base === 'ferrari-599', JSON.stringify(gto));
+  await page.evaluate(() => document.querySelector('#overlay [data-close]')?.click());
+  await page.waitForTimeout(400);
+
   /* --- On spotte la Giulia, puis on rouvre ---------------------------- */
   await page.evaluate(() => new Promise((res, rej) => {
     const rq = indexedDB.open('garage-manifest');
@@ -143,7 +165,11 @@ const verifier = (intitule, ok, detail) => { resultats.push({ intitule, ok, deta
   /* Signalé par le propriétaire : « quand j'appuie sur Diesel ou Essence, ça me renvoie sur
      la photo, mais la page de droite est bien actualisée ». La fiche était redessinée en
      entier, et le carrousel repartait de sa première page. On se place sur la page fiche,
-     sélecteur à l'écran, puis on touche un type, puis une variante (vrais clics). */
+     sélecteur à l'écran, puis on touche un type, puis une variante (vrais clics).
+     Fiche à onglets (21/11) : la page fiche est l'onglet qui porte `.detail-shell` (le
+     premier) — retrouvée par son contenu, jamais par une position supposée. Le défilement
+     doit être conservé : sur la fiche plein écran, le perdre ramène sur la photo d'en-tête. */
+  const iFiche = await page.evaluate(() => [...document.querySelectorAll('#overlay #pager .page')].findIndex(p => p.querySelector('.detail-shell')));
   const position = () => page.evaluate(() => {
     const p = document.querySelector('#overlay #pager'), s = document.querySelector('#overlay [data-moto-actif]');
     return { page: p && p.clientWidth ? Math.round(p.scrollLeft / p.clientWidth) : -1,
@@ -152,9 +178,12 @@ const verifier = (intitule, ok, detail) => { resultats.push({ intitule, ok, deta
              defile: document.querySelector('#overlay .sh-body')?.scrollTop || 0,
              pointActif: [...document.querySelectorAll('#overlay #dots .dot')].findIndex(d => d.classList.contains('on')) };
   });
-  await page.evaluate(() => { const p = document.querySelector('#overlay #pager'); p.scrollLeft = p.clientWidth; });
+  await page.evaluate(i => { const p = document.querySelector('#overlay #pager'); p.scrollLeft = i * p.clientWidth; }, iFiche);
   await page.waitForTimeout(400);
-  await page.evaluate(() => document.querySelector('#overlay [data-moto-actif]').scrollIntoView({ block: 'start' }));
+  /* Sélecteur au MILIEU de l'écran, là où le doigt le touche : en haut, il passe sous la barre
+     d'onglets collée (position:sticky), et Playwright remettait la fiche en haut avant de
+     cliquer — le test mesurait alors son propre défilement, pas celui de l'app. */
+  await page.evaluate(() => document.querySelector('#overlay [data-moto-actif]').scrollIntoView({ block: 'center' }));
   await page.waitForTimeout(400);
   const p0 = await position();
   const autreType = await page.evaluate((actif) => {
@@ -166,20 +195,21 @@ const verifier = (intitule, ok, detail) => { resultats.push({ intitule, ok, deta
   await page.waitForTimeout(600);
   const p1 = await position();
   verifier('choisir un autre TYPE (Essence / Diesel…) : on reste sur la page fiche, sélecteur au même endroit',
-    p0.page === 1 && p0.defile > 0 && p1.page === 1 && p1.pointActif === 1 && p1.actif !== p0.actif && Math.abs(p1.haut - p0.haut) <= 8,
+    iFiche >= 0 && p0.page === iFiche && p0.defile > 60 && p1.page === iFiche && p1.pointActif === iFiche && p1.actif !== p0.actif
+    && Math.abs(p1.haut - p0.haut) <= 8 && Math.abs(p1.defile - p0.defile) <= 8,
     JSON.stringify({ avant: p0, apres: p1 }));
   // Retour sur le type Diesel (plusieurs variantes ; Essence n'en a qu'une), puis une autre variante.
   await page.click('#overlay [data-moto-type$="|diesel"]');
   await page.waitForTimeout(600);
   const p1b = await position();
-  verifier('… et revenir à Diesel : toujours la page fiche', p1b.page === 1 && /^diesel\|/.test(p1b.actif || ''), JSON.stringify(p1b));
+  verifier('… et revenir à Diesel : toujours la page fiche, même défilement', p1b.page === iFiche && /^diesel\|/.test(p1b.actif || '') && Math.abs(p1b.defile - p1.defile) <= 8, JSON.stringify(p1b));
   const autreVariante = await page.evaluate(() => document.querySelector('#overlay button[data-moto-variant]')?.getAttribute('data-moto-variant') || null);
   if (autreVariante) {
     await page.click(`#overlay button[data-moto-variant="${autreVariante}"]`);
     await page.waitForTimeout(600);
     const p2 = await position();
     verifier('choisir une autre VARIANTE : on reste sur la page fiche, sélecteur au même endroit',
-      p2.page === 1 && p2.actif !== p1b.actif && Math.abs(p2.haut - p1b.haut) <= 8, JSON.stringify({ avant: p1b, apres: p2 }));
+      p2.page === iFiche && p2.actif !== p1b.actif && Math.abs(p2.haut - p1b.haut) <= 8 && Math.abs(p2.defile - p1b.defile) <= 8, JSON.stringify({ avant: p1b, apres: p2 }));
   } else verifier('choisir une autre VARIANTE : (préparation) le type choisi propose une autre variante', false, autreType);
   /* Une AUTRE voiture ouverte depuis la fiche (futur lien « voitures similaires ») repart du
      haut : la mémoire de position ne vaut que pour la même voiture. */
@@ -189,7 +219,7 @@ const verifier = (intitule, ok, detail) => { resultats.push({ intitule, ok, deta
   const pAutre = await page.evaluate(() => { const p = document.querySelector('#overlay #pager');
     return { id: document.querySelector('#overlay .detail-shell')?.getAttribute('data-car-id'),
       page: p && p.clientWidth ? Math.round(p.scrollLeft / p.clientWidth) : -1, defile: document.querySelector('#overlay .sh-body')?.scrollTop || 0 }; });
-  verifier('une autre voiture ouverte depuis la fiche s\'ouvre sur SA photo, en haut (pas de position héritée)', pAutre.id === 'ferrari-f40' && pAutre.page === 0 && pAutre.defile === 0, JSON.stringify(pAutre));
+  verifier('une autre voiture ouverte depuis la fiche s\'ouvre en haut, sur SA photo et l\'onglet Fiche (pas de position héritée)', pAutre.id === 'ferrari-f40' && pAutre.page === 0 && pAutre.defile === 0, JSON.stringify(pAutre));
   /* Tuile « Position » (un lien) : même couleur que les tuiles voisines, pas le bleu par défaut
      des liens, illisible sur fond sombre (capture du propriétaire, 21/11). */
   const couleurs = await page.evaluate(() => {
@@ -203,7 +233,8 @@ const verifier = (intitule, ok, detail) => { resultats.push({ intitule, ok, deta
   await page.waitForTimeout(400);
   await page.evaluate(() => { document.querySelector('[data-car="alfa-giulia"]')?.click(); });
   await page.waitForTimeout(800);
-  verifier('fiche fermée puis rouverte : elle repart de la photo', (await position()).page === 0);
+  const pRouverte = await position();
+  verifier('fiche fermée puis rouverte : elle repart du haut (photo, onglet Fiche)', pRouverte.page === 0 && pRouverte.defile === 0, JSON.stringify(pRouverte));
 
   verifier('aucune erreur JS levée pendant le parcours', erreursJS.length === 0, erreursJS.join(' | ').slice(0, 200));
 

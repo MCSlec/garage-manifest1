@@ -692,6 +692,34 @@ function auditer() {
     }
   }
 
+  /* --- D quinquies. SÉRIES SPÉCIALES (21/11) --------------------------
+     La fiche de base annonce ses séries d'après une table écrite à la main.
+     Une série absente du catalogue serait annoncée sans pouvoir s'ouvrir ; une
+     série d'une autre marque trahirait une faute de frappe ; une série rangée
+     sous deux bases s'annoncerait deux fois ; et une série RESTÉE en case de
+     déclinaison de sa base se collectionnerait deux fois, aux points de la base
+     (la raison même de la règle, CLAUDE.md §4.5). */
+  {
+    const parIdSS = Object.fromEntries(carsFusionnes.map(c => [c.id, c]));
+    const norm = s => String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' ').trim();
+    const vues = new Map();
+    for (const [base, series] of Object.entries(GMSpecs.SERIES_SPECIALES || {})) {
+      if (!idsCatalogue.has(base)) { signaler('ERREUR', 'SÉRIES SPÉCIALES', `base ${base} absente du catalogue`); continue; }
+      const cases = casesDe(base).map(norm);
+      for (const s of series) {
+        if (!idsCatalogue.has(s)) { signaler('ERREUR', 'SÉRIES SPÉCIALES', `${base} → ${s} : série absente du catalogue`); continue; }
+        if (s === base) signaler('ERREUR', 'SÉRIES SPÉCIALES', `${base} : se déclare sa propre série`);
+        if (parIdSS[s].brand !== parIdSS[base].brand)
+          signaler('ERREUR', 'SÉRIES SPÉCIALES', `${base} → ${s} : marques différentes (${parIdSS[base].brand} / ${parIdSS[s].brand})`);
+        if (vues.has(s)) signaler('ERREUR', 'SÉRIES SPÉCIALES', `${s} : rangée sous deux bases (${vues.get(s)}, ${base})`);
+        vues.set(s, base);
+        const nom = norm(parIdSS[s].model);
+        const reste = cases.find(c => c === nom || c.endsWith(' ' + nom));
+        if (reste) signaler('ERREUR', 'SÉRIES SPÉCIALES', `${base} : la case « ${reste} » est la série ${s}, qui a sa propre entrée — la retirer de GENS['${base}']`);
+      }
+    }
+  }
+
   /* --- E. MOTOR_SPECS ------------------------------------------------- */
   let nbModeles = 0, nbTypes = 0, nbVariantes = 0;
   for (const [idCat, bloc] of Object.entries(MOTOR_SPECS)) {

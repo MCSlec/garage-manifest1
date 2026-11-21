@@ -40,6 +40,20 @@
 </script>
 
 <style>
+  /* Barlow Condensed (OFL 1.1, vendor/barlow-condensed/LISEZMOI.md) : 600 et 700, latin et
+     latin étendu. font-display:swap → le texte s'affiche tout de suite en police système. */
+  @font-face{ font-family:"Barlow Condensed"; font-style:normal; font-weight:600; font-display:swap;
+    src:url(vendor/barlow-condensed/barlow-condensed-latin-600-normal.woff2) format("woff2");
+    unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+  @font-face{ font-family:"Barlow Condensed"; font-style:normal; font-weight:700; font-display:swap;
+    src:url(vendor/barlow-condensed/barlow-condensed-latin-700-normal.woff2) format("woff2");
+    unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+  @font-face{ font-family:"Barlow Condensed"; font-style:normal; font-weight:600; font-display:swap;
+    src:url(vendor/barlow-condensed/barlow-condensed-latin-ext-600-normal.woff2) format("woff2");
+    unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+  @font-face{ font-family:"Barlow Condensed"; font-style:normal; font-weight:700; font-display:swap;
+    src:url(vendor/barlow-condensed/barlow-condensed-latin-ext-700-normal.woff2) format("woff2");
+    unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
   :root{
     --bg:#0b0b0d; --panel:#161618; --panel2:#111113; --line:#27272a; --line2:#3f3f46;
     --txt:#f4f4f5; --fg:#f4f4f5; --muted:#a1a1aa; --muted2:#71717a; --dim:#52525b;
@@ -47,6 +61,9 @@
     --courant:#6b7280; --commun:#a1a1aa; --peucommun:#2dd4bf; --rare:#818cf8; --epique:#e879f9; --legendaire:#fbbf24;
     --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
     --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    /* Titres (maquette v2, 21/11) : police condensée HÉBERGÉE dans vendor/ (jamais de CDN,
+       CLAUDE.md §1.2). Repli système si elle ne charge pas : rien ne casse. */
+    --titre: "Barlow Condensed", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
     --st: env(safe-area-inset-top); --sb: env(safe-area-inset-bottom);
     --sl: env(safe-area-inset-left); --sr: env(safe-area-inset-right);
     --tabh: 64px;
@@ -349,6 +366,65 @@
   .fact-k{ display:flex; align-items:center; gap:6px; font:600 10px/1 var(--mono); letter-spacing:.08em; text-transform:uppercase; color:var(--red); margin-bottom:7px; }
   .fact-k .icon{ width:13px; height:13px; }
   .fact p{ margin:0; font:400 13px/1.55 var(--sans); color:var(--fg); }
+
+  /* ---- Fiche voiture plein écran (maquette v2, DESIGN.md §3, 21/11) ----
+     Hiérarchie de la fiche Giulia : photo du joueur → marque → modèle → rareté → onglets.
+     Tout est scopé `.fiche` : les autres feuilles (capture, réglages) ne changent pas. */
+  .scrim.fiche{ align-items:stretch; background:var(--bg); backdrop-filter:none; }
+  .sheet.fiche{ max-width:560px; max-height:none; height:100%; border:0; border-radius:0; background:var(--bg); }
+  .sheet.fiche .sh-body{ padding:0; padding-bottom:calc(28px + var(--sb)); }
+  .fx-hero{ position:relative; height:min(44vh,330px); background:#0e0e10; overflow:hidden; }
+  .fx-hero > img{ display:block; width:100%; height:100%; object-fit:cover; }
+  .fx-hero::after{ content:""; position:absolute; inset:0; pointer-events:none;
+    background:linear-gradient(180deg,rgba(0,0,0,.45) 0%,rgba(0,0,0,0) 26%,rgba(0,0,0,0) 52%,var(--bg) 100%); }
+  .fx-hero.vide{ height:220px; display:grid; place-items:center; background:var(--panel2); }
+  .fx-silhouette{ width:84px; height:84px; color:var(--dim); }
+  .fx-barre{ position:absolute; z-index:2; top:calc(12px + var(--st)); left:14px; right:14px; display:flex; justify-content:space-between; }
+  .fx-rond{ width:40px; height:40px; border-radius:50%; display:grid; place-items:center; color:#fff;
+    background:rgba(10,10,12,.55); border:1px solid rgba(255,255,255,.16); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); }
+  .fx-rond .icon{ width:20px; height:20px; }
+  .fx-rond.on{ color:var(--legendaire); }
+  .fx-rond.on .icon{ fill:currentColor; }
+  .fx-id{ position:relative; z-index:2; margin-top:-62px; padding:0 20px; }
+  .fx-hero.vide + .fx-id{ margin-top:18px; }
+  .fx-marque{ font:600 12px/1 var(--mono); letter-spacing:.24em; text-transform:uppercase; color:var(--muted); }
+  .fx-ligne{ display:flex; justify-content:space-between; align-items:flex-end; gap:12px; margin-top:6px; }
+  .fx-modele{ margin:0; min-width:0; font:700 44px/.95 var(--titre); letter-spacing:.005em; overflow-wrap:anywhere; }
+  .fx-rar{ flex:none; text-align:right; padding-bottom:4px; }
+  .fx-rarete{ display:inline-flex; align-items:center; gap:7px; height:26px; padding:0 11px 0 9px; border-radius:13px; white-space:nowrap;
+    background:color-mix(in srgb,var(--panel) 82%,transparent); border:1px solid var(--line2); font:600 10.5px/1 var(--mono); letter-spacing:.12em; text-transform:uppercase; color:var(--txt); }
+  .fx-rarete::before{ content:""; width:7px; height:7px; border-radius:50%; background:var(--c); box-shadow:0 0 8px var(--c); }
+  .fx-pts{ margin-top:7px; font:700 13px/1 var(--mono); }
+  .fx-meta{ display:flex; flex-wrap:wrap; align-items:center; gap:4px 8px; margin-top:10px; color:var(--muted); font-size:13.5px; }
+  .fx-meta i{ width:3px; height:3px; border-radius:50%; background:var(--dim); }
+  .fx-onglets{ position:sticky; top:var(--st); z-index:4; display:flex; gap:24px; margin:16px 0 0; padding:0 20px; background:var(--bg); border-bottom:1px solid var(--line); }
+  .fx-onglets .dot{ position:relative; width:auto; height:auto; border-radius:0; background:none; padding:13px 0 12px; font:600 14.5px/1 var(--sans); color:var(--muted2); }
+  .fx-onglets .dot.on{ width:auto; background:none; color:var(--txt); }
+  .fx-onglets .dot.on::after{ content:""; position:absolute; left:0; right:0; bottom:-1px; height:2px; border-radius:1px; background:var(--red); }
+  .sheet.fiche .pager{ align-items:flex-start; overflow-y:hidden; }
+  .sheet.fiche .page{ padding:16px 20px 8px; }
+  /* L'identité est dans l'en-tête : `.info-head` reste dans le DOM (contrat gm-specs.js,
+     CLAUDE.md §3), masquée à l'œil seulement — lue par les lecteurs d'écran. */
+  .sheet.fiche .info-head{ position:absolute; width:1px; height:1px; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+  .sheet.fiche .specs-info{ gap:1px; margin-top:0; background:var(--line); border:1px solid var(--line); border-radius:14px; overflow:hidden; }
+  .sheet.fiche .specs-info .spec{ border:0; border-radius:0; background:var(--panel); }
+  .sheet.fiche .specs-info .spec dd{ font:650 15px/1.15 var(--sans); }
+  /* Nombre impair de cases : la dernière prend toute la largeur (sinon une case grise vide). */
+  .sheet.fiche .specs-info .spec:last-child:nth-child(odd){ grid-column:1/-1; }
+  .sheet.fiche .btn{ display:flex; align-items:center; justify-content:center; gap:8px; }
+  .sheet.fiche .btn .icon{ flex:none; }
+  .sheet.fiche .fx-classer .gcl-btn{ width:100%; margin-top:16px; }
+  .fx-aide{ margin:10px 0 0; font-size:12.5px; color:var(--muted2); }
+  .fx-series{ margin-top:16px; }
+  .fx-series .h3{ font:700 10px/1 var(--mono); letter-spacing:.14em; text-transform:uppercase; color:var(--dim); margin-bottom:8px; }
+  .fx-serie{ display:flex; align-items:center; gap:12px; width:100%; padding:11px 12px; margin-top:8px; text-align:left;
+    background:var(--panel); border:1px solid var(--line); border-radius:14px; color:var(--txt); }
+  .fx-serie-ic{ width:40px; height:40px; flex:none; display:grid; place-items:center; border-radius:10px; color:var(--dim); background:var(--panel2); border:1px dashed var(--line2); }
+  .fx-serie-ic.a{ color:#4ade80; border-style:solid; }
+  .fx-serie-ic .icon{ width:16px; height:16px; }
+  .fx-serie-tx{ flex:1; min-width:0; }
+  .fx-serie-tx b{ display:block; font:650 15px/1.2 var(--sans); }
+  .fx-serie-tx span{ display:block; margin-top:3px; font-size:12px; color:var(--muted2); }
   .cat-desc{ margin:10px 2px 0; font:400 12px/1.5 var(--sans); color:var(--dim); }
 
   /* ---- Révélation de capture (P0, DESIGN.md §10) ----
@@ -3173,8 +3249,11 @@ const VARIANTS = {
   const overlay = $("#overlay");
   let activeDetail = null;
   function closeOverlay() { stopCamera(); overlay.innerHTML = ""; document.body.style.overflow = ""; }
-  function openSheet(html) {
-    overlay.innerHTML = `<div class="scrim" data-scrim="1"><div class="sheet">${html}</div></div>`;
+  /* `cls` (facultatif) : variante de présentation posée sur le fond ET la feuille.
+     « fiche » = fiche voiture plein écran (maquette v2, 21/11). */
+  function openSheet(html, cls) {
+    const k = cls ? " " + cls : "";
+    overlay.innerHTML = `<div class="scrim${k}" data-scrim="1"><div class="sheet${k}">${html}</div></div>`;
     document.body.style.overflow = "hidden";
   }
 
@@ -3581,41 +3660,68 @@ const VARIANTS = {
   }
 
   /* ---------- Détail ---------- */
+  /* Fiche plein écran (maquette v2, DESIGN.md §3, 21/11) : la photo du joueur en tête,
+     l'identité (marque · modèle · rareté) posée sur son fondu, puis trois onglets.
+     ⚠️ La grande photo d'en-tête n'est PAS `.detail-hero` : les outils de gm-specs.js
+     (flouter, cadrer, corbeille, enregistrer) s'accrochent au premier `.detail-hero` de
+     la fiche, qui vit dans l'onglet Photos. L'en-tête reste propre (DESIGN.md §3 :
+     « pas de surcharge par-dessus la photo »). */
+  function ficheHeroHTML(c, rec, h) {
+    const col = rColor(c.r), ph = h ? cover(rec) : null;
+    const fav = h ? `<button class="fx-rond${rec.favorite?" on":""}" data-favtoggle="${c.id}" title="${rec.favorite?"Retirer des favoris":"Marquer comme trouvaille favorite"}" aria-label="${rec.favorite?"Retirer des favoris":"Marquer comme trouvaille favorite"}" aria-pressed="${rec.favorite?"true":"false"}">${icon("star","icon")}</button>` : "";
+    return `
+      <div class="fx-hero${ph ? "" : " vide"}">
+        ${ph ? `<img src="${ph}" alt="" />` : `<svg viewBox="0 0 24 24" class="icon fx-silhouette">${P.car}</svg>`}
+        <div class="fx-barre"><button class="fx-rond" data-close="1" aria-label="Fermer">${icon("chevronleft","icon")}</button>${fav}</div>
+      </div>
+      <div class="fx-id">
+        <div class="fx-marque">${escapeHtml(c.brand)}</div>
+        <div class="fx-ligne">
+          <h1 class="fx-modele">${escapeHtml(c.model)}</h1>
+          <div class="fx-rar"><span class="fx-rarete" style="--c:${col}">${RARITY[c.r].label}</span><div class="fx-pts" style="color:${col}">+${RARITY[c.r].pts} pts</div></div>
+        </div>
+        <div class="fx-meta"><span>${c.c} ${escapeHtml(COUNTRY[c.c]||"")}</span><i></i><span>${escapeHtml(c.cat)}</span><i></i><span>${escapeHtml(c.yr)}</span></div>
+      </div>`;
+  }
+
+  /* Onglet Photos : la photo et ses outils (greffés par gm-specs.js sur `.detail-hero`),
+     les miniatures (toucher = couverture) et l'ajout. */
   function photoPageHTML(c, rec) {
     const col = rColor(c.r), ph = cover(rec);
     const strip = rec.photos.length
       ? `<div class="thumbstrip">${rec.photos.map((p,i) => `<button class="ts${(rec.cover||0)===i?" cover":""}" data-setcover="${i}"><img src="${p}" /></button>`).join("")}
           <button class="add" data-addphoto="1" aria-label="Ajouter une photo">${icon("plus","icon")}</button></div>`
       : "";
+    return `
+      <div class="detail-hero" style="border-radius:14px;overflow:hidden">
+        ${ph ? `<img src="${ph}" />` : `<svg viewBox="0 0 24 24" class="icon" style="width:64px;height:64px;color:${col}">${P.car}</svg>`}
+      </div>
+      ${strip}
+      <p class="fx-aide">${rec.photos.length > 1 ? "Touche une miniature pour en faire la photo de couverture." : "Ta photo de couverture."}</p>
+      <button class="btn" data-addphoto="1" style="width:100%;margin-top:12px">${icon("camera","icon")}&nbsp; Ajouter une photo</button>`;
+  }
+
+  /* Onglet Ma prise : le carnet de chasse de CETTE voiture (date, lieu, note,
+     déclinaisons vues) et les actions sur la prise. */
+  function prisePageHTML(c, rec) {
     const mapLink = rec.coords ? `<a class="spec" href="https://maps.google.com/?q=${rec.coords.lat},${rec.coords.lng}" target="_blank" rel="noopener" style="text-decoration:none"><dt>Position</dt><dd>${icon("map","icon")} Ouvrir dans Maps</dd></a>` : "";
     const meta = (rec.at || rec.loc || rec.coords)
-      ? `<div class="specs" style="margin-top:12px">
+      ? `<div class="specs" style="margin-top:0">
            ${rec.at?`<div class="spec"><dt>Repérée le</dt><dd>${fmtDate(rec.at)}</dd></div>`:""}
            ${rec.loc?`<div class="spec"><dt>Lieu</dt><dd>${icon("pin","icon")} ${escapeHtml(rec.loc)}</dd></div>`:""}
            ${mapLink}
          </div>` : "";
     return `
-      <div class="detail-hero" style="border-radius:12px;overflow:hidden">
-        ${ph ? `<img src="${ph}" />` : `<svg viewBox="0 0 24 24" class="icon" style="width:64px;height:64px;color:${col}">${P.car}</svg>`}
-        <span class="chip" style="position:absolute;left:12px;top:12px;background:rgba(9,9,11,.62);border:1px solid ${col}44;color:var(--muted);backdrop-filter:blur(6px)"><span style="width:8px;height:8px;border-radius:50%;background:${col};box-shadow:0 0 8px ${col}88"></span>${RARITY[c.r].label}</span>
-      </div>
-      ${strip}
-      <div class="detail-title"><div><h2>${escapeHtml(c.model)}</h2><p class="muted">${c.c} ${escapeHtml(c.brand)}</p></div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <button class="fav-toggle${rec.favorite?" on":""}" data-favtoggle="${c.id}" title="${rec.favorite?"Retirer des favoris":"Marquer comme trouvaille favorite"}" aria-label="${rec.favorite?"Retirer des favoris":"Marquer comme trouvaille favorite"}" aria-pressed="${rec.favorite?"true":"false"}">${icon("star","icon")}</button>
-          <span class="pts">+${RARITY[c.r].pts} pts</span>
-        </div>
-      </div>
       ${meta}
       <div class="field" style="margin-top:14px">${icon("info")}<textarea id="detNote" placeholder="Note (couleur, détail, série limitée…)">${escapeHtml(rec.note||"")}</textarea></div>
       ${(typeof VARIANTS !== "undefined" && VARIANTS[c.id]) ? `
-      <div class="var-wrap" style="margin-top:14px">
+      <div class="var-wrap" style="margin-top:16px">
         <div class="h3">Déclinaisons · ${(rec.variants||[]).filter(v=>VARIANTS[c.id].includes(v)).length}/${VARIANTS[c.id].length}</div>
         <div class="var-chips">${VARIANTS[c.id].map(v => `<span class="vchip ${(rec.variants||[]).includes(v)?"have":"miss"}">${escapeHtml(v)}</span>`).join("")}</div>
       </div>` : ""}
-      <div style="display:flex;gap:10px;margin-top:14px">
-        <button class="btn" data-addphoto="1" style="flex:1">${icon("camera","icon")}&nbsp; Ajouter une photo</button>
-        <button class="btn ghost" data-act="sharecard" title="Partager la carte" aria-label="Partager la carte">${icon("star","icon")}</button>
+      <div class="fx-classer" data-gcl-ici="1"></div>
+      <div style="display:flex;gap:10px;margin-top:18px">
+        <button class="btn ghost" data-act="sharecard" style="flex:1">${icon("star","icon")}&nbsp; Partager la carte</button>
         <button class="btn ghost btn-danger" data-release="${c.id}" aria-label="Retirer du garage">${icon("trash","icon")}</button>
       </div>`;
   }
@@ -3673,16 +3779,41 @@ const VARIANTS = {
         </div>`;
     }
 
+    /* Puissance : la fiche technique greffée ne l'affiche pas (elle la suppose sur cette
+       page), et `INFO` ne la donne que pour ~400 voitures. Sans `INFO.hp`, on la lit dans
+       la fiche (même contrat public) — la 599 GTB n'affichait ses 620 ch nulle part. Le
+       « ≈ » suit `flou` (CLAUDE.md §4.1). Une valeur absente reste absente.
+       Voiture CAPTURÉE seulement : sur une voiture verrouillée, la fiche technique ne doit
+       rien laisser fuir (CLAUDE.md §3) — elle garde ce qu'elle affichait (INFO seul). */
+    if (h && !info.hp && fiche && fiche.technique && fiche.technique.ch)
+      info = { ...info, hp: `${(fiche.flou || []).includes("ch") ? "≈ " : ""}${fiche.technique.ch} ch` };
+
+    /* Millésimes, origine, catégorie et rareté sont dans l'en-tête de la fiche
+       (ficheHeroHTML) : les répéter ici en cases faisait deux fois la même information. */
     const rows = [];
     if (info.eng)  rows.push(["Moteur", info.eng]);
     if (info.hp)   rows.push(["Puissance", info.hp]);
     if (info.acc)  rows.push(["0–100 km/h", info.acc]);
     if (info.vmax) rows.push(["V-max", info.vmax]);
-    rows.push(["Millésimes", c.yr]);
-    rows.push(["Origine", `${c.c} ${COUNTRY[c.c]||""}`]);
-    rows.push(["Catégorie", c.cat]);
-    rows.push(["Rareté", `${RARITY[c.r].label} · +${RARITY[c.r].pts} pts`]);
     const specHTML = rows.map(([k,v]) => `<div class="spec"><dt>${k}</dt><dd>${escapeHtml(String(v))}</dd></div>`).join("");
+
+    /* Séries spéciales (table SERIES_SPECIALES de gm-specs.js, écrite à la main, jamais
+       déduite d'un nom) : la base annonce ses séries ; une série renvoie à sa base. Chaque
+       ligne ouvre la fiche concernée (data-car), capturée ou non. */
+    const series = (GS && typeof GS.seriesSpeciales === "function") ? GS.seriesSpeciales(c.id) : [];
+    const baseId = (GS && typeof GS.baseDeSerie === "function") ? GS.baseDeSerie(c.id) : null;
+    const ligneSerie = s => {
+      const a = state.spots.has(s.id), cs = rColor(s.rarete);
+      return `<button class="fx-serie" data-car="${escapeHtml(s.id)}">
+        <span class="fx-serie-ic${a ? " a" : ""}">${icon(a ? "check" : "lock", "icon")}</span>
+        <span class="fx-serie-tx"><b>${escapeHtml(s.model)}</b><span>${escapeHtml(s.yr)}${s.prod ? ` · ${s.prod.toLocaleString("fr-FR")} ex.` : ""} · ${a ? "au garage" : "à découvrir"}</span></span>
+        <span class="fx-rarete" style="--c:${cs}">${RARITY[s.rarete] ? RARITY[s.rarete].label : ""}</span></button>`;
+    };
+    const seriesHTML = series.length
+      ? `<div class="fx-series"><div class="h3">Séries spéciales</div>${series.map(ligneSerie).join("")}</div>`
+      : (baseId && CARS_BY_ID[baseId])
+        ? `<div class="fx-series"><div class="h3">Série spéciale de</div>${ligneSerie({ id: baseId, model: CARS_BY_ID[baseId].model, yr: CARS_BY_ID[baseId].yr, rarete: CARS_BY_ID[baseId].r, prod: null })}</div>`
+        : "";
     const desc = CATEGORY_DESC[c.cat] || "";
     const factCard = info.fact
       ? `<div class="fact"><div class="fact-k">${icon("info","icon")} Le saviez-vous</div><p>${escapeHtml(info.fact)}</p></div>`
@@ -3713,8 +3844,9 @@ const VARIANTS = {
         <p class="muted">${c.c} ${COUNTRY[c.c]||""} · ${escapeHtml(c.cat)}</p>
       </div>
       ${motoHTML}
-      <div class="specs specs-info">${specHTML}</div>
+      ${specHTML ? `<div class="specs specs-info">${specHTML}</div>` : ""}
       ${factCard}${catLine}
+      ${seriesHTML}
       ${!h ? `<div class="panel" style="margin-top:14px;text-align:center"><p class="dim" style="font:400 13px/1.4 var(--sans);margin:0">Pas encore au garage. Croise-la, prends-la en photo, et enregistre la prise.</p></div>` : ""}
       </div>
     `;
@@ -3733,34 +3865,59 @@ const VARIANTS = {
     activeDetail = carId;
     if (!state.motoSel) state.motoSel = {}; // couche additive motorisations — init défensive, pas de déclaration globale connue
     const c = CARS_BY_ID[carId], rec = state.spots.get(carId), h = !!rec;
-    const pages = [];
-    if (h) pages.push(photoPageHTML(c, rec));
-    pages.push(infoPageHTML(c, rec, h));
+    /* Onglets Fiche · Photos · Ma prise (maquette v2). La Fiche vient EN PREMIER : gm-specs.js
+       greffe la fiche technique dans la page qui porte `.detail-shell` (et, pour un
+       gm-specs.js plus ancien encore en cache, dans la dernière page — d'où l'ordre gardé
+       tant que la voiture n'est pas capturée : une seule page). Les onglets réutilisent le
+       mécanisme des points (#dots, data-dot, .on) : défilement, clic et mémoire de position
+       inchangés. */
+    const pages = [infoPageHTML(c, rec, h)];
+    if (h) pages.push(photoPageHTML(c, rec), prisePageHTML(c, rec));
     const multi = pages.length > 1;
+    const ONGLETS = ["Fiche", "Photos", "Ma prise"];
 
     openSheet(`
-      <div class="sh-head"><h3>${escapeHtml(c.model)}</h3><button class="iconbtn" data-close="1" aria-label="Fermer">${icon("x")}</button></div>
       <div class="sh-body" style="padding:0">
+        ${ficheHeroHTML(c, rec, h)}
+        ${multi ? `<div class="fx-onglets" id="dots" role="tablist">${pages.map((_,i) => `<button class="dot${i===0?" on":""}" data-dot="${i}" role="tab" aria-selected="${i===0}">${ONGLETS[i]}</button>`).join("")}</div>` : ""}
         <div class="pager" id="pager">${pages.map(p => `<div class="page">${p}</div>`).join("")}</div>
-        ${multi ? `<div class="dots" id="dots">${pages.map((_,i) => `<button class="dot${i===0?" on":""}" data-dot="${i}"></button>`).join("")}</div>
-        <p class="swipe-hint">${icon("info","icon")} glisse vers la gauche pour la fiche technique</p>` : ""}
       </div>
-    `);
+    `, "fiche");
 
     const pager = $("#pager");
+    /* Fiche redessinée sur la même voiture : onglet et défilement d'avant, remis tout de
+       suite, après la greffe de gm-specs.js (rAF), ET à chaque recalcul de hauteur pendant
+       un court instant. Sans ce dernier point, la hauteur du carrousel n'était fixée
+       qu'APRÈS la remise du défilement : le navigateur le bornait à une page encore courte
+       et choisir Essence / Diesel remontait la fiche tout en haut (banc-dom.js, 21/11). */
+    const remettre = () => {
+      const p = $("#pager"), b = overlay.querySelector(".sh-body");
+      if (p && pageAvant) p.scrollLeft = pageAvant * p.clientWidth;
+      if (b) b.scrollTop = defileAvant;
+    };
+    const restaurerJusqua = (memeFiche && (pageAvant || defileAvant)) ? Date.now() + 800 : 0;
+    /* Hauteur du carrousel = celle de l'onglet affiché. Sinon toutes les pages prennent la
+       hauteur de la plus longue (la fiche, une fois greffée) et l'onglet « Ma prise » se
+       termine sur un grand vide qu'on fait défiler pour rien. Recalculée au changement
+       d'onglet et quand une page change de taille (greffe de gm-specs.js, photo chargée). */
+    let ro = null;   // déconnecté dès que la fiche disparaît (sinon chaque redessin le gardait en mémoire)
+    const ajusterHauteur = () => {
+      if (!pager || !pager.isConnected) { if (ro) ro.disconnect(); return; }
+      const i = Math.round(pager.scrollLeft / (pager.clientWidth || 1));
+      const pg = pager.children[Math.max(0, Math.min(i, pager.children.length - 1))];
+      if (pg) pager.style.height = pg.offsetHeight + "px";
+      if (Date.now() < restaurerJusqua) remettre();
+    };
     if (pager && multi) {
       pager.addEventListener("scroll", () => {
         const i = Math.round(pager.scrollLeft / pager.clientWidth);
-        const dots = $("#dots"); if (dots) [...dots.children].forEach((d,idx) => d.classList.toggle("on", idx===i));
-        const hint = document.querySelector(".swipe-hint"); if (hint) hint.style.opacity = i===0 ? "1" : "0";
+        const dots = $("#dots"); if (dots) [...dots.children].forEach((d,idx) => { d.classList.toggle("on", idx===i); d.setAttribute("aria-selected", idx===i ? "true" : "false"); });
+        ajusterHauteur();
       }, { passive:true });
+      if (typeof ResizeObserver === "function") { ro = new ResizeObserver(ajusterHauteur); [...pager.children].forEach(p => ro.observe(p)); }
+      ajusterHauteur();
     }
-    if (memeFiche && (pageAvant || defileAvant)) {
-      const remettre = () => {
-        const p = $("#pager"), b = overlay.querySelector(".sh-body");
-        if (p && pageAvant) p.scrollLeft = pageAvant * p.clientWidth;
-        if (b) b.scrollTop = defileAvant;
-      };
+    if (restaurerJusqua) {
       // Tout de suite, puis après la greffe de gm-specs.js (MutationObserver), qui allonge la page fiche.
       remettre(); requestAnimationFrame(remettre);
     }

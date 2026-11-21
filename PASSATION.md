@@ -6,15 +6,10 @@
 > Le détail vit ailleurs ; ici, on pointe vers lui.
 >
 > **Dernière mise à jour : 21/11/2026** (branche
-> `claude/create-claude-documentation-8eo2t7`, version `20.208.0`). **En ligne : v20.208.0**
-> (PR #4, #5 puis #6, 21/11) : synchronisation automatique, attribution OpenStreetMap,
+> `claude/create-claude-documentation-8eo2t7`, version `20.209.0`). **En ligne : v20.209.0**
+> (PR #4 à #7, 21/11 ; la #7 : séries spéciales Ferrari, pages des stores, tuile Position) : synchronisation automatique, attribution OpenStreetMap,
 > « Envoyer un retour » par e-mail vers l'adresse dédiée, sélecteur Essence/Diesel,
-> corrections de la relecture du 21/11. Sur la branche, en attente de « merge » (v20.209.0) :
-> les **pages web des stores** (`pages/`, générées par `banc-pages.js`, à finir plus tard), et la tuile
-> « Position » de la fiche lisible (bleu par défaut des liens, `banc-dom.js` 20 verts), et la
-> **séries spéciales Ferrari en entrées à part** (599 GTO, 360 CS, 430 Scuderia, 16M, 458 Speciale
-> et Speciale A, 488 Pista, F12tdf, 812 Competizione ; règle dans `CLAUDE.md` §4.5 ; F430 de base
-> corrigée à 490 ch). Comptes, Google et
+> corrections de la relecture du 21/11. **Maquette v2 validée** (« oui à tout », 21/11). Sur la branche, en attente de « merge » (v20.210.0) : la **fiche plein écran** (onglets Fiche · Photos · Ma prise, `CLAUDE.md` §3), la police des titres hébergée (`vendor/barlow-condensed/`), la table `SERIES_SPECIALES`. **Prochaine étape : l'écran Garage (accueil)**, puis révélation, pages marque, identification — chaque écran avec captures avant / après montrées au propriétaire avant mise en ligne. Comptes, Google et
 > relais IA **en service** (§2) : lire le §2 avant toute instruction au propriétaire.
 > Le propriétaire suit la **feuille de route** en tête de `TUTO-GRATUIT.md` (étapes
 > 1 à 19, uniquement ce qui reste) : c'est elle qu'on cite, par son numéro.

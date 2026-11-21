@@ -11,7 +11,7 @@
              mis en cache, sinon l'ancienne copie est resservie indéfiniment.
 */
 
-const VERSION = "garage-v20.209.0";
+const VERSION = "garage-v20.210.0";
 
 /* ESSENTIEL : sans ces fichiers, l'app ne démarre pas hors-ligne.
    Mis en cache de façon atomique — si l'un manque, l'installation doit échouer
@@ -35,6 +35,10 @@ const EXTRAS = [
   "./vendor/protomaps-leaflet/protomaps-leaflet.js",
   "./vendor/leaflet/images/layers.png",
   "./vendor/leaflet/images/layers-2x.png",
+  "./vendor/barlow-condensed/barlow-condensed-latin-600-normal.woff2",
+  "./vendor/barlow-condensed/barlow-condensed-latin-700-normal.woff2",
+  "./vendor/barlow-condensed/barlow-condensed-latin-ext-600-normal.woff2",
+  "./vendor/barlow-condensed/barlow-condensed-latin-ext-700-normal.woff2",
   "./icon-192.png",
   "./icon-512.png",
   "./icon-maskable-512.png",

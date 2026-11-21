@@ -329,6 +329,22 @@ Capacitor autour du même code) :
   (`design/SPEC-P0-ARBITRAGES.md`).
 - [x] Arbitrages P0 rendus et parcours implémenté (v20.195.0, captures dans
   `design/p0-captures-apres/`).
+- [x] **Maquette v2 validée** par le propriétaire le 21/11 (« oui à tout » sur les 8 points ci-dessous ; police : la condensée hébergée) :
+  1. **Typo** : police système (zéro dépendance) ou police condensée « auto » hébergée dans
+     le dépôt (licence libre, comme Leaflet) ?
+  2. **Fiche en plein écran** (photo en tête, onglets Fiche · Photos · Ma prise) au lieu de la
+     feuille basse ? Les boutons Flouter / Cadrer passent dans « ⋯ » ou l'onglet Photos.
+  3. **Accueil Garage** : dernière prise + progression + mes marques + mon garage ; le
+     catalogue complet derrière « Catalogue › ».
+  4. **Pages marque** (nouvel écran) **sans logos ni slogans** officiels (risque stores).
+  5. **Lien « série spéciale »** sur la fiche de base (599 GTB → 599 GTO) : demande une petite
+     table de correspondance explicite (jamais déduite de l'identifiant).
+  6. Bouton central : **appareil photo** au lieu du « + » ; onglets inchangés.
+  7. Planches : j'ai reçu deux planches différentes (la 3e était identique à la 2e) ; j'ai pris
+     la planche Giulia déjà dans `design/`. Si tu en as une plus récente, renvoie-la.
+  8. **Ta photo de 599** dans la maquette : la verser dans le dépôt (public) ? Sinon elle reste
+     hors du dépôt, plaque floutée ou non.
+- [ ] 🟡 **Maquette v2, écran par écran** (ordre validé : fiche, Garage, révélation, pages marque, identification). **Fiche : faite sur la branche le 21/11** (plein écran, onglets Fiche · Photos · Ma prise, captures avant / après envoyées), en ligne au prochain « merge ». À cocher quand tu l'auras vue sur ton téléphone.
 - [ ] 🟡 **Fiche voiture à aligner sur les maquettes** (`design/maquette-fiche-giulia*.png`) :
   aujourd'hui deux pages à faire glisser, sans onglets ni grille à icônes. Chantier à lancer
   sur ton « go », écarts de données déjà listés dans `DESIGN.md` §0.
