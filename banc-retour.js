@@ -17,7 +17,10 @@
      · éditeur de recadrage (gm-specs.js) → retour le ferme, la fiche reste ;
      · capture (bouton +) → retour la ferme ;
      · rechargement de la page avec des étapes d'une session précédente → un
-       seul retour les traverse : l'app n'est jamais « bloquée ».
+       seul retour les traverse : l'app n'est jamais « bloquée » ;
+     · « Envoyer un retour » (20/11) → la messagerie s'ouvre (mailto:), et le
+       lien, qui déclenche « beforeunload » dans Chromium, ne coupe pas le suivi
+       du bouton retour.
    Usage : NODE_PATH=<node_modules avec playwright-core> node banc-retour.js
    ========================================================================== */
 'use strict';
@@ -149,6 +152,36 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   await retour();
   e = await etat();
   v('après un rechargement, un seul « retour » traverse les étapes d\'avant : rien de bloqué', e.app && !e.overlay && !(e.etatHist && e.etatHist.gm), JSON.stringify(e));
+
+  /* 8. « Envoyer un retour » (20/11) : la messagerie s'ouvre directement (lien mailto:),
+     pas la feuille de partage. Et le piège : Chromium déclenche « beforeunload » sur un lien
+     mailto: alors que la page reste. La garde du rechargement croyait la page quittée et
+     cessait de suivre le bouton retour jusqu'au rechargement suivant. */
+  await page.evaluate(() => {
+    window.__liens = []; window.__partages = 0;
+    const clic = HTMLAnchorElement.prototype.click;
+    HTMLAnchorElement.prototype.click = function () { window.__liens.push(this.href); return clic.call(this); };
+    try { Object.defineProperty(navigator, 'share', { configurable: true, value: async () => { window.__partages++; } }); } catch (_) {}
+  });
+  await page.evaluate(() => document.querySelector('[data-tab="collection"]')?.click()); await page.waitForTimeout(200);
+  await page.evaluate(() => document.querySelector('[data-tab="plus"]')?.click()); await page.waitForTimeout(250);
+  await page.evaluate(() => document.querySelector('.plus-row[data-tab="settings"]')?.click()); await page.waitForTimeout(300);
+  await page.evaluate(() => document.querySelector('[data-act="feedback"]')?.click()); await page.waitForTimeout(300);
+  const envoi = await page.evaluate(() => ({ liens: window.__liens.filter(l => l.startsWith('mailto:')), partages: window.__partages,
+    version: window.GMSpecs && window.GMSpecs.VERSION }));
+  const mail = envoi.liens[0] || '';
+  const sujet = decodeURIComponent((/[?&]subject=([^&]*)/.exec(mail) || [])[1] || ''), corpsMail = decodeURIComponent((/[?&]body=([^&]*)/.exec(mail) || [])[1] || '');
+  v('« Envoyer un retour » ouvre la messagerie (lien mailto:), pas la feuille de partage', envoi.liens.length === 1 && envoi.partages === 0, JSON.stringify(envoi));
+  v('… mail pré-rempli : sujet, collection, versions de l\'app et du module', /Garage Manifest/.test(sujet) && /Collection : 1\//.test(corpsMail) && corpsMail.includes(envoi.version), JSON.stringify({ sujet, corpsMail }));
+  /* Retour à l'onglet Collection : l'étape des Réglages doit être consommée. Si la page se
+     croit quittée, l'étape reste, et il faut deux « retour » pour sortir de l'app. */
+  await page.evaluate(() => document.querySelector('[data-tab="collection"]')?.click()); await page.waitForTimeout(400);
+  e = await etat();
+  v('… après l\'envoi, l\'historique suit toujours l\'app (étape des Réglages consommée en revenant à la collection)', e.app && !(e.etatHist && e.etatHist.gm), JSON.stringify(e.etatHist));
+  await ouvrirFicheCollection();
+  await retour();
+  e = await etat();
+  v('… et après l\'envoi, le bouton retour marche toujours (le lien mailto: ne passe pas pour un départ de la page)', e.app && !e.fiche && !e.overlay, JSON.stringify(e));
 
   v('aucune erreur JS', erreurs.length === 0, erreurs.join(' | '));
   await nav.close(); serveur.close();

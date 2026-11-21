@@ -65,6 +65,12 @@ const verifier = (intitule, ok, detail) => { resultats.push({ intitule, ok, deta
         photos: ['data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'],
         loc: 'Banc', note: '', cover: 0, variants: [], favorite: false
       });
+      // Seconde voiture capturée (photo + fiche) : pour vérifier qu'elle ne s'ouvre pas à la position de la Giulia.
+      tx.objectStore('spots').put({
+        carId: 'ferrari-f40', at: new Date().toISOString(), coords: null,
+        photos: ['data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'],
+        loc: 'Banc', note: '', cover: 0, variants: [], favorite: false
+      });
       tx.oncomplete = res; tx.onerror = rej;
     };
     rq.onerror = rej;
@@ -132,6 +138,64 @@ const verifier = (intitule, ok, detail) => { resultats.push({ intitule, ok, deta
     apres.motoActif && apres.motoActif !== spottee.motoActif, `${spottee.motoActif} → ${apres.motoActif}`);
   verifier('bascule Essence → Diesel : les CHIFFRES GREFFÉS ont changé',
     !!(apres.texte && avant && apres.texte !== avant));
+
+  /* --- Choisir une motorisation ne ramène PAS sur la photo (20/11) ------ */
+  /* Signalé par le propriétaire : « quand j'appuie sur Diesel ou Essence, ça me renvoie sur
+     la photo, mais la page de droite est bien actualisée ». La fiche était redessinée en
+     entier, et le carrousel repartait de sa première page. On se place sur la page fiche,
+     sélecteur à l'écran, puis on touche un type, puis une variante (vrais clics). */
+  const position = () => page.evaluate(() => {
+    const p = document.querySelector('#overlay #pager'), s = document.querySelector('#overlay [data-moto-actif]');
+    return { page: p && p.clientWidth ? Math.round(p.scrollLeft / p.clientWidth) : -1,
+             haut: s ? Math.round(s.getBoundingClientRect().top) : null,
+             actif: s ? s.getAttribute('data-moto-actif') : null,
+             defile: document.querySelector('#overlay .sh-body')?.scrollTop || 0,
+             pointActif: [...document.querySelectorAll('#overlay #dots .dot')].findIndex(d => d.classList.contains('on')) };
+  });
+  await page.evaluate(() => { const p = document.querySelector('#overlay #pager'); p.scrollLeft = p.clientWidth; });
+  await page.waitForTimeout(400);
+  await page.evaluate(() => document.querySelector('#overlay [data-moto-actif]').scrollIntoView({ block: 'start' }));
+  await page.waitForTimeout(400);
+  const p0 = await position();
+  const autreType = await page.evaluate((actif) => {
+    const t = (actif || '').split('|')[0];
+    const b = [...document.querySelectorAll('#overlay [data-moto-type]')].find(x => x.getAttribute('data-moto-type').split('|')[1] !== t);
+    return b ? b.getAttribute('data-moto-type') : null;
+  }, p0.actif);
+  await page.click(`#overlay [data-moto-type="${autreType}"]`);
+  await page.waitForTimeout(600);
+  const p1 = await position();
+  verifier('choisir un autre TYPE (Essence / Diesel…) : on reste sur la page fiche, sélecteur au même endroit',
+    p0.page === 1 && p0.defile > 0 && p1.page === 1 && p1.pointActif === 1 && p1.actif !== p0.actif && Math.abs(p1.haut - p0.haut) <= 8,
+    JSON.stringify({ avant: p0, apres: p1 }));
+  // Retour sur le type Diesel (plusieurs variantes ; Essence n'en a qu'une), puis une autre variante.
+  await page.click('#overlay [data-moto-type$="|diesel"]');
+  await page.waitForTimeout(600);
+  const p1b = await position();
+  verifier('… et revenir à Diesel : toujours la page fiche', p1b.page === 1 && /^diesel\|/.test(p1b.actif || ''), JSON.stringify(p1b));
+  const autreVariante = await page.evaluate(() => document.querySelector('#overlay button[data-moto-variant]')?.getAttribute('data-moto-variant') || null);
+  if (autreVariante) {
+    await page.click(`#overlay button[data-moto-variant="${autreVariante}"]`);
+    await page.waitForTimeout(600);
+    const p2 = await position();
+    verifier('choisir une autre VARIANTE : on reste sur la page fiche, sélecteur au même endroit',
+      p2.page === 1 && p2.actif !== p1b.actif && Math.abs(p2.haut - p1b.haut) <= 8, JSON.stringify({ avant: p1b, apres: p2 }));
+  } else verifier('choisir une autre VARIANTE : (préparation) le type choisi propose une autre variante', false, autreType);
+  /* Une AUTRE voiture ouverte depuis la fiche (futur lien « voitures similaires ») repart du
+     haut : la mémoire de position ne vaut que pour la même voiture. */
+  await page.evaluate(() => { const b = document.createElement('button'); b.setAttribute('data-car', 'ferrari-f40'); b.id = 'lien-autre';
+    document.querySelector('#overlay .page:last-child').appendChild(b); b.click(); });
+  await page.waitForTimeout(600);
+  const pAutre = await page.evaluate(() => { const p = document.querySelector('#overlay #pager');
+    return { id: document.querySelector('#overlay .detail-shell')?.getAttribute('data-car-id'),
+      page: p && p.clientWidth ? Math.round(p.scrollLeft / p.clientWidth) : -1, defile: document.querySelector('#overlay .sh-body')?.scrollTop || 0 }; });
+  verifier('une autre voiture ouverte depuis la fiche s\'ouvre sur SA photo, en haut (pas de position héritée)', pAutre.id === 'ferrari-f40' && pAutre.page === 0 && pAutre.defile === 0, JSON.stringify(pAutre));
+  // Rouvrir la fiche depuis la collection repart bien de la photo (la mémoire ne vaut que pour la fiche ouverte).
+  await page.evaluate(() => document.querySelector('#overlay [data-close]')?.click());
+  await page.waitForTimeout(400);
+  await page.evaluate(() => { document.querySelector('[data-car="alfa-giulia"]')?.click(); });
+  await page.waitForTimeout(800);
+  verifier('fiche fermée puis rouverte : elle repart de la photo', (await position()).page === 0);
 
   verifier('aucune erreur JS levée pendant le parcours', erreursJS.length === 0, erreursJS.join(' | ').slice(0, 200));
 

@@ -69,6 +69,12 @@ Précisions vérifiables dans le code :
 - L'adresse du relais de reconnaissance IA, si tu en as configuré une, **n'est
   pas** envoyée (elle est vidée à l'export).
 - Aucun mot de passe : il n'y en a pas.
+- **Synchronisation automatique** (activée par défaut une fois connecté) : chaque
+  modification de ta collection part vers le serveur quelques secondes après ton
+  geste, et l'app demande au serveur, à son ouverture, si un autre de tes
+  appareils a envoyé du nouveau. Ce sont **les mêmes données** que la sauvegarde
+  manuelle, rien de plus. Tu peux la **désactiver** dans Réglages › Compte :
+  plus rien ne part alors sans « Sauvegarder ». Sans compte, rien n'est envoyé.
 
 ## Ce qui est traité sans être conservé
 

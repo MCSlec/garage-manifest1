@@ -33,6 +33,21 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   const errs = []; page.on('pageerror', e => errs.push(String(e)));
   const pret = () => page.waitForFunction(() => window.GMSpecs, { timeout: 15000 });
   await page.goto('http://localhost:8101/index.html', { waitUntil: 'networkidle' }); await pret();
+  /* Carte VIDE (aucune prise géolocalisée) : le fond OpenStreetMap s'affiche quand même,
+     donc l'attribution est due (licence ODbL, politique d'usage des tuiles). Elle n'était
+     écrite que s'il y avait au moins un point (RESTE-A-FAIRE §1, « go attribution » 20/11). */
+  const ouvrirCarte = async () => {
+    await page.evaluate(() => document.querySelector('[data-tab="map"]')?.click()); await page.waitForTimeout(300);
+    if (!(await page.$('#huntMap'))) { await page.evaluate(() => document.querySelector('[data-tab="plus"]')?.click()); await page.waitForTimeout(300); await page.evaluate(() => document.querySelector('[data-tab="map"]')?.click()); }
+    await page.waitForTimeout(1200);
+  };
+  await ouvrirCarte();
+  const vide = await page.evaluate(() => {
+    const n = document.querySelector('.map-note'); const a = n && n.querySelector('a[href="https://www.openstreetmap.org/copyright"]');
+    return { texte: n ? n.textContent : null, lien: !!a, cible: a ? a.target : null };
+  });
+  v('carte VIDE : attribution « © OpenStreetMap » affichée, avec le lien vers la licence', /© OpenStreetMap/.test(vide.texte || '') && vide.lien && vide.cible === '_blank', JSON.stringify(vide));
+  await page.evaluate(() => document.querySelector('[data-tab="collection"]')?.click()); await page.waitForTimeout(200);
   await page.evaluate(() => new Promise((ok, ko) => { const rq = indexedDB.open('garage-manifest'); rq.onsuccess = () => { const tx = rq.result.transaction('spots', 'readwrite');
     tx.objectStore('spots').put({ carId: 'ferrari-f40', at: new Date().toISOString(), coords: { lat: 48.85, lng: 2.35 }, photos: [], variants: [], loc: 'Paris', note: '', cover: 0, favorite: false });
     tx.oncomplete = ok; tx.onerror = ko; }; rq.onerror = ko; }));
@@ -48,6 +63,8 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   v('Leaflet vient du dépôt (vendor/leaflet), pas d\'un CDN', r.sources.length === 2 && r.sources.every(u => u.includes('/vendor/leaflet/')), JSON.stringify(r.sources));
   v('la carte s\'affiche', r.carte);
   v('le point de la prise géolocalisée est dessiné', r.points === 1, r.points);
+  const avecPoint = await page.evaluate(() => { const n = document.querySelector('.map-note'); return { texte: n ? n.textContent : null, lien: !!(n && n.querySelector('a[href="https://www.openstreetmap.org/copyright"]')) }; });
+  v('carte avec un point : attribution toujours là, avec le lien', /© OpenStreetMap/.test(avecPoint.texte || '') && avecPoint.lien && /1 prise géolocalisée/.test(avecPoint.texte || ''), JSON.stringify(avecPoint));
   const codeExterne = externes.filter(e => e.type === 'script' || e.type === 'stylesheet');
   v('aucun script ni style chargé depuis un autre domaine', codeExterne.length === 0, JSON.stringify(codeExterne));
   v('seules les tuiles OpenStreetMap sont externes', externes.every(e => e.hote.endsWith('tile.openstreetmap.org')), JSON.stringify([...new Set(externes.map(e => e.hote))]));

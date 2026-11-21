@@ -177,7 +177,7 @@ sauvegarde. Peut se faire le même jour que la séance 1 ou un autre.
   *Mon conseil :* au plus tôt **après l'étape 6 réussie**. On ne change qu'une chose
   à la fois : si la reconnaissance flanche, on saura que c'est le relais et pas la
   nouvelle app.
-- [ ] **18. Tester sur le téléphone** *(partie E)* : ferme complètement l'app et
+- [x] **18. Tester sur le téléphone** *(partie E)* *(20/11 : code e-mail reçu et validé, confirmé par le propriétaire ; base : toujours 1 seul compte, donc même compte que Google)* : ferme complètement l'app et
   rouvre-la (deux fois si besoin) → **Plus → Réglages** : version **20.199.0 ou
   plus** → **Compte** → adresse **du compte Resend** → **Recevoir un code** → code →
   **Valider** → **Sauvegarder**. Écris-moi « comptes testés ».
@@ -674,7 +674,7 @@ bouton, ni la moindre requête vers Google. Gratuit, **aucune carte bancaire**.
   l'interface : *API et services* → *Écran de consentement OAuth*) → **Commencer** :
   - nom de l'app : `Garage Manifest` ; e-mail d'assistance : ton adresse ;
   - audience : **Externe** ; coordonnées : ton adresse → accepte → **Créer**.
-- [x] **F3. Créer l'identifiant.** *(18/11 : ⚠️ le « code secret du client » est apparu sur une capture envoyée dans la conversation — à supprimer ou remplacer dans Clients → Garage Manifest web ; on ne s'en sert jamais)* **Clients** (ou *Identifiants*) → **Créer un client**
+- [x] **F3. Créer l'identifiant.** *(18/11 : le « code secret du client » était apparu sur une capture envoyée dans la conversation ; **remplacé le 20/11** — l'ancien supprimé, il ne reste que celui du 20/11, jamais affiché ni utilisé)* **Clients** (ou *Identifiants*) → **Créer un client**
   → type **Application Web** → nom `Garage Manifest web` →
   **Origines JavaScript autorisées** : `https://mcslec.github.io` (exactement, sans
   `/` final, sans `garage-manifest1`) → **aucune** URI de redirection → **Créer**.

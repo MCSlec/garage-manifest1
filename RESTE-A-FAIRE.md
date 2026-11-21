@@ -60,6 +60,9 @@ politique de confidentialité avant d'ouvrir l'app au public.
     d'office. Mais cela suppose que les étapes du §4 soient faites.
 
   Recommandation : **(a) tout de suite**, (b) dès que la carte est hébergée.
+  → **(a) choisie** (ton « go attribution », 20/11) : faite sur la branche (v20.205.0,
+  `banc-carte.js`), **en ligne au prochain « merge »**. À cocher quand tu l'auras vue sur
+  la carte vide.
 
 ## 2. 🔴 Lancer les comptes (dans l'ordre)
 
@@ -262,7 +265,18 @@ Capacitor autour du même code) :
   `PHOTOS` est absent, refus net des envois de photos, banc mis à jour). Resend sans
   domaine n'écrit qu'à ton adresse : ça sert à éprouver le parcours de connexion sur
   ton téléphone, pas à ouvrir les comptes au public.
-- [ ] Sauvegarde cloud **manuelle** (bouton, choix par défaut) ou automatique.
+- [x] Sauvegarde cloud **manuelle** ou **automatique** → **automatique** (ton « go synchro
+  auto », 20/11). Récupération à la connexion et à l'ouverture de l'app, envoi en
+  arrière-plan quelques secondes après chaque geste ; désactivable dans Réglages › Compte.
+- [ ] 🟢 **Essayer la synchro auto sur deux appareils** (après ton « merge », v20.206.0) :
+  connecte-toi sur le PC **et** sur le téléphone, capture une voiture sur l'un, rouvre
+  l'app sur l'autre : elle doit y être, sans toucher « Sauvegarder » ni « Récupérer ».
+  Dans Réglages › Compte, la ligne « Synchronisation automatique » dit « à jour ».
+- [ ] 🟡 **Adresse e-mail dédiée pour « Envoyer un retour »** (ton choix du 20/11 : une
+  adresse réservée à l'app, pas ta perso — elle est **publique** dans le code). Crée-la
+  (un Gmail gratuit suffit, ex. « garage-manifest… ») et donne-la moi : je l'inscris
+  (`ADRESSE_RETOUR` dans `index.html`). D'ici là, le bouton ouvre ta messagerie avec le
+  mail pré-rempli, **sans destinataire**.
 - [ ] Photos sauvegardées : **toutes** (choix par défaut, dédupliquées) ou la
   couverture seulement.
 - [ ] **i18n (chantier B, option b)** : lancer le mécanisme `t("…")` ? Quelles
@@ -277,10 +291,9 @@ Capacitor autour du même code) :
 - [x] **Merger la PR #1** (fait le 19/11, sur ton « merge »).
 - [ ] **« Continuer avec Google »** (script de Google autorisé par toi le 14/10,
   `CLAUDE.md` §1.2). **18/11 : identifiant créé (F1–F4) et inscrit dans l'app
-  (v20.201.0).** Reste à toi, `TUTO-GRATUIT.md` **partie F** : supprimer le *code
-  secret du client* apparu sur une capture (non bloquant : aucune adresse de
-  redirection), puis l'essai après la fusion, dont **iPhone** (F8). Faits : variable
-  `GOOGLE_CLIENT_ID` du serveur (F6, 18/11) et utilisateur test (F5, 19/11).
+  (v20.201.0).** Reste à toi, `TUTO-GRATUIT.md` **partie F** : l'essai après la fusion, dont **iPhone** (F8). Faits : variable
+  `GOOGLE_CLIENT_ID` du serveur (F6, 18/11), utilisateur test (F5, 19/11), code secret
+  du client remplacé (20/11).
   Apple : au passage en natif.
   ⏳ **Plus tard, avant d'ouvrir l'app au public : « Publier l'application »** chez
   Google. Le bouton reste grisé sans adresse de page d'accueil **et** de **politique
@@ -322,6 +335,7 @@ Capacitor autour du même code) :
   fusion de la PR #1, branche `main` uniquement : « merge » deviendrait aussi le feu
   vert du déploiement, et la production serait par construction égale au dépôt.
   Pas avant : le relais de `main` est l'ancien (Claude Haiku, sans clé → panne).
+  **Débloqué depuis le 19/11** : la PR #1 est fusionnée, `main` porte le relais actuel.
   Demande un fichier `wrangler` pour le relais, à écrire pour qu'il n'efface pas
   les réglages du tableau de bord.
 - [ ] 🟡 **Empreintes d'IP scellées par un secret** (HMAC au lieu de SHA-256 simple).

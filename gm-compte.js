@@ -37,11 +37,16 @@
    · Le jeton de session est gardé dans localStorage : c'est une préférence
      d'appareil, pas une donnée de collection (la collection reste en
      IndexedDB, CLAUDE.md §1.4).
+   · Synchronisation AUTOMATIQUE (2.7.0, 20/11, décision du propriétaire) :
+     connecté, chaque geste part au cloud sans bouton, et l'ouverture de l'app
+     récupère ce qu'un autre appareil a envoyé. Voir « synchronisation
+     automatique » plus bas : ce qui la déclenche, et ce qui empêche deux
+     téléphones de se renvoyer la balle sans fin.
    ====================================================================== */
 (function (global) {
   'use strict';
 
-  const VERSION_COMPTE = '2.6.0';
+  const VERSION_COMPTE = '2.7.0';
 
   /* Adresse du Worker de comptes, SANS « / » final. Vide = en sommeil.
      Renseignée le 18/11 : serveur déployé et vérifié (TUTO-GRATUIT.md, séance 2).
@@ -80,11 +85,31 @@
      configuration STABLE, à ne pas confondre avec une panne. On continue sans
      les photos — elles restent sur l'appareil — et on le dit. */
   const SANS_PHOTOS = 501;
+  /* Synchronisation automatique. SYNCHRO_MS : calme attendu après un geste avant d'envoyer
+     (une rafale de gestes = un seul envoi). REPOS_MS : au retour sur l'app, on ne
+     réinterroge le cloud que si la dernière vérification date d'au moins ce délai.
+     `window.GM_COMPTE_SYNCHRO_AUTO` (booléen) : valeur par défaut tant que le joueur n'a pas
+     choisi — les bancs l'éteignent pour les tests qui comptent les requêtes.
+     `window.GM_COMPTE_SYNCHRO_MS` : bancs. */
+  const SYNCHRO_MS = Number(global.GM_COMPTE_SYNCHRO_MS) > 0 ? Number(global.GM_COMPTE_SYNCHRO_MS) : 4000;
+  const REPOS_MS = 2 * 60 * 1000;
+  const RELANCE_MAX_MS = 15 * 60 * 1000;
+  const AUTO_PAR_DEFAUT = typeof global.GM_COMPTE_SYNCHRO_AUTO === 'boolean' ? global.GM_COMPTE_SYNCHRO_AUTO : true;
 
   // ------------------------------------------------------------ état ----
   const lireEtat = () => { try { return JSON.parse(localStorage.getItem(CLE)) || {}; } catch (_) { return {}; } };
   const ecrireEtat = (e) => { try { localStorage.setItem(CLE, JSON.stringify(e)); } catch (_) {} };
-  const oublierSession = () => { const e = lireEtat(); delete e.session; delete e.version; delete e.ids; ecrireEtat(e); };
+  /* Ce qui décrit le cloud D'UN compte (version, voitures, signature, modification en
+     attente, état de la synchro) part avec la session : un autre compte ouvert ensuite sur
+     cet appareil ne doit en hériter ni la version, ni la signature. */
+  const ETAT_DU_COMPTE = ['version', 'ids', 'empreinteCloud', 'modif', 'derniereSynchro', 'erreurSynchro'];
+  const oublierSession = () => { const e = lireEtat(); delete e.session; for (const k of ETAT_DU_COMPTE) delete e[k]; ecrireEtat(e); };
+  const nouvelleSession = (r) => {
+    const e = { ...lireEtat(), session: r.session, email: r.email, version: 0 };
+    for (const k of ['emailEnAttente', 'codeDemande', ...ETAT_DU_COMPTE.filter(k => k !== 'version')]) delete e[k];
+    ecrireEtat(e);
+  };
+  const synchroVoulue = (e) => typeof e.synchroAuto === 'boolean' ? e.synchroAuto : AUTO_PAR_DEFAUT;
 
   const DUREE_CODE_MS = 10 * 60 * 1000;               // = serveur
   function etat() {
@@ -94,7 +119,9 @@
              version: e.version || 0, derniereSauvegarde: e.derniere || null, sansPhotos: !!e.sansPhotos,
              /* F-8 (19/11) : tant qu'aucune sauvegarde n'a eu lieu, l'app ne SAIT pas si le
                 serveur garde les photos — le panneau ne doit rien promettre. */
-             photosInconnues: typeof e.sansPhotos !== 'boolean' };
+             photosInconnues: typeof e.sansPhotos !== 'boolean',
+             synchroAuto: synchroVoulue(e), aEnvoyer: !!e.modif, derniereSynchro: e.derniereSynchro || null,
+             erreurSynchro: e.erreurSynchro || null, synchroEnCours };
   }
 
   // ------------------------------------------------------------- réseau --
@@ -147,6 +174,36 @@
     const h = await crypto.subtle.digest('SHA-256', octets);
     return [...new Uint8Array(h)].map(b => b.toString(16).padStart(2, '0')).join('');
   }
+  /* Empreintes des photos, MÉMORISÉES. La synchronisation automatique sauvegarde après
+     chaque geste : recalculer à chaque fois le SHA-256 de toutes les photos (décodage base64
+     compris) coûterait plusieurs secondes de calcul sur un téléphone, pour un garage de
+     quelques centaines de photos. Clé = le texte de la photo, déjà en mémoire dans l'app
+     (aucune copie). Élaguée à chaque sauvegarde : une photo retirée n'y reste pas retenue. */
+  const memoEmpreintes = new Map();
+  async function empreintePhoto(p) {
+    if (memoEmpreintes.has(p)) return memoEmpreintes.get(p);
+    const o = dataUrlVersOctets(p);
+    const h = o ? await empreinte(o.octets) : null;
+    memoEmpreintes.set(p, h);
+    return h;
+  }
+  const elaguerEmpreintes = (gardees) => { for (const k of memoEmpreintes.keys()) if (!gardees.has(k)) memoEmpreintes.delete(k); };
+
+  /* SIGNATURE d'un garage tel qu'il est envoyé (photos en empreintes) : JSON canonique —
+     clés triées, voitures triées, date d'export exclue — puis SHA-256. Deux contenus
+     identiques ont la même signature quel que soit l'ordre de leurs champs. Sert à NE PAS
+     envoyer ce que le cloud contient déjà (synchronisation automatique). */
+  const canonique = (v) => Array.isArray(v) ? `[${v.map(x => x === undefined || typeof x === 'function' ? 'null' : canonique(x)).join(',')}]`
+    : v && typeof v === 'object' ? `{${Object.keys(v).filter(k => v[k] !== undefined && typeof v[k] !== 'function').sort()
+        .map(k => `${JSON.stringify(k)}:${canonique(v[k])}`).join(',')}}`
+    : (JSON.stringify(v) ?? 'null');
+  async function signatureGarage(donnees) {
+    const { exportedAt, ...reste } = donnees && typeof donnees === 'object' && !Array.isArray(donnees) ? donnees : {};
+    const cle = (s) => String(s && typeof s === 'object' ? s.carId : '');
+    const spots = (Array.isArray(reste.spots) ? reste.spots : []).slice().sort((a, b) => cle(a) < cle(b) ? -1 : cle(a) > cle(b) ? 1 : 0);
+    return empreinte(new TextEncoder().encode(canonique({ ...reste, spots })));
+  }
+
   async function enParallele(liste, n, travail) {
     let i = 0;
     await Promise.all(Array.from({ length: Math.min(n, liste.length) }, async () => {
@@ -168,7 +225,8 @@
     const e = lireEtat();
     if (!e.emailEnAttente) throw new ErreurCompte('Demande d\'abord un code', 0);
     const r = await api('POST', '/auth/session', { corps: { email: e.emailEnAttente, code: String(code).replace(/\s/g, '') } });
-    ecrireEtat({ ...lireEtat(), session: r.session, email: r.email, emailEnAttente: undefined, codeDemande: undefined, version: 0, ids: undefined });
+    nouvelleSession(r);
+    apresConnexion();
     return true;
   }
   const annulerCode = () => { const e = lireEtat(); delete e.emailEnAttente; delete e.codeDemande; ecrireEtat(e); };
@@ -180,7 +238,8 @@
   async function connecterGoogle(credential) {
     if (!credential) throw new ErreurCompte('Connexion Google interrompue', 0);
     const r = await api('POST', '/auth/google', { corps: { credential } });
-    ecrireEtat({ ...lireEtat(), session: r.session, email: r.email, emailEnAttente: undefined, codeDemande: undefined, version: 0, ids: undefined });
+    nouvelleSession(r);
+    apresConnexion();
     return true;
   }
 
@@ -220,7 +279,11 @@
     return e.ids.some(id => !ici.has(id) && !tombes[id] && !fusionnee(id));
   }
 
-  async function sauvegarder({ progres } = {}) {
+  /* La modification en attente (`modif`, un compteur) n'est levée que si AUCUN geste n'a eu
+     lieu depuis l'export : un geste pendant l'envoi des photos n'est pas dans ce qui part. */
+  const leverModif = (marque) => { const e = lireEtat(); if (e.modif === marque) { delete e.modif; ecrireEtat(e); } };
+
+  async function sauvegarder({ progres, auto = false } = {}) {
     if (!global.GMGarage) throw new ErreurCompte('Application pas encore prête', 0);
     const auDepart = idsDe(global.GMGarage.exporter());
     let inconnues = [], recuperations = 0;
@@ -232,7 +295,7 @@
          photos partent (plusieurs secondes). Si le numéro avait bougé entre-temps,
          on annonçait la NOUVELLE version avec l'ANCIEN contenu, et le serveur
          l'acceptait sans conflit — la voiture de l'autre appareil était écrasée. */
-      const connu = lireEtat(), versionConnue = connu.version || 0;
+      const connu = lireEtat(), versionConnue = connu.version || 0, marque = connu.modif;
       if (!recuperations && aRecupererDAbord(connu, donnees)) {
         inconnues = (await restaurer({ progres })).inconnues || []; recuperations++;
         continue;
@@ -246,17 +309,28 @@
       for (const s of donnees.spots || []) {
         const emp = [];
         for (const p of (s.photos || [])) {
-          const o = dataUrlVersOctets(p); if (!o) continue;
-          const h = await empreinte(o.octets);
+          const h = await empreintePhoto(p); if (!h) continue;
           photos.set(h, p); emp.push(h);
         }
         spots.push({ ...s, photos: emp });
       }
+      elaguerEmpreintes(new Set(photos.values()));
       /* Voitures du cloud que CETTE version de l'app ne sait pas lire (modèle
          ajouté par une version plus récente) : renvoyées telles quelles. Sans
          cela, un appareil en retard d'une mise à jour les effaçait pour tous. */
       const ici = new Set(spots.map(s => s.carId));
       for (const s of inconnues) if (!ici.has(s.carId)) { spots.push(s); ici.add(s.carId); }
+      const charge = { ...donnees, spots };
+      const signature = await signatureGarage(charge);
+      /* Synchronisation automatique : le cloud contient déjà exactement ce garage (dernier
+         envoi ou dernière récupération) → aucun envoi, aucune requête. Le bouton
+         « Sauvegarder » envoie toujours : c'est aussi lui qui rattrape des photos restées
+         sur l'appareil quand le serveur gagne son stockage photo. */
+      if (auto && signature === connu.empreinteCloud) {
+        leverModif(marque);
+        return { inchange: true, version: versionConnue, photosEnvoyees: 0, voitures: spots.length, photosNonSauvegardees: 0,
+                 recuperees: [...idsDe(donnees)].filter(id => !auDepart.has(id)).length };
+      }
       const toutes = [...photos.keys()];
       let manquantes = [], sansPhotos = false;
       try {
@@ -281,8 +355,9 @@
         progres && progres({ etape: 'photos', faites: ++faites, total: manquantes.length });
       });
       try {
-        const r = await api('PUT', '/garage', { corps: { donnees: { ...donnees, spots } }, entetes: { 'If-Match': String(versionConnue) }, delai: DELAI_LOURD_MS });
-        ecrireEtat({ ...lireEtat(), version: r.version, ids: spots.map(s => s.carId), derniere: new Date().toISOString() });
+        const r = await api('PUT', '/garage', { corps: { donnees: charge }, entetes: { 'If-Match': String(versionConnue) }, delai: DELAI_LOURD_MS });
+        ecrireEtat({ ...lireEtat(), version: r.version, ids: spots.map(s => s.carId), derniere: new Date().toISOString(), empreinteCloud: signature });
+        leverModif(marque);
         return { version: r.version, photosEnvoyees: manquantes.length, voitures: spots.length, photosNonSauvegardees: sansPhotos ? toutes.length : 0,
                  recuperees: [...idsDe(donnees)].filter(id => !auDepart.has(id)).length };
       } catch (err) {
@@ -295,14 +370,19 @@
     }
   }
 
-  async function restaurer({ progres } = {}) {
+  /* `siChange` (synchronisation automatique) : si le cloud est à la version que cet appareil
+     a déjà vue, on s'arrête là — pas d'import, pas de calcul d'empreintes. */
+  async function restaurer({ progres, siChange = false } = {}) {
     let g;
     try { g = await api('GET', '/garage', { delai: DELAI_LOURD_MS }); }
     catch (err) {
       if (err.statut !== 404) throw err;
-      ecrireEtat({ ...lireEtat(), version: 0, ids: [] });   // rien au cloud : la prochaine sauvegarde sera la première
+      // Rien au cloud : la prochaine sauvegarde sera la première.
+      const e = lireEtat(); delete e.empreinteCloud; ecrireEtat({ ...e, version: 0, ids: [] });
       return { rien: true, inconnues: [] };
     }
+    const connu = lireEtat();
+    if (siChange && g && g.version === connu.version && Array.isArray(connu.ids) && connu.empreinteCloud) return { inchange: true, version: g.version, inconnues: [] };
     /* Le contenu du cloud n'est pas plus digne de confiance qu'un fichier reçu :
        une entrée nulle ou des « photos » qui ne sont pas une liste faisaient
        planter la récupération sur un message technique. */
@@ -312,7 +392,7 @@
     // Photos déjà présentes sur l'appareil : on ne les retélécharge pas.
     const locales = new Map();
     for (const s of (global.GMGarage.exporter().spots || [])) for (const p of (s.photos || [])) {
-      const o = dataUrlVersOctets(p); if (o) locales.set(await empreinte(o.octets), p);
+      const h = await empreintePhoto(p); if (h) locales.set(h, p);
     }
     const toutes = [...new Set(spotsCloud.flatMap(empreintesDe))];
     const aTelecharger = toutes.filter(h => !locales.has(h));
@@ -325,7 +405,7 @@
         const type = r.type.split(';')[0].trim().toLowerCase();
         if (!TYPES_PHOTO.has(type)) return;
         // Contrôle d'intégrité : le contenu doit correspondre à son empreinte.
-        if (await empreinte(r.octets) === h) locales.set(h, octetsVersDataUrl(r.octets, type));
+        if (await empreinte(r.octets) === h) { const d = octetsVersDataUrl(r.octets, type); locales.set(h, d); memoEmpreintes.set(d, h); }
       } catch (err) {
         /* 404 : la photo n'existe plus au cloud, il n'y a rien à perdre en
            l'ignorant. Toute AUTRE erreur (réseau, serveur) est passagère : on
@@ -341,7 +421,11 @@
     });
     if (echecs) throw new ErreurCompte(`${echecs} photo${echecs > 1 ? 's' : ''} n'${echecs > 1 ? 'ont' : 'a'} pas pu être téléchargée${echecs > 1 ? 's' : ''} : rien n'a été modifié, réessaie`, 0);
     const donnees = { ...cloud, spots: spotsCloud.map(s => ({ ...s, photos: empreintesDe(s).map(h => locales.get(h)).filter(Boolean) })) };
-    const r = await global.GMGarage.importer(donnees, { fusion: true });
+    /* SILENCIEUX : ces écritures viennent du cloud, elles ne sont pas des gestes à renvoyer.
+       Sans cela, deux téléphones se renvoyaient la balle sans fin (récupérer → sauvegarder
+       → l'autre récupère → sauvegarde…), dès que leurs données locales différaient même d'un
+       détail que la fusion garde de chaque côté (défis du jour, équipage). */
+    const r = await global.GMGarage.importer(donnees, { fusion: true, silencieux: true });
     /* Ce que l'app n'a PAS repris alors que rien ne l'explique (ni retrait
        volontaire, ni doublon fusionné) : un modèle que cette version ne connaît
        pas. Gardé tel quel — photos en empreintes — pour être renvoyé à la
@@ -351,7 +435,7 @@
     const inconnues = spotsCloud.filter(s => typeof s.carId === 'string' && RE_ID_CATALOGUE.test(s.carId) && !ici.has(s.carId) && !tombes[s.carId] && !fusionnee(s.carId))
       .map(s => ({ ...s, photos: empreintesDe(s) }));
     const ids = [...new Set(spotsCloud.map(s => s.carId).filter(id => typeof id === 'string' && (ici.has(id) || RE_ID_CATALOGUE.test(id))))];
-    ecrireEtat({ ...lireEtat(), version: g.version, ids, ...(aTelecharger.length ? { sansPhotos } : {}) });
+    ecrireEtat({ ...lireEtat(), version: g.version, ids, empreinteCloud: await signatureGarage(cloud), ...(aTelecharger.length ? { sansPhotos } : {}) });
     return { voitures: r.n, rejetees: r.rejected, retirees: r.retirees || 0, photosTelechargees: sansPhotos ? 0 : aTelecharger.length, sansPhotos, version: g.version, inconnues };
   }
   const sauvegarderEnSerie = enSerie(sauvegarder), restaurerEnSerie = enSerie(restaurer);
@@ -367,6 +451,93 @@
      sauvegarde, arrivée après, réécrivait version et voitures du cloud dans l'état d'un
      appareil déconnecté (ou d'un compte effacé). Ils attendent désormais leur tour. */
   const deconnecterEnSerie = enSerie(deconnecter), supprimerEnSerie = enSerie(supprimerCompte);
+
+  // ------------------------------------------------ synchronisation automatique --
+  /* (20/11, décision du propriétaire : « automatique ».) Connecté, l'appareil garde le cloud
+     à jour sans bouton :
+     · chaque écriture de la collection (signal « gm:collection » d'index.html) note une
+       modification en attente — `modif`, persistée : elle survit à la fermeture de l'app —
+       puis une sauvegarde part après SYNCHRO_MS de calme ; quitter l'app (onglet masqué)
+       l'envoie tout de suite ;
+     · à l'ouverture de l'app, au retour sur l'app (au plus toutes les REPOS_MS) et au retour
+       du réseau : récupération SI le cloud a changé, puis envoi de ce qui attend ;
+     · à la connexion : récupération, puis envoi (le garage de ce téléphone rejoint le cloud).
+     Ce qui empêche deux téléphones de se renvoyer la balle : la récupération écrit en
+     SILENCE (aucune modification en attente n'en naît), et un envoi identique à ce que le
+     cloud contient déjà n'a pas lieu (signature). Tout passe par la même file que les
+     boutons : jamais deux opérations entremêlées. Une erreur ne s'affiche pas par-dessus
+     l'app : la ligne d'état du panneau la dit, et l'essai suivant repart (réseau revenu,
+     retour sur l'app, prochain geste, ou relance espacée de 30 s à 15 min).
+     Limite connue : un geste fait PENDANT l'écriture d'une récupération est lui aussi
+     silencieux ; il part avec le geste suivant (ou « Sauvegarder »). */
+  let synchroEnCours = false, synchroPrevue = null, minuterieSynchro = null, relances = 0, derniereVerification = 0;
+  let recupererAussi = false, sauverAussi = false;
+  const garagePret = () => !!(global.GMGarage && typeof global.GMGarage.pret === 'function' && global.GMGarage.pret());
+  // index.html ancien (encore en cache) : ni signal, ni « prêt » → pas de synchronisation automatique.
+  const synchroPossible = () => !!(global.GMGarage && typeof global.GMGarage.pret === 'function');
+  const synchroActive = () => { const e = lireEtat(); return !!(base && e.session && synchroVoulue(e)); };
+
+  function planifierSynchro(ms) {
+    clearTimeout(minuterieSynchro);
+    minuterieSynchro = setTimeout(() => { minuterieSynchro = null; synchroniser().catch(() => {}); }, ms);
+  }
+  function surModification() {
+    const e = lireEtat();
+    if (!base || !e.session) return;          // hors connexion : la connexion récupérera puis enverra tout
+    ecrireEtat({ ...e, modif: (Number(e.modif) || 0) + 1 });
+    majStatutSynchro();
+    if (synchroVoulue(e)) planifierSynchro(SYNCHRO_MS);
+  }
+  /* Une seule synchronisation en file à la fois : les demandes qui arrivent avant son tour
+     s'y ajoutent (récupérer et/ou envoyer) au lieu de s'empiler. */
+  function synchroniser({ recuperer = false, sauver = false } = {}) {
+    recupererAussi = recupererAussi || recuperer; sauverAussi = sauverAussi || sauver;
+    if (synchroPrevue) return synchroPrevue;
+    const p = enSerie(async () => {
+      synchroPrevue = null;
+      const rec = recupererAussi, sv = sauverAussi; recupererAussi = sauverAussi = false;
+      if (!synchroActive() || !garagePret()) return { inactive: true };
+      synchroEnCours = true; majStatutSynchro();
+      try {
+        const r = {};
+        if (rec) { derniereVerification = Date.now(); r.recuperation = await restaurer({ siChange: true }); }
+        if (sv || lireEtat().modif) r.sauvegarde = await sauvegarder({ auto: true });
+        const e = lireEtat(); delete e.erreurSynchro;
+        ecrireEtat({ ...e, derniereSynchro: new Date().toISOString() });
+        relances = 0;
+        return r;
+      } catch (err) {
+        if (lireEtat().session) {
+          ecrireEtat({ ...lireEtat(), erreurSynchro: (err && err.message) || 'Erreur' });
+          if (lireEtat().modif) planifierSynchro(Math.min(RELANCE_MAX_MS, 30000 * 2 ** relances++));
+        }
+        throw err;
+      } finally {
+        synchroEnCours = false; majStatutSynchro();
+        // Session expirée (401) : le panneau repasse en « se connecter », et le dit.
+        if (!lireEtat().session) { message = 'Session expirée : reconnecte-toi pour reprendre la synchronisation.'; actionMessage = null; rafraichir(); }
+      }
+    })();
+    synchroPrevue = p;
+    return p;
+  }
+  function apresConnexion() {
+    if (synchroActive() && garagePret()) synchroniser({ recuperer: true, sauver: true }).catch(() => {});
+  }
+  function installerSynchro() {
+    global.addEventListener('gm:collection', surModification);
+    const demarrer = () => { if (synchroActive()) synchroniser({ recuperer: true }).catch(() => {}); };
+    global.addEventListener('gm:pret', demarrer);
+    if (garagePret()) demarrer();
+    document.addEventListener('visibilitychange', () => {
+      if (!synchroActive() || !garagePret()) return;
+      if (document.visibilityState === 'hidden') {
+        // L'app passe en arrière-plan (et sera peut-être fermée) : ce qui attend part maintenant.
+        if (lireEtat().modif) { clearTimeout(minuterieSynchro); synchroniser().catch(() => {}); }
+      } else if (Date.now() - derniereVerification >= REPOS_MS) synchroniser({ recuperer: true }).catch(() => {});
+    });
+    global.addEventListener('online', () => { if (synchroActive() && garagePret()) synchroniser({ recuperer: true }).catch(() => {}); });
+  }
   /* En-tête de session pour le relais IA (quota du compte). index.html ne
      l'envoie qu'au relais officiel, jamais à un relais personnalisé. */
   const enteteAuth = () => { const e = lireEtat(); return base && e.session ? { Authorization: `Bearer ${e.session}` } : {}; };
@@ -380,10 +551,24 @@
   let actionMessage = null;     // ligne du dernier bouton touché : le message s'affiche juste dessous (F-9)
   const CHAMP = 'flex:1;min-width:0;background:var(--bg);border:1px solid var(--line);border-radius:9px;color:var(--fg);padding:10px 12px;font:400 14px var(--sans)';
 
+  /* Ligne d'état de la synchronisation : mise à jour SUR PLACE (texte seul). Redessiner le
+     panneau à chaque envoi en arrière-plan ferait sauter l'écran sous le doigt du joueur. */
+  const quand = (iso) => { const d = new Date(iso); return isNaN(d) ? '' : d.toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }); };
+  function texteSynchro() {
+    const e = etat();
+    if (!e.synchroAuto) return 'Désactivée : rien ne part sans « Sauvegarder »';
+    if (e.synchroEnCours) return 'Synchronisation…';
+    if (e.erreurSynchro) return `Pas encore à jour (${e.erreurSynchro}) — nouvel essai automatique`;
+    if (e.aEnvoyer) return 'Modification en attente d\'envoi…';
+    return e.derniereSynchro ? `Activée · à jour (${quand(e.derniereSynchro)})` : 'Activée : chaque prise part dans le cloud toute seule';
+  }
+  function majStatutSynchro() { const s = document.getElementById('gcp-sync'); if (s) s.textContent = texteSynchro(); }
+
   function panneauHTML() {
     const e = etat();
     const corps = e.connecte ? `
-          <div class="srow"><div class="l"><b>Connecté</b><span>${esc(e.email)}${e.derniereSauvegarde ? ` · dernière sauvegarde le ${esc(new Date(e.derniereSauvegarde).toLocaleString('fr-FR'))}` : ''}</span></div><button class="btn" data-gcp="deconnecter">Se déconnecter</button></div>
+          <div class="srow"><div class="l"><b>Connecté</b><span>${esc(e.email)}${e.derniereSauvegarde ? ` · dernière sauvegarde le ${esc(new Date(e.derniereSauvegarde).toLocaleString('fr-FR'))}` : ''}</span></div><button class="btn" data-gcp="deconnecter">Se déconnecter</button></div>${synchroPossible() ? `
+          <div class="srow"><div class="l"><b>Synchronisation automatique</b><span id="gcp-sync">${esc(texteSynchro())}</span></div><button class="btn" data-gcp="auto" aria-pressed="${e.synchroAuto}">${e.synchroAuto ? 'Désactiver' : 'Activer'}</button></div>` : ''}
           <div class="srow"><div class="l"><b>Sauvegarder dans le cloud</b><span>${e.sansPhotos ? 'Collection seule, retrouvable sur tous tes appareils : ce serveur ne garde pas les photos, elles restent sur ce téléphone' : e.photosInconnues ? 'Ta collection, retrouvable sur tous tes appareils' : 'Collection et photos, retrouvables sur tous tes appareils'}</span></div><button class="btn red" data-gcp="sauvegarder">Sauvegarder</button></div>
           <div class="srow"><div class="l"><b>Récupérer mon garage</b><span>Ajoute ici ce qui est sauvé dans le cloud, sans rien effacer</span></div><button class="btn" data-gcp="restaurer">Récupérer</button></div>
           <div class="srow"><div class="l"><b>Supprimer mon compte</b><span>Efface ton compte et tout ce qui est sauvé dans le cloud (ce téléphone garde son garage)</span></div><button class="btn red ghost" data-gcp="supprimer">Supprimer</button></div>` : e.codeEnvoyeA ? `
@@ -503,6 +688,14 @@
         message = 'Connecté ✓'; rafraichir();
       } else if (action === 'changer') {
         annulerCode(); message = ''; rafraichir();
+      } else if (action === 'auto') {
+        const active = !etat().synchroAuto;
+        ecrireEtat({ ...lireEtat(), synchroAuto: active });
+        if (!active) clearTimeout(minuterieSynchro);
+        message = active ? 'Synchronisation automatique activée : ce qui attendait part maintenant.' : 'Synchronisation automatique désactivée : utilise « Sauvegarder » et « Récupérer ».';
+        rafraichir();
+        // Réactivée : on rattrape ce qui a changé des deux côtés pendant la pause.
+        if (active) synchroniser({ recuperer: true }).catch(() => {});
       } else if (action === 'sauvegarder') {
         dire('Sauvegarde en cours…');
         const r = await sauvegarderEnSerie({ progres: p => dire(`Envoi des photos : ${p.faites}/${p.total}`) });
@@ -541,6 +734,7 @@
       const cible = ev.target && ev.target.id === 'gcp-email' ? 'code' : ev.target && ev.target.id === 'gcp-code' ? 'valider' : null;
       if (cible) { ev.preventDefault(); document.querySelector(`[data-gcp="${cible}"]`)?.click(); }
     });
+    installerSynchro();
     greffer();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', installer); else installer();
@@ -548,5 +742,7 @@
   global.GMCompte = Object.freeze({
     VERSION: VERSION_COMPTE, etat, demanderCode, verifierCode, connecterGoogle, annulerCode, deconnecter: deconnecterEnSerie, enteteAuth,
     sauvegarder: sauvegarderEnSerie, restaurer: restaurerEnSerie, supprimerCompte: supprimerEnSerie, exporterCompte,
+    // Synchronisation automatique à la demande (bancs, future app native) : même file, mêmes règles.
+    synchroniser: (options) => synchroniser(options),
   });
 })(window);
