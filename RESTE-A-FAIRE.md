@@ -354,12 +354,14 @@ Capacitor autour du même code) :
   couverture seulement.
 - [ ] 🟡 **Séries spéciales Ferrari en entrées à part** (question du 21/11, capture d'une 599) :
   une série spéciale rangée en **déclinaison** (case à cocher) rapporte les points de sa base.
-  **599 GTO : faite le 21/11** sur ta demande (entrée Légendaire, sur la branche, en ligne au
-  prochain « merge »). Ta photo passe sur la GTO par **« Changer de modèle »** sur la fiche
-  de ta 599, si c'est bien une GTO (badge arrière). Restent, même cas : 360 Challenge
-  Stradale, 430 Scuderia, Scuderia Spider 16M, 458 Speciale, 488 Pista, F12tdf,
-  812 Competizione. La règle GTA (`CLAUDE.md` §4.5) dit « entrée séparée ».
-  Mot-clé : « go séries spéciales ».
+  **Fait sur la branche le 21/11** (ton « go séries spéciales »), en ligne au prochain
+  « merge » : 599 GTO, Scuderia Spider 16M, 458 Speciale A, F12tdf et 812 Competizione
+  en **Légendaire** ; 360 Challenge Stradale, 430 Scuderia, 458 Speciale et 488 Pista en
+  **Épique** (volume jamais publié par Ferrari, estimé à plus de 1 000). Pista Spider et
+  Competizione A restent des cases de leur série. Au passage, la F430 de base affichait
+  510 ch (ceux de la Scuderia) : corrigée à 490. **À toi :** une photo déjà rangée sous la
+  version de base (ta 599) passe sur sa série par **« Changer de modèle »** sur sa fiche.
+  À cocher quand tu l'auras vu en ligne.
 - [ ] **i18n (chantier B, option b)** : lancer le mécanisme `t("…")` ? Quelles
   langues en premier ?
 - [ ] **Rouleau (chantier C)** : où apparaît la pellicule dans l'écran de

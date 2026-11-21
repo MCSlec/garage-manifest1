@@ -12,7 +12,9 @@
 > corrections de la relecture du 21/11. Sur la branche, en attente de « merge » (v20.209.0) :
 > les **pages web des stores** (`pages/`, générées par `banc-pages.js`, à finir plus tard), et la tuile
 > « Position » de la fiche lisible (bleu par défaut des liens, `banc-dom.js` 20 verts), et la
-> **599 GTO en entrée à part** (Légendaire, `ferrari-599-gto`, sortie des déclinaisons de la GTB). Comptes, Google et
+> **séries spéciales Ferrari en entrées à part** (599 GTO, 360 CS, 430 Scuderia, 16M, 458 Speciale
+> et Speciale A, 488 Pista, F12tdf, 812 Competizione ; règle dans `CLAUDE.md` §4.5 ; F430 de base
+> corrigée à 490 ch). Comptes, Google et
 > relais IA **en service** (§2) : lire le §2 avant toute instruction au propriétaire.
 > Le propriétaire suit la **feuille de route** en tête de `TUTO-GRATUIT.md` (étapes
 > 1 à 19, uniquement ce qui reste) : c'est elle qu'on cite, par son numéro.

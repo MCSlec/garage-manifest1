@@ -476,6 +476,15 @@ compléter mécaniquement fige l'erreur. Cas réellement rencontrés et tranché
 bien la voiture nommée. Une incohérence ici est la racine des bugs
 Giulia/Quadrifoglio et M2 CS/M4 CSL — la fiche affiche une **autre voiture**.
 - **Sélecteurs rattachés à la bonne entrée** (28/09) : celui de la 205 (GTI seules) → 205 GTI ; celui de la 504 (coupé/cabriolet) → 504 Coupé ; celui de la Xantia (Activa seules) → Xantia Activa ; Rallye 1.3 retirée de la 106 → 106 Rallye, désormais en deux phases (1.3 / 1.6).
+- **Séries spéciales** (21/11, Ferrari) : une série spéciale (599 GTO, 360 Challenge
+  Stradale, 430 Scuderia, 458 Speciale, 488 Pista, F12tdf, 812 Competizione) a **sa propre
+  entrée**, jamais une simple case de déclinaison : le score ne dépend que de la rareté de
+  l'entrée, une case laissait +8 à une voiture de 599 exemplaires. Sa **version ouverte**
+  reste une déclinaison de cette entrée (Pista Spider, Competizione A), **sauf** si elle
+  change de palier de rareté (Scuderia Spider 16M, 458 Speciale A : 499 ex., entrées à part).
+  ⚠️ **Masse : pesée comme sa base** (à sec pour les V8 et la 812, en ordre de marche pour
+  la 599 et la F12), sinon kg/ch compare deux référentiels (§4.4 ter). Volume non publié
+  par le constructeur → `prod` absent, rareté de jeu « épique ».
 - **Exclusions déjà appliquées** au titre de cette règle : 911 Turbo/GT3/GT2 RS,
   M3 CSL/Touring, Golf R/R32, Mégane R.S./R26.R, 206 WRC, séries d'homologation
   en très petit volume (ex. Alfa GTV6 3.0 sud-africaine, 212 ex.).
@@ -741,7 +750,7 @@ de choisir ?**
   lancement hors ligne. Sans repli, photographier ne renverrait rien.
   Le résultat complet est lisible via `lastMatch`.
 
-Banc : `node banc-matcher.js`, 17 tests sur le catalogue **fusionné** (1 072 au 21/11),
+Banc : `node banc-matcher.js`, 17 tests sur le catalogue **fusionné** (1 080 au 21/11),
 sortie en code non nul si échec. Préfixé `banc-`, donc hors cache.
 
 ---
