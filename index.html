@@ -425,6 +425,73 @@
   .fx-serie-tx{ flex:1; min-width:0; }
   .fx-serie-tx b{ display:block; font:650 15px/1.2 var(--sans); }
   .fx-serie-tx span{ display:block; margin-top:3px; font-size:12px; color:var(--muted2); }
+  .fx-serie-ic img{ width:100%; height:100%; object-fit:cover; border-radius:9px; }
+  .fx-serie-ic:has(img){ border:0; overflow:hidden; }
+  button.fx-marque{ display:inline-flex; align-items:center; gap:6px; padding:0; background:none; border:0; cursor:pointer; }
+  button.fx-marque span{ font:400 14px/1 var(--sans); letter-spacing:0; color:var(--muted2); }
+
+  /* ---- Accueil du Garage (maquette v2, 21/11) ---- */
+  .gx-accueil{ margin:2px 0 6px; }
+  .gx-k{ font:600 10.5px/1 var(--mono); letter-spacing:.2em; text-transform:uppercase; color:var(--muted2); }
+  .gx-une{ position:relative; display:block; width:100%; height:228px; padding:0; border:0; border-radius:20px; overflow:hidden; background:var(--panel2); text-align:left; color:#fff; }
+  .gx-une > img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  .gx-une::after{ content:""; position:absolute; inset:0; background:linear-gradient(180deg,rgba(0,0,0,.4),rgba(0,0,0,0) 32%,rgba(0,0,0,0) 46%,rgba(8,8,10,.9)); }
+  .gx-une-vide{ position:absolute; inset:0; display:grid; place-items:center; color:var(--dim); }
+  .gx-une-vide .icon{ width:56px; height:56px; }
+  .gx-une-haut{ position:absolute; z-index:2; top:14px; left:14px; right:14px; display:flex; justify-content:space-between; align-items:center; }
+  .gx-une-haut .gx-k{ color:#e4e4e7; }
+  .gx-une-haut .fx-rarete{ background:rgba(12,12,14,.6); border-color:rgba(255,255,255,.18); color:#fff; }
+  .gx-une-bas{ position:absolute; z-index:2; left:18px; right:18px; bottom:15px; }
+  .gx-une-bas .gx-k{ color:#d4d4d8; }
+  .gx-une-modele{ display:block; margin-top:5px; font:700 32px/.95 var(--titre); color:#fff; }
+  .gx-une-meta{ display:block; margin-top:7px; font-size:13px; color:#d4d4d8; }
+  .gx-sec{ display:flex; justify-content:space-between; align-items:baseline; margin:20px 0 10px; }
+  .gx-sec h3{ margin:0; font:600 10.5px/1 var(--mono); letter-spacing:.2em; text-transform:uppercase; color:var(--muted); }
+  .gx-lien{ padding:0; border:0; background:none; color:var(--muted2); font-size:12.5px; cursor:pointer; }
+  .gx-cat{ margin-top:24px; padding-top:18px; border-top:1px solid var(--line); }
+  .gx-marques{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+  .gx-mq{ min-width:0; padding:11px 12px; border-radius:14px; background:var(--panel); border:1px solid var(--line); text-align:left; color:var(--txt); }
+  .gx-mono{ width:30px; height:30px; flex:none; display:grid; place-items:center; border-radius:9px; font:700 11px/1 var(--mono); letter-spacing:.04em;
+    color:var(--a); background:color-mix(in srgb,var(--a) 13%,transparent); border:1px solid color-mix(in srgb,var(--a) 28%,transparent); }
+  .gx-mq-n{ display:block; margin-top:10px; font-size:13px; font-weight:650; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .gx-mq-c{ display:block; margin-top:3px; font:500 11.5px/1 var(--mono); color:var(--muted2); }
+  .gx-barre{ display:block; height:3px; margin-top:9px; border-radius:2px; background:var(--line); overflow:hidden; }
+  .gx-barre i{ display:block; height:100%; min-width:4px; border-radius:2px; background:var(--a, var(--red)); }
+  .gx-strip{ display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; padding-bottom:2px; }
+  .gx-strip::-webkit-scrollbar{ display:none; }
+  .gx-vg{ position:relative; flex:0 0 31%; aspect-ratio:1/1.1; padding:0; border:1px solid var(--line); border-radius:12px; overflow:hidden; background:var(--panel2); color:#fff; text-align:left; }
+  .gx-vg > img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  .gx-vg::after{ content:""; position:absolute; inset:0; background:linear-gradient(180deg,transparent 45%,rgba(6,6,8,.88)); }
+  .gx-vg-vide{ position:absolute; inset:0; display:grid; place-items:center; color:var(--dim); }
+  .gx-vg-d{ position:absolute; z-index:2; top:8px; left:8px; width:7px; height:7px; border-radius:50%; background:var(--c); box-shadow:0 0 8px var(--c); }
+  .gx-vg-t{ position:absolute; z-index:2; left:8px; right:8px; bottom:8px; font:650 12px/1.15 var(--sans); }
+  .gx-vg-t i{ display:block; margin-bottom:3px; font-style:normal; font:500 9.5px/1 var(--mono); letter-spacing:.12em; text-transform:uppercase; color:#d4d4d8; }
+
+  /* ---- Pages marque et liste des marques (maquette v2) : la structure de la fiche ---- */
+  .mq-mono-xl{ font:700 64px/1 var(--titre); letter-spacing:.04em; color:color-mix(in srgb,var(--a) 70%,var(--muted)); }
+  .mq-trait{ display:block; width:34px; height:3px; border-radius:2px; background:var(--a); margin-bottom:12px; }
+  .mq-corps{ padding:18px 20px 8px; }
+  .mq-coll{ padding:15px 16px; border-radius:16px; background:var(--panel); border:1px solid var(--line); }
+  .mq-coll-l{ display:flex; justify-content:space-between; align-items:baseline; }
+  .mq-coll-v{ font:600 12.5px/1 var(--mono); color:var(--muted); }
+  .mq-coll-v b{ font:700 22px/1 var(--mono); color:var(--txt); }
+  .mq-barre{ margin-top:12px; height:4px; }
+  .mq-paliers{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:12px; }
+  .mq-palier{ padding:10px; border-radius:12px; background:var(--panel2); border:1px solid var(--line); }
+  .mq-palier span{ display:flex; align-items:center; gap:6px; font:600 9px/1 var(--mono); letter-spacing:.05em; text-transform:uppercase; color:var(--muted); white-space:nowrap; }
+  .mq-palier span::before{ content:""; width:6px; height:6px; border-radius:50%; background:var(--c); flex:none; }
+  .mq-palier b{ display:block; margin-top:8px; font:700 15px/1 var(--mono); }
+  .mq-tout{ width:100%; margin-top:12px; }
+  .mq-tete{ display:flex; align-items:center; gap:12px; padding:calc(14px + var(--st)) 20px 0; }
+  .mq-tete h2{ margin:0; font:700 30px/1 var(--titre); }
+  .mq-rond{ background:var(--panel); border-color:var(--line); color:var(--txt); }
+  .mq-liste{ margin-top:14px; border-radius:16px; overflow:hidden; border:1px solid var(--line); background:var(--line); display:flex; flex-direction:column; gap:1px; }
+  .mq-ligne{ display:flex; align-items:center; gap:13px; width:100%; margin:0; padding:12px 14px; background:var(--panel); border:0; border-radius:0; color:var(--txt); text-align:left; }
+  .mq-ligne-tx{ flex:1; min-width:0; }
+  .mq-ligne-tx b{ display:block; font-size:14.5px; font-weight:650; }
+  .mq-ligne-c{ font:600 12.5px/1 var(--mono); color:var(--muted); white-space:nowrap; }
+  .mq-ligne-c.z{ color:var(--dim); }
+  .mq-ligne > .icon{ width:16px; height:16px; color:var(--dim); flex:none; }
   .cat-desc{ margin:10px 2px 0; font:400 12px/1.5 var(--sans); color:var(--dim); }
 
   /* ---- Révélation de capture (P0, DESIGN.md §10) ----
@@ -445,11 +512,15 @@
   .rv-card .ph{ width:100%; aspect-ratio:4/3; border-radius:12px; overflow:hidden; background:#0a0a0c; display:flex; align-items:center; justify-content:center; border:1px solid #27272a; }
   .rv-card .ph img{ width:100%; height:100%; object-fit:cover; }
   .rv-new{ font:700 10px/1 var(--mono); letter-spacing:.2em; text-transform:uppercase; color:#a1a1aa; margin-bottom:12px; }
-  .rv-rar{ display:inline-flex; align-items:center; gap:7px; margin-top:14px; font:700 10px/1 var(--mono); letter-spacing:.16em; text-transform:uppercase; color:var(--rv); }
-  .rv-rar i{ width:8px; height:8px; border-radius:50%; background:var(--rv); }
-  .rv-name{ font:700 21px/1.2 var(--sans); margin-top:8px; color:#f4f4f5; }
+  /* Maquette v2 (21/11) : l'identité de la fiche — marque en petit, modèle en police des
+     titres, pastille de rareté et points côte à côte. La carte reste sombre (décision C). */
+  .rv-marque{ margin-top:16px; font:600 11px/1 var(--mono); letter-spacing:.24em; text-transform:uppercase; color:#a1a1aa; }
+  .rv-bloc{ display:flex; justify-content:center; align-items:center; gap:12px; margin-top:14px; }
+  .rv-rar{ display:inline-flex; align-items:center; gap:7px; height:26px; padding:0 11px 0 9px; border-radius:13px; border:1px solid #3f3f46; background:#111113; font:700 10px/1 var(--mono); letter-spacing:.14em; text-transform:uppercase; color:#f4f4f5; }
+  .rv-rar i{ width:7px; height:7px; border-radius:50%; background:var(--rv); box-shadow:0 0 8px var(--rv); }
+  .rv-name{ font:700 36px/.95 var(--titre); margin-top:6px; color:#f4f4f5; }
   .rv-sub{ font:400 13px/1.3 var(--sans); color:#a1a1aa; margin-top:4px; }
-  .rv-pts{ display:inline-flex; margin-top:12px; padding:7px 14px; border-radius:999px; font:700 13px/1 var(--mono); background:color-mix(in srgb,var(--rv) 16%,transparent); color:var(--rv); }
+  .rv-pts{ display:inline-flex; font:700 17px/1 var(--mono); color:var(--rv); }
   .rv-tap{ display:block; margin:16px auto 0; padding:8px 12px; font:500 11px/1 var(--mono); color:#71717a; }
 
   /* ---- Capture : analyse et résultats (P0 E3–E4) ---- */
@@ -2569,6 +2640,7 @@ const VARIANTS = {
     info:'<circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/>',
     more:'<circle cx="12" cy="5" r="1.6" style="fill:currentColor"/><circle cx="12" cy="12" r="1.6" style="fill:currentColor"/><circle cx="12" cy="19" r="1.6" style="fill:currentColor"/>',
     chevronleft:'<polyline points="15 18 9 12 15 6"/>',
+    chevronright:'<polyline points="9 18 15 12 9 6"/>',
   };
   const icon = (n, cls="icon") => `<svg viewBox="0 0 24 24" class="${cls}">${P[n]||""}</svg>`;
 
@@ -2726,6 +2798,28 @@ const VARIANTS = {
   const rRank = (r) => (RARITY[r] ? RARITY[r].rank : 0);
   const has = (id) => state.spots.has(id);
   const cover = (rec) => rec && rec.photos && rec.photos.length ? rec.photos[Math.min(rec.cover||0, rec.photos.length-1)] : null;
+
+  /* ---- Identité de MARQUE (maquette v2, 21/11) -----------------------------------
+     Aucun logo ni slogan de constructeur : ce sont des marques déposées (risque de refus
+     aux stores, DESIGN.md §3). Une marque se reconnaît à son NOM, à un monogramme de deux
+     lettres et, au plus, à un accent de couleur discret — jamais une recoloration de
+     l'interface (DESIGN.md §1.5). Marque absente de la table : gris neutre. */
+  const ACCENT_MARQUE = {
+    "Ferrari":"#f5c518", "Alfa Romeo":"#e11d48", "BMW":"#3b82f6", "Porsche":"#c9a227", "Peugeot":"#94a3b8",
+    "Renault":"#facc15", "Lamborghini":"#d4af37", "Aston Martin":"#10b981", "McLaren":"#f97316", "Bugatti":"#60a5fa",
+    "Alpine":"#3b82f6", "Lotus":"#eab308", "Jaguar":"#22c55e", "Maserati":"#6366f1", "Audi":"#d4d4d8",
+    "Mercedes-Benz":"#cbd5e1", "Volkswagen":"#60a5fa", "Ford":"#2563eb", "Toyota":"#f43f5e", "Nissan":"#a1a1aa",
+  };
+  const accentMarque = (b) => ACCENT_MARQUE[b] || "var(--muted2)";
+  /* « Alfa Romeo » → AR, « Mercedes-Benz » → MB, « Ferrari » → FE, « BMW » → BM. */
+  const monogramme = (b) => {
+    const m = String(b || "?").replace(/[^\p{L}\p{N} ]/gu, " ").trim().split(/\s+/);
+    return (m.length > 1 ? m[0][0] + m[1][0] : m[0].slice(0, 2)).toUpperCase();
+  };
+  /* Les prises d'une marque, la plus belle d'abord : rareté, puis la plus récente. */
+  const prisesMarque = (b) => CARS.filter(c => c.brand === b && has(c.id))
+    .map(c => ({ car: c, rec: state.spots.get(c.id) }))
+    .sort((x, y) => rRank(y.car.r) - rRank(x.car.r) || String(y.rec.at || "").localeCompare(String(x.rec.at || "")));
 
   /* ====================================================== STATS DÉRIVÉES */
   function computeStats() {
@@ -2932,6 +3026,7 @@ const VARIANTS = {
     const countryRails = (state.countriesOpen ? st.countryList : st.countryList.slice(0,6)).map(c => rail(c.flag+" "+c.name, c.have, c.total, "country", c.flag)).join("");
 
     return `
+      ${accueilHTML(st)}
       <div class="tiles">${tiles}</div>
 
       <div class="section panel">
@@ -2966,6 +3061,113 @@ const VARIANTS = {
 
       <div id="collectionResults">${collectionResultsHTML()}</div>
     `;
+  }
+
+  /* Accueil du Garage (maquette v2, 21/11) : « ce que je possède, ce que je viens de capturer,
+     ce qui me manque » (DESIGN.md §7). Au-dessus du catalogue, qui reste inchangé dessous
+     (tuiles, complétude repliée par gm-specs.js, filtres, grille) : les bancs et l'habitude
+     du joueur s'y retrouvent. Rien tant que le garage est vide. */
+  function accueilHTML(st) {
+    const prises = [...state.spots.values()].filter(r => CARS_BY_ID[r.carId])
+      .sort((a, b) => String(b.at || "").localeCompare(String(a.at || "")));
+    if (!prises.length) return "";
+    const der = prises[0], c = CARS_BY_ID[der.carId], ph = cover(der);
+    const meta = [der.loc, der.at ? fmtDate(der.at) : ""].filter(Boolean).map(escapeHtml).join(" · ");
+    const une = `<button class="gx-une" data-car="${escapeHtml(c.id)}">
+        ${ph ? `<img src="${ph}" alt="" />` : `<span class="gx-une-vide">${icon("car","icon")}</span>`}
+        <span class="gx-une-haut"><span class="gx-k">Dernière prise</span><span class="fx-rarete" style="--c:${rColor(c.r)}">${RARITY[c.r].label}</span></span>
+        <span class="gx-une-bas"><span class="gx-k">${escapeHtml(c.brand)}</span><b class="gx-une-modele">${escapeHtml(c.model)}</b>${meta ? `<span class="gx-une-meta">${meta}</span>` : ""}</span>
+      </button>`;
+    const marques = st.brandList.filter(b => b.have > 0).sort((a, b) => b.have - a.have || b.pct - a.pct).slice(0, 3);
+    const mq = marques.map(b => `<button class="gx-mq" data-marque="${escapeHtml(b.brand)}" style="--a:${accentMarque(b.brand)}">
+        <span class="gx-mono">${escapeHtml(monogramme(b.brand))}</span><span class="gx-mq-n">${escapeHtml(b.brand)}</span>
+        <span class="gx-mq-c">${b.have} / ${b.total}</span><span class="gx-barre"><i style="width:${Math.round(b.pct * 100)}%"></i></span></button>`).join("");
+    const strip = prises.slice(0, 12).map(r => { const cc = CARS_BY_ID[r.carId], p = cover(r);
+      return `<button class="gx-vg" data-car="${escapeHtml(cc.id)}" style="--c:${rColor(cc.r)}">${p ? `<img src="${p}" alt="" loading="lazy" />` : `<span class="gx-vg-vide">${icon("car","icon")}</span>`}<span class="gx-vg-d"></span><span class="gx-vg-t"><i>${escapeHtml(cc.brand)}</i>${escapeHtml(cc.model)}</span></button>`; }).join("");
+    return `<section class="gx-accueil">
+        ${une}
+        <div class="gx-sec"><h3>Mes marques</h3><button class="gx-lien" data-marques="1">Toutes ›</button></div>
+        <div class="gx-marques">${mq}</div>
+        <div class="gx-sec"><h3>Mon garage · ${st.count}</h3><button class="gx-lien" data-voir="garage">Voir tout ›</button></div>
+        <div class="gx-strip">${strip}</div>
+        <div class="gx-sec gx-cat"><h3>Catalogue · ${TOTAL}</h3></div>
+      </section>`;
+  }
+
+  /* Ligne « voiture » des pages marque et des séries : vignette (photo si capturée, sinon
+     cadenas), modèle, années, rareté. Ouvre la fiche (data-car). */
+  function ligneVoitureHTML(c) {
+    const h = has(c.id), p = h ? cover(state.spots.get(c.id)) : null;
+    return `<button class="fx-serie" data-car="${escapeHtml(c.id)}">
+      <span class="fx-serie-ic${h ? " a" : ""}">${p ? `<img src="${p}" alt="" loading="lazy" />` : icon(h ? "check" : "lock", "icon")}</span>
+      <span class="fx-serie-tx"><b>${escapeHtml(c.model)}</b><span>${escapeHtml(c.yr)}${h ? " · au garage" : ""}</span></span>
+      <span class="fx-rarete" style="--c:${rColor(c.r)}">${RARITY[c.r].label}</span></button>`;
+  }
+
+  /* Page MARQUE (maquette v2) : la meilleure photo du joueur pour cette marque (jamais un
+     logo), sa collection par rareté, ses prises, les séries spéciales et ce qui manque.
+     `data-marque-page` (et non `data-marque`) : sinon chaque toucher dans la page la
+     rouvrirait, la délégation de clics remontant au premier ancêtre qui porte l'attribut. */
+  function openMarque(b) {
+    const cars = CARS.filter(c => c.brand === b); if (!cars.length) return;
+    const have = cars.filter(c => has(c.id)).length, a = accentMarque(b);
+    const pct = cars.length ? Math.round(have / cars.length * 100) : 0;
+    const prises = prisesMarque(b), best = prises.find(p => cover(p.rec));
+    const pays = cars[0].c;
+    const paliers = RARITY_ORDER.slice().reverse()
+      .map(k => ({ k, total: cars.filter(c => c.r === k).length, have: cars.filter(c => c.r === k && has(c.id)).length }))
+      .filter(p => p.total);
+    const GS = window.GMSpecs;
+    const idsSeries = GS && GS.SERIES_SPECIALES ? Object.values(GS.SERIES_SPECIALES).flat() : [];
+    const series = idsSeries.map(id => CARS_BY_ID[id]).filter(c => c && c.brand === b && !has(c.id))
+      .sort((x, y) => rRank(y.r) - rRank(x.r) || x.model.localeCompare(y.model, "fr"));
+    const manquantes = cars.filter(c => !has(c.id) && !idsSeries.includes(c.id))
+      .sort((x, y) => rRank(y.r) - rRank(x.r) || x.model.localeCompare(y.model, "fr"));
+    const strip = prises.map(({ car: cc, rec }) => { const p = cover(rec);
+      return `<button class="gx-vg" data-car="${escapeHtml(cc.id)}" style="--c:${rColor(cc.r)}">${p ? `<img src="${p}" alt="" loading="lazy" />` : `<span class="gx-vg-vide">${icon("car","icon")}</span>`}<span class="gx-vg-d"></span><span class="gx-vg-t">${escapeHtml(cc.model)}</span></button>`; }).join("");
+    openSheet(`
+      <div class="sh-body" style="padding:0"><div class="mq-marque" data-marque-page="${escapeHtml(b)}" style="--a:${a}">
+        <div class="fx-hero${best ? "" : " vide"}">
+          ${best ? `<img src="${cover(best.rec)}" alt="" />` : `<span class="mq-mono-xl">${escapeHtml(monogramme(b))}</span>`}
+          <div class="fx-barre"><button class="fx-rond" data-close="1" aria-label="Fermer">${icon("chevronleft","icon")}</button></div>
+        </div>
+        <div class="fx-id">
+          <span class="mq-trait"></span>
+          <h1 class="fx-modele">${escapeHtml(b)}</h1>
+          <div class="fx-meta"><span>${pays} ${escapeHtml(COUNTRY[pays] || "")}</span><i></i><span>${cars.length} modèle${cars.length > 1 ? "s" : ""} au catalogue</span></div>
+        </div>
+        <div class="mq-corps">
+          <div class="mq-coll">
+            <div class="mq-coll-l"><span class="gx-k">Ma collection</span><span class="mq-coll-v"><b>${have}</b> / ${cars.length} · ${pct} %</span></div>
+            <div class="gx-barre mq-barre">${have ? `<i style="width:${pct}%"></i>` : ""}</div>
+            <div class="mq-paliers">${paliers.map(p => `<div class="mq-palier" style="--c:${rColor(p.k)}"><span>${RARITY[p.k].label}</span><b>${p.have} / ${p.total}</b></div>`).join("")}</div>
+          </div>
+          ${prises.length ? `<div class="gx-sec"><h3>Mes ${escapeHtml(b)} · ${prises.length}</h3></div><div class="gx-strip">${strip}</div>` : ""}
+          ${series.length ? `<div class="gx-sec"><h3>Séries spéciales à découvrir</h3></div>${series.map(ligneVoitureHTML).join("")}` : ""}
+          ${manquantes.length ? `<div class="gx-sec"><h3>À découvrir · ${manquantes.length}</h3></div>${manquantes.slice(0, 8).map(ligneVoitureHTML).join("")}
+            ${manquantes.length > 8 ? `<button class="btn ghost mq-tout" data-voir="marque" data-val="${escapeHtml(b)}">Voir les ${manquantes.length} ${escapeHtml(b)} à découvrir</button>` : ""}` : ""}
+        </div>
+      </div></div>`, "fiche");
+  }
+
+  /* Ma collection PAR MARQUE : toutes les marques, celles du joueur d'abord. */
+  function openMarques() {
+    const st = computeStats();
+    const liste = st.brandList.slice().sort((x, y) => y.have - x.have || y.pct - x.pct || x.brand.localeCompare(y.brand, "fr"));
+    openSheet(`
+      <div class="sh-body" style="padding:0"><div class="mq-marques">
+        <div class="mq-tete"><button class="fx-rond mq-rond" data-close="1" aria-label="Fermer">${icon("chevronleft","icon")}</button><h2>Ma collection</h2></div>
+        <div class="mq-corps">
+          <div class="mq-coll">
+            <div class="mq-coll-l"><span class="gx-k">Par marque · ${liste.length}</span><span class="mq-coll-v"><b>${st.count}</b> / ${TOTAL}</span></div>
+            <div class="gx-barre mq-barre"><i style="width:${st.pct}%"></i></div>
+          </div>
+          <div class="mq-liste">${liste.map(x => `<button class="mq-ligne" data-marque="${escapeHtml(x.brand)}" style="--a:${accentMarque(x.brand)}">
+              <span class="gx-mono">${escapeHtml(monogramme(x.brand))}</span>
+              <span class="mq-ligne-tx"><b>${escapeHtml(x.brand)}</b><span class="gx-barre">${x.have ? `<i style="width:${Math.round(x.pct * 100)}%"></i>` : ""}</span></span>
+              <span class="mq-ligne-c${x.have ? "" : " z"}">${x.have} / ${x.total}</span>${icon("chevronright","icon")}</button>`).join("")}</div>
+        </div>
+      </div></div>`, "fiche");
   }
 
   function collectionResultsHTML() {
@@ -3248,7 +3450,21 @@ const VARIANTS = {
   /* ====================================================== OVERLAYS */
   const overlay = $("#overlay");
   let activeDetail = null;
-  function closeOverlay() { stopCamera(); overlay.innerHTML = ""; document.body.style.overflow = ""; }
+  /* Mémoire de RETOUR des écrans plein écran (maquette v2, 21/11) : liste des marques →
+     page marque → fiche → série spéciale. Fermer l'écran du dessus (croix ou bouton retour
+     du téléphone, qui touche ce même [data-close]) rouvre le précédent au lieu de tout
+     fermer. Toute vraie fermeture la vide : une fiche ouverte plus tard (capture, carte)
+     ne rouvre jamais un écran d'une autre visite. */
+  let pileRetour = [];
+  const ecranCourant = () => {
+    const m = overlay.querySelector("[data-marque-page]");
+    if (m) { const b = m.dataset.marquePage; return () => openMarque(b); }
+    if (overlay.querySelector(".mq-marques")) return openMarques;
+    const f = overlay.querySelector(".sheet.fiche .detail-shell[data-car-id]");
+    if (f) { const id = f.dataset.carId; return () => openDetail(id); }
+    return null;
+  };
+  function closeOverlay() { pileRetour = []; stopCamera(); overlay.innerHTML = ""; document.body.style.overflow = ""; }
   /* `cls` (facultatif) : variante de présentation posée sur le fond ET la feuille.
      « fiche » = fiche voiture plein écran (maquette v2, 21/11). */
   function openSheet(html, cls) {
@@ -3675,7 +3891,7 @@ const VARIANTS = {
         <div class="fx-barre"><button class="fx-rond" data-close="1" aria-label="Fermer">${icon("chevronleft","icon")}</button>${fav}</div>
       </div>
       <div class="fx-id">
-        <div class="fx-marque">${escapeHtml(c.brand)}</div>
+        <button class="fx-marque" data-marque="${escapeHtml(c.brand)}" aria-label="Voir la page ${escapeHtml(c.brand)}">${escapeHtml(c.brand)} <span aria-hidden="true">›</span></button>
         <div class="fx-ligne">
           <h1 class="fx-modele">${escapeHtml(c.model)}</h1>
           <div class="fx-rar"><span class="fx-rarete" style="--c:${col}">${RARITY[c.r].label}</span><div class="fx-pts" style="color:${col}">+${RARITY[c.r].pts} pts</div></div>
@@ -4607,10 +4823,11 @@ const VARIANTS = {
       <div class="rv-card" data-palier="${palier}" style="--rv:${col}">
         <div class="rv-new">${TXT_P0.nouvelle}</div>
         <div class="ph">${ph ? `<img src="${ph}" alt="" />` : `<svg viewBox="0 0 24 24" class="icon" style="width:56px;height:56px;color:${col}">${P.car}</svg>`}</div>
-        <div class="rv-rar"><i></i>${escapeHtml(RARITY[c.r].label)}</div>
-        <div class="rv-name">${nomVoiture(c)}</div>
+        <div class="rv-marque">${escapeHtml(c.brand)}</div>
+        <div class="rv-name">${escapeHtml(c.model)}</div>
         <div class="rv-sub">${escapeHtml(c.cat)}${c.yr ? ` · ${escapeHtml(c.yr)}` : ""}</div>
-        <div class="rv-pts">+${RARITY[c.r].pts} pts</div>
+        <div class="rv-bloc"><div class="rv-rar"><i></i>${escapeHtml(RARITY[c.r].label)}</div>
+        <div class="rv-pts">+${RARITY[c.r].pts} pts</div></div>
         <button class="rv-tap">${TXT_P0.toucher}</button>
       </div>`;
     w.addEventListener("click", () => { w.remove(); showDebloque(carId); }, { once:true });
@@ -5127,7 +5344,7 @@ const VARIANTS = {
 
   /* ====================================================== ÉVÉNEMENTS (délégation) */
   document.addEventListener("click", (e) => {
-    const t = e.target.closest("[data-tab],[data-fab],[data-rarity],[data-toggle],[data-status],[data-filter],[data-car],[data-close],[data-scrim],[data-cap],[data-pick],[data-var],[data-act],[data-setcover],[data-addphoto],[data-release],[data-dot],[data-favtoggle],[data-moto-type],[data-moto-variant],[data-theme-set]");
+    const t = e.target.closest("[data-tab],[data-fab],[data-rarity],[data-toggle],[data-status],[data-filter],[data-car],[data-close],[data-scrim],[data-cap],[data-pick],[data-var],[data-act],[data-setcover],[data-addphoto],[data-release],[data-dot],[data-favtoggle],[data-moto-type],[data-moto-variant],[data-theme-set],[data-marque],[data-marques],[data-voir]");
     if (!t) return;
 
     /* Thème : on écrit l'attribut ET le stockage, puis on recale la couleur
@@ -5143,7 +5360,23 @@ const VARIANTS = {
     }
 
     if (t.dataset.scrim && e.target === t) return closeOverlay();
-    if (t.dataset.close) return closeOverlay();
+    if (t.dataset.close) { const prec = pileRetour.pop(); if (prec) { prec(); return; } return closeOverlay(); }
+    /* Écrans plein écran empilés : on retient celui d'où l'on part (ecranCourant). */
+    if (t.dataset.marque || t.dataset.marques || t.dataset.car) {
+      const prec = overlay.childElementCount ? ecranCourant() : null;
+      if (t.dataset.marque) openMarque(t.dataset.marque);
+      else if (t.dataset.marques) openMarques();
+      else openDetail(t.dataset.car);
+      if (prec && overlay.childElementCount) pileRetour.push(prec);
+      return;
+    }
+    if (t.dataset.voir === "garage" || t.dataset.voir === "marque") {
+      if (t.dataset.voir === "marque") { closeOverlay(); state.brand = t.dataset.val; state.status = "missing"; }
+      else state.status = "have";
+      state.tab = "collection"; render();
+      const g = $(".filters"); if (g) g.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
 
     if (t.dataset.tab) { state.tab = t.dataset.tab; render(); return; }
     if (t.dataset.fab) { openCapture(null); return; }
@@ -5154,7 +5387,6 @@ const VARIANTS = {
     if (t.dataset.status) { state.status = t.dataset.status; render(); return; }
     if (t.dataset.filter) { if (t.dataset.filter==="brand") { state.brand = t.dataset.val; } else { state.country = t.dataset.val; } state.tab="collection"; render(); const g=$(".filters"); if(g) g.scrollIntoView({behavior:"smooth",block:"start"}); return; }
 
-    if (t.dataset.car) { openDetail(t.dataset.car); return; }
 
     if (t.dataset.cap) {
       const cap = t.dataset.cap;
