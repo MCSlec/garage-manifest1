@@ -6,10 +6,10 @@
 > Le détail vit ailleurs ; ici, on pointe vers lui.
 >
 > **Dernière mise à jour : 21/11/2026** (branche
-> `claude/create-claude-documentation-8eo2t7`, version `20.208.0`). **En ligne : v20.207.0**
-> (PR #4 puis PR #5, 21/11) : synchronisation automatique, attribution OpenStreetMap,
-> « Envoyer un retour » par e-mail, sélecteur Essence/Diesel, corrections de la relecture
-> du 21/11. Sur la branche, en attente de « merge » : l'adresse des retours (v20.208.0). Comptes, Google et
+> `claude/create-claude-documentation-8eo2t7`, version `20.208.0`). **En ligne : v20.208.0**
+> (PR #4, #5 puis #6, 21/11) : synchronisation automatique, attribution OpenStreetMap,
+> « Envoyer un retour » par e-mail vers l'adresse dédiée, sélecteur Essence/Diesel,
+> corrections de la relecture du 21/11. La branche est alignée sur `main`. Comptes, Google et
 > relais IA **en service** (§2) : lire le §2 avant toute instruction au propriétaire.
 > Le propriétaire suit la **feuille de route** en tête de `TUTO-GRATUIT.md` (étapes
 > 1 à 19, uniquement ce qui reste) : c'est elle qu'on cite, par son numéro.
@@ -147,6 +147,10 @@ relais se font depuis le navigateur du propriétaire (`TUTO-GRATUIT.md` B5).
 > **21/11 — PR #5 fusionnée** sur « merge » : v20.207.0 **en ligne**. Reste au propriétaire :
 > l'essai de la synchro sur deux appareils (`RESTE-A-FAIRE.md` §5). Puis, sur la branche
 > (v20.208.0) : l'adresse dédiée aux retours, inscrite (`banc-retour.js` 16).
+>
+> **21/11 — PR #6 fusionnée** sur « merge » : v20.208.0 **en ligne**. Le propriétaire avait
+> déjà copié son garage du téléphone vers le PC par fichier : l'essai de la synchro se fait
+> donc sur une **modification** (favori, note, nouvelle capture), pas sur la présence des voitures.
 > Photos : toujours hors du cloud (R2 exige une carte, refusée : `RESTE-A-FAIRE.md` §0).
 
 **État au 27/10 : A faite, B à moitié.** Le propriétaire suit la feuille de route de
