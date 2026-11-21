@@ -279,6 +279,20 @@ Capacitor autour du même code) :
     l'app dépassera ~100 000 requêtes par jour (de l'ordre de quelques milliers de joueurs
     actifs par jour avec la synchro), et la reconnaissance IA (quota Gemini), avant le
     stockage des photos.
+  - **Autres frais à prévoir** (21/11, ordres de grandeur à revérifier le moment venu) :
+    comptes développeur (Apple 99 $/an, Google 25 $ une fois) ; **un Mac pour construire
+    l'app iPhone** (Xcode n'existe que sur Mac : achat, ou service de compilation en ligne
+    à offre gratuite) ; nom de domaine (≈ 10-15 €/an, nécessaire pour les e-mails de
+    connexion et la page de confidentialité) ; Resend au-delà de 100 e-mails/jour (offre
+    payante ≈ 20 $/mois ; la connexion Google n'envoie aucun e-mail) ; IA au-delà du quota
+    gratuit de Gemini, **et** probablement l'offre payante dès l'ouverture au public (en
+    gratuit, Google peut réutiliser les photos : point de confidentialité) ; notre carte
+    (fichier de tuiles sur R2, qui partage les 10 Go gratuits avec les photos) ; dépôt de
+    la marque (INPI ≈ 190 € pour une classe, à faire avant de communiquer le nom) ;
+    micro-entreprise (création gratuite, mais cotisations sur les revenus publicitaires,
+    CFE dès la 2e année). ⚠️ **Hébergement** : les règles de GitHub Pages excluent les sites
+    à vocation commerciale ; une version web avec publicité devrait passer sur Cloudflare
+    Pages (gratuit, usage commercial permis).
   - **Stores** : un service numérique vendu dans l'app passe obligatoirement par l'achat
     intégré d'Apple et de Google, à leur commission.
   - **Vendre** suppose un statut (micro-entreprise, par exemple), des CGV, et la TVA :
