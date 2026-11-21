@@ -60,6 +60,9 @@ politique de confidentialité avant d'ouvrir l'app au public.
     d'office. Mais cela suppose que les étapes du §4 soient faites.
 
   Recommandation : **(a) tout de suite**, (b) dès que la carte est hébergée.
+  → **(a) choisie** (ton « go attribution », 20/11) : faite sur la branche (v20.205.0,
+  `banc-carte.js`), **en ligne au prochain « merge »**. À cocher quand tu l'auras vue sur
+  la carte vide.
 
 ## 2. 🔴 Lancer les comptes (dans l'ordre)
 
