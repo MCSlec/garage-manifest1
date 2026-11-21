@@ -249,6 +249,30 @@ Capacitor autour du même code) :
   publique → **notre carte (§4) devient obligatoire** avant la sortie.
 - **Service worker** : peu utile en natif (les fichiers sont dans l'app) ;
   comportement à vérifier sur iPhone au moment du chantier.
+- [ ] 💶 **Option payante « sauvegarde cloud » à la sortie** — **décision de principe du
+  21/11** (tes mots) : option payante, **au prix du serveur cloud, sans marge**, avec un
+  court paragraphe qui explique pourquoi ; ceux qui gardent leur stockage local ne paient
+  rien. Ce qui reste à trancher le moment venu :
+  - **Ce qui est payant.** Recommandation : la **synchro de la collection reste gratuite**
+    (≈ 12 Ko par garage, couverte par l'offre gratuite de Cloudflare), seules les
+    **photos dans le cloud** (R2) sont payantes : c'est elles qui coûtent.
+  - **Le vrai coût par joueur est minuscule** : R2 = 0,015 $ / Go / mois. 1 000 photos
+    ≈ 0,3 Go ≈ **0,05 $ par an**. Les **frais de paiement** dépassent ce coût : commission
+    des stores 15 % (programme petites entreprises d'Apple et Google), ou Stripe 1,5 % +
+    0,25 € par paiement. « Prix du serveur, sans marge » doit donc se calculer sur
+    **tous les coûts du cloud** (R2 au-delà des 10 Go gratuits, offre payante Workers à
+    5 $/mois si les limites gratuites sautent, domaine, commission) **divisés par le nombre
+    d'abonnés**, et non sur le coût d'un seul joueur.
+  - **Stores** : un service numérique vendu dans l'app passe obligatoirement par l'achat
+    intégré d'Apple et de Google, à leur commission.
+  - **Vendre** suppose un statut (micro-entreprise, par exemple), des CGV, et la TVA :
+    à voir avec quelqu'un de compétent avant la sortie.
+  - **Brouillon du paragraphe** (à ajuster) : « *Pourquoi la sauvegarde cloud est
+    payante ? Garage Manifest fonctionne entièrement sur ton téléphone, gratuitement et
+    sans compte : ta collection et tes photos y restent. La sauvegarde cloud garde tes
+    photos sur un serveur que nous louons. Son prix est celui de ce serveur et des frais
+    de paiement, sans marge : nous ne gagnons rien dessus. Si tu ne la prends pas, rien
+    ne change : tout reste sur ton appareil.* »
 
 ## 5. 🟡 Décisions produit en attente
 
