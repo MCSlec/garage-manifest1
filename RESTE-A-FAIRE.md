@@ -353,12 +353,12 @@ Capacitor autour du même code) :
 - [ ] Photos sauvegardées : **toutes** (choix par défaut, dédupliquées) ou la
   couverture seulement.
 - [ ] 🟡 **Séries spéciales Ferrari en entrées à part** (question du 21/11, capture d'une 599) :
-  la 599 GTO n'existe que comme **déclinaison** de la 599 GTB (une case à cocher) : elle
-  rapporte donc les points de la GTB (Rare, +8), alors que 599 exemplaires en feraient une
-  Légendaire. Même cas : 360 Challenge Stradale, 430 Scuderia, Scuderia Spider 16M,
-  458 Speciale, 488 Pista, F12tdf, 812 Competizione. La règle GTA (`CLAUDE.md` §4.5) dit
-  « entrée séparée ». Proposition : une entrée chacune, avec une fiche sourcée, retirée des
-  déclinaisons de la base ; une prise déjà faite se déplace par « Changer de modèle ».
+  une série spéciale rangée en **déclinaison** (case à cocher) rapporte les points de sa base.
+  **599 GTO : faite le 21/11** sur ta demande (entrée Légendaire, sur la branche, en ligne au
+  prochain « merge »). Ta photo passe sur la GTO par **« Changer de modèle »** sur la fiche
+  de ta 599, si c'est bien une GTO (badge arrière). Restent, même cas : 360 Challenge
+  Stradale, 430 Scuderia, Scuderia Spider 16M, 458 Speciale, 488 Pista, F12tdf,
+  812 Competizione. La règle GTA (`CLAUDE.md` §4.5) dit « entrée séparée ».
   Mot-clé : « go séries spéciales ».
 - [ ] **i18n (chantier B, option b)** : lancer le mécanisme `t("…")` ? Quelles
   langues en premier ?

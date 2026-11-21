@@ -741,7 +741,7 @@ de choisir ?**
   lancement hors ligne. Sans repli, photographier ne renverrait rien.
   Le résultat complet est lisible via `lastMatch`.
 
-Banc : `node banc-matcher.js`, 17 tests sur le catalogue **fusionné** (1 070),
+Banc : `node banc-matcher.js`, 17 tests sur le catalogue **fusionné** (1 072 au 21/11),
 sortie en code non nul si échec. Préfixé `banc-`, donc hors cache.
 
 ---

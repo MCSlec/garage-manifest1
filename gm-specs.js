@@ -2008,6 +2008,14 @@
     'ferrari-599': { nom:'Ferrari 599 GTB Fiorano', an:[2006,2012], pays:'Italie',
       ch:620, nm:608, kg:1690, cyl:5.999, arch:'V12', adm:'atmo', pos:'avant', tx:'propulsion', bv:'F1 / M6',
       note:"Le V12 dérivé de l\'Enzo dans une GT à moteur avant. La 599 GTO, plus extrême, fut la Ferrari de route la plus rapide sur circuit de son temps. La boîte manuelle à grille, rarissime sur cette voiture, est un graal." },
+    /* Masse : 1 605 kg en ordre de marche, la même base que les 1 690 kg de la 599 GTB
+       ci-dessus (Carsales, Wikipédia). Ferrari ne publie qu'une masse À SEC (1 495 kg) :
+       la prendre ici fausserait kg/ch et ch/t face à la GTB (CLAUDE.md §4.4 ter), d'où le
+       « ≈ ». 670 ch à 8 250 tr/min et 620 Nm à 6 500 tr/min : communiqué Ferrari, 2010. */
+    'ferrari-599-gto': { nom:'Ferrari 599 GTO', an:[2010,2011], pays:'Italie',
+      ch:670, nm:620, kg:1605, cyl:5.999, arch:'V12', adm:'atmo', pos:'avant', tx:'propulsion', bv:'F1 6',
+      prod:599, flou:['kg'],
+      note:"La version de route de la 599XX, la 599 réservée au circuit. 50 ch de plus que la 599 GTB et environ 85 kg de moins. 599 exemplaires. Ferrari l\'a présentée comme sa voiture de route la plus rapide. Masse en ordre de marche, pour la comparer à la GTB : Ferrari annonce 1 495 kg à sec." },
     'ferrari-daytona-sp3': { nom:'Ferrari Daytona SP3', an:[2022], pays:'Italie',
       ch:840, nm:697, kg:1485, cyl:6.5, arch:'V12', adm:'atmo', pos:'central', tx:'propulsion', bv:'DCT 7',
       prod:599,
@@ -6334,8 +6342,11 @@
     'ferrari-599': [
       { c:'599', a:'2006–2012', m:[
         ['GTB Fiorano','F140 6.0 V12 atmo','620 ch','moteur avant transaxle · manuelle 6 / F1','Suspension magnétorhéologique, une première chez Ferrari.'],
-        ['GTO','F140 6.0 V12 atmo','670 ch','moteur avant · F1 6','599 exemplaires. La Ferrari de route la plus rapide de son époque.'],
+        /* GTO : sa propre entrée depuis le 21/11 ('ferrari-599-gto', règle GTA). */
       ]},
+    ],
+    'ferrari-599-gto': [
+      ['599 GTO','2010–2011','F140 6.0 V12 atmo','670 ch','599 exemplaires. Version de route de la 599XX de circuit.'],
     ],
     'lambo-gallardo': [
       { c:'Pré-LP', a:'2003–2008', m:[
@@ -10034,6 +10045,7 @@
     'ferrari-sf90'            : 'ferrari-sf90',
     'ferrari-296'             : 'ferrari-296',
     'ferrari-599'             : 'ferrari-599',
+    'ferrari-599-gto'         : 'ferrari-599-gto',
     'ferrari-daytona-sp3'     : 'ferrari-daytona-sp3',
     'lambo-aventador'         : 'lambo-aventador',
     'lambo-gallardo'          : 'lambo-gallardo',
@@ -11097,6 +11109,14 @@
     { id:'ford-ranger', brand:'Ford', model:'Ranger', yr:'1998–', c:'🇺🇸', cat:'Pick-up', r:'commun' },
         { id:'porsche-911-gt3-r', brand:'Porsche', model:'911 GT3 R', yr:'2016–', c:'🇩🇪', cat:'Course', r:'legendaire' },
     { id:'porsche-911-gt3-cup', brand:'Porsche', model:'911 GT3 Cup', yr:'1998–', c:'🇩🇪', cat:'Course', r:'epique' },
+
+    /* ---- SÉRIES SPÉCIALES SORTIES DES DÉCLINAISONS (règle GTA, CLAUDE.md §4.5) ----
+       21/11, à la demande du propriétaire (« GTO et GTB, c'est pas du tout la même
+       rareté ») : une case à cocher sur la 599 GTB rapportait les points de la GTB
+       (Rare, +8) pour une voiture à 599 exemplaires. Rareté calée sur le volume,
+       comme au-dessus : légendaire sous ~1 000 ex. La ligne GTO est retirée des
+       déclinaisons de la base (GENS['ferrari-599']). */
+    { id:'ferrari-599-gto', brand:'Ferrari', model:'599 GTO', yr:'2010–2011', c:'🇮🇹', cat:'GT', r:'legendaire' },
   ];
 
   function etendreCatalogue() {
