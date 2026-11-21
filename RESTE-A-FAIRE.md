@@ -290,9 +290,13 @@ Capacitor autour du même code) :
     (fichier de tuiles sur R2, qui partage les 10 Go gratuits avec les photos) ; dépôt de
     la marque (INPI ≈ 190 € pour une classe, à faire avant de communiquer le nom) ;
     micro-entreprise (création gratuite, mais cotisations sur les revenus publicitaires,
-    CFE dès la 2e année). ⚠️ **Hébergement** : les règles de GitHub Pages excluent les sites
-    à vocation commerciale ; une version web avec publicité devrait passer sur Cloudflare
-    Pages (gratuit, usage commercial permis).
+    CFE dès la 2e année). **Hébergement** : choix du 21/11, le public aura **l'app des
+    stores, pas un site** (le code est dans l'app) ; la règle de GitHub Pages contre les
+    sites commerciaux ne vise donc pas l'app. Restent **en ligne** : les deux Workers
+    (inchangés) et **quelques pages web exigées par les stores**, sans publicité :
+    politique de confidentialité (Apple et Google), page de support (Apple), lien web pour
+    demander la suppression de son compte (Google Play). La version web actuelle peut
+    servir de version d'essai, ou être fermée.
   - **Stores** : un service numérique vendu dans l'app passe obligatoirement par l'achat
     intégré d'Apple et de Google, à leur commission.
   - **Vendre** suppose un statut (micro-entreprise, par exemple), des CGV, et la TVA :
