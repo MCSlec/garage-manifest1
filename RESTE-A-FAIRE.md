@@ -352,6 +352,14 @@ Capacitor autour du même code) :
   pas ta perso.
 - [ ] Photos sauvegardées : **toutes** (choix par défaut, dédupliquées) ou la
   couverture seulement.
+- [ ] 🟡 **Séries spéciales Ferrari en entrées à part** (question du 21/11, capture d'une 599) :
+  la 599 GTO n'existe que comme **déclinaison** de la 599 GTB (une case à cocher) : elle
+  rapporte donc les points de la GTB (Rare, +8), alors que 599 exemplaires en feraient une
+  Légendaire. Même cas : 360 Challenge Stradale, 430 Scuderia, Scuderia Spider 16M,
+  458 Speciale, 488 Pista, F12tdf, 812 Competizione. La règle GTA (`CLAUDE.md` §4.5) dit
+  « entrée séparée ». Proposition : une entrée chacune, avec une fiche sourcée, retirée des
+  déclinaisons de la base ; une prise déjà faite se déplace par « Changer de modèle ».
+  Mot-clé : « go séries spéciales ».
 - [ ] **i18n (chantier B, option b)** : lancer le mécanisme `t("…")` ? Quelles
   langues en premier ?
 - [ ] **Rouleau (chantier C)** : où apparaît la pellicule dans l'écran de
