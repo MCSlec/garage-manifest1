@@ -263,6 +263,22 @@ Capacitor autour du même code) :
     **tous les coûts du cloud** (R2 au-delà des 10 Go gratuits, offre payante Workers à
     5 $/mois si les limites gratuites sautent, domaine, commission) **divisés par le nombre
     d'abonnés**, et non sur le coût d'un seul joueur.
+  - **Variante du 21/11** : commencer en **local**, puis payer soi-même le stockage photo
+    une fois que la publicité le finance. Ordres de grandeur (photos de l'app : 1 280 px,
+    JPEG ≈ 250 Ko ; R2 ≈ 0,014 € / Go / mois, 10 Go gratuits) :
+
+    | Joueur type | Photos | Volume | Gratuit (10 Go) | Par € / mois (≈ 72 Go) |
+    |---|---|---|---|---|
+    | Occasionnel (50 voitures × 2) | 100 | ≈ 25 Mo | ≈ 400 | ≈ 2 900 |
+    | Régulier (150 × 3) | 450 | ≈ 110 Mo | ≈ 90 | ≈ 650 |
+    | Collectionneur (500 × 4) | 2 000 | ≈ 500 Mo | ≈ 20 | ≈ 145 |
+
+    Le coût suit le **stock total** de photos (il grandit chaque mois), pas les envois du
+    mois. Envois et lectures sont gratuits jusqu'à 1 million / 10 millions par mois.
+    ⚠️ La **première facture** sera probablement l'offre payante Workers (5 $/mois) quand
+    l'app dépassera ~100 000 requêtes par jour (de l'ordre de quelques milliers de joueurs
+    actifs par jour avec la synchro), et la reconnaissance IA (quota Gemini), avant le
+    stockage des photos.
   - **Stores** : un service numérique vendu dans l'app passe obligatoirement par l'achat
     intégré d'Apple et de Google, à leur commission.
   - **Vendre** suppose un statut (micro-entreprise, par exemple), des CGV, et la TVA :
