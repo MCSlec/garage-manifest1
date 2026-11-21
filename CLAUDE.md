@@ -302,7 +302,8 @@ Règles à ne jamais enfreindre :
   `location.reload()` **annule** le rechargement (retouches de `gm-specs.js`, constaté au banc).
   ⚠️ **Tout lien vers une autre application** (`mailto:`, `tel:`…) passe par `ouvrirExterne()` :
   Chromium déclenche `beforeunload` sur un tel lien **alors que la page reste** (20/11, banc) ;
-  ouvert autrement, il couperait le suivi du bouton retour jusqu'au rechargement.
+  ouvert autrement, il couperait le suivi du bouton retour jusqu'au rechargement. La garde dure
+  **une seconde** après le clic (un navigateur peut déclencher l'événement en différé, 21/11).
 - **Fiche redessinée = position gardée** (20/11, `banc-dom.js`) : `openDetail()` sur la voiture
   **déjà ouverte** (motorisation choisie, favori, couverture…) garde la page du carrousel et
   le défilement, restaurés tout de suite **et** après la greffe de `gm-specs.js` (qui allonge
@@ -493,8 +494,8 @@ incrémenter conjointement :**
 1. `VERSION_MODULE` dans `gm-specs.js` (ligne ~22).
 2. `VERSION` (`"garage-v…"`) dans `sw.js` (ligne ~12).
 
-Ces deux numéros sont **tenus synchronisés** (au 20/11/2026 : `gm-specs.js` →
-`20.206.0`, `sw.js` → `garage-v20.206.0`). `VERSION_MODULE` s'affiche en outre
+Ces deux numéros sont **tenus synchronisés** (au 21/11/2026 : `gm-specs.js` →
+`20.207.0`, `sw.js` → `garage-v20.207.0`). `VERSION_MODULE` s'affiche en outre
 dans l'UI via `grefferVersion()`, ce qui permet de vérifier de visu quelle version
 tourne réellement sur l'appareil.
 
@@ -904,7 +905,11 @@ GMGarage.deplacerPrise(deId, versId)  → { ok }                          (10/11
   - **La récupération écrit en silence** (`importer(…, { silencieux:true })`) : aucune
     modification en attente n'en naît. ⚠️ Ne jamais retirer ce silence : deux téléphones dont
     les données locales diffèrent d'un détail gardé par la fusion (défis du jour, équipage)
-    se renverraient la balle **sans fin**.
+    se renverraient la balle **sans fin**. Le silence est porté **par écriture**
+    (`Store.put(v, muet)`, `Store.del(id, muet)`, `saveMeta(muet)`, `deleteCustomCar(id, muet)`),
+    jamais par un état global : un compteur global (20/11) rendait muet aussi le geste du
+    joueur fait **pendant** la récupération (relecture du 21/11). Toute nouvelle écriture
+    dans `importerDonnees` passe `muet`.
   - **Modification en attente** = compteur `modif` persisté (survit à la fermeture de l'app) ;
     une sauvegarde ne le lève que s'il n'a pas bougé depuis l'export (un geste pendant
     l'envoi des photos n'est pas dans ce qui part).
@@ -915,12 +920,20 @@ GMGarage.deplacerPrise(deId, versId)  → { ok }                          (10/11
     arrière-plan → envoi immédiat ; ouverture de l'app, retour sur l'app (≥ 2 min) et retour
     du réseau → récupération **si la version du cloud a changé** ; connexion → récupération
     puis envoi. Même file que les boutons. Erreur → ligne d'état du panneau, relance
-    espacée (30 s → 15 min), jamais de message par-dessus l'app.
+    espacée (30 s → 15 min) **d'un envoi comme d'une récupération**, jamais de message
+    par-dessus l'app.
+  - **Serveur sans photos à la dernière sauvegarde** (mode essai) : avant de conclure « rien
+    à envoyer », une requête légère (`/photos/manquantes`, une empreinte) vérifie s'il a gagné
+    son stockage ; si oui, les photos restées sur l'appareil partent seules.
+  - **« Désactivée » est une préférence de l'appareil** : elle survit à la déconnexion et à la
+    suppression du compte (`viderEtat`), comme tout ce qui n'est pas propre au compte.
+  - Piste non faite (relecture du 21/11) : la vérification « le cloud a-t-il changé ? »
+    télécharge le garage entier ; un `304` sur `If-None-Match` (l'ETag existe déjà côté
+    serveur) l'allègerait, mais impose de redéployer `garage-comptes`.
   - Ce qui décrit le cloud **d'un compte** (`version`, `ids`, `empreinteCloud`, `modif`…)
     part avec la session (`ETAT_DU_COMPTE`) : un second compte n'en hérite pas.
   - `index.html` ancien en cache (sans `GMGarage.pret`) : pas de synchro auto, les boutons
-    restent. Limite connue : un geste fait **pendant** l'écriture d'une récupération est lui
-    aussi silencieux ; il part avec le geste suivant.
+    restent.
 - **Photos** : plafond **par rareté** à la capture (`PHOTOS_PAR_RARETE` dans
   `index.html` : 3 courant → 30 légendaire), **jamais** de retrait des photos
   existantes au-delà ; 1,5 Mo par photo côté app (recompression plutôt que

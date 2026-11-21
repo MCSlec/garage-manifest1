@@ -2502,12 +2502,15 @@ const VARIANTS = {
      GMGarage). Les écritures d'une récupération cloud sont SILENCIEUSES (importer({ silencieux }))
      : sans cela, récupérer déclenchait une sauvegarde, que l'autre appareil récupérait, qui
      déclenchait une sauvegarde… — un aller-retour sans fin entre deux téléphones.
-     Le silence se décide à l'écriture ; le signal part APRÈS (tâche suivante) : l'appelant
-     met l'état en mémoire à jour juste après `await Store.put()`, et une sauvegarde lancée
-     entre les deux aurait exporté l'ancien état en croyant la modification envoyée. */
-  let collectionPrete = false, signalSuspendu = 0;
+     Le silence est porté PAR ÉCRITURE (`Store.put(v, muet)`), pas par un état global : un
+     compteur global couvrait aussi le geste du joueur fait pendant la récupération, qui
+     n'était alors jamais envoyé (relecture du 21/11).
+     Le signal part APRÈS (tâche suivante) : l'appelant met l'état en mémoire à jour juste
+     après `await Store.put()`, et une sauvegarde lancée entre les deux aurait exporté
+     l'ancien état en croyant la modification envoyée. */
+  let collectionPrete = false;
   const signalerCollection = () => {
-    if (!collectionPrete || signalSuspendu) return;
+    if (!collectionPrete) return;
     setTimeout(() => { try { window.dispatchEvent(new CustomEvent("gm:collection")); } catch {} }, 0);
   };
   const Store = (() => {
@@ -2532,8 +2535,8 @@ const VARIANTS = {
       open,
       isMemory: () => !!mem,
       async all()   { if (mem) return [...mem.values()]; return wrap(tx("readonly").getAll()); },
-      async put(v)  { if (mem) mem.set(v.carId, v); else await wrap(tx("readwrite").put(v)); signalerCollection(); },
-      async del(id) { if (mem) mem.delete(id); else await wrap(tx("readwrite").delete(id)); signalerCollection(); },
+      async put(v, muet)  { if (mem) mem.set(v.carId, v); else await wrap(tx("readwrite").put(v)); if (!muet) signalerCollection(); },
+      async del(id, muet) { if (mem) mem.delete(id); else await wrap(tx("readwrite").delete(id)); if (!muet) signalerCollection(); },
       async clear() { if (mem) mem.clear(); else await wrap(tx("readwrite").clear()); signalerCollection(); },
     };
   })();
@@ -2587,9 +2590,9 @@ const VARIANTS = {
     try { await Store.put(CUSTOM_REG); } catch {}
     return car;
   }
-  async function deleteCustomCar(id) {
+  async function deleteCustomCar(id, muet) {
     CUSTOM_REG.list = CUSTOM_REG.list.filter(c => c.id !== id);
-    try { await Store.put(CUSTOM_REG); } catch {}
+    try { await Store.put(CUSTOM_REG, muet); } catch {}
   }
   function unclassedHTML() {
     if (state.q.trim()) return ""; // en recherche, elles apparaissent dans la grille (DT-19)
@@ -2623,7 +2626,7 @@ const VARIANTS = {
 
   /* ---- Métadonnées persistées (missions, équipage, réglages avancés) ---- */
   let META = { carId:"__meta__", bonus:0, missions:{}, friends:[], feed:[], name:"", ai:"" };
-  async function saveMeta(){ try { await Store.put(META); } catch {} }
+  async function saveMeta(muet){ try { await Store.put(META, muet); } catch {} }
 
   const RANKS = [
     { min:0,    name:"Novice" },
@@ -4145,7 +4148,8 @@ const VARIANTS = {
      fait AUTORITÉ et reçoit les photos, la note et les déclinaisons de la
      sauvegarde — la règle de fusionnerPrise(), déjà prouvée par banc-fusions.
      Sans fusion (fichier), comportement historique : la prise importée remplace. */
-  async function importerDonnees(data, { fusion = false } = {}) {
+  async function importerDonnees(data, { fusion = false, silencieux = false } = {}) {
+    const muet = !!silencieux;                       // écritures venues du cloud : pas des gestes du joueur
     if (!data || typeof data !== "object") throw new Error("donnees-invalides");
         if (data.custom && Array.isArray(data.custom.list)) { // les « Non classé » d'abord, sinon leurs prises seraient rejetées
           for (const raw of data.custom.list) {
@@ -4153,7 +4157,7 @@ const VARIANTS = {
             if (!CUSTOM_REG.list.some(x => x.id === c.id)) CUSTOM_REG.list.push(c);
             CARS_BY_ID[c.id] = c;
           }
-          await Store.put(CUSTOM_REG);
+          await Store.put(CUSTOM_REG, muet);
         }
         const spots = Array.isArray(data.spots) ? data.spots : [];
         let n = 0, rejected = 0, retirees = 0, tombesLevees = false;
@@ -4182,21 +4186,21 @@ const VARIANTS = {
           }
           if (fusion && retireeApres(clean, supprimes)) continue;          // retirée ailleurs, après sa dernière modification
           if (fusion && state.spots.has(clean.carId)) clean = fusionnerDistante(state.spots.get(clean.carId), clean);
-          await Store.put(clean); state.spots.set(clean.carId, clean); n++;
+          await Store.put(clean, muet); state.spots.set(clean.carId, clean); n++;
         }
-        if (tombesLevees) await saveMeta();
+        if (tombesLevees) await saveMeta(muet);
         if (fusion) {
           // Retraits (voitures ET photos) faits sur l'AUTRE appareil : on les applique
           // ici aussi, sur toutes les prises — celles qu'on vient d'importer comprises.
           const voituresATombes = new Set(Object.keys(photosSupprimees).map(k => k.slice(0, k.lastIndexOf("|"))));
           for (const [id, rec] of [...state.spots]) {
-            if (!retireeApres(rec, supprimes)) { if (voituresATombes.has(id) && await sansPhotosSupprimees(rec, photosSupprimees, photosRetablies)) await Store.put(rec); continue; }
-            await Store.del(id); state.spots.delete(id); retirees++;
+            if (!retireeApres(rec, supprimes)) { if (voituresATombes.has(id) && await sansPhotosSupprimees(rec, photosSupprimees, photosRetablies)) await Store.put(rec, muet); continue; }
+            await Store.del(id, muet); state.spots.delete(id); retirees++;
           }
           // « Non classé » dont plus aucune prise ne dépend : elles ne réapparaissent pas dans le sélecteur.
-          for (const c of [...CUSTOM_REG.list]) if (supprimes[c.id] && !state.spots.has(c.id)) { await deleteCustomCar(c.id); delete CARS_BY_ID[c.id]; }
+          for (const c of [...CUSTOM_REG.list]) if (supprimes[c.id] && !state.spots.has(c.id)) { await deleteCustomCar(c.id, muet); delete CARS_BY_ID[c.id]; }
           META = { ...META, supprimes, photosSupprimees, photosRetablies };
-          await saveMeta();
+          await saveMeta(muet);
         }
         if (data.meta && typeof data.meta === "object") {
           // `ai` volontairement ignoré : un fichier importé ne doit pas pouvoir rerouter
@@ -4216,7 +4220,7 @@ const VARIANTS = {
             feed:     Array.isArray(m.feed) ? sanitizeFeed(m.feed) : META.feed,
             name:     String(m.name || META.name || "").slice(0,24),
             carId:"__meta__" };
-          await saveMeta();
+          await saveMeta(muet);
         }
         return { n, rejected, retirees };
   }
@@ -4225,12 +4229,7 @@ const VARIANTS = {
   window.GMGarage = Object.freeze({
     exporter: () => donneesExport(),
     // `silencieux` : écritures non signalées (récupération cloud de gm-compte.js, voir signalerCollection).
-    importer: async (data, options) => {
-      const silence = !!(options && options.silencieux);
-      if (silence) signalSuspendu++;
-      try { const r = await importerDonnees(data, options); render(); return r; }
-      finally { if (silence) signalSuspendu--; }
-    },
+    importer: async (data, options) => { const r = await importerDonnees(data, options); render(); return r; },
     // Collection chargée (événement « gm:pret » au même moment) : avant, exporter() rendrait un garage VIDE.
     pret: () => collectionPrete,
     normaliserPhotos: () => normaliserPhotos(),
@@ -4931,11 +4930,15 @@ const VARIANTS = {
      pendant le clic, de façon synchrone, alors que la page reste (constaté au banc, 20/11) :
      la garde ci-dessus croyait la page quittée et ne suivait plus le bouton retour jusqu'au
      rechargement. Tout lien de ce genre passe par ici. */
-  let lienExterne = false;
+  /* La garde dure une seconde, pas seulement le temps du clic : un navigateur peut déclencher
+     « beforeunload » APRÈS le clic (relecture du 21/11). Aucune vraie navigation ne suit un
+     lien mailto: dans la seconde ; la garde du rechargement reste entière le reste du temps. */
+  let lienExterne = false, finLienExterne = null;
   function ouvrirExterne(url) {
     const a = document.createElement("a"); a.href = url; a.rel = "noopener";
-    lienExterne = true;
-    try { document.body.appendChild(a); a.click(); } finally { a.remove(); lienExterne = false; }
+    lienExterne = true; clearTimeout(finLienExterne);
+    try { document.body.appendChild(a); a.click(); }
+    finally { a.remove(); finLienExterne = setTimeout(() => { lienExterne = false; }, 1000); }
   }
   function alignerRetour() {
     if (pageQuittee) return;

@@ -46,7 +46,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_COMPTE = '2.7.0';
+  const VERSION_COMPTE = '2.7.1';
 
   /* Adresse du Worker de comptes, SANS « / » final. Vide = en sommeil.
      Renseignée le 18/11 : serveur déployé et vérifié (TUTO-GRATUIT.md, séance 2).
@@ -93,6 +93,7 @@
      `window.GM_COMPTE_SYNCHRO_MS` : bancs. */
   const SYNCHRO_MS = Number(global.GM_COMPTE_SYNCHRO_MS) > 0 ? Number(global.GM_COMPTE_SYNCHRO_MS) : 4000;
   const REPOS_MS = 2 * 60 * 1000;
+  const RELANCE_MS = Number(global.GM_COMPTE_RELANCE_MS) > 0 ? Number(global.GM_COMPTE_RELANCE_MS) : 30000;   // bancs : plus court
   const RELANCE_MAX_MS = 15 * 60 * 1000;
   const AUTO_PAR_DEFAUT = typeof global.GM_COMPTE_SYNCHRO_AUTO === 'boolean' ? global.GM_COMPTE_SYNCHRO_AUTO : true;
 
@@ -110,6 +111,9 @@
     ecrireEtat(e);
   };
   const synchroVoulue = (e) => typeof e.synchroAuto === 'boolean' ? e.synchroAuto : AUTO_PAR_DEFAUT;
+  /* État vidé (déconnexion, compte supprimé) en gardant les PRÉFÉRENCES DE L'APPAREIL : le
+     choix « synchronisation désactivée » survivait mal à une déconnexion (relecture du 21/11). */
+  const viderEtat = () => { const e = lireEtat(); ecrireEtat(typeof e.synchroAuto === 'boolean' ? { synchroAuto: e.synchroAuto } : {}); };
 
   const DUREE_CODE_MS = 10 * 60 * 1000;               // = serveur
   function etat() {
@@ -245,7 +249,7 @@
 
   async function deconnecter() {
     try { await api('POST', '/auth/deconnexion'); } catch (_) {}
-    ecrireEtat({});
+    viderEtat();
     // Recommandation de Google : sans cela, le bouton pourrait reconnecter d'office le même compte.
     try { global.google && global.google.accounts && global.google.accounts.id.disableAutoSelect(); } catch (_) {}
   }
@@ -326,7 +330,15 @@
          envoi ou dernière récupération) → aucun envoi, aucune requête. Le bouton
          « Sauvegarder » envoie toujours : c'est aussi lui qui rattrape des photos restées
          sur l'appareil quand le serveur gagne son stockage photo. */
-      if (auto && signature === connu.empreinteCloud) {
+      /* Exception : le serveur ne gardait pas les photos à la dernière sauvegarde (mode essai).
+         Il a pu gagner son stockage depuis (R2 branché) : une question légère avant de conclure,
+         sinon les photos restées sur l'appareil ne partaient jamais seules (relecture du 21/11). */
+      let serveurAPhotos = false;
+      if (auto && signature === connu.empreinteCloud && connu.sansPhotos === true && photos.size) {
+        try { await api('POST', '/photos/manquantes', { corps: { empreintes: [photos.keys().next().value] } }); serveurAPhotos = true; }
+        catch (err) { if (err.statut !== SANS_PHOTOS) throw err; }
+      }
+      if (auto && signature === connu.empreinteCloud && !serveurAPhotos) {
         leverModif(marque);
         return { inchange: true, version: versionConnue, photosEnvoyees: 0, voitures: spots.length, photosNonSauvegardees: 0,
                  recuperees: [...idsDe(donnees)].filter(id => !auDepart.has(id)).length };
@@ -442,7 +454,7 @@
 
   async function supprimerCompte() {
     const r = await api('DELETE', '/compte');
-    ecrireEtat({});
+    viderEtat();
     return r;
   }
   const exporterCompte = () => api('GET', '/compte/export');
@@ -467,9 +479,10 @@
      cloud contient déjà n'a pas lieu (signature). Tout passe par la même file que les
      boutons : jamais deux opérations entremêlées. Une erreur ne s'affiche pas par-dessus
      l'app : la ligne d'état du panneau la dit, et l'essai suivant repart (réseau revenu,
-     retour sur l'app, prochain geste, ou relance espacée de 30 s à 15 min).
-     Limite connue : un geste fait PENDANT l'écriture d'une récupération est lui aussi
-     silencieux ; il part avec le geste suivant (ou « Sauvegarder »). */
+     retour sur l'app, prochain geste, ou relance espacée de 30 s à 15 min, pour un envoi
+     comme pour une récupération). Le silence est porté par chaque écriture de la
+     récupération (index.html, `Store.put(v, muet)`) : un geste du joueur fait pendant
+     qu'elle écrit reste signalé, donc envoyé (relecture du 21/11). */
   let synchroEnCours = false, synchroPrevue = null, minuterieSynchro = null, relances = 0, derniereVerification = 0;
   let recupererAussi = false, sauverAussi = false;
   const garagePret = () => !!(global.GMGarage && typeof global.GMGarage.pret === 'function' && global.GMGarage.pret());
@@ -477,9 +490,9 @@
   const synchroPossible = () => !!(global.GMGarage && typeof global.GMGarage.pret === 'function');
   const synchroActive = () => { const e = lireEtat(); return !!(base && e.session && synchroVoulue(e)); };
 
-  function planifierSynchro(ms) {
+  function planifierSynchro(ms, options) {
     clearTimeout(minuterieSynchro);
-    minuterieSynchro = setTimeout(() => { minuterieSynchro = null; synchroniser().catch(() => {}); }, ms);
+    minuterieSynchro = setTimeout(() => { minuterieSynchro = null; synchroniser(options).catch(() => {}); }, ms);
   }
   function surModification() {
     const e = lireEtat();
@@ -509,7 +522,10 @@
       } catch (err) {
         if (lireEtat().session) {
           ecrireEtat({ ...lireEtat(), erreurSynchro: (err && err.message) || 'Erreur' });
-          if (lireEtat().modif) planifierSynchro(Math.min(RELANCE_MAX_MS, 30000 * 2 ** relances++));
+          /* Relance espacée si quelque chose reste à faire : un envoi en attente, OU une
+             récupération qui a échoué (sinon, app restée au premier plan, les nouveautés de
+             l'autre appareil n'arrivaient qu'au prochain retour sur l'app — relecture du 21/11). */
+          if (lireEtat().modif || rec) planifierSynchro(Math.min(RELANCE_MAX_MS, RELANCE_MS * 2 ** relances++), { recuperer: rec });
         }
         throw err;
       } finally {

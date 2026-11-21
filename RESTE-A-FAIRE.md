@@ -265,10 +265,12 @@ Capacitor autour du même code) :
   `PHOTOS` est absent, refus net des envois de photos, banc mis à jour). Resend sans
   domaine n'écrit qu'à ton adresse : ça sert à éprouver le parcours de connexion sur
   ton téléphone, pas à ouvrir les comptes au public.
-- [x] Sauvegarde cloud **manuelle** ou **automatique** → **automatique** (ton « go synchro
-  auto », 20/11). Récupération à la connexion et à l'ouverture de l'app, envoi en
+- [ ] Sauvegarde cloud **manuelle** ou **automatique** → **automatique** (ton « go synchro
+  auto », 20/11 ; en ligne le 21/11, v20.206.0). À cocher quand tu me diras que l'essai
+  ci-dessous est concluant. Récupération à la connexion et à l'ouverture de l'app, envoi en
   arrière-plan quelques secondes après chaque geste ; désactivable dans Réglages › Compte.
-- [ ] 🟢 **Essayer la synchro auto sur deux appareils** (après ton « merge », v20.206.0) :
+- [ ] 🟢 **Essayer la synchro auto sur deux appareils** (**en ligne depuis le 21/11**, v20.206.0 ;
+  corrections de la relecture du 21/11 en v20.207.0, au prochain « merge ») :
   connecte-toi sur le PC **et** sur le téléphone, capture une voiture sur l'un, rouvre
   l'app sur l'autre : elle doit y être, sans toucher « Sauvegarder » ni « Récupérer ».
   Dans Réglages › Compte, la ligne « Synchronisation automatique » dit « à jour ».
