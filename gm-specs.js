@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.208.0';
+  const VERSION_MODULE = '20.209.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -2008,6 +2008,51 @@
     'ferrari-599': { nom:'Ferrari 599 GTB Fiorano', an:[2006,2012], pays:'Italie',
       ch:620, nm:608, kg:1690, cyl:5.999, arch:'V12', adm:'atmo', pos:'avant', tx:'propulsion', bv:'F1 / M6',
       note:"Le V12 dérivé de l\'Enzo dans une GT à moteur avant. La 599 GTO, plus extrême, fut la Ferrari de route la plus rapide sur circuit de son temps. La boîte manuelle à grille, rarissime sur cette voiture, est un graal." },
+    /* Masse : 1 605 kg en ordre de marche, la même base que les 1 690 kg de la 599 GTB
+       ci-dessus (Carsales, Wikipédia). Ferrari ne publie qu'une masse À SEC (1 495 kg) :
+       la prendre ici fausserait kg/ch et ch/t face à la GTB (CLAUDE.md §4.4 ter), d'où le
+       « ≈ ». 670 ch à 8 250 tr/min et 620 Nm à 6 500 tr/min : communiqué Ferrari, 2010. */
+    'ferrari-599-gto': { nom:'Ferrari 599 GTO', an:[2010,2011], pays:'Italie',
+      ch:670, nm:620, kg:1605, cyl:5.999, arch:'V12', adm:'atmo', pos:'avant', tx:'propulsion', bv:'F1 6',
+      prod:599, flou:['kg'],
+      note:"La version de route de la 599XX, la 599 réservée au circuit. 50 ch de plus que la 599 GTB et environ 85 kg de moins. 599 exemplaires. Ferrari l\'a présentée comme sa voiture de route la plus rapide. Masse en ordre de marche, pour la comparer à la GTB : Ferrari annonce 1 495 kg à sec." },
+
+    /* ---- Séries spéciales Ferrari (21/11, « go séries spéciales ») ----------------
+       RÈGLE DE MASSE : chaque série spéciale est pesée COMME SA BASE, sinon kg/ch et ch/t
+       comparent deux référentiels (CLAUDE.md §4.4 ter). Ici les bases V8 (360, F430, 458,
+       488) et la 812 sont à SEC (chiffres Ferrari) ; la F12berlinetta est en ORDRE DE
+       MARCHE (1 630 kg), comme la 599 : la F12tdf l'est donc aussi.
+       VOLUME : Ferrari n'a jamais publié le nombre de 430 Scuderia, 458 Speciale ni
+       488 Pista (estimations de 1 500 à quelques milliers) : `prod` absent, pas deviné. */
+    'ferrari-360-challenge-stradale': { nom:'Ferrari 360 Challenge Stradale', an:[2003,2004], pays:'Italie',
+      ch:425, nm:373, kg:1180, cyl:3.6, arch:'V8', adm:'atmo', pos:'central', tx:'propulsion', bv:'F1 6',
+      prod:1288, flou:['prod'],
+      note:"La 360 de route dérivée de la monotype du Ferrari Challenge : 110 kg de moins que la 360 Modena (masse à sec), freins carbone-céramique de série. Le volume n\'a jamais été publié par Ferrari : on l\'estime entre 1 270 et 1 300 exemplaires." },
+    'ferrari-430-scuderia': { nom:'Ferrari 430 Scuderia', an:[2007,2009], pays:'Italie',
+      ch:510, nm:470, kg:1250, cyl:4.3, arch:'V8', adm:'atmo', pos:'central', tx:'propulsion', bv:'F1 6',
+      note:"La F430 allégée de 100 kg (masse à sec), mise au point avec Michael Schumacher. Boîte F1 « SuperFast », antipatinage F1-Trac. Ferrari n\'a pas publié le nombre d\'exemplaires." },
+    'ferrari-scuderia-spider-16m': { nom:'Ferrari Scuderia Spider 16M', an:[2008,2009], pays:'Italie',
+      ch:510, nm:470, kg:1340, cyl:4.3, arch:'V8', adm:'atmo', pos:'central', tx:'propulsion', bv:'F1 6',
+      prod:499,
+      note:"La 430 Scuderia décapotable, pour le 16e titre de champion du monde des constructeurs de Ferrari en F1 (2008), d\'où « 16M » (16 Mondiali). 80 kg de moins que la F430 Spider (masse à sec). 499 exemplaires." },
+    'ferrari-458-speciale': { nom:'Ferrari 458 Speciale', an:[2013,2015], pays:'Italie',
+      ch:605, nm:540, kg:1290, cyl:4.5, arch:'V8', adm:'atmo', pos:'central', tx:'propulsion', bv:'DCT 7',
+      note:"La 458 Italia allégée de 90 kg (masse à sec), 605 ch à 9 000 tr/min : la plus forte puissance par litre d\'un V8 atmosphérique de série à sa sortie. Ferrari n\'a pas publié le nombre d\'exemplaires." },
+    'ferrari-458-speciale-a': { nom:'Ferrari 458 Speciale A', an:[2014,2015], pays:'Italie',
+      ch:605, nm:540, kg:1340, cyl:4.5, arch:'V8', adm:'atmo', pos:'central', tx:'propulsion', bv:'DCT 7',
+      prod:499,
+      note:"La 458 Speciale à toit rigide escamotable (« A » pour Aperta), réservée à 499 clients. Masse à sec." },
+    'ferrari-488-pista': { nom:'Ferrari 488 Pista', an:[2018,2020], pays:'Italie',
+      ch:720, nm:770, kg:1280, cyl:3.9, arch:'V8', adm:'biturbo', pos:'central', tx:'propulsion', bv:'DCT 7',
+      note:"La 488 GTB allégée de 90 kg (masse à sec), avec des pièces issues des 488 Challenge et GTE de course. Le V8 le plus puissant de Ferrari à sa sortie. Ferrari n\'a pas publié le nombre d\'exemplaires." },
+    'ferrari-f12tdf': { nom:'Ferrari F12tdf', an:[2015,2017], pays:'Italie',
+      ch:780, nm:705, kg:1520, cyl:6.3, arch:'V12', adm:'atmo', pos:'avant', tx:'propulsion', bv:'DCT 7',
+      prod:799, flou:['kg'],
+      note:"« tdf » pour Tour de France, la course que dominaient les 250 GT dans les années 1950. Roues arrière directrices. 110 kg de moins que la F12berlinetta. 799 exemplaires. Masse en ordre de marche, comme la F12 de ce catalogue : Ferrari annonce 1 415 kg à sec." },
+    'ferrari-812-competizione': { nom:'Ferrari 812 Competizione', an:[2021,2023], pays:'Italie',
+      ch:830, nm:692, kg:1487, cyl:6.5, arch:'V12', adm:'atmo', pos:'avant', tx:'propulsion', bv:'DCT 7',
+      prod:999,
+      note:"Le V12 atmosphérique poussé à 9 500 tr/min : bielles en titane, poussoirs traités DLC. 38 kg de moins que la 812 Superfast (masse à sec). 999 coupés, plus 599 Competizione A à toit amovible." },
     'ferrari-daytona-sp3': { nom:'Ferrari Daytona SP3', an:[2022], pays:'Italie',
       ch:840, nm:697, kg:1485, cyl:6.5, arch:'V12', adm:'atmo', pos:'central', tx:'propulsion', bv:'DCT 7',
       prod:599,
@@ -2057,8 +2102,10 @@
     'ferrari-360': { nom:'Ferrari 360 Modena', an:[1999,2005], pays:'Italie',
       ch:400, nm:373, kg:1290, cyl:3.6, arch:'V8', adm:'atmo', pos:'central', tx:'propulsion', bv:'M6 / F1',
       note:"Première Ferrari V8 à châssis et carrosserie tout aluminium. La Challenge Stradale, allégée et orientée piste, est la plus recherchée. Le hurlement du V8 atmosphérique à 8 500 tr/min est resté célèbre." },
+    /* ch:510 jusqu'au 21/11 : c'était la puissance de la 430 Scuderia (§4.5 bis, la fiche
+       décrivait une autre voiture). Ferrari : 490 ch à 8 500 tr/min, 465 Nm à 5 250 tr/min. */
     'ferrari-f430': { nom:'Ferrari F430', an:[2004,2009], pays:'Italie',
-      ch:510, nm:465, kg:1350, cyl:4.3, arch:'V8', adm:'atmo', pos:'central', tx:'propulsion', bv:'M6 / F1',
+      ch:490, nm:465, kg:1350, cyl:4.3, arch:'V8', adm:'atmo', pos:'central', tx:'propulsion', bv:'M6 / F1',
       note:"Le premier « manettino » au volant, molette de réglage des modes de conduite empruntée à la F1 de Schumacher. La 430 Scuderia, allégée avec l\'aide de Michael Schumacher lui-même, est la version ultime." },
     'ferrari-dino': { nom:'Ferrari Dino 246 GT', an:[1969,1974], pays:'Italie',
       ch:195, nm:225, kg:1080, cyl:2.4, arch:'V6', adm:'atmo', pos:'central', tx:'propulsion', bv:'M5',
@@ -6292,26 +6339,49 @@
     'ferrari-360': [
       { c:'360', a:'1999–2005', m:[
         ['Modena / Spider','F131 3.6 V8 atmo','400 ch','moteur central · manuelle 6 à grille / F1','Premier châssis tout aluminium de Ferrari. La boîte manuelle à grille est aujourd\'hui très recherchée.'],
-        ['Challenge Stradale','F131 3.6 V8 atmo','425 ch','moteur central · F1 6','110 kg de moins, freins carbone-céramique. 1 288 exemplaires.'],
+        /* Challenge Stradale : sa propre entrée depuis le 21/11 (règle GTA). */
       ]},
     ],
     'ferrari-f430': [
       { c:'F430', a:'2004–2009', m:[
         ['F430 / Spider','F136 4.3 V8 atmo','490 ch','moteur central · manuelle 6 / F1','Premier différentiel électronique E-Diff et molette manettino au volant.'],
-        ['430 Scuderia','F136 4.3 V8 atmo','510 ch','moteur central · F1 superfast','100 kg de moins, mise au point avec Michael Schumacher.'],
-        ['Scuderia Spider 16M','F136 4.3 V8 atmo','510 ch','moteur central · F1','499 exemplaires, célébrant le 16e titre constructeurs.'],
+        /* 430 Scuderia et Scuderia Spider 16M : leurs propres entrées depuis le 21/11. */
       ]},
     ],
     'ferrari-458': [
       { c:'458', a:'2009–2015', m:[
         ['Italia / Spider','F136 4.5 V8 atmo','570 ch','moteur central · DCT 7','9 000 tr/min. La dernière Ferrari V8 atmosphérique à moteur central.'],
-        ['Speciale / Speciale A','F136 4.5 V8 atmo','605 ch','moteur central · DCT 7','133 ch/L : record de puissance spécifique pour un atmosphérique de série.'],
+        /* 458 Speciale et 458 Speciale A : leurs propres entrées depuis le 21/11. */
       ]},
     ],
     'ferrari-488': [
       { c:'488', a:'2015–2019', m:[
         ['GTB / Spider','F154 3.9 V8 biturbo','670 ch','moteur central · DCT 7','Retour du turbo sur une Ferrari V8, trente ans après la F40.'],
-        ['Pista / Pista Spider','F154 3.9 V8 biturbo','720 ch','moteur central · DCT 7','90 kg de moins, technologie issue des 488 Challenge et GTE.'],
+        /* 488 Pista : sa propre entrée depuis le 21/11. */
+      ]},
+    ],
+    /* Séries spéciales (21/11). Une série spéciale a SA propre entrée ; sa version
+       ouverte reste une déclinaison de cette entrée, SAUF si elle change de palier de
+       rareté (16M, 458 Speciale A : séries limitées à 499, entrées à part). */
+    'ferrari-360-challenge-stradale': [
+      ['Challenge Stradale','2003–2004','F131 3.6 V8 atmo','425 ch','110 kg de moins que la 360 Modena, freins carbone-céramique. Environ 1 300 exemplaires.'],
+    ],
+    'ferrari-430-scuderia': [
+      ['430 Scuderia','2007–2009','F136 4.3 V8 atmo','510 ch','100 kg de moins que la F430, mise au point avec Michael Schumacher.'],
+    ],
+    'ferrari-scuderia-spider-16m': [
+      ['Scuderia Spider 16M','2008–2009','F136 4.3 V8 atmo','510 ch','499 exemplaires, pour le 16e titre constructeurs de Ferrari en F1.'],
+    ],
+    'ferrari-458-speciale': [
+      ['458 Speciale','2013–2015','F136 4.5 V8 atmo','605 ch','Record de puissance par litre pour un V8 atmosphérique de série à sa sortie.'],
+    ],
+    'ferrari-458-speciale-a': [
+      ['458 Speciale A','2014–2015','F136 4.5 V8 atmo','605 ch','Toit rigide escamotable. 499 exemplaires.'],
+    ],
+    'ferrari-488-pista': [
+      { c:'488', a:'2018–2020', m:[
+        ['Pista','F154 3.9 V8 biturbo','720 ch','moteur central · DCT 7','90 kg de moins que la 488 GTB, pièces issues des 488 Challenge et GTE.'],
+        ['Pista Spider','F154 3.9 V8 biturbo','720 ch','moteur central · DCT 7','La version découvrable, même moteur.'],
       ]},
     ],
     'ferrari-f8': [
@@ -6328,14 +6398,23 @@
     'ferrari-812': [
       { c:'812', a:'2017–', m:[
         ['Superfast / GTS','F140 6.5 V12 atmo','800 ch','moteur avant · DCT 7','8 900 tr/min. Le V12 atmosphérique le plus puissant jamais monté en position avant.'],
+        /* Competizione : sa propre entrée depuis le 21/11 ('ferrari-812-competizione'). */
+      ]},
+    ],
+    'ferrari-812-competizione': [
+      { c:'812', a:'2021–2023', m:[
         ['Competizione','F140 6.5 V12 atmo','830 ch','moteur avant · DCT 7','9 500 tr/min. Bielles titane, distribution à poussoirs traités DLC. 999 exemplaires.'],
+        ['Competizione A','F140 6.5 V12 atmo','830 ch','moteur avant · DCT 7','Targa à toit amovible en carbone. 599 exemplaires.'],
       ]},
     ],
     'ferrari-599': [
       { c:'599', a:'2006–2012', m:[
         ['GTB Fiorano','F140 6.0 V12 atmo','620 ch','moteur avant transaxle · manuelle 6 / F1','Suspension magnétorhéologique, une première chez Ferrari.'],
-        ['GTO','F140 6.0 V12 atmo','670 ch','moteur avant · F1 6','599 exemplaires. La Ferrari de route la plus rapide de son époque.'],
+        /* GTO : sa propre entrée depuis le 21/11 ('ferrari-599-gto', règle GTA). */
       ]},
+    ],
+    'ferrari-599-gto': [
+      ['599 GTO','2010–2011','F140 6.0 V12 atmo','670 ch','599 exemplaires. Version de route de la 599XX de circuit.'],
     ],
     'lambo-gallardo': [
       { c:'Pré-LP', a:'2003–2008', m:[
@@ -8941,6 +9020,9 @@
     ],
     'ferrari-f12': [
       ['F12berlinetta','2012–2017','V12 6.3 atmo','740 ch','Aérodynamique active, conduits d\'air creusés dans le capot.'],
+      /* F12tdf : sa propre entrée depuis le 21/11 ('ferrari-f12tdf', règle GTA). */
+    ],
+    'ferrari-f12tdf': [
       ['F12tdf','2015–2017','V12 6.3 atmo','780 ch','« Tour de France », en hommage à la 250 GT. Roues arrière directrices. 799 exemplaires.'],
     ],
     'ferrari-550': [
@@ -10034,6 +10116,15 @@
     'ferrari-sf90'            : 'ferrari-sf90',
     'ferrari-296'             : 'ferrari-296',
     'ferrari-599'             : 'ferrari-599',
+    'ferrari-599-gto'         : 'ferrari-599-gto',
+    'ferrari-360-challenge-stradale': 'ferrari-360-challenge-stradale',
+    'ferrari-430-scuderia'    : 'ferrari-430-scuderia',
+    'ferrari-scuderia-spider-16m': 'ferrari-scuderia-spider-16m',
+    'ferrari-458-speciale'    : 'ferrari-458-speciale',
+    'ferrari-458-speciale-a'  : 'ferrari-458-speciale-a',
+    'ferrari-488-pista'       : 'ferrari-488-pista',
+    'ferrari-f12tdf'          : 'ferrari-f12tdf',
+    'ferrari-812-competizione': 'ferrari-812-competizione',
     'ferrari-daytona-sp3'     : 'ferrari-daytona-sp3',
     'lambo-aventador'         : 'lambo-aventador',
     'lambo-gallardo'          : 'lambo-gallardo',
@@ -11097,6 +11188,25 @@
     { id:'ford-ranger', brand:'Ford', model:'Ranger', yr:'1998–', c:'🇺🇸', cat:'Pick-up', r:'commun' },
         { id:'porsche-911-gt3-r', brand:'Porsche', model:'911 GT3 R', yr:'2016–', c:'🇩🇪', cat:'Course', r:'legendaire' },
     { id:'porsche-911-gt3-cup', brand:'Porsche', model:'911 GT3 Cup', yr:'1998–', c:'🇩🇪', cat:'Course', r:'epique' },
+
+    /* ---- SÉRIES SPÉCIALES SORTIES DES DÉCLINAISONS (règle GTA, CLAUDE.md §4.5) ----
+       21/11, à la demande du propriétaire (« GTO et GTB, c'est pas du tout la même
+       rareté ») : une case à cocher sur la 599 GTB rapportait les points de la GTB
+       (Rare, +8) pour une voiture à 599 exemplaires. Rareté calée sur le volume,
+       comme au-dessus : légendaire sous ~1 000 ex. La ligne GTO est retirée des
+       déclinaisons de la base (GENS['ferrari-599']). */
+    { id:'ferrari-599-gto', brand:'Ferrari', model:'599 GTO', yr:'2010–2011', c:'🇮🇹', cat:'GT', r:'legendaire' },
+    /* « go séries spéciales », 21/11. Même règle de volume. Sans chiffre officiel
+       (Scuderia, Speciale, Pista : estimations de 1 500 à quelques milliers) → épique.
+       Une version ouverte qui change de palier (16M, Speciale A : 499) a son entrée. */
+    { id:'ferrari-360-challenge-stradale', brand:'Ferrari', model:'360 Challenge Stradale', yr:'2003–2004', c:'🇮🇹', cat:'Supercar', r:'epique' },
+    { id:'ferrari-430-scuderia', brand:'Ferrari', model:'430 Scuderia', yr:'2007–2009', c:'🇮🇹', cat:'Supercar', r:'epique' },
+    { id:'ferrari-scuderia-spider-16m', brand:'Ferrari', model:'Scuderia Spider 16M', yr:'2008–2009', c:'🇮🇹', cat:'Supercar', r:'legendaire' },
+    { id:'ferrari-458-speciale', brand:'Ferrari', model:'458 Speciale', yr:'2013–2015', c:'🇮🇹', cat:'Supercar', r:'epique' },
+    { id:'ferrari-458-speciale-a', brand:'Ferrari', model:'458 Speciale A', yr:'2014–2015', c:'🇮🇹', cat:'Supercar', r:'legendaire' },
+    { id:'ferrari-488-pista', brand:'Ferrari', model:'488 Pista', yr:'2018–2020', c:'🇮🇹', cat:'Supercar', r:'epique' },
+    { id:'ferrari-f12tdf', brand:'Ferrari', model:'F12tdf', yr:'2015–2017', c:'🇮🇹', cat:'GT', r:'legendaire' },
+    { id:'ferrari-812-competizione', brand:'Ferrari', model:'812 Competizione', yr:'2021–2023', c:'🇮🇹', cat:'GT', r:'legendaire' },
   ];
 
   function etendreCatalogue() {

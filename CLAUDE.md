@@ -476,6 +476,15 @@ compléter mécaniquement fige l'erreur. Cas réellement rencontrés et tranché
 bien la voiture nommée. Une incohérence ici est la racine des bugs
 Giulia/Quadrifoglio et M2 CS/M4 CSL — la fiche affiche une **autre voiture**.
 - **Sélecteurs rattachés à la bonne entrée** (28/09) : celui de la 205 (GTI seules) → 205 GTI ; celui de la 504 (coupé/cabriolet) → 504 Coupé ; celui de la Xantia (Activa seules) → Xantia Activa ; Rallye 1.3 retirée de la 106 → 106 Rallye, désormais en deux phases (1.3 / 1.6).
+- **Séries spéciales** (21/11, Ferrari) : une série spéciale (599 GTO, 360 Challenge
+  Stradale, 430 Scuderia, 458 Speciale, 488 Pista, F12tdf, 812 Competizione) a **sa propre
+  entrée**, jamais une simple case de déclinaison : le score ne dépend que de la rareté de
+  l'entrée, une case laissait +8 à une voiture de 599 exemplaires. Sa **version ouverte**
+  reste une déclinaison de cette entrée (Pista Spider, Competizione A), **sauf** si elle
+  change de palier de rareté (Scuderia Spider 16M, 458 Speciale A : 499 ex., entrées à part).
+  ⚠️ **Masse : pesée comme sa base** (à sec pour les V8 et la 812, en ordre de marche pour
+  la 599 et la F12), sinon kg/ch compare deux référentiels (§4.4 ter). Volume non publié
+  par le constructeur → `prod` absent, rareté de jeu « épique ».
 - **Exclusions déjà appliquées** au titre de cette règle : 911 Turbo/GT3/GT2 RS,
   M3 CSL/Touring, Golf R/R32, Mégane R.S./R26.R, 206 WRC, séries d'homologation
   en très petit volume (ex. Alfa GTV6 3.0 sud-africaine, 212 ex.).
@@ -495,7 +504,7 @@ incrémenter conjointement :**
 2. `VERSION` (`"garage-v…"`) dans `sw.js` (ligne ~12).
 
 Ces deux numéros sont **tenus synchronisés** (au 21/11/2026 : `gm-specs.js` →
-`20.208.0`, `sw.js` → `garage-v20.208.0`). `VERSION_MODULE` s'affiche en outre
+`20.209.0`, `sw.js` → `garage-v20.209.0`). `VERSION_MODULE` s'affiche en outre
 dans l'UI via `grefferVersion()`, ce qui permet de vérifier de visu quelle version
 tourne réellement sur l'appareil.
 
@@ -643,6 +652,7 @@ modification n'impose aucun bump de version.
 | `banc-photos.js` | Banc navigateur des limites de photos : plafond par rareté (`PHOTOS_PAR_RARETE`), taille par photo, recompression des anciennes photos (`GMGarage.normaliserPhotos`), suppression d'une photo et non-résurrection à la fusion cloud (pierres tombales) |
 | `banc-retouches.js` | Banc navigateur des retouches de `gm-specs.js` (floutage, recadrage, « Photo d'origine », « Associer », « Rattacher ») : vraie interface, puis synchronisation rejouée — rien ne doit revenir ; repli d'un `index.html` ancien |
 | `banc-sw.js` | Banc navigateur du **service worker**, sur un serveur au cache HTTP de GitHub Pages (`max-age=600`) : installation, nouveau déploiement, coquille rangée = la **nouvelle**, « Mettre à jour » qui recharge, « Plus tard » puis réouverture, hors ligne. **Aucune interception réseau** (elle désactiverait le cache HTTP éprouvé) |
+| `pages/` + `banc-pages.js` | **Pages web exigées par les stores** (21/11) : confidentialité, support, suppression de compte. **Générées** depuis leurs sources Markdown (`cloud/CONFIDENTIALITE.md` fait foi pour la confidentialité ; `pages/*.md` pour les autres) par `node banc-pages.js --html` : **ne jamais éditer les `.html` à la main**. `node banc-pages.js` échoue si une page n'est plus à jour de sa source, charge une ressource externe, porte un lien mort, ou cache une cellule de tableau hors d'un écran de téléphone. `sw.js` ne s'en mêle pas (hors ligne, pas de repli sur l'app) |
 | `banc-imports.js` | Banc navigateur des **fichiers importés hostiles** (sauvegarde, profil d'équipage) : aucune charge ne doit s'exécuter, à l'import comme au redémarrage (DT-09, DT-10) ; contrat `data-car-id` |
 | `AUDIT-DEFAUTS.md` | Rapport de la chasse aux défauts du 29/09 : corrigé, et reste à décider |
 | `banc-i18n.js` → `I18N.md` | Recensement des textes d'interface (préparation i18n). `I18N.md` est **généré** : relancer `node banc-i18n.js --md`, ne jamais l'éditer à la main |
@@ -740,7 +750,7 @@ de choisir ?**
   lancement hors ligne. Sans repli, photographier ne renverrait rien.
   Le résultat complet est lisible via `lastMatch`.
 
-Banc : `node banc-matcher.js`, 17 tests sur le catalogue **fusionné** (1 070),
+Banc : `node banc-matcher.js`, 17 tests sur le catalogue **fusionné** (1 080 au 21/11),
 sortie en code non nul si échec. Préfixé `banc-`, donc hors cache.
 
 ---
@@ -972,7 +982,8 @@ GMGarage.deplacerPrise(deId, versId)  → { ok }                          (10/11
 
 ⚠️ **`CONFIDENTIALITE.md` décrit ce que le code collecte.** Toute modification
 qui change ce qui est stocké, combien de temps ou par qui, la met à jour **dans
-le même commit**.
+le même commit** — puis `node banc-pages.js --html` régénère la page publique
+`pages/confidentialite.html` (le banc échoue sinon).
 
 ---
 

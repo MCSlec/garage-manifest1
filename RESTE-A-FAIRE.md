@@ -187,6 +187,16 @@ de chez nous (`vendor/`, aucun CDN — vérifié par `banc-carte.js`). Restent d
 
 ## 3. ⚖️ Avant d'ouvrir les comptes au public
 
+**Pages web exigées par les stores : commencées le 21/11** (`pages/`, ta demande) —
+`confidentialite.html` (générée depuis `cloud/CONFIDENTIALITE.md`), `support.html`,
+`suppression-compte.html`. Elles portent un bandeau « version de travail » tant que
+des passages surlignés restent à compléter (les lignes ci-dessous). En ligne au
+prochain « merge », à l'adresse `…/garage-manifest1/pages/…` ; on les finira plus tard.
+À faire aussi à ce moment-là : un **lien vers la politique dans l'app** (Réglages),
+exigé par Apple. ⚠️ Le jour où la **publicité** arrive, la politique change (identifiant
+publicitaire, régie, consentement) : la phrase « aucune publicité ciblée, aucun
+traceur » devra être réécrite.
+
 Tout est dans `cloud/CONFIDENTIALITE.md` :
 
 - [ ] Identité et contact du **responsable du traitement**, date de publication.
@@ -202,6 +212,11 @@ Tout est dans `cloud/CONFIDENTIALITE.md` :
   après 3 ans sans connexion, précédée d'un e-mail). Je code la purge dès que
   c'est tranché.
 - [ ] 🟡 **Âge minimum** des utilisateurs.
+- [ ] 🟡 **Couper la reconnaissance automatique** : la politique affirmait qu'on pouvait ne
+  rien envoyer à l'IA en vidant le champ « Endpoint » — **faux** (champ vide = relais par
+  défaut), corrigé le 21/11. Aujourd'hui, seule une photo ajoutée depuis la fiche d'une
+  voiture n'est jamais envoyée. Faut-il un vrai réglage « reconnaissance automatique :
+  oui / non » ? (Recommandé avant la sortie : simple, et rassurant pour la confidentialité.)
 
 ## 4. 🔴 Notre propre carte (plus aucun appel externe)
 
@@ -249,6 +264,64 @@ Capacitor autour du même code) :
   publique → **notre carte (§4) devient obligatoire** avant la sortie.
 - **Service worker** : peu utile en natif (les fichiers sont dans l'app) ;
   comportement à vérifier sur iPhone au moment du chantier.
+- [ ] 💶 **Option payante « sauvegarde cloud » à la sortie** — **décision de principe du
+  21/11** (tes mots) : option payante, **au prix du serveur cloud, sans marge**, avec un
+  court paragraphe qui explique pourquoi ; ceux qui gardent leur stockage local ne paient
+  rien. Ce qui reste à trancher le moment venu :
+  - **Ce qui est payant.** Recommandation : la **synchro de la collection reste gratuite**
+    (≈ 12 Ko par garage, couverte par l'offre gratuite de Cloudflare), seules les
+    **photos dans le cloud** (R2) sont payantes : c'est elles qui coûtent.
+  - **Le vrai coût par joueur est minuscule** : R2 = 0,015 $ / Go / mois. 1 000 photos
+    ≈ 0,3 Go ≈ **0,05 $ par an**. Les **frais de paiement** dépassent ce coût : commission
+    des stores 15 % (programme petites entreprises d'Apple et Google), ou Stripe 1,5 % +
+    0,25 € par paiement. « Prix du serveur, sans marge » doit donc se calculer sur
+    **tous les coûts du cloud** (R2 au-delà des 10 Go gratuits, offre payante Workers à
+    5 $/mois si les limites gratuites sautent, domaine, commission) **divisés par le nombre
+    d'abonnés**, et non sur le coût d'un seul joueur.
+  - **Variante du 21/11** : commencer en **local**, puis payer soi-même le stockage photo
+    une fois que la publicité le finance. Ordres de grandeur (photos de l'app : 1 280 px,
+    JPEG ≈ 250 Ko ; R2 ≈ 0,014 € / Go / mois, 10 Go gratuits) :
+
+    | Joueur type | Photos | Volume | Gratuit (10 Go) | Par € / mois (≈ 72 Go) |
+    |---|---|---|---|---|
+    | Occasionnel (50 voitures × 2) | 100 | ≈ 25 Mo | ≈ 400 | ≈ 2 900 |
+    | Régulier (150 × 3) | 450 | ≈ 110 Mo | ≈ 90 | ≈ 650 |
+    | Collectionneur (500 × 4) | 2 000 | ≈ 500 Mo | ≈ 20 | ≈ 145 |
+
+    Le coût suit le **stock total** de photos (il grandit chaque mois), pas les envois du
+    mois. Envois et lectures sont gratuits jusqu'à 1 million / 10 millions par mois.
+    ⚠️ La **première facture** sera probablement l'offre payante Workers (5 $/mois) quand
+    l'app dépassera ~100 000 requêtes par jour (de l'ordre de quelques milliers de joueurs
+    actifs par jour avec la synchro), et la reconnaissance IA (quota Gemini), avant le
+    stockage des photos.
+  - **Autres frais à prévoir** (21/11, ordres de grandeur à revérifier le moment venu) :
+    comptes développeur (Apple 99 $/an, Google 25 $ une fois) ; **un Mac pour construire
+    l'app iPhone** (Xcode n'existe que sur Mac : achat, ou service de compilation en ligne
+    à offre gratuite) ; nom de domaine (≈ 10-15 €/an, nécessaire pour les e-mails de
+    connexion et la page de confidentialité) ; Resend au-delà de 100 e-mails/jour (offre
+    payante ≈ 20 $/mois ; la connexion Google n'envoie aucun e-mail) ; IA au-delà du quota
+    gratuit de Gemini, **et** probablement l'offre payante dès l'ouverture au public (en
+    gratuit, Google peut réutiliser les photos : point de confidentialité) ; notre carte
+    (fichier de tuiles sur R2, qui partage les 10 Go gratuits avec les photos) ; dépôt de
+    la marque (INPI ≈ 190 € pour une classe, à faire avant de communiquer le nom) ;
+    micro-entreprise (création gratuite, mais cotisations sur les revenus publicitaires,
+    CFE dès la 2e année). **Hébergement** : choix du 21/11, le public aura **l'app des
+    stores, pas un site** (le code est dans l'app) ; la règle de GitHub Pages contre les
+    sites commerciaux ne vise donc pas l'app. Restent **en ligne** : les deux Workers
+    (inchangés) et **quelques pages web exigées par les stores**, sans publicité :
+    politique de confidentialité (Apple et Google), page de support (Apple), lien web pour
+    demander la suppression de son compte (Google Play). La version web actuelle peut
+    servir de version d'essai, ou être fermée.
+  - **Stores** : un service numérique vendu dans l'app passe obligatoirement par l'achat
+    intégré d'Apple et de Google, à leur commission.
+  - **Vendre** suppose un statut (micro-entreprise, par exemple), des CGV, et la TVA :
+    à voir avec quelqu'un de compétent avant la sortie.
+  - **Brouillon du paragraphe** (à ajuster) : « *Pourquoi la sauvegarde cloud est
+    payante ? Garage Manifest fonctionne entièrement sur ton téléphone, gratuitement et
+    sans compte : ta collection et tes photos y restent. La sauvegarde cloud garde tes
+    photos sur un serveur que nous louons. Son prix est celui de ce serveur et des frais
+    de paiement, sans marge : nous ne gagnons rien dessus. Si tu ne la prends pas, rien
+    ne change : tout reste sur ton appareil.* »
 
 ## 5. 🟡 Décisions produit en attente
 
@@ -265,11 +338,11 @@ Capacitor autour du même code) :
   `PHOTOS` est absent, refus net des envois de photos, banc mis à jour). Resend sans
   domaine n'écrit qu'à ton adresse : ça sert à éprouver le parcours de connexion sur
   ton téléphone, pas à ouvrir les comptes au public.
-- [ ] Sauvegarde cloud **manuelle** ou **automatique** → **automatique** (ton « go synchro
-  auto », 20/11 ; en ligne le 21/11, v20.206.0). À cocher quand tu me diras que l'essai
-  ci-dessous est concluant. Récupération à la connexion et à l'ouverture de l'app, envoi en
+- [x] Sauvegarde cloud **manuelle** ou **automatique** → **automatique** (ton « go synchro
+  auto », 20/11 ; en ligne le 21/11, v20.206.0 ; essai concluant confirmé par toi le 21/11). Récupération à la connexion et à l'ouverture de l'app, envoi en
   arrière-plan quelques secondes après chaque geste ; désactivable dans Réglages › Compte.
-- [ ] 🟢 **Essayer la synchro auto sur deux appareils** (**en ligne depuis le 21/11**, v20.207.0) :
+- [x] **Essayer la synchro auto sur deux appareils** — **fait le 21/11** (« ça synchronise
+  bien et c'est rapide », PC + téléphone, v20.208.0). Rappel de l'essai :
   connecte-toi sur le PC **et** sur le téléphone, capture une voiture sur l'un, rouvre
   l'app sur l'autre : elle doit y être, sans toucher « Sauvegarder » ni « Récupérer ».
   Dans Réglages › Compte, la ligne « Synchronisation automatique » dit « à jour ».
@@ -279,6 +352,16 @@ Capacitor autour du même code) :
   pas ta perso.
 - [ ] Photos sauvegardées : **toutes** (choix par défaut, dédupliquées) ou la
   couverture seulement.
+- [ ] 🟡 **Séries spéciales Ferrari en entrées à part** (question du 21/11, capture d'une 599) :
+  une série spéciale rangée en **déclinaison** (case à cocher) rapporte les points de sa base.
+  **Fait sur la branche le 21/11** (ton « go séries spéciales »), en ligne au prochain
+  « merge » : 599 GTO, Scuderia Spider 16M, 458 Speciale A, F12tdf et 812 Competizione
+  en **Légendaire** ; 360 Challenge Stradale, 430 Scuderia, 458 Speciale et 488 Pista en
+  **Épique** (volume jamais publié par Ferrari, estimé à plus de 1 000). Pista Spider et
+  Competizione A restent des cases de leur série. Au passage, la F430 de base affichait
+  510 ch (ceux de la Scuderia) : corrigée à 490. **À toi :** une photo déjà rangée sous la
+  version de base (ta 599) passe sur sa série par **« Changer de modèle »** sur sa fiche.
+  À cocher quand tu l'auras vu en ligne.
 - [ ] **i18n (chantier B, option b)** : lancer le mécanisme `t("…")` ? Quelles
   langues en premier ?
 - [ ] **Rouleau (chantier C)** : où apparaît la pellicule dans l'écran de

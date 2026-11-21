@@ -106,6 +106,14 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   const horsLigne = await pret().then(() => true, () => false);
   v('hors ligne : l\'app démarre (coquille + modules servis par le cache)', horsLigne);
   v('hors ligne : c\'est bien la NOUVELLE version qui démarre', horsLigne && (await page.evaluate(() => window.__deploiement)) === 2, horsLigne ? await page.evaluate(() => window.__deploiement) : 'app non démarrée');
+  /* Pages web des stores (pages/, 21/11) : hors ligne, le repli « app » ne doit PAS les
+     remplacer — une politique de confidentialité qui affiche l'app à sa place trompe le
+     lecteur, et l'app y démarrerait à une mauvaise adresse (modules introuvables). */
+  const pageStore = await ctx.newPage();
+  await pageStore.goto(`http://localhost:${PORT}/pages/confidentialite.html`, { waitUntil: 'domcontentloaded', timeout: 8000 }).catch(() => null);
+  const appALaPlace = await pageStore.evaluate(() => typeof window.__deploiement === 'number' || !!document.getElementById('view')).catch(() => false);
+  v('hors ligne : une page web des stores (pages/) n\'est pas remplacée par l\'app', !appALaPlace);
+  await pageStore.close();
   await ctx.setOffline(false);
 
   /* 5. « Plus tard », un AUTRE onglet de l'app reste ouvert, puis réouverture : la nouvelle

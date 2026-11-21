@@ -323,6 +323,9 @@
   .spec{ border:1px solid var(--line); background:var(--panel2); border-radius:9px; padding:9px 11px; }
   .spec dt{ font:400 9px/1 var(--mono); letter-spacing:.06em; text-transform:uppercase; color:var(--dim); }
   .spec dd{ margin:5px 0 0; font:500 13px/1.2 var(--sans); display:flex; align-items:center; gap:6px; }
+  /* Tuile « Position » : c'est un lien. Sans cette ligne, elle prenait le bleu par défaut des
+     liens, illisible sur fond sombre (capture du propriétaire, 21/11). banc-dom.js le vérifie. */
+  a.spec{ color:inherit; }
   .chip{ display:inline-flex; align-items:center; gap:7px; padding:5px 10px; border-radius:999px; font:600 10px/1 var(--mono); letter-spacing:.05em; text-transform:uppercase; }
 
   /* ---- Fiche swipeable (carrousel photo ↔ fiche technique) ---- */

@@ -67,7 +67,7 @@ const verifier = (intitule, ok, detail) => { resultats.push({ intitule, ok, deta
       });
       // Seconde voiture capturée (photo + fiche) : pour vérifier qu'elle ne s'ouvre pas à la position de la Giulia.
       tx.objectStore('spots').put({
-        carId: 'ferrari-f40', at: new Date().toISOString(), coords: null,
+        carId: 'ferrari-f40', at: new Date().toISOString(), coords: { lat: 45.76, lng: 4.84 },
         photos: ['data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'],
         loc: 'Banc', note: '', cover: 0, variants: [], favorite: false
       });
@@ -190,6 +190,14 @@ const verifier = (intitule, ok, detail) => { resultats.push({ intitule, ok, deta
     return { id: document.querySelector('#overlay .detail-shell')?.getAttribute('data-car-id'),
       page: p && p.clientWidth ? Math.round(p.scrollLeft / p.clientWidth) : -1, defile: document.querySelector('#overlay .sh-body')?.scrollTop || 0 }; });
   verifier('une autre voiture ouverte depuis la fiche s\'ouvre sur SA photo, en haut (pas de position héritée)', pAutre.id === 'ferrari-f40' && pAutre.page === 0 && pAutre.defile === 0, JSON.stringify(pAutre));
+  /* Tuile « Position » (un lien) : même couleur que les tuiles voisines, pas le bleu par défaut
+     des liens, illisible sur fond sombre (capture du propriétaire, 21/11). */
+  const couleurs = await page.evaluate(() => {
+    const c = s => { const e = document.querySelector(s); return e ? getComputedStyle(e).color : null; };
+    return { lien: c('#overlay a.spec dd'), voisine: c('#overlay div.spec dd, #overlay .spec:not(a) dd') };
+  });
+  verifier('tuile « Position » lisible : couleur des tuiles voisines, pas le bleu des liens',
+    !!couleurs.lien && couleurs.lien === couleurs.voisine, JSON.stringify(couleurs));
   // Rouvrir la fiche depuis la collection repart bien de la photo (la mémoire ne vaut que pour la fiche ouverte).
   await page.evaluate(() => document.querySelector('#overlay [data-close]')?.click());
   await page.waitForTimeout(400);
