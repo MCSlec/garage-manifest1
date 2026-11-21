@@ -175,6 +175,7 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   const mail = envoi.liens[0] || '';
   const sujet = decodeURIComponent((/[?&]subject=([^&]*)/.exec(mail) || [])[1] || ''), corpsMail = decodeURIComponent((/[?&]body=([^&]*)/.exec(mail) || [])[1] || '');
   v('« Envoyer un retour » ouvre la messagerie (lien mailto:), pas la feuille de partage', envoi.liens.length === 1 && envoi.partages === 0, JSON.stringify(envoi));
+  v('… adressé à l\'adresse dédiée aux retours (garagemanifest.app@gmail.com, choisie par le propriétaire le 21/11)', mail.startsWith('mailto:garagemanifest.app@gmail.com?'), mail.slice(0, 60));
   v('… mail pré-rempli : sujet, collection, versions de l\'app et du module', /Garage Manifest/.test(sujet) && /Collection : 1\//.test(corpsMail) && corpsMail.includes(envoi.version), JSON.stringify({ sujet, corpsMail }));
   /* Retour à l'onglet Collection : l'étape des Réglages doit être consommée. Si la page se
      croit quittée, l'étape reste, et il faut deux « retour » pour sortir de l'app. */

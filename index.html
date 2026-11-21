@@ -4623,10 +4623,10 @@ const VARIANTS = {
   /* « Envoyer un retour » (20/11 : « ça m'ouvre la feuille de partage au lieu d'un mail »).
      Un lien mailto: ouvre DIRECTEMENT la messagerie, mail pré-rempli. L'adresse est PUBLIQUE
      (code en ligne, lisible par les robots à spam) : une adresse DÉDIÉE à l'app, jamais une
-     adresse personnelle — choix du propriétaire, adresse à renseigner (RESTE-A-FAIRE). Vide :
-     le mail s'ouvre sans destinataire. Le texte est aussi copié : sans messagerie installée,
+     adresse personnelle — adresse dédiée créée et donnée par le propriétaire le 21/11. Vide :
+     le mail s'ouvrirait sans destinataire. Le texte est aussi copié : sans messagerie installée,
      un lien mailto: ne fait rien, et rien ne le signale à la page. */
-  const ADRESSE_RETOUR = "";
+  const ADRESSE_RETOUR = "garagemanifest.app@gmail.com";
   async function sendFeedback() {
     const st = computeStats();
     const adresse = /^[^\s@?&#:/]+@[^\s@?&#:/]+\.[a-z]{2,}$/i.test(ADRESSE_RETOUR) ? ADRESSE_RETOUR : "";
