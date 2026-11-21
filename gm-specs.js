@@ -19,7 +19,7 @@
 (function (global) {
   'use strict';
 
-  const VERSION_MODULE = '20.209.0';
+  const VERSION_MODULE = '20.210.0';
 
   /* ======================================================================
      1. DICTIONNAIRE DES CHAMPS
@@ -11209,6 +11209,23 @@
     { id:'ferrari-812-competizione', brand:'Ferrari', model:'812 Competizione', yr:'2021–2023', c:'🇮🇹', cat:'GT', r:'legendaire' },
   ];
 
+  /* ---- SÉRIES SPÉCIALES : id de la voiture de base → ids de ses séries -------------
+     21/11 (maquette v2) : la fiche de base annonce ses séries à découvrir (« 599 GTO ·
+     Légendaire »). Le lien est ÉCRIT ICI, jamais déduit d'un identifiant ou d'un nom :
+     « ferrari-599 » est un préfixe de « ferrari-599-gto », mais aussi, un jour, de
+     n'importe quelle 599 sans rapport. Une table se relit et ne se trompe pas en silence.
+     Contrôlée par banc-audit.js (ids au catalogue, même marque, une seule base par série,
+     série jamais restée en case de déclinaison de sa base). */
+  const SERIES_SPECIALES = {
+    'ferrari-599':  ['ferrari-599-gto'],
+    'ferrari-360':  ['ferrari-360-challenge-stradale'],
+    'ferrari-f430': ['ferrari-430-scuderia', 'ferrari-scuderia-spider-16m'],
+    'ferrari-458':  ['ferrari-458-speciale', 'ferrari-458-speciale-a'],
+    'ferrari-488':  ['ferrari-488-pista'],
+    'ferrari-f12':  ['ferrari-f12tdf'],
+    'ferrari-812':  ['ferrari-812-competizione'],
+  };
+
   function etendreCatalogue() {
     try {
       if (typeof CARS === 'undefined' || !Array.isArray(CARS)) return 0;
@@ -14535,6 +14552,9 @@
   function grefferClasser() {
     const sheet = document.querySelector('#overlay .sheet');
     if (!sheet || sheet.querySelector('.gcl-btn')) return;
+    /* Voiture non capturée (contrat §3) : il n'y a aucune prise à reclasser. Le bouton
+       s'y affichait quand même (vu sur la fiche plein écran du 21/11). */
+    if (sheet.querySelector('[data-verrou]')) return;
     const tete = sheet.querySelector('.info-head');
     if (!tete) return;
 
@@ -14556,7 +14576,11 @@
        son NOM affiché désignait la mauvaise prise dès que deux voitures portaient
        le même libellé (une « Non classé » homonyme d'un modèle du catalogue). */
     b.addEventListener('click', (e) => { e.stopPropagation(); ouvrirClasseur(cible.nom, idFicheOuverte()); });
-    tete.insertAdjacentElement('afterend', b);
+    /* Fiche à onglets (21/11) : index.html prévoit sa place dans « Ma prise »
+       ([data-gcl-ici]) — reclasser corrige la PRISE, pas la fiche technique. Sinon
+       (index.html plus ancien, fiche « Non classé ») : sous le titre, comme avant. */
+    const ici = sheet.querySelector('[data-gcl-ici]');
+    if (ici) ici.appendChild(b); else tete.insertAdjacentElement('afterend', b);
   }
 
   /** Retrouve l'identifiant réel de la capture à partir de son nom affiché. */
@@ -15171,10 +15195,10 @@
   .gsp-vedettes{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:12px; }
   .gsp-v{ border:1px solid var(--line); background:var(--panel2); border-radius:10px;
     padding:11px 8px; text-align:center; }
-  .gsp-v b{ display:block; font:700 20px/1 var(--mono); font-variant-numeric:tabular-nums; color:var(--red); }
+  .gsp-v b{ display:block; font:700 20px/1 var(--mono); font-variant-numeric:tabular-nums; color:var(--txt); }
   .gsp-v small{ display:block; margin-top:5px; font:400 9px/1.35 var(--mono);
     letter-spacing:.05em; text-transform:uppercase; color:var(--dim); }
-  .gsp-jauge{ height:3px; border-radius:2px; background:#232327; margin-top:8px; overflow:hidden; }
+  .gsp-jauge{ height:3px; border-radius:2px; background:var(--line); margin-top:8px; overflow:hidden; }
   .gsp-jauge>i{ display:block; height:100%; background:var(--red); border-radius:2px; }
   .gsp .specs{ margin-top:9px; }
   .gsp-rar{ display:inline-block; margin-top:12px; padding:5px 11px; border:1px solid var(--line);
@@ -15501,7 +15525,10 @@
   function greffer() {
     const pages = document.querySelectorAll('#overlay .sheet .page');
     if (!pages.length) return;
-    const page = pages[pages.length - 1];          // la fiche technique est la dernière page
+    /* La page qui porte `.detail-shell` (contrat §3). Depuis la fiche à onglets du 21/11,
+       elle est la PREMIÈRE (Fiche · Photos · Ma prise) ; la dernière page reste le repli
+       pour un index.html plus ancien encore en cache, où elle était la seule possible. */
+    const page = [...pages].find(p => p.querySelector('.detail-shell')) || pages[pages.length - 1];
     if (page.querySelector('.gsp')) return;         // déjà greffé
     /* Voiture non spottée : index.html pose data-verrou. On ne greffe RIEN —
        sinon le verrou de collection fuit (bug trouvé au banc navigateur). */
@@ -17520,7 +17547,24 @@
   };
 
   const API = {
-    CHAMPS, DERIVES, SPECS, MAP, GENS, MOTOR_SPECS,
+    CHAMPS, DERIVES, SPECS, MAP, GENS, MOTOR_SPECS, SERIES_SPECIALES,
+
+    /** Séries spéciales d'une voiture de base (table SERIES_SPECIALES), entrées du catalogue
+        fusionné : [{ id, brand, model, yr, rarete, prod }]. Tableau vide sinon. `rarete` est
+        celle du JEU (§8 quater) ; `prod` vient de la fiche, null s'il n'est pas publié. */
+    seriesSpeciales(idCatalogue) {
+      const cat = (typeof CARS !== 'undefined' && Array.isArray(CARS)) ? CARS : [];
+      return (SERIES_SPECIALES[idCatalogue] || [])
+        .map(id => cat.find(c => c && c.id === id)).filter(Boolean)
+        .map(c => { const f = MAP[c.id] && SPECS[MAP[c.id]];
+          return { id: c.id, brand: c.brand, model: c.model, yr: c.yr, rarete: c.r, prod: (f && f.prod) || null }; });
+    },
+
+    /** Base d'une série spéciale (inverse de la table), ou null. */
+    baseDeSerie(idCatalogue) {
+      for (const [base, ids] of Object.entries(SERIES_SPECIALES)) if (ids.includes(idCatalogue)) return base;
+      return null;
+    },
 
     /** Le bloc HTML à injecter dans infoPageHTML. Chaîne vide si non renseignée. */
     blocHTML,

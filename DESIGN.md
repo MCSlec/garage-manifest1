@@ -243,3 +243,10 @@ est un « + ».
 
 Décisions en attente : `RESTE-A-FAIRE.md` §5 (« maquette v2 »). Implémentation après
 validation, écran par écran, en patchs ciblés, captures avant / après (§2 ci-dessus).
+
+**Avancement** (validé par le propriétaire le 21/11, « oui à tout ») :
+- ✅ **Fiche** (21/11) : plein écran, photo du joueur en tête, identité (marque, modèle en
+  Barlow Condensed, rareté, points), onglets Fiche · Photos · Ma prise, puissance affichée,
+  séries spéciales. Outils photo dans l'onglet Photos ; « Changer de modèle » dans Ma prise.
+  Contrats et pièges : `CLAUDE.md` §3. Captures avant / après montrées avant mise en ligne.
+- ⏳ Garage (accueil) · révélation · pages marque · identification, dans cet ordre.

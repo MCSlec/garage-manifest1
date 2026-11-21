@@ -329,7 +329,7 @@ Capacitor autour du même code) :
   (`design/SPEC-P0-ARBITRAGES.md`).
 - [x] Arbitrages P0 rendus et parcours implémenté (v20.195.0, captures dans
   `design/p0-captures-apres/`).
-- [ ] 🟡 **Maquette v2 à valider** (21/11, `DESIGN.md` §3, planche envoyée dans la conversation) :
+- [x] **Maquette v2 validée** par le propriétaire le 21/11 (« oui à tout » sur les 8 points ci-dessous ; police : la condensée hébergée) :
   1. **Typo** : police système (zéro dépendance) ou police condensée « auto » hébergée dans
      le dépôt (licence libre, comme Leaflet) ?
   2. **Fiche en plein écran** (photo en tête, onglets Fiche · Photos · Ma prise) au lieu de la
@@ -344,6 +344,7 @@ Capacitor autour du même code) :
      la planche Giulia déjà dans `design/`. Si tu en as une plus récente, renvoie-la.
   8. **Ta photo de 599** dans la maquette : la verser dans le dépôt (public) ? Sinon elle reste
      hors du dépôt, plaque floutée ou non.
+- [ ] 🟡 **Maquette v2, écran par écran** (ordre validé : fiche, Garage, révélation, pages marque, identification). **Fiche : faite sur la branche le 21/11** (plein écran, onglets Fiche · Photos · Ma prise, captures avant / après envoyées), en ligne au prochain « merge ». À cocher quand tu l'auras vue sur ton téléphone.
 - [ ] 🟡 **Fiche voiture à aligner sur les maquettes** (`design/maquette-fiche-giulia*.png`) :
   aujourd'hui deux pages à faire glisser, sans onglets ni grille à icônes. Chantier à lancer
   sur ton « go », écarts de données déjà listés dans `DESIGN.md` §0.

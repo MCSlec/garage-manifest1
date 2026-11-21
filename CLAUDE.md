@@ -73,7 +73,8 @@ version tierce. **N'introduis jamais de dépendance externe** (CDN, package, lib
 sans que ce soit explicitement demandé et argumenté.
 
 **Bibliothèques tierces : Leaflet et protomaps-leaflet (carte), HÉBERGÉES DANS LE DÉPÔT** —
-Leaflet :
+même règle pour la **police des titres** (Barlow Condensed, `vendor/barlow-condensed/`, OFL,
+décision du propriétaire du 21/11 : « oui à tout » sur la maquette v2) — Leaflet :
 `vendor/leaflet/`, v1.9.4 tirée du registre npm, licence BSD-2 jointe. Jusqu'au
 29/09 elle était chargée depuis cdnjs sans contrôle d'intégrité : un CDN
 compromis aurait exécuté son code dans l'app, et la carte ne s'affichait pas
@@ -308,7 +309,25 @@ Règles à ne jamais enfreindre :
   **déjà ouverte** (motorisation choisie, favori, couverture…) garde la page du carrousel et
   le défilement, restaurés tout de suite **et** après la greffe de `gm-specs.js` (qui allonge
   la page fiche). Sinon choisir Essence / Diesel ramenait sur la photo. Une autre voiture, ou
-  une fiche rouverte, repart de la photo.
+  une fiche rouverte, repart de la photo. Depuis la fiche plein écran (21/11), la remise se
+  refait aussi **à chaque recalcul de hauteur du carrousel** pendant 800 ms : sans cela, le
+  navigateur bornait le défilement à une page encore courte (vérifié par mutation).
+- **Fiche plein écran à onglets** (21/11, maquette v2, `DESIGN.md` §3) : en-tête `.fx-hero`
+  (photo de couverture) + identité, puis onglets **Fiche · Photos · Ma prise** qui réutilisent
+  le mécanisme des points (`#dots`, `data-dot`, `.on`). Contrats à ne pas casser :
+  - la grande photo d'en-tête n'est **pas** `.detail-hero` : les outils de `gm-specs.js`
+    (flouter, cadrer, corbeille, enregistrer) s'accrochent au **premier** `.detail-hero`, qui
+    vit dans l'onglet Photos ; l'en-tête reste sans surcharge ;
+  - la Fiche est la **première** page : `greffer()` cible la page qui porte `.detail-shell`
+    (repli : la dernière, pour un `index.html` ancien) ;
+  - `.info-head` reste dans la page Fiche, **masqué à l'œil** seulement (lu par gm-specs) ;
+  - « Changer de modèle » se range dans `[data-gcl-ici]` (onglet Ma prise) et **ne s'affiche
+    pas** sur une voiture verrouillée ;
+  - la puissance tirée de la fiche technique (sans `INFO.hp`) n'apparaît **que** sur une
+    voiture capturée : le verrou reste étanche (`banc-dom.js`, mutations détectées).
+  - **Séries spéciales** : la Fiche liste les séries d'une base, ou renvoie à sa base, d'après
+    `GMSpecs.seriesSpeciales()` / `baseDeSerie()` (table `SERIES_SPECIALES`, écrite à la main,
+    contrôlée par `banc-audit.js`).
 - **Carte** : `#huntMap` porte `isolation:isolate`. Les calques de Leaflet (z-index 400
   à 1000) passaient sinon **devant les fiches** (50) ouvertes depuis la carte (19/11).
 
@@ -504,7 +523,7 @@ incrémenter conjointement :**
 2. `VERSION` (`"garage-v…"`) dans `sw.js` (ligne ~12).
 
 Ces deux numéros sont **tenus synchronisés** (au 21/11/2026 : `gm-specs.js` →
-`20.209.0`, `sw.js` → `garage-v20.209.0`). `VERSION_MODULE` s'affiche en outre
+`20.210.0`, `sw.js` → `garage-v20.210.0`). `VERSION_MODULE` s'affiche en outre
 dans l'UI via `grefferVersion()`, ce qui permet de vérifier de visu quelle version
 tourne réellement sur l'appareil.
 
@@ -644,6 +663,7 @@ modification n'impose aucun bump de version.
 | `cloud/` | Serveur de comptes — déployé **à part** : `compte-worker.js`, `schema.sql`, `wrangler.toml.exemple`, `DEPLOIEMENT.md`, `CONFIDENTIALITE.md` (projet RGPD, à maintenir dans le même commit que tout changement de collecte) |
 | `banc-compte.js` / `banc-compte-navigateur.js` | Bancs du serveur (Worker réel, D1/R2 simulés) et de bout en bout (app + Worker dans Chromium). Le second couvre la **synchronisation automatique** (section 4 nonies : connexion, rafale = un envoi, pas d'aller-retour entre deux téléphones, désactivation, panne puis reprise, « Réinitialiser » connecté, arrière-plan, app fermée avant l'envoi) ; ses autres téléphones la gardent **éteinte** (`auto:false`), car ils comptent les requêtes |
 | `vendor/leaflet/` | Leaflet 1.9.4 hébergé dans le dépôt (§1.2) ; banc `banc-carte.js` : aucun script ni style chargé depuis un autre domaine |
+| `vendor/barlow-condensed/` | Police des **titres** (`--titre`), Barlow Condensed 600/700, latin + latin étendu, tirée du registre npm (`@fontsource` 5.3.0), licence OFL jointe, en `EXTRAS` de `sw.js` (21/11, maquette v2). Jamais de police chargée d'un CDN |
 | `vendor/protomaps-leaflet/` | Moteur de rendu de **notre** carte (§1.2), chargé seulement si `CARTE_URL` est renseignée ; banc `banc-carte-perso.js` (fabrique une vraie archive PMTiles) ; guide `cloud/CARTE.md` |
 | `banc-relais.js` | Banc serveur du relais IA : quotas (dont rafale simultanée), taille/format d'image, origine, route unique, erreurs sans détail, fermeture sans D1 |
 | `banc-p0.js` | Banc navigateur du parcours **capture → révélation** (`design/SPEC-P0-*.md`) : analyse visible, écran selon le statut du matcher (sûr / ambigu / pistes faibles / rien / erreurs nommées), résultat tardif ignoré, révélation sans confettis en 3 paliers toujours sombre, « Ce que ça débloque » aux vrais compteurs, lot compact + bilan, mouvement réduit. `node banc-p0.js <dossier>` enregistre les captures |
