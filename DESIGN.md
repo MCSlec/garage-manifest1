@@ -211,3 +211,35 @@ collection de mini-designs.
   d'`index.html` seul donne une carte fausse de l'app.
 - Implémentation en **patchs ciblés** (`CLAUDE.md` §1.3), écran par écran,
   captures avant / après montrées au propriétaire **avant** toute livraison.
+
+---
+
+## 3. Maquette v2 (21/11/2026) — PROPOSITION, en attente de validation
+
+Brief du propriétaire du 21/11 : la planche Giulia reste la référence graphique principale ;
+deux planches d'inspiration s'y ajoutent (vision globale de l'app, pages par constructeur).
+« Des inspirations, pas des interfaces à recopier pixel par pixel. » Voitures **jamais
+détourées** : trottoir, bâtiments, environnement restent visibles.
+
+Maquette : [`design/apercu-maquette-v2/maquette-v2.html`](design/apercu-maquette-v2/maquette-v2.html)
+(6 écrans : Garage, Fiche, Identification, Révélation, Collection par marque, Page marque).
+Jetons de couleur **identiques** à `index.html` ; chiffres **réels** du catalogue au 21/11.
+
+**Écarts volontaires avec les planches d'inspiration, et pourquoi :**
+
+| Les planches montrent | La maquette fait | Raison |
+|---|---|---|
+| Logos et emblèmes officiels (Alfa, Peugeot, BMW, Ferrari, Porsche) | Monogramme de deux lettres + drapeau du pays | Marques déposées : risque de refus aux stores (Apple 5.2, politique de propriété intellectuelle de Google Play) sans autorisation |
+| Slogans (« Le plaisir de conduire »…) | Faits dérivés (« Italie · 50 modèles au catalogue ») | Slogan déposé d'un constructeur, ou texte éditorial non sourcé (`CLAUDE.md` §4) |
+| Fonds illustrés (lion, biscione, montagnes) | **Ta meilleure photo** de la marque, fondue vers le noir | Le brief exige des photos réelles ; une marque sans photo → en-tête typographique |
+| Confettis à la révélation | Halo très discret à la couleur de la rareté | `DESIGN.md` §10, déjà retirés de l'app (`banc-p0.js`) |
+| « Limite de 50 photos », « prochaine récompense à 250 » | Rien d'inventé | La limite réelle dépend de la rareté (3 → 30) ; les paliers doivent venir du code |
+
+**Ce que la maquette change par rapport à l'app actuelle** (captures du 21/11) : le Garage
+ouvrait sur des légendaires verrouillées (GT9, 33 Stradale) et enterrait les prises du
+joueur ; la fiche est une feuille basse à petite photo et cases bordées ; la puissance
+n'apparaît pas dans la fiche technique ; il n'existe pas de page marque ; le bouton central
+est un « + ».
+
+Décisions en attente : `RESTE-A-FAIRE.md` §5 (« maquette v2 »). Implémentation après
+validation, écran par écran, en patchs ciblés, captures avant / après (§2 ci-dessus).

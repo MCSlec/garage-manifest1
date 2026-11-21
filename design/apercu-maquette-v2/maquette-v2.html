@@ -1,0 +1,459 @@
+<!doctype html>
+<!--
+  Maquette v2 (21/11/2026) — PROPOSITION, rien n'est encore dans l'app. Voir DESIGN.md §3.
+  Photos : giulia-a/b et bmw-m3 sont recadrées dans les planches du propriétaire (rendus, pas
+  des données). ferrari-599.jpg est une VRAIE prise du propriétaire (plaque floutée) : elle n'est
+  PAS versionnée dans ce dépôt public sans son accord ; sans elle, ces cadres restent sombres.
+  Rendu : servir ce dossier en HTTP et faire une capture (Playwright), viewport 1400, échelle 1,4.
+-->
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Garage Manifest — maquette v2</title>
+<style>
+/* Jetons : ceux d'index.html (:root), inchangés. La maquette n'invente aucune couleur
+   principale : rouge Garage Manifest pour l'action, gris pour tout le reste,
+   rareté et marque en petits accents. */
+:root{
+  --bg:#0b0b0d; --panel:#161618; --panel2:#111113; --line:#27272a; --line2:#3f3f46;
+  --txt:#f4f4f5; --muted:#a1a1aa; --muted2:#71717a; --dim:#52525b;
+  --red:#ef4444; --red2:#dc2626;
+  --courant:#6b7280; --commun:#a1a1aa; --peucommun:#2dd4bf; --rare:#818cf8; --epique:#e879f9; --legendaire:#fbbf24;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  /* accents de marque : secondaires, jamais pour recolorer l'interface */
+  --m-ferrari:#f5c518; --m-alfa:#c8102e; --m-bmw:#3b82f6; --m-porsche:#c9a227; --m-peugeot:#94a3b8; --m-renault:#facc15;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:#050506;color:var(--txt);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+.planche{display:grid;grid-template-columns:repeat(3,390px);gap:40px 34px;padding:44px 40px 52px;width:max-content}
+.titre-planche{grid-column:1/-1;display:flex;align-items:baseline;gap:18px;margin-bottom:-6px}
+.titre-planche b{font:700 13px/1 var(--mono);letter-spacing:.32em;text-transform:uppercase}
+.titre-planche span{color:var(--muted2);font-size:13px}
+.ecran{display:flex;flex-direction:column;gap:12px}
+.legende{font:600 12.5px/1.2 var(--sans);color:var(--muted)}
+.legende i{font-style:normal;color:var(--dim);font-family:var(--mono);margin-right:6px}
+
+/* Téléphone 390×844 */
+.tel{width:390px;height:844px;background:var(--bg);border-radius:46px;overflow:hidden;position:relative;
+     box-shadow:0 0 0 1px #1f1f23,0 0 0 9px #0d0d10,0 0 0 10px #232328,0 30px 80px rgba(0,0,0,.6)}
+.sb{position:absolute;top:0;left:0;right:0;height:50px;display:flex;align-items:center;justify-content:space-between;
+    padding:6px 30px 0 34px;font:600 15px/1 var(--sans);z-index:5;color:#fff}
+.sb .ic{display:flex;gap:6px;align-items:center}
+.sb .ic i{display:block;width:17px;height:11px;border:1.5px solid #fff;border-radius:3px;position:relative}
+.sb .ic i::after{content:"";position:absolute;inset:1.5px;right:4px;background:#fff;border-radius:1px}
+.sb .ic s{display:block;width:16px;height:11px;background:linear-gradient(90deg,#fff 0 3px,transparent 3px 4.5px,#fff 4.5px 7.5px,transparent 7.5px 9px,#fff 9px 12px,transparent 12px 13.5px,#fff 13.5px);clip-path:polygon(0 100%,100% 0,100% 100%)}
+.defile{position:absolute;inset:0;overflow:hidden}
+svg.i{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+/* Typo : la hiérarchie de la fiche Giulia */
+.k{font:600 10.5px/1 var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--muted2)}
+.marque{font:600 12px/1 var(--mono);letter-spacing:.24em;text-transform:uppercase;color:var(--muted)}
+.modele{font:750 34px/1.02 var(--sans);letter-spacing:-.02em;margin:6px 0 0}
+.meta{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:13.5px;margin-top:8px}
+.meta .pt{width:3px;height:3px;border-radius:50%;background:var(--dim)}
+.flag{font-size:14px;line-height:1}
+
+/* Rareté : pastille discrète (point de couleur + libellé), jamais un cadre fluo */
+.rar{display:inline-flex;align-items:center;gap:7px;height:26px;padding:0 11px 0 9px;border-radius:13px;
+     background:rgba(18,18,20,.72);border:1px solid var(--line2);font:600 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--txt);backdrop-filter:blur(8px)}
+.rar::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--c);box-shadow:0 0 8px var(--c)}
+.pts{font:700 13px/1 var(--mono);color:var(--c)}
+
+/* Surfaces */
+.carte{background:var(--panel);border:1px solid var(--line);border-radius:16px}
+.btn{display:flex;align-items:center;justify-content:center;gap:9px;height:50px;border-radius:14px;font:650 15px/1 var(--sans);border:1px solid var(--line2);color:var(--txt);background:var(--panel)}
+.btn.rouge{background:var(--red2);border-color:transparent;color:#fff}
+.lien{display:flex;align-items:center;justify-content:center;gap:6px;color:var(--muted);font-size:14px}
+.barre{height:4px;border-radius:2px;background:#232327;overflow:hidden}
+.barre b{display:block;height:100%;background:var(--red);border-radius:2px;min-width:5px}
+.barre b[style*="width:0"]{min-width:0}
+.rond{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:rgba(10,10,12,.55);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(10px);color:#fff}
+
+/* Photo du joueur : pleine largeur, NON détourée, fondu vers le noir en bas seulement */
+.photo{position:relative;background:#111 center/cover no-repeat}
+.photo.fondu::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(11,11,13,.55) 0%,rgba(11,11,13,0) 22%,rgba(11,11,13,0) 58%,var(--bg) 100%)}
+
+/* Barre d'onglets (structure actuelle : Défis · Garage · capture · Favoris · Plus) */
+.nav{position:absolute;left:0;right:0;bottom:0;height:86px;padding:8px 14px 24px;display:grid;grid-template-columns:repeat(5,1fr);align-items:center;
+     background:linear-gradient(180deg,rgba(11,11,13,0),rgba(11,11,13,.92) 28%);border-top:1px solid rgba(255,255,255,.04)}
+.nav a{display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--muted2);font-size:10.5px;font-weight:600}
+.nav a.on{color:var(--txt)}
+.nav .fab{width:60px;height:60px;margin:-26px auto 0;border-radius:50%;background:var(--red2);display:grid;place-items:center;color:#fff;box-shadow:0 8px 26px rgba(220,38,38,.35),0 0 0 6px var(--bg)}
+.nav .fab svg{width:26px;height:26px}
+
+/* —— 1. Garage —— */
+.tete{position:absolute;top:50px;left:0;right:0;padding:8px 20px 0;display:flex;justify-content:space-between;align-items:center}
+.wm{font:700 12px/1 var(--mono);letter-spacing:.34em}
+.wm small{display:block;margin-top:6px;font:500 10px/1 var(--mono);letter-spacing:.16em;color:var(--muted2)}
+.score{text-align:right}
+.score b{font:700 19px/1 var(--mono)}
+.score span{display:block;margin-top:4px;font:500 10px/1 var(--mono);letter-spacing:.16em;color:var(--muted2);text-transform:uppercase}
+.zone{position:absolute;top:108px;left:0;right:0;bottom:86px;padding:0 20px;overflow:hidden}
+.une{border-radius:20px;overflow:hidden;position:relative;height:250px}
+.une .photo{position:absolute;inset:0}
+.une::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.35),rgba(0,0,0,0) 30%,rgba(0,0,0,0) 45%,rgba(8,8,10,.92))}
+.une .haut{position:absolute;top:14px;left:14px;right:14px;display:flex;justify-content:space-between;z-index:2}
+.une .bas{position:absolute;left:18px;right:18px;bottom:16px;z-index:2}
+.une .modele{font-size:28px}
+.une .k{color:#d4d4d8}
+.prog{margin-top:16px;padding:14px 16px}
+.prog .l{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.prog .l b{font:700 17px/1 var(--mono)}
+.prog .l span{color:var(--muted2);font-size:12.5px}
+.sec{display:flex;justify-content:space-between;align-items:baseline;margin:20px 0 10px}
+.sec h3{margin:0;font:600 10.5px/1 var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.sec a{color:var(--muted2);font-size:12.5px}
+.marques{display:flex;gap:10px}
+.mq{flex:1;padding:11px 12px;border-radius:14px;background:var(--panel);border:1px solid var(--line)}
+.mono2{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font:700 11px/1 var(--mono);letter-spacing:.04em;
+       color:var(--a);background:color-mix(in srgb,var(--a) 13%,transparent);border:1px solid color-mix(in srgb,var(--a) 28%,transparent)}
+.mq .n{margin-top:10px;font-size:13px;font-weight:650;white-space:nowrap}
+.mq .c{margin-top:3px;font:500 11.5px/1 var(--mono);color:var(--muted2)}
+.mq .barre{margin-top:9px;height:3px}
+.mq .barre b{background:var(--a)}
+.grille{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.vg{aspect-ratio:1/1.1;border-radius:12px;overflow:hidden;position:relative;background:var(--panel2);border:1px solid var(--line)}
+.vg .photo{position:absolute;inset:0}
+.vg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(6,6,8,.88))}
+.vg .t{position:absolute;left:8px;right:8px;bottom:8px;z-index:2;font:650 11.5px/1.15 var(--sans)}
+.vg .t i{display:block;font-style:normal;font:500 9.5px/1 var(--mono);letter-spacing:.12em;color:#d4d4d8;text-transform:uppercase;margin-bottom:3px}
+.vg .d{position:absolute;top:8px;left:8px;z-index:2;width:7px;height:7px;border-radius:50%;background:var(--c);box-shadow:0 0 8px var(--c)}
+.vg.vide{display:grid;place-items:center;color:var(--dim)}
+.vg.vide::after{display:none}
+.vg.vide span{font:500 10.5px/1.3 var(--mono);text-align:center;letter-spacing:.06em}
+
+/* —— 2. Fiche —— */
+.hero{position:absolute;top:0;left:0;right:0;height:292px}
+.hero .photo{position:absolute;inset:0}
+.hero .bt{position:absolute;top:56px;left:16px;right:16px;display:flex;justify-content:space-between;z-index:3}
+.hero .bt div{display:flex;gap:8px}
+.hero .cpt{position:absolute;right:16px;bottom:70px;z-index:3;font:600 11px/1 var(--mono);color:#e4e4e7;background:rgba(10,10,12,.6);padding:5px 8px;border-radius:8px}
+.idf{position:absolute;top:236px;left:20px;right:20px;z-index:3}
+.idf .ligne{display:flex;justify-content:space-between;align-items:flex-end}
+.onglets{display:flex;gap:22px;margin-top:20px;border-bottom:1px solid var(--line)}
+.onglets a{padding:0 0 11px;font-size:14px;font-weight:600;color:var(--muted2);position:relative}
+.onglets a.on{color:var(--txt)}
+.onglets a.on::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--red);border-radius:1px}
+.archi{margin:14px 0 12px;color:var(--muted);font-size:13px}
+.vedettes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ved{padding:12px 10px 11px;border-radius:14px;background:var(--panel);border:1px solid var(--line);text-align:center}
+.ved b{display:block;font:700 22px/1 var(--mono);color:var(--txt)}
+.ved span{display:block;margin-top:6px;font:500 9.5px/1.25 var(--mono);letter-spacing:.1em;color:var(--muted2);text-transform:uppercase}
+.tech{margin-top:10px;display:grid;grid-template-columns:1fr 1fr;border-radius:16px;overflow:hidden;border:1px solid var(--line);background:var(--line);gap:1px}
+.tech div{background:var(--panel);padding:12px 12px;display:flex;gap:11px;align-items:center}
+.tech svg{color:var(--muted2)}
+.tech small{display:block;font:500 9.5px/1 var(--mono);letter-spacing:.12em;color:var(--muted2);text-transform:uppercase;margin-bottom:5px}
+.tech b{font:650 14.5px/1.1 var(--sans)}
+.special{margin-top:10px;display:flex;align-items:center;gap:12px;padding:12px 14px}
+.special .cad{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;background:var(--panel2);border:1px dashed var(--line2);color:var(--dim)}
+.special .tx{flex:1}
+.special .tx b{display:block;font-size:14px}
+.special .tx span{font-size:12px;color:var(--muted2)}
+
+/* —— 3. Identification —— */
+.cadrage{position:relative;margin:66px 16px 0;height:300px;border-radius:22px;overflow:hidden}
+.cadrage .photo{position:absolute;inset:0}
+.cadrage .coins{position:absolute;inset:18px;z-index:2}
+.cadrage .coins i{position:absolute;width:30px;height:30px;border-color:rgba(255,255,255,.85);border-style:solid;border-width:0}
+.cadrage .coins i:nth-child(1){top:0;left:0;border-top-width:2px;border-left-width:2px;border-top-left-radius:8px}
+.cadrage .coins i:nth-child(2){top:0;right:0;border-top-width:2px;border-right-width:2px;border-top-right-radius:8px}
+.cadrage .coins i:nth-child(3){bottom:0;left:0;border-bottom-width:2px;border-left-width:2px;border-bottom-left-radius:8px}
+.cadrage .coins i:nth-child(4){bottom:0;right:0;border-bottom-width:2px;border-right-width:2px;border-bottom-right-radius:8px}
+.resultat{padding:22px 22px 0}
+.ok{display:flex;align-items:center;gap:8px;color:#4ade80;font:600 11px/1 var(--mono);letter-spacing:.18em;text-transform:uppercase}
+.conf{margin-top:18px;padding:13px 14px}
+.conf .l{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:9px}
+.conf .l b{color:var(--txt);font-family:var(--mono)}
+.conf .barre b{background:#4ade80}
+.actions{display:flex;flex-direction:column;gap:10px;margin-top:18px}
+
+/* —— 4. Révélation —— */
+.rev{position:absolute;inset:0;background:radial-gradient(120% 60% at 50% 34%,color-mix(in srgb,var(--c) 16%,transparent),transparent 62%),var(--bg)}
+.rev .k{position:absolute;top:74px;left:0;right:0;text-align:center}
+.rev .cadre{position:absolute;top:108px;left:28px;right:28px;height:250px;border-radius:20px;overflow:hidden;
+            box-shadow:0 0 0 1px color-mix(in srgb,var(--c) 35%,transparent),0 18px 60px color-mix(in srgb,var(--c) 18%,transparent)}
+.rev .cadre .photo{position:absolute;inset:0}
+.rev .nom{position:absolute;top:382px;left:20px;right:20px;text-align:center}
+.rev .nom .modele{font-size:30px}
+.rev .nom .bloc{display:flex;justify-content:center;align-items:center;gap:12px;margin-top:14px}
+.rev .nom .pts{font-size:22px}
+.debloque{position:absolute;top:540px;left:20px;right:20px;padding:14px 16px}
+.debloque .k{position:static;text-align:left;margin-bottom:12px}
+.debloque ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:11px}
+.debloque li{display:flex;justify-content:space-between;align-items:center;font-size:13.5px}
+.debloque li span{color:var(--muted)}
+.debloque li b{font:600 12.5px/1 var(--mono)}
+.rev .actions{position:absolute;left:20px;right:20px;bottom:30px}
+
+/* —— 5. Marques —— */
+.titre-ecran{position:absolute;top:56px;left:0;right:0;padding:0 20px;display:flex;align-items:center;gap:12px}
+.titre-ecran h2{margin:0;font:700 22px/1 var(--sans);letter-spacing:-.01em}
+.seg{display:flex;margin:18px 0 0;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:3px}
+.seg a{flex:1;text-align:center;padding:9px 0;border-radius:9px;font-size:13px;font-weight:600;color:var(--muted2)}
+.seg a.on{background:var(--panel);color:var(--txt);box-shadow:0 0 0 1px var(--line2)}
+.liste{margin-top:14px;border-radius:16px;overflow:hidden;border:1px solid var(--line);background:var(--line);display:flex;flex-direction:column;gap:1px}
+.liste .r{background:var(--panel);display:flex;align-items:center;gap:13px;padding:12px 14px}
+.liste .r .tx{flex:1;min-width:0}
+.liste .r .tx b{display:block;font-size:14.5px;font-weight:650}
+.liste .r .tx .barre{margin-top:8px;height:3px}
+.liste .r .tx .barre b{background:var(--a)}
+.liste .r .c{font:600 12.5px/1 var(--mono);color:var(--muted)}
+.liste .r .c.z{color:var(--dim)}
+.liste .r svg{color:var(--dim);width:16px;height:16px}
+.total{margin-top:14px;padding:14px 16px}
+
+/* —— 6. Page marque —— */
+.mhero{position:absolute;top:0;left:0;right:0;height:318px}
+.mhero .photo{position:absolute;inset:0}
+.mhero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(11,11,13,.6) 0%,rgba(11,11,13,.05) 26%,rgba(11,11,13,.15) 50%,var(--bg) 96%)}
+.mhero .bt{position:absolute;top:56px;left:16px;z-index:3}
+.mtitre{position:absolute;top:226px;left:20px;right:20px;z-index:3}
+.mtitre .trait{width:34px;height:3px;border-radius:2px;background:var(--a);margin-bottom:12px}
+.mtitre h2{margin:0;font:760 38px/1 var(--sans);letter-spacing:-.02em}
+.mtitre .meta{margin-top:9px}
+.mcoll{position:absolute;top:338px;left:20px;right:20px;padding:15px 16px}
+.mcoll .l{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.mcoll .l b{font:700 22px/1 var(--mono)}
+.mcoll .l span{font:600 12.5px/1 var(--mono);color:var(--muted)}
+.mcoll .barre b{background:var(--a)}
+.paliers{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.palier{padding:11px 10px;border-radius:12px;background:var(--panel2);border:1px solid var(--line)}
+.palier .d{display:flex;align-items:center;gap:6px;font:600 9.5px/1 var(--mono);letter-spacing:.1em;color:var(--muted);text-transform:uppercase}
+.palier .d::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--c)}
+.palier b{display:block;margin-top:8px;font:700 15px/1 var(--mono)}
+.mspec{position:absolute;top:500px;left:20px;right:20px}
+.mspec .sec{margin-top:0}
+.mspec .liste .r{padding:10px 12px}
+.verrou{width:44px;height:34px;border-radius:9px;display:grid;place-items:center;background:var(--panel2);border:1px dashed var(--line2);color:var(--dim)}
+.verrou svg{width:16px;height:16px}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="retour" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></symbol>
+    <symbol id="coeur" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></symbol>
+    <symbol id="plus3" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></symbol>
+    <symbol id="photo" viewBox="0 0 24 24"><path d="M3 8.5A2.5 2.5 0 0 1 5.5 6h2l1.6-2h5.8l1.6 2h2A2.5 2.5 0 0 1 21 8.5v9A2.5 2.5 0 0 1 18.5 20h-13A2.5 2.5 0 0 1 3 17.5z"/><circle cx="12" cy="12.5" r="3.6"/></symbol>
+    <symbol id="drapeau" viewBox="0 0 24 24"><path d="M5 21V4m0 0h11l-1.5 4L16 12H5"/></symbol>
+    <symbol id="auto" viewBox="0 0 24 24"><path d="M5 17h14M4 13l1.6-4.8A2 2 0 0 1 7.5 7h9a2 2 0 0 1 1.9 1.2L20 13v4a1 1 0 0 1-1 1h-1.5a1 1 0 0 1-1-1v-1h-9v1a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/><circle cx="7.5" cy="13.5" r=".6"/><circle cx="16.5" cy="13.5" r=".6"/></symbol>
+    <symbol id="etoile" viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.8l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/></symbol>
+    <symbol id="menu" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="12" cy="19" r="1.2"/></symbol>
+    <symbol id="chevron" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+    <symbol id="cadenas" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></symbol>
+    <symbol id="check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.3l2.7 2.7L16.2 9.5"/></symbol>
+    <symbol id="eclair" viewBox="0 0 24 24"><path d="M13 3L5 13.5h6L10 21l8-10.5h-6z"/></symbol>
+    <symbol id="couple" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4v5h-5"/></symbol>
+    <symbol id="masse" viewBox="0 0 24 24"><path d="M6.5 9h11l2.5 11H4z"/><circle cx="12" cy="6" r="2.4"/></symbol>
+    <symbol id="cylindree" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="14" rx="2"/><path d="M9 3h6M12 3v3M9 11h6"/></symbol>
+    <symbol id="boite" viewBox="0 0 24 24"><circle cx="6" cy="6" r="1.6"/><circle cx="12" cy="6" r="1.6"/><circle cx="18" cy="6" r="1.6"/><circle cx="6" cy="18" r="1.6"/><circle cx="12" cy="18" r="1.6"/><path d="M6 7.6V16.4M12 7.6V16.4M18 7.6V12H6"/></symbol>
+    <symbol id="roues" viewBox="0 0 24 24"><circle cx="6.5" cy="16" r="3"/><circle cx="17.5" cy="16" r="3"/><path d="M9.5 16h5M6.5 13l3-6h5l3 6"/></symbol>
+    <symbol id="loupe" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.3-4.3"/></symbol>
+  </defs>
+</svg>
+
+<div class="planche">
+  <div class="titre-planche"><b>Garage Manifest</b><span>Maquette v2 · proposition · données réelles du catalogue · photos de rue non détourées</span></div>
+
+  <!-- 1. GARAGE -->
+  <div class="ecran"><div class="legende"><i>01</i>Garage · ce que je possède, ce qui me manque</div>
+  <div class="tel">
+    <div class="sb">9:41<span class="ic"><s></s><i></i></span></div>
+    <div class="tete">
+      <div class="wm">GARAGE MANIFEST<small>Capture · Collectionne · Complète</small></div>
+      <div class="score"><b>32</b><span>points</span></div>
+    </div>
+    <div class="zone">
+      <div class="une">
+        <div class="photo" style="background-image:url(photos/ferrari-599.jpg);background-position:50% 55%"></div>
+        <div class="haut"><span class="k" style="color:#e4e4e7">Dernière prise</span><span class="rar" style="--c:var(--rare)">Rare</span></div>
+        <div class="bas">
+          <div class="k">Ferrari</div>
+          <div class="modele">599 GTB</div>
+          <div class="meta" style="color:#d4d4d8"><span>Le Castellet</span><span class="pt"></span><span>21 nov.</span></div>
+        </div>
+      </div>
+      <div class="carte prog">
+        <div class="l"><b>3 <span style="font:500 13px var(--mono);color:var(--muted2)">/ 1 080</span></b><span>0,3 % du catalogue</span></div>
+        <div class="barre"><b style="width:.28%"></b></div>
+      </div>
+      <div class="sec"><h3>Mes marques</h3><a>Toutes ›</a></div>
+      <div class="marques">
+        <div class="mq" style="--a:var(--m-ferrari)"><div class="mono2">FE</div><div class="n">Ferrari</div><div class="c">1 / 50</div><div class="barre"><b style="width:2%"></b></div></div>
+        <div class="mq" style="--a:var(--m-alfa)"><div class="mono2">AR</div><div class="n">Alfa Romeo</div><div class="c">1 / 33</div><div class="barre"><b style="width:3%"></b></div></div>
+        <div class="mq" style="--a:var(--m-bmw)"><div class="mono2">BM</div><div class="n">BMW</div><div class="c">1 / 54</div><div class="barre"><b style="width:2%"></b></div></div>
+      </div>
+      <div class="sec"><h3>Mon garage · 3</h3><a>Catalogue ›</a></div>
+      <div class="grille">
+        <div class="vg" style="--c:var(--rare)"><div class="photo" style="background-image:url(photos/ferrari-599.jpg);background-position:40% 50%"></div><span class="d"></span><div class="t"><i>Ferrari</i>599 GTB</div></div>
+        <div class="vg" style="--c:var(--epique)"><div class="photo" style="background-image:url(photos/bmw-m3.jpg)"></div><span class="d"></span><div class="t"><i>BMW</i>M3</div></div>
+        <div class="vg" style="--c:var(--peucommun)"><div class="photo" style="background-image:url(photos/giulia-b.jpg)"></div><span class="d"></span><div class="t"><i>Alfa Romeo</i>Giulia</div></div>
+      </div>
+    </div>
+    <div class="nav">
+      <a><svg class="i"><use href="#drapeau"/></svg>Défis</a>
+      <a class="on"><svg class="i"><use href="#auto"/></svg>Garage</a>
+      <span class="fab"><svg class="i"><use href="#photo"/></svg></span>
+      <a><svg class="i"><use href="#etoile"/></svg>Favoris</a>
+      <a><svg class="i"><use href="#menu"/></svg>Plus</a>
+    </div>
+  </div></div>
+
+  <!-- 2. FICHE -->
+  <div class="ecran"><div class="legende"><i>02</i>Fiche · l'identité Giulia, avec TA photo</div>
+  <div class="tel">
+    <div class="sb">9:41<span class="ic"><s></s><i></i></span></div>
+    <div class="hero">
+      <div class="photo fondu" style="background-image:url(photos/ferrari-599.jpg);background-position:42% 55%"></div>
+      <div class="bt"><span class="rond"><svg class="i"><use href="#retour"/></svg></span><div><span class="rond"><svg class="i"><use href="#coeur"/></svg></span><span class="rond"><svg class="i"><use href="#plus3"/></svg></span></div></div>
+      <span class="cpt">1 / 1</span>
+    </div>
+    <div class="idf">
+      <div class="marque">Ferrari</div>
+      <div class="ligne">
+        <div class="modele">599 GTB</div>
+        <div style="text-align:right"><span class="rar" style="--c:var(--rare)">Rare</span><div class="pts" style="--c:var(--rare);margin-top:7px">+8 pts</div></div>
+      </div>
+      <div class="meta"><span class="flag">🇮🇹</span><span>Italie</span><span class="pt"></span><span>GT</span><span class="pt"></span><span>2006–2012</span></div>
+      <div class="onglets"><a class="on">Fiche</a><a>Photos</a><a>Ma prise</a></div>
+      <div class="archi">V12 6,0 atmo · moteur avant · propulsion</div>
+      <div class="vedettes">
+        <div class="ved"><b>2,73</b><span>kg / ch</span></div>
+        <div class="ved"><b>367</b><span>ch / tonne</span></div>
+        <div class="ved"><b>103</b><span>ch / litre</span></div>
+      </div>
+      <div class="tech">
+        <div><svg class="i"><use href="#eclair"/></svg><span><small>Puissance</small><b>620 ch</b></span></div>
+        <div><svg class="i"><use href="#couple"/></svg><span><small>Couple</small><b>608 Nm</b></span></div>
+        <div><svg class="i"><use href="#masse"/></svg><span><small>Masse</small><b>1 690 kg</b></span></div>
+        <div><svg class="i"><use href="#cylindree"/></svg><span><small>Cylindrée</small><b>6,0 L</b></span></div>
+        <div><svg class="i"><use href="#boite"/></svg><span><small>Boîte</small><b>F1 / M6</b></span></div>
+        <div><svg class="i"><use href="#roues"/></svg><span><small>Transmission</small><b>Propulsion</b></span></div>
+      </div>
+      <div class="carte special">
+        <span class="cad"><svg class="i"><use href="#cadenas"/></svg></span>
+        <span class="tx"><b>599 GTO</b><span>Série spéciale · 599 ex. · à découvrir</span></span>
+        <span class="rar" style="--c:var(--legendaire)">Légendaire</span>
+      </div>
+    </div>
+  </div></div>
+
+  <!-- 3. IDENTIFICATION -->
+  <div class="ecran"><div class="legende"><i>03</i>Identification · la photo reste la tienne</div>
+  <div class="tel">
+    <div class="sb">9:41<span class="ic"><s></s><i></i></span></div>
+    <div class="cadrage">
+      <div class="photo" style="background-image:url(photos/giulia-a.jpg);background-position:50% 60%"></div>
+      <div class="coins"><i></i><i></i><i></i><i></i></div>
+    </div>
+    <div class="resultat">
+      <div class="ok"><svg class="i" style="width:17px;height:17px"><use href="#check"/></svg>Modèle trouvé</div>
+      <div class="marque" style="margin-top:16px">Alfa Romeo</div>
+      <div class="modele">Giulia</div>
+      <div class="meta"><span class="flag">🇮🇹</span><span>Italie</span><span class="pt"></span><span>Berline</span><span class="pt"></span><span>2015–</span></div>
+      <div class="carte conf">
+        <div class="l"><span>Confiance de reconnaissance</span><b>92 %</b></div>
+        <div class="barre"><b style="width:92%"></b></div>
+      </div>
+      <div class="actions">
+        <div class="btn rouge">Oui, c'est elle</div>
+        <div class="btn">Ce n'est pas mon véhicule</div>
+        <div class="lien" style="margin-top:4px">Voir les autres pistes <svg class="i" style="width:15px;height:15px"><use href="#chevron"/></svg></div>
+      </div>
+    </div>
+  </div></div>
+
+  <!-- 4. RÉVÉLATION -->
+  <div class="ecran"><div class="legende"><i>04</i>Révélation · sobre, sans confettis</div>
+  <div class="tel">
+    <div class="rev" style="--c:var(--peucommun)">
+      <div class="sb">9:41<span class="ic"><s></s><i></i></span></div>
+      <div class="k">Nouvelle voiture au garage</div>
+      <div class="cadre"><div class="photo" style="background-image:url(photos/giulia-a.jpg);background-position:50% 62%"></div></div>
+      <div class="nom">
+        <div class="marque">Alfa Romeo</div>
+        <div class="modele">Giulia</div>
+        <div class="bloc"><span class="rar" style="--c:var(--peucommun)">Peu commun</span><span class="pts" style="--c:var(--peucommun)">+4 pts</span></div>
+      </div>
+      <div class="carte debloque">
+        <div class="k">Ce que ça débloque</div>
+        <ul>
+          <li><span>Première Alfa Romeo de ton garage</span><b style="color:var(--peucommun)">●</b></li>
+          <li><span>Alfa Romeo</span><b>1 / 33</b></li>
+          <li><span>Italie</span><b>2 / 163</b></li>
+        </ul>
+      </div>
+      <div class="actions">
+        <div class="btn rouge">Voir la fiche</div>
+        <div class="lien">Continuer la chasse</div>
+      </div>
+    </div>
+  </div></div>
+
+  <!-- 5. MARQUES -->
+  <div class="ecran"><div class="legende"><i>05</i>Collection par marque · sans logos</div>
+  <div class="tel">
+    <div class="sb">9:41<span class="ic"><s></s><i></i></span></div>
+    <div class="titre-ecran"><span class="rond" style="background:var(--panel);border-color:var(--line)"><svg class="i"><use href="#retour"/></svg></span><h2>Ma collection</h2></div>
+    <div class="zone" style="top:104px">
+      <div class="seg"><a class="on">Par marque</a><a>Par rareté</a><a>Par pays</a></div>
+      <div class="liste">
+        <div class="r" style="--a:var(--m-ferrari)"><span class="mono2">FE</span><span class="tx"><b>Ferrari</b><div class="barre"><b style="width:2%"></b></div></span><span class="c">1 / 50</span><svg class="i"><use href="#chevron"/></svg></div>
+        <div class="r" style="--a:var(--m-alfa)"><span class="mono2">AR</span><span class="tx"><b>Alfa Romeo</b><div class="barre"><b style="width:3%"></b></div></span><span class="c">1 / 33</span><svg class="i"><use href="#chevron"/></svg></div>
+        <div class="r" style="--a:var(--m-bmw)"><span class="mono2">BM</span><span class="tx"><b>BMW</b><div class="barre"><b style="width:2%"></b></div></span><span class="c">1 / 54</span><svg class="i"><use href="#chevron"/></svg></div>
+        <div class="r" style="--a:var(--m-peugeot)"><span class="mono2">PE</span><span class="tx"><b>Peugeot</b><div class="barre"><b style="width:0"></b></div></span><span class="c z">0 / 56</span><svg class="i"><use href="#chevron"/></svg></div>
+        <div class="r" style="--a:var(--m-renault)"><span class="mono2">RE</span><span class="tx"><b>Renault</b><div class="barre"><b style="width:0"></b></div></span><span class="c z">0 / 55</span><svg class="i"><use href="#chevron"/></svg></div>
+        <div class="r" style="--a:var(--m-porsche)"><span class="mono2">PO</span><span class="tx"><b>Porsche</b><div class="barre"><b style="width:0"></b></div></span><span class="c z">0 / 52</span><svg class="i"><use href="#chevron"/></svg></div>
+      </div>
+      <div class="carte total">
+        <div class="prog" style="margin:0;padding:0">
+          <div class="l" style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px"><span class="k">Ma progression</span><b style="font:700 17px var(--mono)">3 / 1 080</b></div>
+          <div class="barre"><b style="width:.28%"></b></div>
+        </div>
+      </div>
+    </div>
+    <div class="nav">
+      <a><svg class="i"><use href="#drapeau"/></svg>Défis</a>
+      <a class="on"><svg class="i"><use href="#auto"/></svg>Garage</a>
+      <span class="fab"><svg class="i"><use href="#photo"/></svg></span>
+      <a><svg class="i"><use href="#etoile"/></svg>Favoris</a>
+      <a><svg class="i"><use href="#menu"/></svg>Plus</a>
+    </div>
+  </div></div>
+
+  <!-- 6. PAGE MARQUE -->
+  <div class="ecran"><div class="legende"><i>06</i>Page marque · ta meilleure photo, pas un logo</div>
+  <div class="tel" style="--a:var(--m-ferrari)">
+    <div class="sb">9:41<span class="ic"><s></s><i></i></span></div>
+    <div class="mhero">
+      <div class="photo" style="background-image:url(photos/ferrari-599.jpg);background-position:42% 55%"></div>
+      <div class="bt"><span class="rond"><svg class="i"><use href="#retour"/></svg></span></div>
+    </div>
+    <div class="mtitre">
+      <div class="trait"></div>
+      <h2>Ferrari</h2>
+      <div class="meta"><span class="flag">🇮🇹</span><span>Italie</span><span class="pt"></span><span>50 modèles au catalogue</span></div>
+    </div>
+    <div class="carte mcoll">
+      <div class="l"><span class="k">Ma collection</span><span><b>1</b> / 50 · 2 %</span></div>
+      <div class="barre"><b style="width:2%"></b></div>
+      <div class="paliers">
+        <div class="palier" style="--c:var(--legendaire)"><span class="d">Légendaire</span><b>0 / 24</b></div>
+        <div class="palier" style="--c:var(--epique)"><span class="d">Épique</span><b>0 / 18</b></div>
+        <div class="palier" style="--c:var(--rare)"><span class="d">Rare</span><b>1 / 8</b></div>
+      </div>
+    </div>
+    <div class="mspec">
+      <div class="sec"><h3>Séries spéciales à découvrir</h3><a>9 ›</a></div>
+      <div class="liste">
+        <div class="r"><span class="verrou"><svg class="i"><use href="#cadenas"/></svg></span><span class="tx"><b>599 GTO</b><span style="font-size:12px;color:var(--muted2)">2010–2011 · 599 ex.</span></span><span class="rar" style="--c:var(--legendaire)">Légendaire</span></div>
+        <div class="r"><span class="verrou"><svg class="i"><use href="#cadenas"/></svg></span><span class="tx"><b>F12tdf</b><span style="font-size:12px;color:var(--muted2)">2015–2017 · 799 ex.</span></span><span class="rar" style="--c:var(--legendaire)">Légendaire</span></div>
+        <div class="r"><span class="verrou"><svg class="i"><use href="#cadenas"/></svg></span><span class="tx"><b>488 Pista</b><span style="font-size:12px;color:var(--muted2)">2018–2020</span></span><span class="rar" style="--c:var(--epique)">Épique</span></div>
+      </div>
+    </div>
+  </div></div>
+</div>
+</body>
+</html>
