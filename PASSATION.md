@@ -151,6 +151,10 @@ relais se font depuis le navigateur du propriétaire (`TUTO-GRATUIT.md` B5).
 > **21/11 — PR #6 fusionnée** sur « merge » : v20.208.0 **en ligne**. Le propriétaire avait
 > déjà copié son garage du téléphone vers le PC par fichier : l'essai de la synchro se fait
 > donc sur une **modification** (favori, note, nouvelle capture), pas sur la présence des voitures.
+>
+> **21/11 — synchro auto PROUVÉE en production** par le propriétaire (PC + téléphone, même
+> compte) : « ça synchronise bien et c'est rapide ». Proposée et **non demandée** : vérification
+> toutes les minutes d'un appareil resté ouvert (posée une fois, ne pas reposer).
 > Photos : toujours hors du cloud (R2 exige une carte, refusée : `RESTE-A-FAIRE.md` §0).
 
 **État au 27/10 : A faite, B à moitié.** Le propriétaire suit la feuille de route de
