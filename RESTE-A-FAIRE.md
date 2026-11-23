@@ -244,7 +244,19 @@ pas : `cloud/CARTE.md`. Nécessite le compte Cloudflare et le domaine du §2.
 
 Ce qui changera quand l'app passera en application native (enveloppe type
 Capacitor autour du même code) :
-- **Comptes développeur** : Apple 99 $/an, Google 25 $ une fois.
+- **Comptes développeur** : Apple 99 $/an, Google 25 $ une fois. Payants : à décider
+  par toi (§0, « rien de payant pour l'instant »).
+- **Machine** (ta question du 23/11) : l'**App Store exige un Mac** avec Xcode à jour ;
+  la salle Mac de ta fac convient (iMac Apple Silicon récent), sous réserve de vérifier
+  avec le service informatique : Xcode installé et à jour, session conservée ou non entre
+  deux connexions (si elle est effacée : signature « gérée automatiquement » par Apple,
+  rien de stocké sur la machine), ports USB ouverts pour brancher un iPhone. Ne jamais
+  laisser ton identifiant Apple enregistré sur une machine partagée. **Google Play n'a
+  besoin d'aucun Mac**. Piste pour ne plus dépendre de la salle à chaque mise à jour :
+  compilation et envoi automatiques par GitHub Actions (machines macOS gratuites pour un
+  dépôt public), clés de signature collées **par toi** dans les secrets GitHub.
+- **Tester sur iPhone** : il faut un vrai iPhone (TestFlight) ; le simulateur de Xcode
+  ne remplace pas l'appareil photo.
 - **Une étape de construction** (Xcode, Android Studio) : exception à la règle
   « aucune dépendance » de `CLAUDE.md` §1.2, à décider le moment venu.
 - **Adresse de l'app** : elle ne sera plus `mcslec.github.io` mais une adresse
@@ -253,11 +265,13 @@ Capacitor autour du même code) :
 - **Apple refuse les simples sites emballés** (règle 4.2) : l'appareil photo
   natif, la carte et le hors-ligne jouent pour nous.
 - **Suppression de compte dans l'app** exigée par Apple : déjà faite.
-- **« Se connecter avec Apple »** : non exigé, on n'utilise ni Google ni
-  Facebook pour se connecter. ⚠️ **Le deviendrait** si on ajoutait « Se connecter
-  avec Google » (règle 4.8 d'Apple : une connexion tierce impose une option
-  équivalente respectueuse de la vie privée) — voir §5 : la recommandation est de
-  livrer Google et Apple **ensemble**, à cette étape.
+- **« Se connecter avec Apple »** : ⚠️ **devenu nécessaire pour l'App Store** (ligne
+  corrigée le 23/11 : elle disait « on n'utilise pas Google », or « Continuer avec
+  Google » est en service depuis le 18/11). Règle 4.8 d'Apple : une connexion tierce
+  impose une option équivalente respectueuse de la vie privée ; notre code par e-mail ne
+  permet pas de masquer son adresse, il ne suffit donc probablement pas. Deux voies, à
+  trancher à cette étape : ajouter « Se connecter avec Apple », ou ne pas proposer Google
+  dans l'app iPhone. Google Play n'impose rien de tel.
 - **Fiches de confidentialité des stores** : à remplir à partir de
   `cloud/CONFIDENTIALITE.md` (photo envoyée à l'IA, e-mail, position GPS).
 - **Carte** : les serveurs d'OpenStreetMap n'acceptent pas le trafic d'une app
