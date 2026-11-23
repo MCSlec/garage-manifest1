@@ -328,6 +328,34 @@ Règles à ne jamais enfreindre :
   - **Séries spéciales** : la Fiche liste les séries d'une base, ou renvoie à sa base, d'après
     `GMSpecs.seriesSpeciales()` / `baseDeSerie()` (table `SERIES_SPECIALES`, écrite à la main,
     contrôlée par `banc-audit.js`).
+- **Accueil du Garage, pages marque, liste des marques** (21/11, maquette v2, lot 2,
+  `banc-dom.js`) :
+  - l'accueil (« Dernière prise », « Mes marques », « Mon garage ») n'existe **qu'avec au moins
+    une prise** : un garage vide garde le catalogue seul ;
+  - **pas de logo ni de slogan de marque** (marques déposées, risque store) : monogramme de
+    2 lettres + couleur d'accent (`ACCENT_MARQUE`), photo de tête = la meilleure prise du joueur ;
+  - **écrans empilés dans `#overlay`** (`pileRetour`) : page marque → fiche → série… « Fermer »
+    (`[data-close]`) rouvre l'écran d'en dessous ; `closeOverlay()` vide la pile (sinon une
+    fiche ouverte plus tard rouvrirait un écran d'une autre visite) ; rouvrir l'écran **déjà**
+    affiché ne l'empile pas (clé `marque:` / `liste` / `fiche:`). `#overlay` reste **une seule
+    couche** pour le bouton retour du téléphone : chaque « retour » dépile un écran, prouvé au
+    banc par `history.back()` ;
+  - une page marque ne liste **que ses** séries spéciales (toutes sont Ferrari aujourd'hui : le
+    banc le vérifie donc sur une **autre** marque) ;
+  - ⚠️ **préfixes de classes** : `index.html` utilise `fx-` (fiche), `gx-` (accueil), `mq-`
+    (marques). **Jamais `gm-`**, réservé à `gm-specs.js` : un `.gm-liste` d'`index.html` héritait
+    des marges de celui de gm-specs (constaté le 21/11).
+- **Couleurs : toujours par jeton**, jamais en dur dans une règle (21/11). Le fond des barres
+  fixes était écrit `rgba(11,11,13,.92)` : en thème clair, titre, compteur et onglet actif
+  passaient en sombre sur sombre (contraste 1,06:1, en ligne jusqu'en 20.210.0). Jetons
+  `--barre` (RVB, pour garder la transparence) et `--piste` (jauges), redéfinis dans les
+  **deux** blocs clairs (`[data-theme="light"]` et `system` + OS clair). `banc-theme.js` mesure
+  le contraste WCAG (≥ 4,5) dans les trois cas.
+- **Barre de défilement** (21/11, capture du propriétaire) : **aucune sur écran tactile**
+  (`@media (pointer:coarse)`). Le style `::-webkit-scrollbar` global faisait afficher à Chrome
+  Android une barre **permanente** de 8 px qui décalait le contenu. La souris garde la sienne.
+  ⚠️ Playwright lance Chromium avec `--hide-scrollbars` : un test de barre y passe **toujours**.
+  `banc-dom.js` mesure donc dans un navigateur lancé sans cette option (vérifié par mutation).
 - **Carte** : `#huntMap` porte `isolation:isolate`. Les calques de Leaflet (z-index 400
   à 1000) passaient sinon **devant les fiches** (50) ouvertes depuis la carte (19/11).
 
@@ -523,7 +551,7 @@ incrémenter conjointement :**
 2. `VERSION` (`"garage-v…"`) dans `sw.js` (ligne ~12).
 
 Ces deux numéros sont **tenus synchronisés** (au 21/11/2026 : `gm-specs.js` →
-`20.210.0`, `sw.js` → `garage-v20.210.0`). `VERSION_MODULE` s'affiche en outre
+`20.211.0`, `sw.js` → `garage-v20.211.0`). `VERSION_MODULE` s'affiche en outre
 dans l'UI via `grefferVersion()`, ce qui permet de vérifier de visu quelle version
 tourne réellement sur l'appareil.
 

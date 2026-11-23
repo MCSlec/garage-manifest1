@@ -36,6 +36,10 @@ const verifier = (intitule, ok, detail) => { resultats.push({ intitule, ok, deta
 
   verifier('gm-specs.js et gm-matcher.js sont chargés',
     await page.evaluate(() => !!(window.GMSpecs && window.GMMatcher)));
+  /* Accueil du Garage (maquette v2, 21/11) : il ne s'affiche qu'avec au moins une prise. Un
+     garage vide garde l'ancien écran (catalogue seul) : pas de « Dernière prise » sans prise. */
+  verifier('garage vide : pas d\'accueil (ni « Dernière prise », ni « Mes marques »)',
+    await page.evaluate(() => !document.querySelector('.gx-une, .gx-marques')));
 
   /* --- Voiture NON spottée : le verrou doit être étanche --------------- */
   await page.evaluate(() => { document.querySelector('[data-car="alfa-giulia"]')?.click(); });
@@ -235,6 +239,151 @@ const verifier = (intitule, ok, detail) => { resultats.push({ intitule, ok, deta
   await page.waitForTimeout(800);
   const pRouverte = await position();
   verifier('fiche fermée puis rouverte : elle repart du haut (photo, onglet Fiche)', pRouverte.page === 0 && pRouverte.defile === 0, JSON.stringify(pRouverte));
+  /* La F40 ouverte DEPUIS la Giulia a empilé la Giulia : on ferme jusqu'à ce que plus rien ne
+     reste (au plus 4 fois), pour partir d'un état propre. */
+  for (let i = 0; i < 4 && await page.evaluate(() => document.querySelector('#overlay').childElementCount > 0); i++) {
+    await page.evaluate(() => document.querySelector('#overlay [data-close]')?.click());
+    await page.waitForTimeout(400);
+  }
+
+  /* --- Accueil du Garage et pages marque (maquette v2, lot 2, 21/11) ----------------------
+     Deux prises (Giulia, F40). Les écrans s'empilent dans #overlay : une fiche ouverte depuis
+     une page marque se referme SUR la page marque (`pileRetour`), au doigt comme au bouton
+     retour du téléphone (`#overlay` reste UNE couche : chaque retour dépile un écran). */
+  const ecran = () => page.evaluate(() => {
+    const o = document.querySelector('#overlay');
+    if (!o.childElementCount) return 'aucun';
+    const m = o.querySelector('[data-marque-page]'); if (m) return 'marque:' + m.getAttribute('data-marque-page');
+    if (o.querySelector('.mq-marques')) return 'liste';
+    const f = o.querySelector('.detail-shell[data-car-id]'); if (f) return 'fiche:' + f.getAttribute('data-car-id');
+    return 'autre';
+  });
+  const toucher = async sel => { await page.evaluate(s => document.querySelector(s)?.click(), sel); await page.waitForTimeout(500); };
+  const accueil = await page.evaluate(() => ({
+    une: document.querySelector('.gx-une[data-car]')?.getAttribute('data-car') || null,
+    marques: [...document.querySelectorAll('.gx-marques [data-marque]')].map(b => b.getAttribute('data-marque')),
+    strip: document.querySelectorAll('.gx-strip [data-car]').length,
+  }));
+  verifier('accueil : « Dernière prise » = une voiture capturée, « Mes marques » = les marques capturées, « Mon garage » = 2',
+    ['alfa-giulia', 'ferrari-f40'].includes(accueil.une) && accueil.marques.includes('Ferrari') && accueil.marques.includes('Alfa Romeo') && accueil.strip === 2,
+    JSON.stringify(accueil));
+  await toucher('.gx-marques [data-marque="Ferrari"]');
+  const pageFerrari = await page.evaluate(() => {
+    const o = document.querySelector('#overlay');
+    return {
+      marque: o.querySelector('[data-marque-page]')?.getAttribute('data-marque-page') || null,
+      coll: o.querySelector('.mq-coll')?.textContent.replace(/\s+/g, ' ').trim().slice(0, 60) || null,
+      mes: [...o.querySelectorAll('.mq-corps .gx-vg[data-car], .mq-corps .gx-strip [data-car]')].map(b => b.getAttribute('data-car')),
+      gto: !!o.querySelector('[data-car="ferrari-599-gto"]'),
+      logo: !!o.querySelector('img[src*="logo"], svg[aria-label*="logo" i]'),
+    };
+  });
+  verifier('page marque (Ferrari) : progression 1 / N, la F40 dans « Mes Ferrari », la 599 GTO dans les séries à découvrir, aucun logo',
+    pageFerrari.marque === 'Ferrari' && /^Ma collection\s*1 \/ \d+/i.test(pageFerrari.coll || '') && pageFerrari.mes.includes('ferrari-f40')
+    && !pageFerrari.mes.includes('alfa-giulia') && pageFerrari.gto && !pageFerrari.logo, JSON.stringify(pageFerrari));
+  // Pile : page marque → fiche → [fermer] → page marque → [fermer] → rien.
+  await toucher('#overlay [data-car="ferrari-f40"]');
+  const e1 = await ecran();
+  await toucher('#overlay [data-close]');
+  const e2 = await ecran();
+  await toucher('#overlay [data-close]');
+  const e3 = await ecran();
+  verifier('pile de retour au doigt : page marque → fiche F40 → fermer = page marque → fermer = garage',
+    e1 === 'fiche:ferrari-f40' && e2 === 'marque:Ferrari' && e3 === 'aucun', [e1, e2, e3].join(' → '));
+  // Même parcours au bouton retour du téléphone (history.back(), comme Android).
+  await toucher('.gx-marques [data-marque="Ferrari"]');
+  await toucher('#overlay [data-car="ferrari-f40"]');
+  const r0 = await ecran();
+  await page.evaluate(() => history.back()); await page.waitForTimeout(600);
+  const r1 = await ecran();
+  await page.evaluate(() => history.back()); await page.waitForTimeout(600);
+  const r2 = await ecran();
+  verifier('bouton retour du téléphone : fiche → page marque → garage, un écran par appui',
+    r0 === 'fiche:ferrari-f40' && r1 === 'marque:Ferrari' && r2 === 'aucun', [r0, r1, r2].join(' → '));
+  // Rouvrir l'écran DÉJÀ affiché ne l'empile pas : une seule fermeture suffit.
+  await toucher('.gx-marques [data-marque="Ferrari"]');
+  await toucher('.gx-marques [data-marque="Ferrari"]');   // même marque, par-dessus elle-même
+  await toucher('#overlay [data-close]');
+  const d1 = await ecran();
+  verifier('rouvrir l\'écran déjà affiché ne l\'empile pas (une seule fermeture)', d1 === 'aucun', d1);
+  for (let i = 0; i < 3 && await page.evaluate(() => document.querySelector('#overlay').childElementCount > 0); i++) await toucher('#overlay [data-close]');
+  // Fiche → sa marque (nom de marque cliquable dans l'en-tête) → fermer = la fiche.
+  await toucher('.card[data-car="alfa-giulia"]');
+  await toucher('#overlay .fx-marque[data-marque]');
+  const f1 = await ecran();
+  /* Toutes les séries spéciales de la table sont des Ferrari (21/11) : c'est donc sur une AUTRE
+     marque qu'on vérifie que la page ne liste que les siennes (mutation non détectée sans ce test). */
+  const etrangeres = await page.evaluate(() => [...document.querySelectorAll('#overlay [data-marque-page] [data-car]')]
+    .map(b => b.getAttribute('data-car')).filter(id => !id.startsWith('alfa-')));
+  verifier('page Alfa Romeo : aucune voiture d\'une autre marque (séries spéciales Ferrari comprises)', etrangeres.length === 0, etrangeres.slice(0, 4).join(', '));
+  await toucher('#overlay [data-close]');
+  const f2 = await ecran();
+  await toucher('#overlay [data-close]');
+  const f3 = await ecran();
+  verifier('fiche Giulia → « Alfa Romeo › » ouvre sa page marque, et fermer y ramène',
+    f1 === 'marque:Alfa Romeo' && f2 === 'fiche:alfa-giulia' && f3 === 'aucun', [f1, f2, f3].join(' → '));
+  // Liste des marques → une marque → fermer = la liste.
+  await toucher('[data-marques]');
+  const l0 = await page.evaluate(() => document.querySelectorAll('#overlay .mq-ligne[data-marque]').length);
+  await toucher('#overlay .mq-ligne[data-marque="Ferrari"]');
+  const l1 = await ecran();
+  await toucher('#overlay [data-close]');
+  const l2 = await ecran();
+  verifier('liste des marques (une ligne par marque) → Ferrari → fermer = la liste',
+    l0 > 100 && l1 === 'marque:Ferrari' && l2 === 'liste', `${l0} lignes · ${l1} → ${l2}`);
+  await toucher('#overlay [data-close]');
+  /* « Voir les manquantes » d'une page marque : filtre du catalogue sur la marque, voitures non
+     capturées. Ouverte depuis la LISTE, la page marque a la liste sous elle : la fermeture
+     complète doit vider la pile, sinon la prochaine fiche refermée rouvrirait cette liste. */
+  await toucher('[data-marques]');
+  await toucher('#overlay .mq-ligne[data-marque="Ferrari"]');
+  await toucher('#overlay [data-voir="marque"]');
+  const filtre = await page.evaluate(() => ({
+    overlay: document.querySelector('#overlay').childElementCount,
+    marque: document.querySelector('#brandSel')?.value || null,
+    f40: !!document.querySelector('.card[data-car="ferrari-f40"]'),
+    tuiles: document.querySelectorAll('.card[data-car]').length,
+    autres: [...document.querySelectorAll('.card[data-car]')].filter(b => !b.getAttribute('data-car').startsWith('ferrari-')).length,
+  }));
+  verifier('« Voir les manquantes » : écran fermé, catalogue filtré sur Ferrari, la F40 capturée absente',
+    filtre.overlay === 0 && filtre.marque === 'Ferrari' && !filtre.f40 && filtre.tuiles > 10 && filtre.autres === 0, JSON.stringify(filtre));
+  await toucher('.card[data-car]');
+  const v1 = await ecran();
+  await toucher('#overlay [data-close]');
+  const v2 = await ecran();
+  verifier('après une fermeture complète, la pile est vide : une fiche refermée ne rouvre pas la liste d\'avant',
+    v1.startsWith('fiche:') && v2 === 'aucun', `${v1} → ${v2}`);
+
+  /* --- Barre de défilement (21/11, capture du propriétaire) ----------------------------------
+     Sur téléphone, aucune barre : elle était PERMANENTE sur Chrome Android (8 px, contenu décalé).
+     Mesure : largeur réservée = offsetWidth − clientWidth du conteneur qui défile. Avec une
+     souris, la barre reste (elle y sert).
+     ⚠️ Playwright lance Chromium avec `--hide-scrollbars` : TOUTES les barres y sont masquées,
+     et ce test passerait sans la correction. Il tourne donc dans un navigateur à part, lancé
+     sans cette option (vérifié par mutation : sans la règle `pointer:coarse`, il échoue). */
+  const navBarres = await chromium.launch({ executablePath: process.env.CHROMIUM || '/opt/pw-browsers/chromium',
+                                           args: ['--no-sandbox'], ignoreDefaultArgs: ['--hide-scrollbars'] });
+  const barre = async (tactile) => {
+    // Écran court : même une fiche non capturée y défile (sinon il n'y aurait rien à mesurer).
+    const c = await navBarres.newContext({ viewport: { width: 390, height: 420 }, isMobile: tactile, hasTouch: tactile });
+    const pb = await c.newPage();
+    pb.on('pageerror', e => erreursJS.push(String(e)));
+    await pb.goto('http://localhost:8099/index.html', { waitUntil: 'networkidle' });
+    await pb.waitForFunction(() => window.GMSpecs && window.GMSpecs.fichePourInterface, { timeout: 15000 });
+    await pb.evaluate(() => document.querySelector('.card[data-car]')?.click());
+    await pb.waitForTimeout(700);
+    const m = await pb.evaluate(() => { const b = document.querySelector('#overlay .sh-body');
+      return { tactile: matchMedia('(pointer:coarse)').matches, defile: b ? b.scrollHeight > b.clientHeight : false,
+               fiche: b ? b.offsetWidth - b.clientWidth : null }; });
+    await c.close();
+    return m;
+  };
+  const barreTel = await barre(true), barreSouris = await barre(false);
+  await navBarres.close();
+  verifier('téléphone : aucune barre de défilement sur la fiche (rien de réservé à droite)',
+    barreTel.tactile && barreTel.defile && barreTel.fiche === 0, JSON.stringify(barreTel));
+  verifier('souris : la barre de défilement reste (8 px)',
+    !barreSouris.tactile && barreSouris.defile && barreSouris.fiche === 8, JSON.stringify(barreSouris));
 
   verifier('aucune erreur JS levée pendant le parcours', erreursJS.length === 0, erreursJS.join(' | ').slice(0, 200));
 

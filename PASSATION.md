@@ -5,11 +5,20 @@
 > Il dit **où on en est, ce qui est prouvé, ce qui reste, et les pièges déjà payés**.
 > Le détail vit ailleurs ; ici, on pointe vers lui.
 >
-> **Dernière mise à jour : 21/11/2026** (branche
-> `claude/create-claude-documentation-8eo2t7`, version `20.209.0`). **En ligne : v20.209.0**
-> (PR #4 à #7, 21/11 ; la #7 : séries spéciales Ferrari, pages des stores, tuile Position) : synchronisation automatique, attribution OpenStreetMap,
-> « Envoyer un retour » par e-mail vers l'adresse dédiée, sélecteur Essence/Diesel,
-> corrections de la relecture du 21/11. **Maquette v2 validée** (« oui à tout », 21/11). Sur la branche, en attente de « merge » (v20.210.0) : la **fiche plein écran** (onglets Fiche · Photos · Ma prise, `CLAUDE.md` §3), la police des titres hébergée (`vendor/barlow-condensed/`), la table `SERIES_SPECIALES`. **Prochaine étape : l'écran Garage (accueil)**, puis révélation, pages marque, identification — chaque écran avec captures avant / après montrées au propriétaire avant mise en ligne. Comptes, Google et
+> **Dernière mise à jour : 23/11/2026** (branche
+> `claude/create-claude-documentation-8eo2t7`, version `20.211.0`). **En ligne : v20.210.0**
+> (PR #8, 21/11) : **fiche plein écran** (maquette v2, onglets Fiche · Photos · Ma prise),
+> police des titres hébergée, séries spéciales Ferrari en entrées propres ; avant elle (PR #4
+> à #7) synchronisation automatique, attribution OpenStreetMap, « Envoyer un retour », pages
+> des stores. **Sur la branche, en attente de « merge » (v20.211.0)** : lot 2 de la maquette
+> v2 — **accueil du Garage, pages marque, liste des marques, révélation** (`DESIGN.md` §3,
+> `CLAUDE.md` §3), plus deux défauts trouvés en ligne : thème clair illisible sur les barres
+> fixes, barre de défilement permanente sur Android (capture du propriétaire). 22 bancs verts,
+> 13 mutations détectées. **Prochaine étape : l'écran d'identification** (dernier de la
+> maquette), captures avant / après montrées avant mise en ligne. Question du propriétaire
+> du 23/11 : publier sur l'App Store depuis la salle Mac de sa fac (réponse dans la
+> conversation : possible, mais compte Apple payant et wrapper natif à décider ; rien de
+> lancé, `RESTE-A-FAIRE.md` §0 « rien de payant »). Comptes, Google et
 > relais IA **en service** (§2) : lire le §2 avant toute instruction au propriétaire.
 > Le propriétaire suit la **feuille de route** en tête de `TUTO-GRATUIT.md` (étapes
 > 1 à 19, uniquement ce qui reste) : c'est elle qu'on cite, par son numéro.

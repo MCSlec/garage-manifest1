@@ -57,6 +57,10 @@
   :root{
     --bg:#0b0b0d; --panel:#161618; --panel2:#111113; --line:#27272a; --line2:#3f3f46;
     --txt:#f4f4f5; --fg:#f4f4f5; --muted:#a1a1aa; --muted2:#71717a; --dim:#52525b;
+    /* Fond des barres fixes (en-tête, onglets) en composantes RVB, pour garder leur
+       transparence propre ; piste des jauges. Écrits en dur jusqu'au 21/11 : en thème
+       clair, titre, compteur et onglet actif passaient en sombre sur fond sombre. */
+    --barre:11,11,13; --piste:#232327;
     --red:#ef4444; --red2:#dc2626; --red-dk:#b91c1c;
     --courant:#6b7280; --commun:#a1a1aa; --peucommun:#2dd4bf; --rare:#818cf8; --epique:#e879f9; --legendaire:#fbbf24;
     --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
@@ -82,12 +86,20 @@
   svg{ display:block; }
   ::-webkit-scrollbar{ width:8px; height:8px; }
   ::-webkit-scrollbar-thumb{ background:#2a2a2e; border-radius:8px; }
+  /* Écran tactile : AUCUNE barre de défilement (21/11, capture du propriétaire). Le style
+     ci-dessus fait afficher à Chrome Android une barre PERMANENTE de 8 px, qui décale aussi
+     le contenu, au lieu de la barre native fugitive. On défile au doigt ; la souris garde la
+     sienne (elle y sert). Vérifié au banc (banc-dom.js, téléphone émulé). */
+  @media (pointer:coarse){
+    *{ scrollbar-width:none; }
+    ::-webkit-scrollbar{ display:none; width:0; height:0; }
+  }
 
   .icon{ width:22px; height:22px; stroke:currentColor; stroke-width:2; fill:none; stroke-linecap:round; stroke-linejoin:round; }
 
   /* ---------- Header ---------- */
   header.top{
-    position:sticky; top:0; z-index:30; background:rgba(11,11,13,.92);
+    position:sticky; top:0; z-index:30; background:rgba(var(--barre),.92);
     backdrop-filter:saturate(140%) blur(10px); border-bottom:1px solid var(--line);
     padding:calc(var(--st) + 10px) calc(14px + var(--sr)) 8px calc(14px + var(--sl));
   }
@@ -103,7 +115,7 @@
   .ro.acc b{ color:var(--red); }
   .ro span{ display:block; margin-top:4px; font:400 9px/1 var(--mono); letter-spacing:.08em; text-transform:uppercase; color:var(--muted2); }
   .ro.hide-s{ display:none; }
-  .prog{ margin-top:9px; height:5px; border-radius:5px; background:#232327; overflow:hidden; }
+  .prog{ margin-top:9px; height:5px; border-radius:5px; background:var(--piste); overflow:hidden; }
   .prog>i{ display:block; height:100%; background:var(--red); transition:width .6s ease; }
   .pill{ display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px;
     border:1px solid var(--red-dk); background:rgba(239,68,68,.12); color:#fecaca; font:600 12px/1 var(--sans); }
@@ -198,7 +210,7 @@
   .rail-head .l{ color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .rail-head .v{ color:var(--muted2); flex:none; }
   .rail-head .v.done{ color:var(--legendaire); }
-  .rail{ height:4px; border-radius:4px; background:#232327; overflow:hidden; margin-top:4px; }
+  .rail{ height:4px; border-radius:4px; background:var(--piste); overflow:hidden; margin-top:4px; }
   .rail>i{ display:block; height:100%; background:var(--dim); border-radius:4px; transition:width .5s ease; }
   .rail>i.done{ background:var(--legendaire); }
   .rail-grid{ display:grid; grid-template-columns:1fr; gap:11px 22px; }
@@ -217,7 +229,7 @@
   .barrow{ display:grid; grid-template-columns:96px 1fr 44px; align-items:center; gap:10px; }
   .barrow .k{ display:flex; align-items:center; gap:7px; font:600 11px/1 var(--mono); text-transform:uppercase; letter-spacing:.03em; color:var(--muted); }
   .barrow .k .dot{ width:8px; height:8px; border-radius:50%; flex:none; }
-  .barrow .track{ height:8px; border-radius:6px; background:#232327; overflow:hidden; }
+  .barrow .track{ height:8px; border-radius:6px; background:var(--piste); overflow:hidden; }
   .barrow .track>i{ display:block; height:100%; border-radius:6px; transition:width .5s ease; }
   .barrow .n{ text-align:right; font:600 12px/1 var(--mono); font-variant-numeric:tabular-nums; color:var(--muted); }
   .spark{ display:flex; align-items:flex-end; gap:6px; height:80px; }
@@ -263,13 +275,13 @@
   .btn-danger{ color:var(--muted2); border-color:var(--line2); }
   .btn-danger:active{ color:var(--red); border-color:var(--red-dk); background:rgba(239,68,68,.08); }
   .btn:disabled{ opacity:.4; }
-  .meter{ height:8px; border-radius:6px; background:#232327; overflow:hidden; margin-top:8px; }
+  .meter{ height:8px; border-radius:6px; background:var(--piste); overflow:hidden; margin-top:8px; }
   .meter>i{ display:block; height:100%; background:var(--red); }
 
   /* ---------- Tab bar ---------- */
   nav.tabs{
     position:fixed; left:0; right:0; bottom:0; z-index:30; height:calc(var(--tabh) + var(--sb));
-    padding-bottom:var(--sb); background:rgba(11,11,13,.94); backdrop-filter:blur(10px);
+    padding-bottom:var(--sb); background:rgba(var(--barre),.94); backdrop-filter:blur(10px);
     border-top:1px solid var(--line); display:grid; grid-template-columns:repeat(5,1fr); align-items:center;
   }
   nav.tabs button{ display:flex; flex-direction:column; align-items:center; gap:3px; color:var(--muted2); height:100%; justify-content:center; }
@@ -489,7 +501,7 @@
   .mq-ligne{ display:flex; align-items:center; gap:13px; width:100%; margin:0; padding:12px 14px; background:var(--panel); border:0; border-radius:0; color:var(--txt); text-align:left; }
   .mq-ligne-tx{ flex:1; min-width:0; }
   .mq-ligne-tx b{ display:block; font-size:14.5px; font-weight:650; }
-  .mq-ligne-c{ font:600 12.5px/1 var(--mono); color:var(--muted); white-space:nowrap; }
+  .mq-ligne-c{ font:600 12.5px/1 var(--mono); color:var(--muted); white-space:nowrap; min-width:7ch; text-align:right; }
   .mq-ligne-c.z{ color:var(--dim); }
   .mq-ligne > .icon{ width:16px; height:16px; color:var(--dim); flex:none; }
   .cat-desc{ margin:10px 2px 0; font:400 12px/1.5 var(--sans); color:var(--dim); }
@@ -797,6 +809,7 @@
   --line:#dedee2; --line2:#c7c7ce;
   --txt:#18181b; --fg:#18181b;
   --muted:#52525b; --muted2:#71717a; --dim:#a1a1aa;
+  --barre:244,244,245; --piste:#e4e4e7;
 }
 @media (prefers-color-scheme:light){
   :root[data-theme="system"]{
@@ -804,6 +817,7 @@
     --line:#dedee2; --line2:#c7c7ce;
     --txt:#18181b; --fg:#18181b;
     --muted:#52525b; --muted2:#71717a; --dim:#a1a1aa;
+    --barre:244,244,245; --piste:#e4e4e7;
   }
 }
 
@@ -3455,13 +3469,16 @@ const VARIANTS = {
      du téléphone, qui touche ce même [data-close]) rouvre le précédent au lieu de tout
      fermer. Toute vraie fermeture la vide : une fiche ouverte plus tard (capture, carte)
      ne rouvre jamais un écran d'une autre visite. */
+  /* Chaque écran porte une CLÉ (« marque:Ferrari », « liste », « fiche:<id> ») : rouvrir
+     l'écran déjà affiché ne l'empile pas une seconde fois (sinon il fallait fermer deux fois,
+     constaté au banc le 21/11). */
   let pileRetour = [];
   const ecranCourant = () => {
     const m = overlay.querySelector("[data-marque-page]");
-    if (m) { const b = m.dataset.marquePage; return () => openMarque(b); }
-    if (overlay.querySelector(".mq-marques")) return openMarques;
+    if (m) { const b = m.dataset.marquePage; return { cle: "marque:" + b, rouvrir: () => openMarque(b) }; }
+    if (overlay.querySelector(".mq-marques")) return { cle: "liste", rouvrir: openMarques };
     const f = overlay.querySelector(".sheet.fiche .detail-shell[data-car-id]");
-    if (f) { const id = f.dataset.carId; return () => openDetail(id); }
+    if (f) { const id = f.dataset.carId; return { cle: "fiche:" + id, rouvrir: () => openDetail(id) }; }
     return null;
   };
   function closeOverlay() { pileRetour = []; stopCamera(); overlay.innerHTML = ""; document.body.style.overflow = ""; }
@@ -5360,14 +5377,15 @@ const VARIANTS = {
     }
 
     if (t.dataset.scrim && e.target === t) return closeOverlay();
-    if (t.dataset.close) { const prec = pileRetour.pop(); if (prec) { prec(); return; } return closeOverlay(); }
+    if (t.dataset.close) { const prec = pileRetour.pop(); if (prec) { prec.rouvrir(); return; } return closeOverlay(); }
     /* Écrans plein écran empilés : on retient celui d'où l'on part (ecranCourant). */
     if (t.dataset.marque || t.dataset.marques || t.dataset.car) {
       const prec = overlay.childElementCount ? ecranCourant() : null;
+      const cible = t.dataset.marque ? "marque:" + t.dataset.marque : t.dataset.marques ? "liste" : "fiche:" + t.dataset.car;
       if (t.dataset.marque) openMarque(t.dataset.marque);
       else if (t.dataset.marques) openMarques();
       else openDetail(t.dataset.car);
-      if (prec && overlay.childElementCount) pileRetour.push(prec);
+      if (prec && prec.cle !== cible && overlay.childElementCount) pileRetour.push(prec);
       return;
     }
     if (t.dataset.voir === "garage" || t.dataset.voir === "marque") {

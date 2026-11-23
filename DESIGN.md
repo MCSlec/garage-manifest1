@@ -214,7 +214,7 @@ collection de mini-designs.
 
 ---
 
-## 3. Maquette v2 (21/11/2026) — PROPOSITION, en attente de validation
+## 3. Maquette v2 (21/11/2026) — validée le 21/11, mise en œuvre écran par écran
 
 Brief du propriétaire du 21/11 : la planche Giulia reste la référence graphique principale ;
 deux planches d'inspiration s'y ajoutent (vision globale de l'app, pages par constructeur).
@@ -249,4 +249,20 @@ validation, écran par écran, en patchs ciblés, captures avant / après (§2 c
   Barlow Condensed, rareté, points), onglets Fiche · Photos · Ma prise, puissance affichée,
   séries spéciales. Outils photo dans l'onglet Photos ; « Changer de modèle » dans Ma prise.
   Contrats et pièges : `CLAUDE.md` §3. Captures avant / après montrées avant mise en ligne.
-- ⏳ Garage (accueil) · révélation · pages marque · identification, dans cet ordre.
+  En ligne en 20.210.0.
+- ✅ **Lot 2 : Garage, pages marque, révélation** (21/11, sur la branche, en ligne au prochain
+  « merge ») :
+  - **Accueil du Garage** : « Dernière prise » (grande photo, rareté, lieu · date), « Mes
+    marques » (3 marques les plus capturées, monogramme, jauge), « Mon garage » (bande de
+    photos), puis le catalogue intact. Absent tant qu'il n'y a aucune prise ;
+  - **Page marque** : ta meilleure photo de la marque en tête (monogramme en grand sinon),
+    progression par rareté, « Mes {marque} », séries spéciales à découvrir, à découvrir, puis
+    « Voir les N manquantes » (catalogue filtré). Ouverte depuis l'accueil, la liste des
+    marques ou le nom de marque dans la fiche ; « Fermer » revient à l'écran d'avant ;
+  - **Liste des marques** (« Ma collection ») : une ligne par marque, jauge si au moins une prise ;
+  - **Révélation** : marque au-dessus, modèle en Barlow Condensed, rareté et points sur une
+    ligne. Carte toujours sombre (décision C), halo à la couleur de la rareté, sans confettis ;
+  - **Corrigé en passant** : thème clair illisible sur les barres fixes (titre, compteur, onglet
+    actif : contraste 1,06:1) et barre de défilement permanente sur Android (capture du
+    propriétaire). Les deux sont gardés au banc.
+- ⏳ Identification (dernier écran de la maquette).

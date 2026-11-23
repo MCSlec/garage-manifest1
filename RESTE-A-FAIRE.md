@@ -344,7 +344,7 @@ Capacitor autour du même code) :
      la planche Giulia déjà dans `design/`. Si tu en as une plus récente, renvoie-la.
   8. **Ta photo de 599** dans la maquette : la verser dans le dépôt (public) ? Sinon elle reste
      hors du dépôt, plaque floutée ou non.
-- [ ] 🟡 **Maquette v2, écran par écran** (ordre validé : fiche, Garage, révélation, pages marque, identification). **Fiche : faite sur la branche le 21/11** (plein écran, onglets Fiche · Photos · Ma prise, captures avant / après envoyées), en ligne au prochain « merge ». À cocher quand tu l'auras vue sur ton téléphone.
+- [ ] 🟡 **Maquette v2, écran par écran** (ordre validé : fiche, Garage, révélation, pages marque, identification). **Fiche : en ligne depuis la 20.210.0** (plein écran, onglets Fiche · Photos · Ma prise). **Garage, pages marque, révélation : faits sur la branche le 21/11** (captures avant / après envoyées), avec la barre de défilement retirée sur téléphone et le thème clair réparé ; en ligne au prochain « merge ». Reste l'écran d'identification. À cocher quand tu auras tout vu sur ton téléphone.
 - [ ] 🟡 **Fiche voiture à aligner sur les maquettes** (`design/maquette-fiche-giulia*.png`) :
   aujourd'hui deux pages à faire glisser, sans onglets ni grille à icônes. Chantier à lancer
   sur ton « go », écarts de données déjà listés dans `DESIGN.md` §0.

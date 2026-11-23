@@ -14,8 +14,24 @@ const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(String(e
 await p.goto('http://localhost:8097/index.html',{waitUntil:'networkidle'});
 
 const bg=()=>p.evaluate(()=>getComputedStyle(document.body).backgroundColor);
+/* Contraste WCAG du texte des barres fixes sur LEUR fond (fond semi-transparent composé sur
+   celui de la page). Jusqu'au 21/11, le fond des barres était écrit en dur (sombre) : en
+   thème clair, titre, compteur et onglet actif passaient en sombre sur sombre (≈ 1,1:1). */
+const contrastes=()=>p.evaluate(()=>{
+  const rvba=s=>{const m=String(s).match(/[\d.]+/g)||[];return {r:+m[0],g:+m[1],b:+m[2],a:m[3]===undefined?1:+m[3]}};
+  const sur=(h,b)=>({r:h.r*h.a+b.r*(1-h.a),g:h.g*h.a+b.g*(1-h.a),b:h.b*h.a+b.b*(1-h.a),a:1});
+  const lum=c=>{const f=v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)};return .2126*f(c.r)+.7152*f(c.g)+.0722*f(c.b)};
+  const ratio=(a,b)=>{const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05)};
+  const page=rvba(getComputedStyle(document.body).backgroundColor);
+  const mesure=(sel,barre)=>{const e=document.querySelector(sel),b=document.querySelector(barre);if(!e||!b)return null;
+    const fond=sur(rvba(getComputedStyle(b).backgroundColor),page);return +ratio(rvba(getComputedStyle(e).color),fond).toFixed(2)};
+  return {titre:mesure('.brand h1','header.top'),compteur:mesure('.ro:not(.acc) b','header.top'),onglet:mesure('nav.tabs button.on','nav.tabs')};
+});
+const lisible=c=>Object.values(c).every(x=>x!==null&&x>=4.5);
 v('defaut = sombre', await p.evaluate(()=>document.documentElement.getAttribute('data-theme'))==='dark');
 const bgSombre=await bg();
+const cSombre=await contrastes();
+v('sombre : titre, compteur et onglet actif lisibles sur leur barre (contraste ≥ 4,5)', lisible(cSombre), JSON.stringify(cSombre));
 
 /* Les réglages sont derrière la page « plus » : deux clics, pas un. */
 await p.evaluate(()=>document.querySelector('[data-tab="plus"]')?.click());
@@ -29,6 +45,9 @@ await p.evaluate(()=>document.querySelector('[data-theme-set="light"]')?.click()
 await p.waitForTimeout(300);
 const bgClair=await bg();
 v('bascule en clair : le fond CHANGE', bgSombre!==bgClair, bgSombre+' -> '+bgClair);
+/* L'onglet actif est alors « Plus » (réglages) : la mesure porte sur lui, c'est le même style. */
+const cClair=await contrastes();
+v('clair : titre, compteur et onglet actif lisibles sur leur barre (contraste ≥ 4,5)', lisible(cClair), JSON.stringify(cClair));
 v('barre systeme recalee', await p.evaluate(()=>document.querySelector('meta[name="theme-color"]').content)==='#f4f4f5');
 v('preference persistee', await p.evaluate(()=>localStorage.getItem('gm-theme'))==='light');
 
@@ -44,6 +63,8 @@ await p.emulateMedia({colorScheme:"light"});
 await p.goto('http://localhost:8097/index.html',{waitUntil:'networkidle'});
 const bgSys=await bg();
 v('mode systeme + OS clair = rendu clair', bgSys===bgClair, bgSys);
+const cSys=await contrastes();
+v('mode systeme + OS clair : barres lisibles (contraste ≥ 4,5)', lisible(cSys), JSON.stringify(cSys));
 await p.emulateMedia({colorScheme:"dark"});
 await p.reload({waitUntil:'networkidle'});
 v('mode systeme + OS sombre = rendu sombre', (await bg())===bgSombre);
