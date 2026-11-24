@@ -61,6 +61,7 @@
        transparence propre ; piste des jauges. Écrits en dur jusqu'au 21/11 : en thème
        clair, titre, compteur et onglet actif passaient en sombre sur fond sombre. */
     --barre:11,11,13; --piste:#232327;
+    --ok:#4ade80;   /* « modèle trouvé » (identification) : vert lisible sur chaque thème */
     --red:#ef4444; --red2:#dc2626; --red-dk:#b91c1c;
     --courant:#6b7280; --commun:#a1a1aa; --peucommun:#2dd4bf; --rare:#818cf8; --epique:#e879f9; --legendaire:#fbbf24;
     --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
@@ -537,9 +538,42 @@
 
   /* ---- Capture : analyse et résultats (P0 E3–E4) ---- */
   .p0-lot{ font:600 11px/1 var(--mono); letter-spacing:.12em; text-transform:uppercase; color:var(--muted2); margin:0 0 10px; }
-  .p0-ph{ border-radius:12px; overflow:hidden; border:1px solid var(--line2); background:#0a0a0c; }
-  .p0-ph img{ width:100%; display:block; object-fit:cover; max-height:38vh; }
-  .p0-ph.grande img{ max-height:52vh; }
+  /* Identification (maquette v2, 24/11) : photo cadrée par 4 coins de viseur, plein écran. */
+  .p0-ph{ position:relative; border-radius:22px; overflow:hidden; background:#0a0a0c; }
+  .p0-ph img{ width:100%; display:block; object-fit:cover; height:min(38vh,300px); }
+  .p0-ph.grande img{ height:min(52vh,420px); }
+  .ix-coins{ position:absolute; inset:16px; pointer-events:none; }
+  .ix-coins i{ position:absolute; width:28px; height:28px; border:0 solid rgba(255,255,255,.85); }
+  .ix-coins i:nth-child(1){ top:0; left:0; border-top-width:2px; border-left-width:2px; border-top-left-radius:8px; }
+  .ix-coins i:nth-child(2){ top:0; right:0; border-top-width:2px; border-right-width:2px; border-top-right-radius:8px; }
+  .ix-coins i:nth-child(3){ bottom:0; left:0; border-bottom-width:2px; border-left-width:2px; border-bottom-left-radius:8px; }
+  .ix-coins i:nth-child(4){ bottom:0; right:0; border-bottom-width:2px; border-right-width:2px; border-bottom-right-radius:8px; }
+  .ix-scan{ position:absolute; left:16px; right:16px; top:16px; height:2px; pointer-events:none;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.8),transparent); box-shadow:0 0 12px rgba(255,255,255,.4);
+    animation:ixScan 1.8s ease-in-out infinite alternate; }
+  @keyframes ixScan{ to{ top:calc(100% - 18px) } }
+  .scrim.ix-plein{ align-items:stretch; background:var(--bg); backdrop-filter:none; }
+  .sheet.ix-plein{ max-width:560px; max-height:none; height:100%; border:0; border-radius:0; background:var(--bg); }
+  .sheet.ix-plein .sh-head{ border-bottom:0; padding-top:calc(12px + var(--st)); }
+  .sheet.ix-plein .sh-head h3{ font-size:11px; color:var(--muted2); }
+  .sheet.ix-plein div[role="status"] > .p0-etat{ text-align:left; margin-top:20px; }
+  .sheet.ix-plein div[role="status"] > .p0-etat .p0-t{ font-size:22px; }
+  /* Sélecteurs doublés (.p0-k.ix-ok, .p0-lien.ix-pistes) : .p0-k et .p0-lien sont déclarés plus
+     bas, à poids égal ils l'emportaient (vert perdu, flèche renvoyée à la ligne : constaté au banc). */
+  .p0-k.ix-ok{ display:flex; align-items:center; gap:8px; font-size:11px; letter-spacing:.18em; color:var(--ok); }
+  .ix-ok .icon{ width:17px; height:17px; flex:none; }
+  .ix-marque{ margin-top:16px; font:600 12px/1 var(--mono); letter-spacing:.22em; text-transform:uppercase; color:var(--muted); }
+  .ix-modele{ margin-top:6px; font:700 44px/.95 var(--titre); letter-spacing:.005em; overflow-wrap:anywhere; }
+  .ix-conf{ margin-top:18px; padding:13px 14px; border:1px solid var(--line); border-radius:14px; background:var(--panel); }
+  .ix-conf-l{ display:flex; justify-content:space-between; gap:10px; font-size:13px; color:var(--muted); margin-bottom:9px; }
+  .ix-conf-l b{ color:var(--txt); font-family:var(--mono); }
+  .ix-jauge{ height:4px; border-radius:4px; background:var(--piste); overflow:hidden; }
+  .ix-jauge i{ display:block; height:100%; border-radius:4px; background:var(--ok); }
+  .p0-lien.ix-pistes{ display:flex; align-items:center; justify-content:center; gap:4px; }
+  .ix-pistes .icon{ width:15px; height:15px; }
+  .ix-cand-tx small{ margin:0 0 4px; letter-spacing:.08em; text-transform:uppercase; }
+  .ix-cand-tx b{ display:block; }
+  .ix-cand-j{ position:absolute; left:0; bottom:0; height:2px; background:var(--muted2); opacity:.7; }
   .p0-etat{ margin-top:16px; text-align:center; }
   .p0-k{ font:600 10px/1 var(--mono); letter-spacing:.16em; text-transform:uppercase; color:var(--muted2); }
   .p0-t{ font:700 19px/1.25 var(--sans); margin-top:8px; }
@@ -553,7 +587,7 @@
   .p0-actions .btn .icon{ width:18px; height:18px; flex:none; }
   .p0-lien{ display:block; width:100%; margin-top:10px; padding:10px; text-align:center; font:500 13px/1.3 var(--sans); color:var(--muted); min-height:44px; }
   .p0-cands{ display:flex; flex-direction:column; gap:8px; margin-top:14px; }
-  .p0-cand{ display:flex; align-items:center; justify-content:space-between; gap:12px; width:100%; min-height:52px; padding:12px 14px; border:1px solid var(--line); border-radius:10px; background:var(--panel2); text-align:left; animation:p0Entre .12s ease-out both; }
+  .p0-cand{ position:relative; overflow:hidden; display:flex; align-items:center; justify-content:space-between; gap:12px; width:100%; min-height:52px; padding:12px 14px; border:1px solid var(--line); border-radius:10px; background:var(--panel2); text-align:left; animation:p0Entre .12s ease-out both; }
   .p0-cand:active{ border-color:var(--line2); }
   .p0-cand b{ font:600 14px/1.25 var(--sans); }
   .p0-cand small{ display:block; font:400 11px/1.3 var(--mono); color:var(--muted2); margin-top:3px; }
@@ -597,6 +631,7 @@
     .rv-card[data-palier="2"]{ box-shadow:0 0 46px -12px var(--rv); }
     .rv-card[data-palier="3"]{ box-shadow:0 0 72px -8px var(--rv); }
     .p0-barre i{ animation:none; width:100%; opacity:.5; }
+    .ix-scan{ display:none; }
     #p0Flash{ animation:none; opacity:1; }
   }
 
@@ -622,7 +657,10 @@
        propre, ils passaient devant tout ce qui est plus bas (fiches à 50, barres à 30) : la
        carte recouvrait la fiche ouverte depuis elle. `isolation` les enferme dans la carte. */
     position:relative; isolation:isolate; }
-  .map-dark .leaflet-tile-pane{ filter:invert(1) hue-rotate(180deg) brightness(.9) contrast(.9) saturate(.6); }
+  /* Carte toujours sombre. Tuiles OpenStreetMap (images claires) : inversées par filtre, seul
+     moyen. NOTRE carte (protomaps, `map-nous`) a un vrai style sombre : l'inverser donnait des
+     couleurs faussées et des libellés moins nets (24/11). */
+  .map-dark:not(.map-nous) .leaflet-tile-pane{ filter:invert(1) hue-rotate(180deg) brightness(.9) contrast(.9) saturate(.6); }
   .map-dark .leaflet-container{ background:#0a0a0c; }
   .leaflet-popup-content-wrapper,.leaflet-popup-tip{ background:var(--panel)!important; color:var(--fg)!important; }
   .map-note{ font:400 11px/1.5 var(--mono); color:var(--dim); text-align:center; margin-top:10px; }
@@ -809,7 +847,7 @@
   --line:#dedee2; --line2:#c7c7ce;
   --txt:#18181b; --fg:#18181b;
   --muted:#52525b; --muted2:#71717a; --dim:#a1a1aa;
-  --barre:244,244,245; --piste:#e4e4e7;
+  --barre:244,244,245; --piste:#e4e4e7; --ok:#15803d;
 }
 @media (prefers-color-scheme:light){
   :root[data-theme="system"]{
@@ -817,7 +855,7 @@
     --line:#dedee2; --line2:#c7c7ce;
     --txt:#18181b; --fg:#18181b;
     --muted:#52525b; --muted2:#71717a; --dim:#a1a1aa;
-    --barre:244,244,245; --piste:#e4e4e7;
+    --barre:244,244,245; --piste:#e4e4e7; --ok:#15803d;
   }
 }
 
@@ -2961,7 +2999,7 @@ const VARIANTS = {
     const tabs = [
       ["defis","flag","Défis"],
       ["collection","car","Garage"],
-      ["__fab__","plus",""],
+      ["__fab__","camera",""],   // appareil photo, pas « + » : le geste du jeu (maquette v2, point 6)
       ["favoris","star","Favoris"],
       ["plus","more","Plus"],
     ];
@@ -3297,6 +3335,8 @@ const VARIANTS = {
         <div class="rows">
           ${installRow}
           <div class="srow"><div class="l"><b>Envoyer un retour</b><span>Bug, idée, ressenti — inclut la version pour que je m'y retrouve</span></div><button class="btn" data-act="feedback" aria-label="Envoyer un retour">${icon("mail","icon")}</button></div>
+          <div class="srow"><div class="l"><b>Confidentialité</b><span>Ce que l'app collecte, pourquoi, combien de temps</span></div><a class="btn" data-lien-legal="1" href="pages/confidentialite.html" target="_blank" rel="noopener" aria-label="Lire la politique de confidentialité">${icon("chevronright","icon")}</a></div>
+          <div class="srow"><div class="l"><b>Aide</b><span>Questions fréquentes, contact, suppression de compte</span></div><a class="btn" data-lien-legal="1" href="pages/support.html" target="_blank" rel="noopener" aria-label="Ouvrir l'aide">${icon("chevronright","icon")}</a></div>
           <div class="srow"><div class="l"><b>Thème</b><span>Sombre, clair, ou selon ton téléphone</span></div><div class="theme-pick" id="themePick">
             <button data-theme-set="dark">Sombre</button>
             <button data-theme-set="light">Clair</button>
@@ -3501,6 +3541,7 @@ const VARIANTS = {
     analyseK: "Analyse en cours", analyseT: "J'essaie d'identifier cette voiture…", analyseD: "Jusqu'à 15 s",
     manuel: "Choisir manuellement", nonClasse: "Voiture introuvable → Non classé",
     trouveK: "Modèle trouvé", confiance: "Confiance de reconnaissance", oui: "Oui, c'est elle", non: "Ce n'est pas mon véhicule",
+    autresPistes: "Voir les autres pistes",
     ambiguT: "J'hésite entre plusieurs modèles", ambiguS: "Vérifie celui qui correspond à ta voiture.", aucunDeCes: "Aucun de ces modèles",
     faibleT: "Je ne suis pas sûr", faibleS: "Voici les pistes que j'ai trouvées.",
     aucuneT: "Je n'ai pas trouvé de correspondance sûre", aucuneS: "Tu peux choisir la voiture manuellement.",
@@ -3523,22 +3564,38 @@ const VARIANTS = {
   const palierRarete = (r) => { const k = (RARITY[r] || RARITY.courant).rank; return k >= RARITY.epique.rank ? 3 : k >= RARITY.peucommun.rank ? 2 : 1; };
   const nomVoiture = (c) => `${c.c} ${escapeHtml(c.brand)} ${escapeHtml(c.model)}`;
   const lotHTML = () => draft && draft.lot ? `<p class="p0-lot">Photo ${draft.lot.index} / ${draft.lot.total}</p>` : "";
+  /* Écran d'identification (maquette v2, 24/11) : TA photo, cadrée par quatre coins de
+     viseur, jamais détourée ; pendant l'analyse, une ligne de balayage (coupée si le
+     mouvement est réduit). La photo est celle du joueur, produite par toThumb (canvas). */
+  const cadreP0 = (analyse) => `<div class="p0-ph${analyse ? " grande" : ""}"><img src="${draft.photo}" alt="Ta photo" /><span class="ix-coins" aria-hidden="true"><i></i><i></i><i></i><i></i></span>${analyse ? `<span class="ix-scan" aria-hidden="true"></span>` : ""}</div>`;
+  const pctP0 = (x) => Math.max(0, Math.min(100, Math.round((Number(x.confidence) || 0) * 100)));
 
   function p0ResultatHTML() {
     const r = draft.resultat, T = TXT_P0;
-    const cand = (x) => `<button class="p0-cand" data-cap="choix" data-id="${escapeHtml(x.id)}"><span><b>${nomVoiture(CARS_BY_ID[x.id])}</b></span><span class="pc">${Math.round(x.confidence * 100)} %</span></button>`;
+    // Piste : marque au-dessus, modèle en gras, % et une jauge fine (la marge se LIT, elle ne se calcule pas).
+    const cand = (x) => { const c = CARS_BY_ID[x.id], p = pctP0(x);
+      return `<button class="p0-cand" data-cap="choix" data-id="${escapeHtml(x.id)}"><span class="ix-cand-tx"><small>${c.c} ${escapeHtml(c.brand)}</small><b>${escapeHtml(c.model)}</b></span><span class="pc">${p} %</span><i class="ix-cand-j" style="width:${p}%" aria-hidden="true"></i></button>`; };
     const manuel = (principal) => `<button class="btn${principal ? " red" : ""}" data-cap="manuel"${principal ? "" : ""}>${T.manuel}</button>`;
     const nonClasse = `<button class="p0-lien" data-cap="nonclasse">${T.nonClasse}</button>`;
     if (r.type === "confirme") {
-      const x = r.cands[0];
-      return `<div class="p0-etat"><div class="p0-k">${T.trouveK}</div><div class="p0-t">${nomVoiture(CARS_BY_ID[x.id])}</div><div class="p0-s">${T.confiance} : ${Math.round(x.confidence * 100)} %</div></div>
-        <div class="p0-actions"><button class="btn red" data-cap="choix" data-id="${escapeHtml(x.id)}">${icon("check","icon")}&nbsp; ${T.oui}</button><button class="btn" data-cap="manuel">${T.non}</button></div>`;
+      /* Identité comme sur la fiche (marque, modèle en titre condensé, pays · catégorie ·
+         années), confiance sur une jauge. Les autres pistes restent à un toucher : le
+         matcher a pu en garder, et « Ce n'est pas mon véhicule » ouvre la liste complète. */
+      const x = r.cands[0], c = CARS_BY_ID[x.id], p = pctP0(x);
+      const autres = r.cands.length < 2 ? ""
+        : r.pistes ? `<div class="p0-cands">${r.cands.slice(1).map(cand).join("")}</div>`
+        : `<button class="p0-lien ix-pistes" data-cap="pistes">${T.autresPistes} ${icon("chevronright","icon")}</button>`;
+      return `<div class="p0-etat ix-res"><div class="p0-k ix-ok">${icon("check","icon")}<span>${T.trouveK}</span></div>
+          <div class="ix-marque">${escapeHtml(c.brand)}</div><div class="ix-modele">${escapeHtml(c.model)}</div>
+          <div class="fx-meta"><span>${c.c} ${escapeHtml(COUNTRY[c.c] || "")}</span><i></i><span>${escapeHtml(c.cat)}</span><i></i><span>${escapeHtml(c.yr)}</span></div>
+          <div class="ix-conf"><div class="ix-conf-l"><span>${T.confiance}</span><b>${p} %</b></div><div class="ix-jauge" aria-hidden="true"><i style="width:${p}%"></i></div></div></div>
+        <div class="p0-actions"><button class="btn red" data-cap="choix" data-id="${escapeHtml(x.id)}">${icon("check","icon")}&nbsp; ${T.oui}</button><button class="btn" data-cap="manuel">${T.non}</button></div>${autres}`;
     }
     if (r.type === "ambigu") {
       const ecart = typeof r.marge === "number" ? Math.round(r.marge * 100) : null;
       return `<div class="p0-etat"><div class="p0-t">${T.ambiguT}</div><div class="p0-s">${T.ambiguS}</div></div>
         <div class="p0-cands">${r.cands.map(cand).join("")}</div>
-        ${ecart !== null ? `<p class="p0-d" style="text-align:center">Écart : ${ecart} point${ecart > 1 ? "s" : ""}</p>` : ""}
+        ${ecart !== null ? `<p class="p0-d">Écart : ${ecart} point${ecart > 1 ? "s" : ""}</p>` : ""}
         <button class="p0-lien" data-cap="manuel">${T.aucunDeCes}</button>`;
     }
     if (r.type === "faible") {
@@ -3586,6 +3643,10 @@ const VARIANTS = {
 
   function renderCaptureBody() {
     const body = $("#capBody");
+    /* Plein écran dès qu'il y a une photo (maquette v2, 24/11) : viseur, analyse,
+       résultat, formulaire. Le choix de la source reste une feuille basse (c'est un menu). */
+    const plein = draft.step !== "source";
+    for (const el of [body.closest(".scrim"), body.closest(".sheet")]) if (el) el.classList.toggle("ix-plein", plein);
     if (draft.step === "source") {
       body.innerHTML = `
         <div class="src-list">
@@ -3599,7 +3660,7 @@ const VARIANTS = {
       // E3 : la photo, et l'annonce claire que l'analyse tourne (plus de formulaire prématuré).
       body.innerHTML = `
         ${lotHTML()}
-        <div class="p0-ph grande"><img src="${draft.photo}" alt="Ta photo" /></div>
+        ${cadreP0(true)}
         <div class="p0-etat" role="status" aria-live="polite">
           <div class="p0-k">${TXT_P0.analyseK}</div>
           <div class="p0-s" style="font-size:15px;color:var(--txt)">${TXT_P0.analyseT}</div>
@@ -3609,7 +3670,7 @@ const VARIANTS = {
         <button class="p0-lien" data-cap="manuel">${TXT_P0.manuel}</button>
       `;
     } else if (draft.step === "resultat") {
-      body.innerHTML = `${lotHTML()}<div class="p0-ph"><img src="${draft.photo}" alt="Ta photo" /></div><div role="status" aria-live="polite">${p0ResultatHTML()}</div>`;
+      body.innerHTML = `${lotHTML()}${cadreP0(false)}<div role="status" aria-live="polite">${p0ResultatHTML()}</div>`;
     } else if (draft.step === "camera") {
       body.innerHTML = `
         <div class="cam" id="camWrap">
@@ -4987,11 +5048,12 @@ const VARIANTS = {
        ferait l'appel externe que CARTE_URL existe pour éviter (CLAUDE.md §1.2). */
     if (CARTE_URL && !window.protomapsL) { $("#huntMap").innerHTML = `<div class="empty" style="height:100%">${icon("map")}<p class="t">Carte indisponible</p><p class="s">Le fond de carte n'a pas pu se charger. Tes données, elles, restent locales.</p></div>`; return; }
     const carteANous = !!CARTE_URL;
+    document.body.classList.toggle("map-nous", carteANous);
     huntMap = L.map($("#huntMap"), { zoomControl:true, attributionControl:carteANous });
     if (carteANous) {
       // Données OpenStreetMap (licence ODbL) : l'attribution reste due, même hébergées chez nous.
       huntMap.attributionControl.setPrefix(false);
-      protomapsL.leafletLayer({ url: CARTE_URL, flavor: "light", lang: "fr" }).addTo(huntMap);
+      protomapsL.leafletLayer({ url: CARTE_URL, flavor: "dark", lang: "fr" }).addTo(huntMap);
     } else L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(huntMap);
     const pts = [];
     for (const rec of state.spots.values()) {
@@ -5411,6 +5473,7 @@ const VARIANTS = {
       if (cap==="manuel") { draft.step="form"; renderCaptureBody(); const q = $("#pickQ"); if (q) q.focus(); return; }
       if (cap==="choix") { if (CARS_BY_ID[t.dataset.id]) draft.carId = t.dataset.id; draft.step="form"; renderCaptureBody(); const el = draft.carId && document.querySelector(`[data-pick="${draft.carId}"]`); if (el) el.scrollIntoView({block:"nearest"}); return; }
       if (cap==="nonclasse") { draft.step="form"; draft.showCustom=true; renderCaptureBody(); const b = $("#cBrand"); if (b) b.focus(); return; }
+      if (cap==="pistes") { if (draft.resultat) draft.resultat.pistes = true; renderCaptureBody(); return; }
       if (cap==="source") { stopCamera(); draft.step="source"; renderCaptureBody(); return; }
       if (t.dataset.cap==="camera") { draft.step="camera"; renderCaptureBody(); }
       else if (t.dataset.cap==="batch") {

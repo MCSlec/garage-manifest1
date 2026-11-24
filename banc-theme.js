@@ -40,6 +40,14 @@ await p.evaluate(()=>document.querySelector('[data-tab="settings"]')?.click());
 await p.waitForTimeout(500);
 v('ligne de reglage presente (3 boutons)', await p.evaluate(()=>document.querySelectorAll('[data-theme-set]').length)===3);
 v('bouton « Sombre » marque actif', await p.evaluate(()=>document.querySelector('[data-theme-set="dark"]')?.classList.contains('on')));
+/* Liens « Confidentialité » et « Aide » (24/11, exigé par Apple : politique accessible DEPUIS
+   l'app). Chaque lien doit mener à une page qui existe, et s'ouvrir sans quitter l'app. */
+const liens=await p.evaluate(async()=>Promise.all([...document.querySelectorAll('[data-lien-legal]')].map(async a=>{
+  const r=await fetch(a.href).catch(()=>null);
+  return {href:a.getAttribute('href'),cible:a.target,rel:a.rel,statut:r?r.status:0,couleur:getComputedStyle(a).color};})));
+v('Réglages : liens « Confidentialité » et « Aide » vers des pages qui existent, ouverts à côté de l\'app',
+  liens.length===2&&liens.some(l=>l.href==='pages/confidentialite.html')&&liens.some(l=>l.href==='pages/support.html')
+  &&liens.every(l=>l.statut===200&&l.cible==='_blank'&&/noopener/.test(l.rel)),JSON.stringify(liens));
 
 await p.evaluate(()=>document.querySelector('[data-theme-set="light"]')?.click());
 await p.waitForTimeout(300);

@@ -165,6 +165,12 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   v('la carte est lue sur NOTRE serveur, par morceaux (requêtes Range)', requetesCarte.length > 0 && requetesCarte.every(r => /^bytes=\d+-\d+$/.test(r.range || '')), JSON.stringify(requetesCarte.slice(0, 3)));
   const couleurs = await couleursPeintes(A.page);
   v('la carte est dessinée : eau et terre, deux couleurs distinctes au moins', couleurs.length >= 2, JSON.stringify(couleurs.slice(0, 6)));
+  /* Style SOMBRE natif (24/11) : les pixels peints sont sombres eux-mêmes, et aucun filtre
+     d'inversion ne s'applique (il faussait les couleurs du style clair). Luminance moyenne. */
+  const lum = (s) => { const [r, g, b] = s.split(',').map(Number); return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255; };
+  const lumMoy = couleurs.length ? couleurs.reduce((a, s) => a + lum(s), 0) / couleurs.length : 1;
+  const filtreA = await A.page.evaluate(() => getComputedStyle(document.querySelector('#huntMap .leaflet-tile-pane')).filter);
+  v('notre carte : style sombre natif (pixels sombres, aucun filtre d\'inversion)', lumMoy < 0.35 && filtreA === 'none', JSON.stringify({ lumMoy: +lumMoy.toFixed(2), filtreA }));
   v('le point de la prise est dessiné par-dessus', infoA.points === 1, infoA.points);
   v('attribution OpenStreetMap affichée (licence ODbL des données)', infoA.attribution.includes('OpenStreetMap'), infoA.attribution);
   v('aucune requête vers un autre domaine (OpenStreetMap compris)', A.externes.length === 0, JSON.stringify([...new Set(A.externes)]));
@@ -189,6 +195,8 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   const infoC = await C.page.evaluate(() => ({ pm: !!window.protomapsL, src: document.querySelectorAll('script[src*="protomaps"]').length }));
   v('non configurée : protomaps-leaflet n\'est pas chargé', !infoC.pm && infoC.src === 0);
   v('non configurée : tuiles OpenStreetMap comme avant', C.externes.length > 0 && C.externes.every(h => h.endsWith('tile.openstreetmap.org')), JSON.stringify([...new Set(C.externes)]));
+  const filtreC = await C.page.evaluate(() => getComputedStyle(document.querySelector('#huntMap .leaflet-tile-pane')).filter);
+  v('non configurée : tuiles OpenStreetMap toujours assombries (filtre d\'inversion)', /invert/.test(filtreC), filtreC);
   await C.ctx.close();
 
   await nav.close(); app.close(); carte.close();

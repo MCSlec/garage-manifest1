@@ -343,8 +343,20 @@ Règles à ne jamais enfreindre :
   - une page marque ne liste **que ses** séries spéciales (toutes sont Ferrari aujourd'hui : le
     banc le vérifie donc sur une **autre** marque) ;
   - ⚠️ **préfixes de classes** : `index.html` utilise `fx-` (fiche), `gx-` (accueil), `mq-`
-    (marques). **Jamais `gm-`**, réservé à `gm-specs.js` : un `.gm-liste` d'`index.html` héritait
-    des marges de celui de gm-specs (constaté le 21/11).
+    (marques), `ix-` (identification). **Jamais `gm-`**, réservé à `gm-specs.js` : un `.gm-liste`
+    d'`index.html` héritait des marges de celui de gm-specs (constaté le 21/11).
+- **Identification** (24/11, maquette v2, dernier écran, `banc-p0.js`) : la capture reste **une**
+  feuille (`#capBody`, rendue par étape) ; elle passe **plein écran** (`ix-plein` sur `.scrim` et
+  `.sheet`) dès qu'une photo existe, le choix de la source restant une feuille basse (un menu).
+  Photo dans un viseur à 4 coins (`.p0-ph .ix-coins`), ligne de balayage pendant l'analyse (coupée
+  en mouvement réduit). Résultat « trouvé » : marque, modèle en titre condensé, pays · catégorie ·
+  années (comme la fiche), confiance sur une jauge **égale** au % affiché. **« Voir les autres
+  pistes »** n'existe que si le matcher a gardé d'autres candidats — ce sont surtout les **versions
+  voisines** (Giulia → GTAm, Quadrifoglio), jamais la voiture trouvée répétée. Repères gardés pour
+  le banc : `role="status"`, `[data-cap="choix"].btn`, `.p0-cand`, `[data-cap="manuel"]`. ⚠️ Deux
+  règles de même poids : la dernière déclarée gagne — `.p0-k.ix-ok` et `.p0-lien.ix-pistes` sont
+  doublés exprès (sinon vert perdu, flèche renvoyée à la ligne, constaté au banc). Le bouton
+  central de la barre est un **appareil photo** (maquette v2, point 6).
 - **Couleurs : toujours par jeton**, jamais en dur dans une règle (21/11). Le fond des barres
   fixes était écrit `rgba(11,11,13,.92)` : en thème clair, titre, compteur et onglet actif
   passaient en sombre sur sombre (contraste 1,06:1, en ligne jusqu'en 20.210.0). Jetons
@@ -358,6 +370,9 @@ Règles à ne jamais enfreindre :
   `banc-dom.js` mesure donc dans un navigateur lancé sans cette option (vérifié par mutation).
 - **Carte** : `#huntMap` porte `isolation:isolate`. Les calques de Leaflet (z-index 400
   à 1000) passaient sinon **devant les fiches** (50) ouvertes depuis la carte (19/11).
+  Carte **toujours sombre** : les tuiles OpenStreetMap sont inversées par un filtre CSS ;
+  **notre** carte (`map-nous`, `CARTE_URL` renseignée) utilise le style **sombre natif** de
+  protomaps, sans filtre (24/11, `banc-carte-perso.js` mesure les pixels peints).
 
 ---
 
@@ -550,8 +565,8 @@ incrémenter conjointement :**
 1. `VERSION_MODULE` dans `gm-specs.js` (ligne ~22).
 2. `VERSION` (`"garage-v…"`) dans `sw.js` (ligne ~12).
 
-Ces deux numéros sont **tenus synchronisés** (au 21/11/2026 : `gm-specs.js` →
-`20.211.0`, `sw.js` → `garage-v20.211.0`). `VERSION_MODULE` s'affiche en outre
+Ces deux numéros sont **tenus synchronisés** (au 24/11/2026 : `gm-specs.js` →
+`20.212.0`, `sw.js` → `garage-v20.212.0`). `VERSION_MODULE` s'affiche en outre
 dans l'UI via `grefferVersion()`, ce qui permet de vérifier de visu quelle version
 tourne réellement sur l'appareil.
 

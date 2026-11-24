@@ -54,7 +54,10 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   const capture = async (n) => { if (CAPTURES) { await page.waitForTimeout(450); await page.screenshot({ path: path.join(CAPTURES, n + '.png') }); } };
   const texte = (sel) => page.evaluate(s => document.querySelector(s)?.textContent.replace(/\s+/g, ' ').trim() || '', sel);
   const ouvrir = async () => { await page.evaluate(() => { document.querySelector('#revealWrap')?.remove(); document.querySelector('[data-close]')?.click(); }); await page.waitForTimeout(150); await page.evaluate(() => document.querySelector('[data-fab]').click()); await page.waitForSelector('#fileInput', { state: 'attached' }); };
-  const photographier = async (reponse) => { file.push(reponse); await ouvrir(); await capture('p0-1-source'); await page.setInputFiles('#fileInput', fichier); };
+  let sourcePlein = null;   // l'écran « choisir une source » est-il plein écran ? (il ne doit pas : c'est un menu)
+  const photographier = async (reponse) => { file.push(reponse); await ouvrir(); await capture('p0-1-source');
+    if (sourcePlein === null) sourcePlein = await page.evaluate(() => !!document.querySelector('.sheet.ix-plein'));
+    await page.setInputFiles('#fileInput', fichier); };
   const resultat = () => page.waitForSelector('#capBody .p0-cand, #capBody [data-cap="manuel"].btn, #capBody [data-cap="choix"].btn', { timeout: 8000 });
 
   /* E3 — analyse visible, formulaire absent */
@@ -63,13 +66,41 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   const enAnalyse = await texte('#capBody');
   v('E3 : pendant la reconnaissance, « Analyse en cours » est affiché, sans formulaire', /Analyse en cours/.test(enAnalyse) && !(await page.$('#pickQ')), enAnalyse.slice(0, 80));
   v('E3 : annoncé aux lecteurs d\'écran (role=status)', !!(await page.$('#capBody [role="status"][aria-live="polite"]')));
+  /* Maquette v2 (24/11) : identification plein écran, photo cadrée par 4 coins de viseur ;
+     le choix de la source reste une feuille basse (c'est un menu, pas un écran). */
+  const plein = await page.evaluate(() => ({ scrim: !!document.querySelector('.scrim.ix-plein'), feuille: !!document.querySelector('.sheet.ix-plein'),
+    coins: document.querySelectorAll('#capBody .p0-ph .ix-coins i').length, scan: !!document.querySelector('#capBody .ix-scan') }));
+  v('E3 : analyse en plein écran, photo dans un viseur (4 coins) avec ligne de balayage ; source en feuille basse',
+    plein.scrim && plein.feuille && plein.coins === 4 && plein.scan && sourcePlein === false, JSON.stringify({ ...plein, sourcePlein }));
   await capture('p0-3-analyse');
 
   /* E4a — sûr */
   await resultat();
   const sur = await texte('#capBody');
-  v('E4a : statut CONFIRMÉ → « Modèle trouvé », Giulia, confiance réelle en %', /Modèle trouvé/.test(sur) && /Giulia/.test(sur) && /Confiance de reconnaissance : \d+ %/.test(sur), sur.slice(0, 120));
+  // Le % est dans son propre élément depuis la maquette v2 (24/11) : « Confiance de reconnaissance  93 % ».
+  v('E4a : statut CONFIRMÉ → « Modèle trouvé », Giulia, confiance réelle en %', /Modèle trouvé/.test(sur) && /Giulia/.test(sur) && /Confiance de reconnaissance\s*:?\s*\d+ %/.test(sur), sur.slice(0, 120));
+  const ident = await page.evaluate(() => ({
+    marque: document.querySelector('#capBody .ix-marque')?.textContent.trim() || null,
+    modele: document.querySelector('#capBody .ix-modele')?.textContent.trim() || null,
+    meta: document.querySelector('#capBody .fx-meta')?.textContent.replace(/\s+/g, ' ').trim() || null,
+    pct: document.querySelector('#capBody .ix-conf-l b')?.textContent.trim() || null,
+    jauge: document.querySelector('#capBody .ix-jauge i')?.style.width || null,
+    pistes: !!document.querySelector('#capBody [data-cap="pistes"]'),
+  }));
+  v('E4a : identité comme sur la fiche (marque, modèle, pays · catégorie · années) et jauge = le % affiché',
+    ident.marque === 'Alfa Romeo' && ident.modele === 'Giulia' && /Italie/.test(ident.meta || '') && /Berline/.test(ident.meta || '') && /2015/.test(ident.meta || '')
+    && !!ident.pct && ident.jauge === ident.pct.replace(/\s/g, ''), JSON.stringify(ident));
   await capture('p0-4a-confirme');
+  /* « Voir les autres pistes » : le matcher garde les versions VOISINES du modèle reconnu
+     (Giulia → GTAm, Quadrifoglio) ; c'est le cas utile (« et si c'était la QV ? »). Le lien
+     les montre, sans répéter la Giulia, et le choix principal reste à l'écran. */
+  await page.evaluate(() => document.querySelector('#capBody [data-cap="pistes"]')?.click());
+  await page.waitForTimeout(250);
+  const voisines = await page.evaluate(() => [...document.querySelectorAll('#capBody .p0-cand')].map(b => b.getAttribute('data-id')));
+  v('E4a : « Voir les autres pistes » montre les versions voisines (Giulia → GTAm, Quadrifoglio), sans répéter la Giulia',
+    ident.pistes && voisines.length >= 1 && voisines.every(id => id.startsWith('alfa-giulia-')) && !voisines.includes('alfa-giulia')
+    && !(await page.$('#capBody [data-cap="pistes"]')) && !!(await page.$('#capBody [data-cap="choix"].btn')), JSON.stringify({ lien: ident.pistes, voisines }));
+  await capture('p0-4a-pistes');
   await page.click('#capBody [data-cap="choix"].btn');
   await page.waitForSelector('[data-act="save"]:not([disabled])', { timeout: 5000 });
   v('« Oui, c\'est elle » → formulaire, Giulia présélectionnée', await page.evaluate(() => !!document.querySelector('[data-pick="alfa-giulia"].on')));
@@ -110,6 +141,24 @@ const res = []; const v = (t, ok, d) => res.push({ t, ok: !!ok, d });
   await page.click('#capBody .p0-cand:nth-child(2)');
   await page.waitForSelector('[data-act="save"]:not([disabled])');
   v('E4b : toucher la 2e piste présélectionne la BMW M4', await page.evaluate(() => !!document.querySelector('[data-pick="bmw-m4"].on')));
+
+  /* E4a bis — modèle SANS voisin au catalogue : aucune autre piste, donc pas de lien
+     (un lien qui n'ouvre rien serait un mensonge). Voiture choisie par le vrai matcher. */
+  const seul = await page.evaluate(() => {
+    for (const c of CARS) {
+      if (c.custom) continue;
+      const m = window.GMMatcher.rapprocher([{ brand: c.brand, model: c.model, confidence: 0.95 }], { catalogue: CARS });
+      if (m.statut === 'CONFIRME' && m.candidats.length === 1 && m.candidats[0].id === c.id) return { id: c.id, brand: c.brand, model: c.model };
+    }
+    return null;
+  });
+  if (seul) {
+    await photographier({ corps: [{ brand: seul.brand, model: seul.model, confidence: 0.95 }] });
+    await resultat();
+    const sansVoisin = await page.evaluate(() => ({ trouve: /Modèle trouvé/.test(document.querySelector('#capBody').textContent),
+      lien: !!document.querySelector('#capBody [data-cap="pistes"]') }));
+    v('E4a bis : modèle sans voisin au catalogue → pas de lien « Voir les autres pistes »', sansVoisin.trouve && !sansVoisin.lien, JSON.stringify({ seul, ...sansVoisin }));
+  } else v('E4a bis : (préparation) une voiture confirmée sans voisin existe au catalogue', false);
 
   /* E4c — pistes faibles / rien */
   await photographier({ corps: [{ brand: 'BMW', model: 'Serie 3 Touring', confidence: 0.3 }] });

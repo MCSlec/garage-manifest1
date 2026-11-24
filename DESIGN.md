@@ -265,4 +265,9 @@ validation, écran par écran, en patchs ciblés, captures avant / après (§2 c
   - **Corrigé en passant** : thème clair illisible sur les barres fixes (titre, compteur, onglet
     actif : contraste 1,06:1) et barre de défilement permanente sur Android (capture du
     propriétaire). Les deux sont gardés au banc.
-- ⏳ Identification (dernier écran de la maquette).
+- ✅ **Identification** (24/11, sur la branche) : plein écran dès qu'il y a une photo, photo
+  dans un viseur à 4 coins (jamais détourée), ligne de balayage pendant l'analyse ; « Modèle
+  trouvé » en vert, marque, modèle en titre condensé, pays · catégorie · années, confiance sur
+  une jauge ; « Voir les autres pistes » quand le matcher en a (versions voisines). Hésitation
+  et pistes faibles : chaque piste avec sa marque, son modèle et une jauge fine. Bouton central
+  de la barre : **appareil photo**. **La maquette v2 est entièrement mise en œuvre.**

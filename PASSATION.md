@@ -5,20 +5,20 @@
 > Il dit **où on en est, ce qui est prouvé, ce qui reste, et les pièges déjà payés**.
 > Le détail vit ailleurs ; ici, on pointe vers lui.
 >
-> **Dernière mise à jour : 23/11/2026** (branche
-> `claude/create-claude-documentation-8eo2t7`, version `20.211.0`). **En ligne : v20.210.0**
-> (PR #8, 21/11) : **fiche plein écran** (maquette v2, onglets Fiche · Photos · Ma prise),
-> police des titres hébergée, séries spéciales Ferrari en entrées propres ; avant elle (PR #4
-> à #7) synchronisation automatique, attribution OpenStreetMap, « Envoyer un retour », pages
-> des stores. **Sur la branche, en attente de « merge » (v20.211.0)** : lot 2 de la maquette
-> v2 — **accueil du Garage, pages marque, liste des marques, révélation** (`DESIGN.md` §3,
-> `CLAUDE.md` §3), plus deux défauts trouvés en ligne : thème clair illisible sur les barres
-> fixes, barre de défilement permanente sur Android (capture du propriétaire). 22 bancs verts,
-> 13 mutations détectées. **Prochaine étape : l'écran d'identification** (dernier de la
-> maquette), captures avant / après montrées avant mise en ligne. Question du propriétaire
-> du 23/11 : publier sur l'App Store depuis la salle Mac de sa fac (réponse dans la
-> conversation : possible, mais compte Apple payant et wrapper natif à décider ; rien de
-> lancé, `RESTE-A-FAIRE.md` §0 « rien de payant »). Comptes, Google et
+> **Dernière mise à jour : 24/11/2026** (branche
+> `claude/create-claude-documentation-8eo2t7`, version `20.212.0`). **En ligne : v20.210.0**
+> (PR #8, 21/11) : **fiche plein écran** (maquette v2). **Sur la branche, en attente de
+> « merge » (v20.212.0)** : le reste de la maquette v2, **entièrement mise en œuvre** —
+> accueil du Garage, pages marque, liste des marques, révélation (21/11), **identification
+> plein écran et bouton central appareil photo** (24/11) — plus : thème clair réparé, barre
+> de défilement retirée sur téléphone, liens « Confidentialité » / « Aide » dans Réglages,
+> style sombre natif pour notre carte (en sommeil), politique de confidentialité complétée
+> sur source (Gemini, DPF, Time Travel). `CLAUDE.md` §3, `DESIGN.md` §3.
+> ⚠️ **Trouvé le 24/11** : les conditions de l'API Gemini interdisent le quota **gratuit**
+> pour une app ouverte au public en Europe (`RESTE-A-FAIRE.md` §0, ligne 🔴⚖️) : décision
+> du propriétaire, rien de lancé. **Prochaine étape** : ce que le propriétaire choisit après
+> le « merge » ; tout ce que l'agent pouvait faire seul dans `RESTE-A-FAIRE.md` l'est (le
+> reste attend une décision, un paiement ou un geste dans ses comptes). Comptes, Google et
 > relais IA **en service** (§2) : lire le §2 avant toute instruction au propriétaire.
 > Le propriétaire suit la **feuille de route** en tête de `TUTO-GRATUIT.md` (étapes
 > 1 à 19, uniquement ce qui reste) : c'est elle qu'on cite, par son numéro.

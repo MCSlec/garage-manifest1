@@ -11,6 +11,29 @@
 > **Règle de maintenance :** toute modification du serveur qui change ce qui est
 > collecté, combien de temps, ou par qui, modifie ce fichier dans le même commit.
 >
+> **Sources des passages factuels** (vérifiés le 24/11/2026 par recherche ; la page
+> des conditions de Google n'est pas joignable depuis l'environnement de travail,
+> lue par extraits indexés) :
+> - Fournisseur d'IA : `IA_FOURNISSEUR = gemini`, sans clé Anthropic (relais
+>   constaté le 18/11, `PASSATION.md` §2). **Si le relais change de fournisseur,
+>   la ligne du tableau des sous-traitants et le paragraphe « Sans compte » changent
+>   dans le même commit.**
+> - Gemini : « Gemini API Additional Terms of Service »
+>   (https://ai.google.dev/gemini-api/terms) : *« If you're in the European Economic
+>   Area, Switzerland, or the United Kingdom, the terms under "How Google uses Your
+>   Data" in "Paid Services" apply to all Services, including Google AI Studio and
+>   unpaid quota in the Gemini API »* ; conservation de 55 jours : page « Abuse
+>   monitoring » (https://ai.google.dev/gemini-api/docs/usage-policies). ⚠️ Les
+>   mêmes conditions disent *« You may use only Paid Services when making API
+>   Clients available to users in the European Economic Area, Switzerland, or the
+>   United Kingdom »* : voir `RESTE-A-FAIRE.md` §0.
+> - Data Privacy Framework : déclarations de Cloudflare (politique de
+>   confidentialité, page RGPD), de Google (policies.google.com/privacy/frameworks)
+>   et de Resend (journal des nouveautés, 13/03/2025). Liste officielle non lue.
+> - Time Travel D1 : documentation Cloudflare
+>   (https://developers.cloudflare.com/d1/reference/time-travel/) : 7 jours (offre
+>   gratuite), 30 jours (Workers Paid).
+>
 > **Ce fichier est la source de la page publique** `pages/confidentialite.html`,
 > générée par `node banc-pages.js --html` (21/11). Ce préambule, jusqu'au premier
 > `---`, n'y figure pas. Après toute modification : régénérer ; `node banc-pages.js`
@@ -46,15 +69,12 @@ modèle proposés.
   n'est jamais envoyée : la voiture est déjà connue, il n'y a rien à
   identifier. **[À DÉCIDER — un réglage pour couper complètement la
   reconnaissance automatique n'existe pas encore.]**
-- **[À COMPLÉTER — au lancement : la durée pendant laquelle le fournisseur
-  d'IA conserve les requêtes reçues par son API, et son engagement de ne pas
-  s'en servir pour entraîner ses modèles, d'après ses conditions commerciales
-  en vigueur.]** ⚠️ Point sensible pour **Gemini en offre gratuite** : les
-  conditions de Google prévoient que les contenus d'un service non payant
-  peuvent servir à améliorer ses produits, avec un régime différent pour les
-  utilisateurs établis dans l'Espace économique européen. **[À VÉRIFIER dans
-  les « Gemini API Additional Terms of Service » en vigueur avant d'activer
-  Gemini, et l'écrire ici tel quel.]**
+- Le fournisseur du modèle d'IA est aujourd'hui **Google** (modèle Gemini). Ses
+  conditions d'utilisation de l'API Gemini prévoient que, l'éditeur de l'app étant
+  établi dans l'Union européenne, Google **ne se sert pas** des photos reçues pour
+  améliorer ses produits ni pour entraîner ses modèles. Il **conserve la photo et
+  la réponse 55 jours**, uniquement pour détecter les abus (le non-respect de sa
+  politique d'utilisation).
 
 ## Ce qui est collecté quand tu crées un compte
 
@@ -132,11 +152,14 @@ données ne servent qu'à te rendre ton garage.
 | **Cloudflare, Inc.** | Hébergement du serveur (Workers), de la base (D1) et des photos (R2). La base est créée sous **juridiction UE** : elle est stockée et traitée dans l'Union européenne (réglage fixé à sa création, constaté le 04/10/2026 par l'API Cloudflare : `jurisdiction: "eu"`) | Tout ce qui est listé plus haut |
 | **Resend** | Envoi de l'e-mail de connexion | Ton adresse e-mail et le code |
 | **Google LLC** (seulement si tu choisis « Continuer avec Google ») | Te connecter avec ton compte Google : Google confirme ton identité et ton adresse | Google sait que tu te connectes à Garage Manifest ; il ne reçoit **rien** de ta collection |
-| **Fournisseur du modèle d'IA** : **Anthropic, PBC** (Claude) ou **Google LLC** (Gemini), selon la configuration du relais. **[À COMPLÉTER — nommer ici le ou les fournisseurs réellement actifs au lancement.]** | Reconnaissance de la voiture sur la photo | La photo envoyée à l'identification, sans ton adresse ni ton identifiant (le relais ne transmet que l'image) |
+| **Google LLC** (modèle d'IA Gemini) | Reconnaissance de la voiture sur la photo | La photo envoyée à l'identification, sans ton adresse ni ton identifiant (le relais ne transmet que l'image) ; conservée 55 jours par Google pour la détection des abus, jamais pour entraîner ses modèles (voir plus haut) |
 
-Ces sociétés sont établies aux **États-Unis**. **[À COMPLÉTER — vérifier au
-moment du lancement leur adhésion au Data Privacy Framework UE–États-Unis ou
-leurs clauses contractuelles types, et l'indiquer ici.]**
+Ces sociétés sont établies aux **États-Unis**. Cloudflare, Google et Resend
+déclarent adhérer au **Data Privacy Framework UE–États-Unis**, reconnu par la
+décision d'adéquation de la Commission européenne du 10 juillet 2023 : le
+transfert de tes données vers elles est encadré par cette décision.
+**[À VÉRIFIER au lancement sur la liste officielle (dataprivacyframework.gov) :
+la certification se renouvelle chaque année.]**
 
 ## Sécurité
 
@@ -162,9 +185,10 @@ leurs clauses contractuelles types, et l'indiquer ici.]**
   **immédiat et total** côté serveur : adresse, sessions, collection et photos.
   Ton téléphone garde son garage local. Sans l'app : voir
   [Supprimer ton compte](./suppression-compte.html).
-  **[À VÉRIFIER au lancement — durée des sauvegardes techniques de Cloudflare D1
-  (« Time Travel ») selon l'offre choisie, pendant laquelle une donnée effacée
-  reste restaurable par l'hébergeur ; l'indiquer ici.]**
+  L'hébergeur garde une sauvegarde technique de la base, qui permet de la
+  remettre dans un état passé (« Time Travel » de Cloudflare D1) : une donnée
+  effacée y reste restaurable **7 jours** avec l'offre gratuite de Cloudflare,
+  utilisée aujourd'hui (30 jours avec son offre payante), puis disparaît.
 - **Accès et portabilité** : Réglages → « Exporter ma collection » produit un
   fichier JSON complet (photos incluses). Une copie de tout ce que le serveur
   détient (adresse, date de création, moyens de connexion reliés, collection,

@@ -32,9 +32,26 @@ Règle d'or : **n'enregistre aucune carte bancaire** (Google AI Studio, Cloudfla
 Sans moyen de paiement, un service gratuit **refuse** au-delà de son quota au lieu de
 facturer : c'est la meilleure protection, meilleure qu'une alerte.
 
-⚠️ Contrepartie de Gemini gratuit : Google peut se servir des photos envoyées pour
-améliorer ses produits (régime UE à vérifier, `cloud/CONFIDENTIALITE.md`). À dire dans la
-politique de confidentialité avant d'ouvrir l'app au public.
+✅ **Vérifié le 24/11 (conditions de l'API Gemini)** : le développeur étant établi dans
+l'UE, les règles « payantes » de Google sur les données s'appliquent **aussi** au quota
+gratuit — Google **ne** réutilise **pas** les photos pour améliorer ses produits ; il
+les garde 55 jours pour détecter les abus. Écrit dans `cloud/CONFIDENTIALITE.md`.
+
+- [ ] 🔴⚖️ **Mais les mêmes conditions interdisent le quota gratuit pour une app ouverte
+  au public en Europe** (trouvé le 24/11) : *« You may use only Paid Services when making
+  API Clients available to users in the European Economic Area, Switzerland, or the
+  United Kingdom »*. « Paid Service » = projet Google Cloud **relié à un compte de
+  facturation** (donc une carte). Ton essai sur toi seul et quelques proches est une zone
+  grise ; **l'ouverture au public ne l'est pas**. Trois voies, à toi de trancher (aucune
+  n'est lancée) :
+  - **(a)** activer la facturation sur le projet de la clé du relais : Gemini Flash coûte
+    de l'ordre de quelques dixièmes de centime par photo ; garde-fou : plafond de budget
+    + les quotas du relais, qui existent déjà ;
+  - **(b)** passer le relais sur **Claude** (`IA_FOURNISSEUR = anthropic`, déjà codé) :
+    payant aussi ;
+  - **(c)** couper la reconnaissance automatique pour le public tant qu'on reste
+    gratuit (choix manuel seulement).
+  Source : `cloud/CONFIDENTIALITE.md`, préambule (citations et adresses).
 
 **En pause tant qu'on reste gratuit** (ils demandent de payer) :
 - **Comptes ouverts au public** (§2) : **deux** verrous payants. Resend n'écrit à
@@ -73,6 +90,9 @@ Guide détaillé : `cloud/DEPLOIEMENT.md`.
   plus (connexion Google) ; sans elles, la suppression de compte et la purge de nuit
   échouent. Sans risque (`CREATE TABLE IF NOT EXISTS`) ; « go schéma » et je le fais
   par le connecteur.
+  → *Note du 24/11 :* d'après `PASSATION.md` §2, le schéma a été rejoué **le 14/10 par le
+  connecteur, sur ton « go »** (8 tables + 3 index identiques au dépôt). Coche-la si tu
+  confirmes.
 
 > ✅ **18/11 : voie gratuite déployée par le tableau de bord** (séance 2 de
 > `TUTO-GRATUIT.md`) : Worker `garage-comptes` en ligne (code relu par le connecteur,
@@ -202,12 +222,22 @@ Tout est dans `cloud/CONFIDENTIALITE.md` :
 - [ ] Identité et contact du **responsable du traitement**, date de publication.
 - [ ] Vérifier l'adhésion de **Cloudflare**, **Resend** et du **fournisseur d'IA**
   au Data Privacy Framework UE–États-Unis (transfert hors UE).
+  → **Recherche faite le 24/11** : les trois **déclarent** être certifiés (Resend
+  depuis mars 2025), écrit dans la politique. **Reste à toi** : un coup d'œil sur la
+  liste officielle, `dataprivacyframework.gov` (recherche par nom), que je ne peux pas
+  ouvrir d'ici.
 - [ ] Fournisseur d'IA retenu : relever la **durée de conservation** des photos
   reçues par son API et son engagement de **non-entraînement** ; les reporter
   dans `CONFIDENTIALITE.md` (section « Sans compte »). Ce texte concerne **tous**
   les utilisateurs, avec ou sans compte : la reconnaissance est active par défaut.
+  → **Écrit le 24/11** (Gemini : 55 jours, détection des abus seulement, aucun
+  entraînement). Voir aussi la ligne 🔴⚖️ du §0.
 - [ ] Vérifier la durée de rétention des sauvegardes techniques D1
   (« Time Travel ») selon l'offre Cloudflare choisie.
+  → **Écrit le 24/11** : 7 jours en offre gratuite, 30 en offre payante (documentation
+  Cloudflare).
+- 🔗 **Lien vers la politique dans l'app** : fait le 24/11 (Réglages › Application ›
+  « Confidentialité » et « Aide »), en ligne au prochain « merge ».
 - [ ] 🟡 **Comptes inactifs** : durée de conservation (proposition : suppression
   après 3 ans sans connexion, précédée d'un e-mail). Je code la purge dès que
   c'est tranché.
@@ -235,10 +265,11 @@ pas : `cloud/CARTE.md`. Nécessite le compte Cloudflare et le domaine du §2.
 5. [ ] Coller la **règle CORS** du guide sur le bucket.
 6. [ ] **Me donner l'adresse du fichier** (`https://carte.…/france.pmtiles`) :
    je renseigne `CARTE_URL` et je livre.
-7. [ ] 🟡 **Design de la carte** : aujourd'hui le style **standard clair** de
-   protomaps, identique en thème sombre (une carte claire dans une app sombre).
-   Palette clair + sombre à définir (ChatGPT possible, sur la base du brief
-   donné le 30/09) ; je la branche ensuite dans le moteur, sans toucher au code.
+7. [ ] 🟡 **Design de la carte** : depuis le 24/11, notre carte utilise le **style sombre
+   natif** de protomaps (avant : le style clair, inversé par un filtre, aux couleurs
+   faussées). La carte de l'app est sombre dans les deux thèmes, comme aujourd'hui.
+   Une palette **sur mesure** reste possible (ChatGPT, sur la base du brief du 30/09) ;
+   je la branche ensuite dans le moteur, sans toucher au code. Rien d'urgent.
 
 ## 4 bis. 📱 Plus tard : App Store / Google Play (à anticiper, rien à faire maintenant)
 
@@ -358,10 +389,12 @@ Capacitor autour du même code) :
      la planche Giulia déjà dans `design/`. Si tu en as une plus récente, renvoie-la.
   8. **Ta photo de 599** dans la maquette : la verser dans le dépôt (public) ? Sinon elle reste
      hors du dépôt, plaque floutée ou non.
-- [ ] 🟡 **Maquette v2, écran par écran** (ordre validé : fiche, Garage, révélation, pages marque, identification). **Fiche : en ligne depuis la 20.210.0** (plein écran, onglets Fiche · Photos · Ma prise). **Garage, pages marque, révélation : faits sur la branche le 21/11** (captures avant / après envoyées), avec la barre de défilement retirée sur téléphone et le thème clair réparé ; en ligne au prochain « merge ». Reste l'écran d'identification. À cocher quand tu auras tout vu sur ton téléphone.
+- [ ] 🟡 **Maquette v2, écran par écran** (ordre validé : fiche, Garage, révélation, pages marque, identification). **Fiche : en ligne depuis la 20.210.0** (plein écran, onglets Fiche · Photos · Ma prise). **Garage, pages marque, révélation : faits sur la branche le 21/11** (captures avant / après envoyées), avec la barre de défilement retirée sur téléphone et le thème clair réparé ; en ligne au prochain « merge ». **Identification et bouton central appareil photo : faits sur la branche le 24/11** (captures avant / après envoyées) : la maquette est entièrement mise en œuvre. À cocher quand tu auras tout vu sur ton téléphone.
 - [ ] 🟡 **Fiche voiture à aligner sur les maquettes** (`design/maquette-fiche-giulia*.png`) :
   aujourd'hui deux pages à faire glisser, sans onglets ni grille à icônes. Chantier à lancer
   sur ton « go », écarts de données déjà listés dans `DESIGN.md` §0.
+  → *Note du 24/11 :* **dépassée par la maquette v2** : la fiche plein écran à onglets
+  (Fiche · Photos · Ma prise) est en ligne depuis la 20.210.0. Coche-la si elle te convient.
 
 - [x] **Comptes en mode essai, gratuit** (« go comptes essai », fait le 01/10, v20.196.0 — à toi : §2, voie gratuite) : je rends R2 facultatif
   dans `compte-worker.js` (sauvegarde de la collection **sans les photos** quand
