@@ -42,16 +42,25 @@ les garde 55 jours pour détecter les abus. Écrit dans `cloud/CONFIDENTIALITE.m
   API Clients available to users in the European Economic Area, Switzerland, or the
   United Kingdom »*. « Paid Service » = projet Google Cloud **relié à un compte de
   facturation** (donc une carte). Ton essai sur toi seul et quelques proches est une zone
-  grise ; **l'ouverture au public ne l'est pas**. Trois voies, à toi de trancher (aucune
-  n'est lancée) :
-  - **(a)** activer la facturation sur le projet de la clé du relais : Gemini Flash coûte
-    de l'ordre de quelques dixièmes de centime par photo ; garde-fou : plafond de budget
-    + les quotas du relais, qui existent déjà ;
-  - **(b)** passer le relais sur **Claude** (`IA_FOURNISSEUR = anthropic`, déjà codé) :
-    payant aussi ;
-  - **(c)** couper la reconnaissance automatique pour le public tant qu'on reste
-    gratuit (choix manuel seulement).
-  Source : `cloud/CONFIDENTIALITE.md`, préambule (citations et adresses).
+  grise ; **l'ouverture au public ne l'est pas**.
+  ✅ **Décision du 26/11 (toi)** : *« la reconnaissance doit rester, ça peut nous
+  démarquer »* → la voie (c) « couper la reconnaissance » est **écartée**. Reste à choisir,
+  **au moment d'ouvrir au public** (rien à payer avant) :
+  - **(a)** Gemini payant (modèle actuel, 3.1 Flash-Lite : 0,25 $ / 1,50 $ le million de
+    jetons, soit **≈ 0,5 € les 1 000 photos** ; ma note du 24/11, « quelques dixièmes de
+    centime par photo », surestimait d'environ 10 fois) ;
+  - **(b)** Claude (`IA_FOURNISSEUR = anthropic`, déjà codé) : **≈ 2 € les 1 000 photos**
+    avec Haiku 4.5, **≈ 0,2 €** avec Haiku 5.5 si l'essai prévu au §2 ter passe.
+  ⚠️ **Ce qui fait pencher vers (b) — recommandation** : l'âge. Les conditions de l'API
+  Gemini visent les applications *« directed towards or likely to be accessed by
+  individuals under the age of 18 »* (formulation lue par extraits, texte complet non
+  joignable d'ici : à relire sur la page en vigueur) ; un jeu de photos de voitures sera
+  utilisé par des ados. Anthropic, lui, **autorise** les apps utilisées par des mineurs,
+  avec des garde-fous (notre usage s'y prête : une photo entre, une marque et un modèle
+  sortent, aucune discussion libre). Garde-fou commun : plafond de budget chez le
+  fournisseur + les quotas du relais, qui existent déjà.
+  Sources : `cloud/CONFIDENTIALITE.md`, préambule ; tarifs relevés le 26/11 (pages de prix
+  Google et Anthropic, par extraits indexés).
 
 **En pause tant qu'on reste gratuit** (ils demandent de payer) :
 - **Comptes ouverts au public** (§2) : **deux** verrous payants. Resend n'écrit à
@@ -238,15 +247,36 @@ Tout est dans `cloud/CONFIDENTIALITE.md` :
   Cloudflare).
 - 🔗 **Lien vers la politique dans l'app** : fait le 24/11 (Réglages › Application ›
   « Confidentialité » et « Aide »), en ligne au prochain « merge ».
-- [ ] 🟡 **Comptes inactifs** : durée de conservation (proposition : suppression
-  après 3 ans sans connexion, précédée d'un e-mail). Je code la purge dès que
-  c'est tranché.
-- [ ] 🟡 **Âge minimum** des utilisateurs.
+- [ ] 🟡 **Comptes inactifs** : durée de conservation. **Recommandation du 26/11 :
+  2 ans sans aucune activité** (ni connexion, ni sauvegarde), puis suppression, précédée
+  d'un e-mail d'avertissement un mois avant. C'est la durée que la **CNIL** juge
+  proportionnée pour les comptes en ligne inactifs (page CNIL du 18/09/2025, « Achat de
+  contenus numériques : quelle durée de conservation des comptes inactifs ? »). Le serveur
+  a déjà ce qu'il faut pour mesurer l'inactivité (date de création, dernière connexion,
+  dernière sauvegarde) : **aucun changement de base**. Les premiers comptes datant du
+  18/11/2026, la purge doit tourner avant novembre 2028. Sur ton « ok » : j'écris la règle
+  dans la politique et je code la purge (à recoller ensuite dans Cloudflare, `TUTO-GRATUIT.md`).
+- [ ] 🟡 **Âge minimum** des utilisateurs. **Recommandation du 26/11** (ta demande : ne pas
+  exclure inutilement) :
+  - **l'app : aucune interdiction**, contenu « tout public » (rien de choquant dedans) ;
+  - **le compte** (e-mail + sauvegarde) : **15 ans**, ou moins avec l'accord d'un parent
+    (seuil français, loi Informatique et Libertés, art. 45) ;
+  - **dans les stores** : public visé **13 ans et plus**. En dessous, Google Play (« Familles »)
+    et Apple (catégorie « Enfants ») imposent des règles beaucoup plus strictes sur l'envoi de
+    données à un tiers — or chaque photo part à l'IA ;
+  - conséquence pour l'IA : voir la ligne 🔴⚖️ du §0 (Claude accepte les mineurs avec
+    garde-fous ; Gemini, a priori non).
+  Sur ton « ok » : j'écris tout ça dans la politique et j'ajoute la mention « 15 ans ou accord
+  d'un parent » au panneau Compte.
 - [ ] 🟡 **Couper la reconnaissance automatique** : la politique affirmait qu'on pouvait ne
   rien envoyer à l'IA en vidant le champ « Endpoint » — **faux** (champ vide = relais par
   défaut), corrigé le 21/11. Aujourd'hui, seule une photo ajoutée depuis la fiche d'une
   voiture n'est jamais envoyée. Faut-il un vrai réglage « reconnaissance automatique :
   oui / non » ? (Recommandé avant la sortie : simple, et rassurant pour la confidentialité.)
+  → *26/11 :* tu veux que **la reconnaissance reste** : ce réglage ne la retire pas. Elle
+  reste **activée pour tout le monde par défaut** ; l'interrupteur sert seulement au joueur
+  qui ne veut pas que ses photos partent à l'IA (exigence de confidentialité, et argument
+  pour les stores). Recommandé ; sur ton « ok », je le fais.
 
 ## 4. 🔴 Notre propre carte (plus aucun appel externe)
 
